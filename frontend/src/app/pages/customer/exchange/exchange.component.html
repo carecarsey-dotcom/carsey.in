@@ -1,0 +1,412 @@
+<div class="exchange-page">
+
+  <!-- ==================================================
+       HEADER
+  =================================================== -->
+
+  <div class="exchange-header">
+
+    <h1>Upgrade / Exchange Your Car</h1>
+
+    <p>
+      Exchange your current car and upgrade to your
+      preferred vehicle.
+    </p>
+
+  </div>
+
+
+  <!-- ==================================================
+       FORM CARD
+  =================================================== -->
+
+  <div class="exchange-card">
+
+
+    <!-- ==================================================
+         SELLER DETAILS
+    =================================================== -->
+
+    <section>
+
+      <h2>Customer Details</h2>
+
+
+      <div class="form-grid">
+
+
+        <!-- NAME -->
+
+        <div class="form-group">
+
+          <label>
+            Name *
+          </label>
+
+          <input
+            type="text"
+            placeholder="Enter your name"
+            [value]="form.name"
+            (input)="onNameInput($event)"
+            autocomplete="name"
+          />
+
+          <small>
+            Only letters and spaces are allowed.
+          </small>
+
+        </div>
+
+
+        <!-- MOBILE -->
+
+        <div class="form-group">
+
+          <label>
+            Mobile Number *
+          </label>
+
+          <input
+            type="text"
+            inputmode="numeric"
+            maxlength="10"
+            placeholder="Enter 10 digit mobile number"
+            [value]="form.mobile"
+            (input)="onMobileInput($event)"
+            autocomplete="tel"
+          />
+
+          <small>
+            Enter exactly 10 digits.
+          </small>
+
+        </div>
+
+
+        <!-- EMAIL -->
+
+        <div class="form-group full">
+
+          <label>
+            Email *
+          </label>
+
+          <input
+            type="email"
+            placeholder="Enter your email"
+            [(ngModel)]="form.email"
+            name="email"
+            autocomplete="email"
+          />
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <hr>
+
+
+    <!-- ==================================================
+         CURRENT VEHICLE
+    =================================================== -->
+
+    <section>
+
+      <h2>Current Vehicle Details</h2>
+
+
+      <div class="form-grid">
+
+
+        <!-- CURRENT BRAND -->
+
+        <div class="form-group">
+
+          <label>
+            Current Brand *
+          </label>
+
+          <input
+            type="text"
+            placeholder="e.g. BMW"
+            [(ngModel)]="form.currentBrand"
+            name="currentBrand"
+          />
+
+        </div>
+
+
+        <!-- CURRENT MODEL -->
+
+        <div class="form-group">
+
+          <label>
+            Current Model *
+          </label>
+
+          <input
+            type="text"
+            placeholder="e.g. 3 Series"
+            [(ngModel)]="form.currentModel"
+            name="currentModel"
+          />
+
+        </div>
+
+
+        <!-- CURRENT YEAR -->
+
+        <div class="form-group">
+
+          <label>
+            Manufacturing Year *
+          </label>
+
+          <input
+            type="text"
+            maxlength="4"
+            inputmode="numeric"
+            placeholder="e.g. 2022"
+            [value]="form.currentYear"
+            (input)="onYearInput($event)"
+          />
+
+        </div>
+
+
+        <!-- CURRENT PRICE -->
+
+        <div class="form-group">
+
+          <label>
+            Current Vehicle Price *
+          </label>
+
+          <input
+            type="text"
+            inputmode="numeric"
+            placeholder="Enter expected price"
+            [value]="form.currentVehiclePrice"
+            (input)="onCurrentPriceInput($event)"
+          />
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <hr>
+
+
+    <!-- ==================================================
+         PREFERRED VEHICLE
+    =================================================== -->
+
+    <section>
+
+      <h2>Preferred Vehicle</h2>
+
+
+      <div class="form-grid">
+
+
+        <!-- PREFERRED BRAND -->
+
+        <div class="form-group">
+
+          <label>
+            Preferred Brand *
+          </label>
+
+          <input
+            type="text"
+            placeholder="e.g. Mercedes"
+            [(ngModel)]="form.preferredBrand"
+            name="preferredBrand"
+          />
+
+        </div>
+
+
+        <!-- PREFERRED MODEL -->
+
+        <div class="form-group">
+
+          <label>
+            Preferred Model *
+          </label>
+
+          <input
+            type="text"
+            placeholder="e.g. C-Class"
+            [(ngModel)]="form.preferredModel"
+            name="preferredModel"
+          />
+
+        </div>
+
+
+        <!-- PREFERRED VARIANT -->
+
+        <div class="form-group">
+
+          <label>
+            Preferred Variant *
+          </label>
+
+          <input
+            type="text"
+            placeholder="e.g. C200"
+            [(ngModel)]="form.preferredVariant"
+            name="preferredVariant"
+          />
+
+        </div>
+
+
+        <!-- BUDGET -->
+
+        <div class="form-group">
+
+          <label>
+            Budget *
+          </label>
+
+          <input
+            type="text"
+            inputmode="numeric"
+            placeholder="Enter your budget"
+            [value]="form.budget"
+            (input)="onBudgetInput($event)"
+          />
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <hr>
+
+
+    <!-- ==================================================
+         IMAGE
+    =================================================== -->
+
+    <section>
+
+      <h2>
+        Current Vehicle Image
+      </h2>
+
+      <p class="image-description">
+        Upload an image of your current vehicle.
+      </p>
+
+
+      <!-- =================================================
+           IMAGE PREVIEW
+      ================================================== -->
+
+      <div
+        class="image-preview"
+        *ngIf="imagePreview"
+      >
+
+        <img
+          [src]="imagePreview"
+          alt="Current Vehicle"
+        />
+
+
+        <button
+          type="button"
+          class="remove-image"
+          (click)="removeImage()"
+        >
+
+          Remove
+
+        </button>
+
+      </div>
+
+
+      <!-- =================================================
+           UPLOAD BOX
+      ================================================== -->
+
+      <label
+        class="upload-box"
+        *ngIf="!imagePreview"
+      >
+
+        <input
+          type="file"
+          accept="image/jpeg,image/jpg,image/png"
+          (change)="onImageSelected($event)"
+          hidden
+        />
+
+
+        <div class="camera-icon">
+          📷
+        </div>
+
+
+        <div class="upload-title">
+          Click to upload image
+        </div>
+
+
+        <div class="upload-info">
+          JPG, JPEG, PNG — Maximum 5 MB
+        </div>
+
+      </label>
+
+    </section>
+
+
+    <!-- ==================================================
+         SUBMIT BUTTON
+    =================================================== -->
+
+    <button
+      type="button"
+      class="submit-button"
+      [disabled]="submitting"
+      (click)="submitExchange()"
+    >
+
+      <span *ngIf="!submitting">
+        Submit Exchange Request
+      </span>
+
+      <span *ngIf="submitting">
+        Submitting...
+      </span>
+
+    </button>
+
+
+    <!-- ==================================================
+         FOOTER TEXT
+    =================================================== -->
+
+    <p class="bottom-text">
+
+      Our team will contact you after reviewing
+      your exchange request.
+
+    </p>
+
+  </div>
+
+</div>

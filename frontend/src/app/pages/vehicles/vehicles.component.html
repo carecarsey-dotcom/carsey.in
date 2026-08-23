@@ -1,0 +1,446 @@
+<input
+  type="text"
+  [(ngModel)]="searchText"
+  placeholder="Search brand, model or city..."
+  class="w-full rounded-lg border border-slate-300 bg-white px-4 py-3 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+>
+
+
+<!-- ================================================== -->
+<!-- LOADING -->
+<!-- ================================================== -->
+
+@if (loading) {
+
+  <div class="text-slate-500">
+    Loading vehicles...
+  </div>
+
+}
+
+
+<!-- ================================================== -->
+<!-- ERROR -->
+<!-- ================================================== -->
+
+@if (!loading && errorMessage) {
+
+  <h3 class="font-semibold text-red-700">
+    Error
+  </h3>
+
+  <p class="mt-1 text-red-600">
+    {{ errorMessage }}
+  </p>
+
+  <button
+    type="button"
+    (click)="loadVehicles()"
+    class="mt-4 rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700"
+  >
+    Retry
+  </button>
+
+}
+
+
+<!-- ================================================== -->
+<!-- VEHICLES -->
+<!-- ================================================== -->
+
+@if (!loading && !errorMessage) {
+
+
+  <!-- ================================================ -->
+  <!-- HEADER -->
+  <!-- ================================================ -->
+
+  <div
+    class="flex items-center justify-between border-b px-6 py-4"
+  >
+
+    <div>
+
+      <h2
+        class="text-lg font-semibold text-slate-800"
+      >
+        Vehicles
+      </h2>
+
+      <p
+        class="text-sm text-slate-500"
+      >
+        {{ filteredVehicles.length }} vehicles found
+      </p>
+
+    </div>
+
+
+    <!-- ADD VEHICLE -->
+
+    <a
+      routerLink="/admin/vehicles/add"
+      class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700"
+    >
+      + Add Vehicle
+    </a>
+
+  </div>
+
+
+  <!-- ================================================ -->
+  <!-- TABLE -->
+  <!-- ================================================ -->
+
+  <div class="overflow-x-auto">
+
+    <table class="min-w-full">
+
+
+      <!-- ============================================ -->
+      <!-- TABLE HEADER -->
+      <!-- ============================================ -->
+
+      <thead
+        class="border-b bg-slate-50"
+      >
+
+        <tr>
+
+
+          <!-- ID -->
+
+          <th
+            class="px-6 py-4 text-left text-sm font-semibold text-slate-600"
+          >
+            ID
+          </th>
+
+
+          <!-- BRAND -->
+
+          <th
+            class="px-6 py-4 text-left text-sm font-semibold text-slate-600"
+          >
+            Brand
+          </th>
+
+
+          <!-- MODEL -->
+
+          <th
+            class="px-6 py-4 text-left text-sm font-semibold text-slate-600"
+          >
+            Model
+          </th>
+
+
+          <!-- VARIANT -->
+
+          <th
+            class="px-6 py-4 text-left text-sm font-semibold text-slate-600"
+          >
+            Variant
+          </th>
+
+
+          <!-- YEAR -->
+
+          <th
+            class="px-6 py-4 text-left text-sm font-semibold text-slate-600"
+          >
+            Manufacturing Year
+          </th>
+
+
+          <!-- PRICE -->
+
+          <th
+            class="px-6 py-4 text-left text-sm font-semibold text-slate-600"
+          >
+            Price
+          </th>
+
+
+          <!-- ODOMETER -->
+
+          <th
+            class="px-6 py-4 text-left text-sm font-semibold text-slate-600"
+          >
+            Odometer
+          </th>
+
+
+          <!-- CITY -->
+
+          <th
+            class="px-6 py-4 text-left text-sm font-semibold text-slate-600"
+          >
+            City
+          </th>
+
+
+          <!-- STATUS -->
+
+          <th
+            class="px-6 py-4 text-left text-sm font-semibold text-slate-600"
+          >
+            Status
+          </th>
+
+
+          <!-- ======================================== -->
+          <!-- NEW ACTION COLUMN -->
+          <!-- ======================================== -->
+
+          <th
+            class="px-6 py-4 text-left text-sm font-semibold text-slate-600"
+          >
+            Action
+          </th>
+
+
+        </tr>
+
+      </thead>
+
+
+      <!-- ============================================ -->
+      <!-- TABLE BODY -->
+      <!-- ============================================ -->
+
+      <tbody
+        class="divide-y divide-slate-100"
+      >
+
+
+        @for (
+          vehicle of filteredVehicles;
+          track vehicle.car_id
+        ) {
+
+
+          <tr
+            class="transition hover:bg-slate-50"
+          >
+
+
+            <!-- ====================================== -->
+            <!-- ID -->
+            <!-- ====================================== -->
+
+            <td
+              class="px-6 py-4 text-sm text-slate-700"
+            >
+              #{{ vehicle.car_id }}
+            </td>
+
+
+            <!-- ====================================== -->
+            <!-- BRAND -->
+            <!-- ====================================== -->
+
+            <td
+              class="px-6 py-4 font-medium text-slate-800"
+            >
+              {{ vehicle.brand || '-' }}
+            </td>
+
+
+            <!-- ====================================== -->
+            <!-- MODEL -->
+            <!-- ====================================== -->
+
+            <td
+              class="px-6 py-4 text-slate-700"
+            >
+              {{ vehicle.model || '-' }}
+            </td>
+
+
+            <!-- ====================================== -->
+            <!-- VARIANT -->
+            <!-- ====================================== -->
+
+            <td
+              class="px-6 py-4 text-slate-600"
+            >
+              {{ vehicle.variant || '-' }}
+            </td>
+
+
+            <!-- ====================================== -->
+            <!-- MANUFACTURING YEAR -->
+            <!-- ====================================== -->
+
+            <td
+              class="px-6 py-4 text-slate-600"
+            >
+              {{ vehicle.manufacturing_year || '-' }}
+            </td>
+
+
+            <!-- ====================================== -->
+            <!-- PRICE -->
+            <!-- ====================================== -->
+
+            <td
+              class="px-6 py-4 font-medium text-slate-800"
+            >
+
+              @if (vehicle.price) {
+
+                ₹{{ vehicle.price | number }}
+
+              } @else {
+
+                -
+
+              }
+
+            </td>
+
+
+            <!-- ====================================== -->
+            <!-- ODOMETER -->
+            <!-- ====================================== -->
+
+            <td
+              class="px-6 py-4 text-slate-600"
+            >
+
+              @if (vehicle.odometer) {
+
+                {{ vehicle.odometer | number }} km
+
+              } @else {
+
+                -
+
+              }
+
+            </td>
+
+
+            <!-- ====================================== -->
+            <!-- CITY -->
+            <!-- ====================================== -->
+
+            <td
+              class="px-6 py-4 text-slate-600"
+            >
+              {{ vehicle.city || '-' }}
+            </td>
+
+
+            <!-- ====================================== -->
+            <!-- STATUS -->
+            <!-- ====================================== -->
+
+            <td
+              class="px-6 py-4"
+            >
+
+              <span
+                class="rounded-full px-3 py-1 text-xs font-semibold"
+
+                [ngClass]="{
+
+                  'bg-green-100 text-green-700':
+                    vehicle.status === 'Published',
+
+                  'bg-yellow-100 text-yellow-700':
+                    vehicle.status === 'Draft',
+
+                  'bg-red-100 text-red-700':
+                    vehicle.status === 'Sold',
+
+                  'bg-blue-100 text-blue-700':
+                    vehicle.status === 'Available',
+
+                  'bg-slate-100 text-slate-700':
+                    vehicle.status === 'Inactive'
+
+                }"
+              >
+
+                {{ vehicle.status || 'Draft' }}
+
+              </span>
+
+            </td>
+
+
+            <!-- ====================================== -->
+            <!-- ACTION -->
+            <!-- ====================================== -->
+
+            <td
+              class="px-6 py-4"
+            >
+
+              <a
+                [routerLink]="[
+                  '/admin/vehicles/edit',
+                  vehicle.car_id
+                ]"
+
+                class="inline-flex items-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700"
+              >
+
+                Edit
+
+              </a>
+
+            </td>
+
+
+          </tr>
+
+        }
+
+
+        <!-- ========================================== -->
+        <!-- NO VEHICLES -->
+        <!-- ========================================== -->
+
+        @if (filteredVehicles.length === 0) {
+
+          <tr>
+
+            <td
+              colspan="10"
+              class="px-6 py-12 text-center text-slate-500"
+            >
+
+              <div class="text-4xl">
+                🚗
+              </div>
+
+              <p
+                class="mt-3 font-semibold text-slate-700"
+              >
+                No vehicles found
+              </p>
+
+              <p
+                class="mt-1 text-sm text-slate-500"
+              >
+                Try searching with another brand,
+                model or city.
+              </p>
+
+            </td>
+
+          </tr>
+
+        }
+
+
+      </tbody>
+
+    </table>
+
+  </div>
+
+}

@@ -1,0 +1,534 @@
+/* =====================================================
+   MAIN PAGE
+   ===================================================== */
+
+.sell-page {
+  min-height: 100vh;
+  background: #f5f7fb;
+  padding: 40px 20px;
+  box-sizing: border-box;
+}
+
+
+/* =====================================================
+   CONTAINER
+   ===================================================== */
+
+.sell-container {
+  width: 100%;
+  max-width: 1050px;
+  margin: 0 auto;
+}
+
+
+/* =====================================================
+   HEADER
+   ===================================================== */
+
+.page-header {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+
+.page-header h1 {
+  margin: 0;
+  font-size: 36px;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+
+.page-header p {
+  margin-top: 10px;
+  color: #64748b;
+  font-size: 16px;
+}
+
+
+/* =====================================================
+   FORM CARD
+   ===================================================== */
+
+.form-card {
+  background: #ffffff;
+  border-radius: 18px;
+  padding: 32px;
+  box-shadow:
+    0 10px 30px rgba(15, 23, 42, 0.10);
+}
+
+
+/* =====================================================
+   SECTION
+   ===================================================== */
+
+.section {
+  padding: 10px 0 30px;
+}
+
+
+.section + .section {
+  border-top: 1px solid #e5e7eb;
+  padding-top: 30px;
+}
+
+
+.section h2 {
+  margin: 0 0 20px;
+  color: #0f172a;
+  font-size: 22px;
+  font-weight: 800;
+}
+
+
+.section-description {
+  margin-top: -10px;
+  margin-bottom: 22px;
+  color: #64748b;
+  font-size: 14px;
+}
+
+
+/* =====================================================
+   FORM GRID
+   ===================================================== */
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+
+
+.form-group.full {
+  grid-column: 1 / -1;
+}
+
+
+/* =====================================================
+   LABEL
+   ===================================================== */
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  color: #334155;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+
+/* =====================================================
+   INPUT / SELECT
+   ===================================================== */
+
+.form-group input,
+.form-group select {
+  width: 100%;
+  height: 48px;
+  box-sizing: border-box;
+
+  padding: 0 14px;
+
+  border: 1px solid #d1d5db;
+  border-radius: 9px;
+
+  background: #ffffff;
+  color: #0f172a;
+
+  font-size: 15px;
+
+  outline: none;
+
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+
+.form-group input::placeholder {
+  color: #94a3b8;
+}
+
+
+.form-group input:focus,
+.form-group select:focus {
+  border-color: #ec008c;
+
+  box-shadow:
+    0 0 0 3px rgba(236, 0, 140, 0.10);
+}
+
+
+/* =====================================================
+   SMALL TEXT
+   ===================================================== */
+
+.form-group small {
+  display: block;
+  margin-top: 6px;
+
+  color: #64748b;
+
+  font-size: 12px;
+}
+
+
+/* =====================================================
+   IMAGE GRID
+   ===================================================== */
+
+.image-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 22px;
+}
+
+
+/* =====================================================
+   IMAGE CARD
+   ===================================================== */
+
+.image-upload-card {
+  width: 100%;
+}
+
+
+.image-upload-card h3 {
+  margin: 0 0 10px;
+
+  color: #0f172a;
+
+  font-size: 15px;
+  font-weight: 700;
+}
+
+
+/* =====================================================
+   UPLOAD BOX
+   ===================================================== */
+
+.upload-box {
+  position: relative;
+
+  width: 100%;
+  min-height: 230px;
+
+  box-sizing: border-box;
+
+  border: 2px dashed #cbd5e1;
+  border-radius: 14px;
+
+  background: #ffffff;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  text-align: center;
+
+  cursor: pointer;
+
+  transition:
+    border-color 0.2s ease,
+    background-color 0.2s ease,
+    transform 0.2s ease;
+}
+
+
+.upload-box:hover {
+  border-color: #ec008c;
+  background: #fff7fb;
+  transform: translateY(-1px);
+}
+
+
+/* =====================================================
+   HIDE FILE INPUT
+   ===================================================== */
+
+.upload-box input[type="file"] {
+  position: absolute;
+
+  width: 100%;
+  height: 100%;
+
+  opacity: 0;
+
+  cursor: pointer;
+}
+
+
+/* =====================================================
+   CAMERA ICON
+   ===================================================== */
+
+.camera-icon {
+  font-size: 42px;
+  margin-bottom: 12px;
+}
+
+
+/* =====================================================
+   UPLOAD TITLE
+   ===================================================== */
+
+.upload-title {
+  color: #0f172a;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+
+/* =====================================================
+   UPLOAD INFO
+   ===================================================== */
+
+.upload-info {
+  margin-top: 7px;
+
+  color: #64748b;
+
+  font-size: 13px;
+}
+
+
+/* =====================================================
+   IMAGE PREVIEW
+   ===================================================== */
+
+.image-preview {
+  position: relative;
+
+  width: 100%;
+  height: 230px;
+
+  overflow: hidden;
+
+  border-radius: 14px;
+
+  background: #f1f5f9;
+}
+
+
+.image-preview img {
+  width: 100%;
+  height: 100%;
+
+  object-fit: cover;
+
+  display: block;
+}
+
+
+/* =====================================================
+   REMOVE BUTTON
+   ===================================================== */
+
+.remove-button {
+  position: absolute;
+
+  top: 12px;
+  right: 12px;
+
+  padding: 9px 16px;
+
+  border: none;
+  border-radius: 7px;
+
+  background: #dc2626;
+  color: #ffffff;
+
+  font-size: 13px;
+  font-weight: 700;
+
+  cursor: pointer;
+
+  box-shadow:
+    0 4px 10px rgba(0, 0, 0, 0.20);
+}
+
+
+.remove-button:hover {
+  background: #b91c1c;
+}
+
+
+/* =====================================================
+   SUBMIT SECTION
+   ===================================================== */
+
+.submit-section {
+  border-top: 1px solid #e5e7eb;
+
+  margin-top: 10px;
+  padding-top: 30px;
+
+  text-align: center;
+}
+
+
+/* =====================================================
+   SUBMIT BUTTON
+   ===================================================== */
+
+.submit-button {
+  width: 100%;
+
+  min-height: 52px;
+
+  border: none;
+  border-radius: 12px;
+
+  background:
+    linear-gradient(
+      90deg,
+      #ec008c 0%,
+      #b000d4 50%,
+      #8b00e8 100%
+    );
+
+  color: #ffffff;
+
+  font-size: 17px;
+  font-weight: 800;
+
+  cursor: pointer;
+
+  box-shadow:
+    0 8px 18px rgba(139, 0, 232, 0.18);
+
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    opacity 0.2s ease;
+}
+
+
+.submit-button:hover:not(:disabled) {
+  transform: translateY(-1px);
+
+  box-shadow:
+    0 10px 24px rgba(139, 0, 232, 0.28);
+}
+
+
+.submit-button:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+
+/* =====================================================
+   SUBMIT NOTE
+   ===================================================== */
+
+.submit-note {
+  margin: 14px 0 0;
+
+  color: #64748b;
+
+  font-size: 14px;
+}
+
+
+/* =====================================================
+   INPUT TEXT VISIBILITY
+   ===================================================== */
+
+input,
+select,
+textarea {
+  color: #0f172a !important;
+  background-color: #ffffff !important;
+  caret-color: #ec008c;
+}
+
+
+input::placeholder,
+textarea::placeholder {
+  color: #94a3b8 !important;
+  opacity: 1;
+}
+
+
+select {
+  color: #0f172a !important;
+}
+
+
+input:focus,
+select:focus,
+textarea:focus {
+  color: #0f172a !important;
+  background-color: #ffffff !important;
+  outline: none;
+}
+
+
+/* =====================================================
+   AUTOFILL FIX
+   ===================================================== */
+
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus {
+  -webkit-text-fill-color: #0f172a !important;
+
+  box-shadow:
+    0 0 0 1000px #ffffff inset !important;
+
+  transition:
+    background-color 5000s ease-in-out 0s;
+}
+
+
+/* =====================================================
+   RESPONSIVE
+   ===================================================== */
+
+@media (max-width: 768px) {
+
+  .sell-page {
+    padding: 25px 14px;
+  }
+
+
+  .form-card {
+    padding: 20px;
+    border-radius: 14px;
+  }
+
+
+  .page-header h1 {
+    font-size: 28px;
+  }
+
+
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+
+  .form-group.full {
+    grid-column: auto;
+  }
+
+
+  .image-grid {
+    grid-template-columns: 1fr;
+  }
+
+
+  .upload-box {
+    min-height: 210px;
+  }
+
+
+  .image-preview {
+    height: 210px;
+  }
+
+}

@@ -1,0 +1,170 @@
+<div class="min-h-screen bg-slate-100 p-8">
+
+  <div class="mb-8">
+
+    <h1 class="text-3xl font-bold text-slate-900">
+      Carsey.in Admin Dashboard
+    </h1>
+
+    <p class="mt-2 text-slate-500">
+      Dashboard Overview
+    </p>
+
+  </div>
+
+
+  @if (loading) {
+
+    <div class="rounded-xl bg-white p-8 shadow">
+
+      <p class="text-slate-600">
+        Loading dashboard...
+      </p>
+
+    </div>
+
+  }
+
+
+  @if (!loading && errorMessage) {
+
+    <div class="rounded-xl bg-red-50 p-6">
+
+      <h2 class="font-bold text-red-700">
+        Error
+      </h2>
+
+      <p class="mt-2 text-red-600">
+        {{ errorMessage }}
+      </p>
+
+    </div>
+
+  }
+
+
+  @if (!loading && !errorMessage) {
+
+    <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+
+      <div class="rounded-xl bg-white p-6 shadow">
+
+        <p class="text-sm text-slate-500">
+          Active Listings
+        </p>
+
+        <h2 class="mt-2 text-4xl font-bold">
+          {{ dashboard.activeListings }}
+        </h2>
+
+      </div>
+
+
+      <div class="rounded-xl bg-white p-6 shadow">
+
+        <p class="text-sm text-slate-500">
+          Sold Cars
+        </p>
+
+        <h2 class="mt-2 text-4xl font-bold">
+          {{ dashboard.soldCars }}
+        </h2>
+
+      </div>
+
+
+      <div class="rounded-xl bg-white p-6 shadow">
+
+        <p class="text-sm text-slate-500">
+          Unlock Requests
+        </p>
+
+        <h2 class="mt-2 text-4xl font-bold">
+          {{ dashboard.unlockRequests }}
+        </h2>
+
+      </div>
+
+
+      <div class="rounded-xl bg-white p-6 shadow">
+
+        <p class="text-sm text-slate-500">
+          Test Drive Requests
+        </p>
+
+        <h2 class="mt-2 text-4xl font-bold">
+          {{ dashboard.testDriveRequests }}
+        </h2>
+
+      </div>
+
+
+      <div class="rounded-xl bg-white p-6 shadow">
+
+        <p class="text-sm text-slate-500">
+          Finance Requests
+        </p>
+
+        <h2 class="mt-2 text-4xl font-bold">
+          {{ dashboard.financeRequests }}
+        </h2>
+
+      </div>
+
+
+      <div class="rounded-xl bg-white p-6 shadow">
+
+        <p class="text-sm text-slate-500">
+          Sell Car Requests
+        </p>
+
+        <h2 class="mt-2 text-4xl font-bold">
+          {{ dashboard.sellCarRequests }}
+        </h2>
+
+      </div>
+
+
+      <div class="rounded-xl bg-white p-6 shadow">
+
+        <p class="text-sm text-slate-500">
+          Exchange Requests
+        </p>
+
+        <h2 class="mt-2 text-4xl font-bold">
+          {{ dashboard.exchangeRequests }}
+        </h2>
+
+      </div>
+
+
+      <div class="rounded-xl bg-white p-6 shadow">
+
+        <p class="text-sm text-slate-500">
+          Loan Requests
+        </p>
+
+        <h2 class="mt-2 text-4xl font-bold">
+          {{ dashboard.loanRequests }}
+        </h2>
+
+      </div>
+
+
+      <div class="rounded-xl bg-white p-6 shadow">
+
+        <p class="text-sm text-slate-500">
+          Inspection Bookings
+        </p>
+
+        <h2 class="mt-2 text-4xl font-bold">
+          {{ dashboard.inspectionBookings }}
+        </h2>
+
+      </div>
+
+    </div>
+
+  }
+
+</div>

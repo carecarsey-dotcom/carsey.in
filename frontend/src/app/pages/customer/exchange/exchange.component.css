@@ -1,0 +1,555 @@
+/* ======================================================
+   SELL CAR FORM - INPUT TEXT VISIBILITY
+   ====================================================== */
+
+:host {
+  display: block;
+}
+
+
+/* ======================================================
+   ALL INPUTS
+   ====================================================== */
+
+input,
+select,
+textarea {
+  color: #0f172a !important;
+  background-color: #ffffff !important;
+  caret-color: #ec008c;
+}
+
+
+/* ======================================================
+   INPUT PLACEHOLDER
+   ====================================================== */
+
+input::placeholder,
+textarea::placeholder {
+  color: #94a3b8 !important;
+  opacity: 1;
+}
+
+
+/* ======================================================
+   SELECT
+   ====================================================== */
+
+select {
+  color: #0f172a !important;
+}
+
+
+/* ======================================================
+   SELECT PLACEHOLDER / EMPTY VALUE
+   ====================================================== */
+
+select:invalid {
+  color: #64748b !important;
+}
+
+
+/* ======================================================
+   FOCUS
+   ====================================================== */
+
+input:focus,
+select:focus,
+textarea:focus {
+  color: #0f172a !important;
+  background-color: #ffffff !important;
+  outline: none;
+}
+
+
+/* ======================================================
+   DISABLED INPUT
+   ====================================================== */
+
+input:disabled,
+select:disabled,
+textarea:disabled {
+  color: #0f172a !important;
+  background-color: #f8fafc !important;
+  opacity: 1;
+}
+
+
+/* ======================================================
+   AUTOFILL FIX
+   Browser autofill ke baad bhi text visible rahe
+   ====================================================== */
+
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+textarea:-webkit-autofill,
+textarea:-webkit-autofill:hover,
+textarea:-webkit-autofill:focus,
+select:-webkit-autofill {
+  -webkit-text-fill-color: #0f172a !important;
+  box-shadow: 0 0 0px 1000px #ffffff inset !important;
+  transition: background-color 5000s ease-in-out 0s;
+}
+
+
+/* ======================================================
+   NUMBER INPUT
+   ====================================================== */
+
+input[type="number"] {
+  color: #0f172a !important;
+}
+
+
+/* ======================================================
+   DATE INPUT
+   ====================================================== */
+
+input[type="date"] {
+  color: #0f172a !important;
+}
+
+
+/* ======================================================
+   FILE INPUT
+   ====================================================== */
+
+input[type="file"] {
+  color: #0f172a !important;
+}
+
+
+/* ======================================================
+   FILE BUTTON
+   ====================================================== */
+
+input[type="file"]::file-selector-button {
+  color: #ffffff;
+  background-color: #ec008c;
+  border: none;
+  padding: 8px 14px;
+  margin-right: 10px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+
+/* ======================================================
+   VALIDATION ERROR
+   ====================================================== */
+
+input.ng-invalid.ng-touched,
+select.ng-invalid.ng-touched,
+textarea.ng-invalid.ng-touched {
+  color: #0f172a !important;
+}
+
+
+/* ======================================================
+   SUCCESS / VALID INPUT
+   ====================================================== */
+
+input.ng-valid.ng-touched,
+select.ng-valid.ng-touched,
+textarea.ng-valid.ng-touched {
+  color: #0f172a !important;
+}
+/* =====================================================
+   EXCHANGE PAGE
+===================================================== */
+
+.exchange-page {
+  min-height: 100vh;
+  padding: 45px 20px 70px;
+  background: #f5f6f8;
+  box-sizing: border-box;
+}
+
+
+/* =====================================================
+   HEADER
+===================================================== */
+
+.exchange-header {
+  text-align: center;
+  margin-bottom: 35px;
+}
+
+.exchange-header h1 {
+  margin: 0 0 10px;
+  font-size: 36px;
+  font-weight: 800;
+  color: #101828;
+}
+
+.exchange-header p {
+  margin: 0;
+  font-size: 16px;
+  color: #667085;
+}
+
+
+/* =====================================================
+   MAIN CARD
+===================================================== */
+
+.exchange-card {
+  width: 100%;
+  max-width: 990px;
+  margin: 0 auto;
+  padding: 34px;
+  background: #ffffff;
+  border-radius: 18px;
+  box-shadow: 0 10px 30px rgba(16, 24, 40, 0.10);
+  box-sizing: border-box;
+}
+
+
+/* =====================================================
+   SECTION
+===================================================== */
+
+.exchange-card section {
+  width: 100%;
+}
+
+.exchange-card h2 {
+  margin: 0 0 22px;
+  font-size: 22px;
+  font-weight: 750;
+  color: #101828;
+}
+
+
+/* =====================================================
+   FORM GRID
+===================================================== */
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 22px 20px;
+}
+
+
+/* =====================================================
+   FORM GROUP
+===================================================== */
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.form-group.full {
+  grid-column: 1 / -1;
+}
+
+
+/* =====================================================
+   LABEL
+===================================================== */
+
+.form-group label {
+  margin-bottom: 8px;
+  font-size: 14px;
+  font-weight: 650;
+  color: #172b4d;
+}
+
+
+/* =====================================================
+   INPUT
+===================================================== */
+
+.form-group input {
+  width: 100%;
+  height: 50px;
+  padding: 0 15px;
+  border: 1px solid #d0d5dd;
+  border-radius: 9px;
+  background: #ffffff;
+  color: #101828;
+  font-size: 15px;
+  outline: none;
+  box-sizing: border-box;
+  transition: all 0.2s ease;
+}
+
+.form-group input::placeholder {
+  color: #98a2b3;
+}
+
+.form-group input:focus {
+  border-color: #d60087;
+  box-shadow: 0 0 0 3px rgba(214, 0, 135, 0.10);
+}
+
+
+/* =====================================================
+   SMALL HELP TEXT
+===================================================== */
+
+.form-group small {
+  margin-top: 6px;
+  font-size: 12px;
+  color: #667085;
+}
+
+
+/* =====================================================
+   DIVIDER
+===================================================== */
+
+.exchange-card hr {
+  border: 0;
+  border-top: 1px solid #eaecf0;
+  margin: 32px 0;
+}
+
+
+/* =====================================================
+   IMAGE DESCRIPTION
+===================================================== */
+
+.image-description {
+  margin: -10px 0 20px;
+  color: #667085;
+  font-size: 14px;
+}
+
+
+/* =====================================================
+   UPLOAD BOX
+===================================================== */
+
+.upload-box {
+  width: 100%;
+  min-height: 155px;
+  border: 2px dashed #cbd5e1;
+  border-radius: 12px;
+  background: #ffffff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-sizing: border-box;
+  transition: all 0.2s ease;
+}
+
+.upload-box:hover {
+  border-color: #d60087;
+  background: #fff7fc;
+}
+
+
+/* =====================================================
+   CAMERA ICON
+===================================================== */
+
+.camera-icon {
+  font-size: 34px;
+  margin-bottom: 8px;
+}
+
+
+/* =====================================================
+   UPLOAD TITLE
+===================================================== */
+
+.upload-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #172b4d;
+}
+
+
+/* =====================================================
+   UPLOAD INFO
+===================================================== */
+
+.upload-info {
+  margin-top: 7px;
+  font-size: 13px;
+  color: #667085;
+}
+
+
+/* =====================================================
+   IMAGE PREVIEW
+===================================================== */
+
+.image-preview {
+  position: relative;
+  width: 100%;
+  height: 300px;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #f2f4f7;
+  border: 1px solid #d0d5dd;
+}
+
+
+/* =====================================================
+   PREVIEW IMAGE
+===================================================== */
+
+.image-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+
+/* =====================================================
+   REMOVE IMAGE
+===================================================== */
+
+.remove-image {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+
+  border: none;
+  border-radius: 8px;
+
+  padding: 10px 16px;
+
+  background: #d92d20;
+  color: #ffffff;
+
+  font-size: 14px;
+  font-weight: 600;
+
+  cursor: pointer;
+}
+
+.remove-image:hover {
+  background: #b42318;
+}
+
+
+/* =====================================================
+   SUBMIT BUTTON
+===================================================== */
+
+.submit-button {
+  width: 100%;
+  height: 54px;
+  margin-top: 30px;
+
+  border: none;
+  border-radius: 10px;
+
+  background: linear-gradient(
+    90deg,
+    #ec008c,
+    #8f00e8
+  );
+
+  color: #ffffff;
+
+  font-size: 16px;
+  font-weight: 700;
+
+  cursor: pointer;
+
+  transition: all 0.2s ease;
+}
+
+.submit-button:hover:not(:disabled) {
+  transform: translateY(-1px);
+
+  box-shadow:
+    0 8px 20px rgba(143, 0, 232, 0.25);
+}
+
+.submit-button:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+
+/* =====================================================
+   BOTTOM TEXT
+===================================================== */
+
+.bottom-text {
+  margin: 18px 0 0;
+  text-align: center;
+
+  color: #667085;
+  font-size: 14px;
+}
+
+
+/* =====================================================
+   MOBILE
+===================================================== */
+
+@media (max-width: 768px) {
+
+  .exchange-page {
+    padding: 30px 14px 50px;
+  }
+
+  .exchange-header h1 {
+    font-size: 28px;
+  }
+
+  .exchange-header p {
+    font-size: 14px;
+  }
+
+  .exchange-card {
+    padding: 22px 18px;
+    border-radius: 14px;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+
+  .form-group.full {
+    grid-column: auto;
+  }
+
+  .exchange-card h2 {
+    font-size: 20px;
+  }
+
+  .image-preview {
+    height: 230px;
+  }
+
+}
+
+
+/* =====================================================
+   SMALL MOBILE
+===================================================== */
+
+@media (max-width: 480px) {
+
+  .exchange-header h1 {
+    font-size: 24px;
+  }
+
+  .exchange-card {
+    padding: 18px 14px;
+  }
+
+  .form-group input {
+    height: 48px;
+  }
+
+  .upload-box {
+    min-height: 140px;
+  }
+
+}

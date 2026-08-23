@@ -1,0 +1,441 @@
+<div class="min-h-screen bg-slate-100">
+
+
+  <!-- ========================================= -->
+  <!-- SIDEBAR -->
+  <!-- ========================================= -->
+
+  <aside
+    class="fixed left-0 top-0 z-40 h-screen w-64 bg-slate-900 text-white shadow-xl"
+    [class.hidden]="!sidebarOpen"
+  >
+
+
+    <!-- ========================================= -->
+    <!-- LOGO -->
+    <!-- ========================================= -->
+
+    <div
+      class="flex h-20 items-center border-b border-slate-700 px-6"
+    >
+
+      <div>
+
+        <h1
+          class="text-2xl font-bold"
+        >
+          Carsey.in
+        </h1>
+
+        <p
+          class="text-xs text-slate-400"
+        >
+          Admin Panel
+        </p>
+
+      </div>
+
+    </div>
+
+
+
+    <!-- ========================================= -->
+    <!-- NAVIGATION -->
+    <!-- ========================================= -->
+
+    <nav
+      class="space-y-1 p-4"
+    >
+
+
+      <!-- ========================================= -->
+      <!-- DASHBOARD -->
+      <!-- ========================================= -->
+
+      <a
+        routerLink="/admin/dashboard"
+        routerLinkActive="bg-slate-700 text-white"
+        [routerLinkActiveOptions]="{ exact: true }"
+        class="flex items-center rounded-lg px-4 py-3 text-slate-300 transition hover:bg-slate-800 hover:text-white"
+      >
+
+        <span>
+          📊
+        </span>
+
+        <span class="ml-3">
+          Dashboard
+        </span>
+
+      </a>
+
+
+
+      <!-- ========================================= -->
+      <!-- VEHICLES -->
+      <!-- ========================================= -->
+
+      <div
+        class="mt-5 px-4 pb-2 text-xs font-semibold uppercase tracking-wider text-slate-500"
+      >
+        Vehicles
+      </div>
+
+
+      <!-- ALL VEHICLES -->
+
+      <a
+        routerLink="/admin/vehicles"
+        routerLinkActive="bg-slate-700 text-white"
+        class="flex items-center rounded-lg px-4 py-3 text-slate-300 transition hover:bg-slate-800 hover:text-white"
+      >
+
+        <span>
+          🚗
+        </span>
+
+        <span class="ml-3">
+          All Vehicles
+        </span>
+
+      </a>
+
+
+      <!-- ADD VEHICLE -->
+
+      <a
+        routerLink="/admin/vehicles/add"
+        routerLinkActive="bg-slate-700 text-white"
+        class="flex items-center rounded-lg px-4 py-3 text-slate-300 transition hover:bg-slate-800 hover:text-white"
+      >
+
+        <span>
+          ➕
+        </span>
+
+        <span class="ml-3">
+          Add Vehicle
+        </span>
+
+      </a>
+
+
+
+      <!-- ========================================= -->
+      <!-- REQUESTS -->
+      <!-- ========================================= -->
+
+      <div
+        class="mt-5 px-4 pb-2 text-xs font-semibold uppercase tracking-wider text-slate-500"
+      >
+        Requests
+      </div>
+
+
+      <!-- REPORT UNLOCK -->
+
+      <a
+        routerLink="/admin/report-unlock-requests"
+        routerLinkActive="bg-slate-700 text-white"
+        class="flex items-center rounded-lg px-4 py-3 text-slate-300 transition hover:bg-slate-800 hover:text-white"
+      >
+
+        <span>
+          🔓
+        </span>
+
+        <span class="ml-3">
+          Report Unlock
+        </span>
+
+      </a>
+
+
+      <!-- TEST DRIVE -->
+
+      <a
+        routerLink="/admin/test-drive-requests"
+        routerLinkActive="bg-slate-700 text-white"
+        class="flex items-center rounded-lg px-4 py-3 text-slate-300 transition hover:bg-slate-800 hover:text-white"
+      >
+
+        <span>
+          🚘
+        </span>
+
+        <span class="ml-3">
+          Test Drive
+        </span>
+
+      </a>
+
+
+      <!-- FINANCE -->
+
+      <a
+        routerLink="/admin/finance-requests"
+        routerLinkActive="bg-slate-700 text-white"
+        class="flex items-center rounded-lg px-4 py-3 text-slate-300 transition hover:bg-slate-800 hover:text-white"
+      >
+
+        <span>
+          💰
+        </span>
+
+        <span class="ml-3">
+          Finance
+        </span>
+
+      </a>
+
+
+      <!-- SELL CAR -->
+
+      <a
+        routerLink="/admin/sell-car-requests"
+        routerLinkActive="bg-slate-700 text-white"
+        class="flex items-center rounded-lg px-4 py-3 text-slate-300 transition hover:bg-slate-800 hover:text-white"
+      >
+
+        <span>
+          🚙
+        </span>
+
+        <span class="ml-3">
+          Sell Car
+        </span>
+
+      </a>
+
+
+      <!-- EXCHANGE -->
+
+      <a
+        routerLink="/admin/exchange-requests"
+        routerLinkActive="bg-slate-700 text-white"
+        class="flex items-center rounded-lg px-4 py-3 text-slate-300 transition hover:bg-slate-800 hover:text-white"
+      >
+
+        <span>
+          🔄
+        </span>
+
+        <span class="ml-3">
+          Exchange
+        </span>
+
+      </a>
+
+
+      <!-- LOAN -->
+
+      <a
+        routerLink="/admin/loan-requests"
+        routerLinkActive="bg-slate-700 text-white"
+        class="flex items-center rounded-lg px-4 py-3 text-slate-300 transition hover:bg-slate-800 hover:text-white"
+      >
+
+        <span>
+          🏦
+        </span>
+
+        <span class="ml-3">
+          Loan
+        </span>
+
+      </a>
+
+
+
+      <!-- ========================================= -->
+      <!-- INSPECTION -->
+      <!-- ========================================= -->
+
+      <div
+        class="mt-5 px-4 pb-2 text-xs font-semibold uppercase tracking-wider text-slate-500"
+      >
+        Inspection
+      </div>
+
+
+      <!-- BOOKINGS -->
+
+      <a
+        routerLink="/admin/inspection-bookings"
+        routerLinkActive="bg-slate-700 text-white"
+        class="flex items-center rounded-lg px-4 py-3 text-slate-300 transition hover:bg-slate-800 hover:text-white"
+      >
+
+        <span>
+          📅
+        </span>
+
+        <span class="ml-3">
+          Bookings
+        </span>
+
+      </a>
+
+
+      <!-- REPORTS -->
+
+      <a
+        routerLink="/admin/inspection-reports"
+        routerLinkActive="bg-slate-700 text-white"
+        class="flex items-center rounded-lg px-4 py-3 text-slate-300 transition hover:bg-slate-800 hover:text-white"
+      >
+
+        <span>
+          📄
+        </span>
+
+        <span class="ml-3">
+          Reports
+        </span>
+
+      </a>
+
+    </nav>
+
+
+
+    <!-- ========================================= -->
+    <!-- LOGOUT -->
+    <!-- ========================================= -->
+
+    <div
+      class="absolute bottom-0 w-full border-t border-slate-700 p-4 bg-slate-900"
+    >
+
+      <button
+        type="button"
+        (click)="logout()"
+        class="flex w-full items-center rounded-lg px-4 py-3 text-slate-300 transition hover:bg-red-600 hover:text-white"
+      >
+
+        <span>
+          🚪
+        </span>
+
+        <span class="ml-3">
+          Logout
+        </span>
+
+      </button>
+
+    </div>
+
+  </aside>
+
+
+
+  <!-- ========================================= -->
+  <!-- MAIN AREA -->
+  <!-- ========================================= -->
+
+  <div
+    [class.ml-64]="sidebarOpen"
+    class="min-h-screen transition-all"
+  >
+
+
+    <!-- ======================================= -->
+    <!-- NAVBAR -->
+    <!-- ======================================= -->
+
+    <header
+      class="sticky top-0 z-30 flex h-20 items-center justify-between border-b border-slate-200 bg-white px-6 shadow-sm"
+    >
+
+
+      <!-- LEFT -->
+
+      <div
+        class="flex items-center gap-4"
+      >
+
+        <button
+          type="button"
+          (click)="toggleSidebar()"
+          class="rounded-lg border border-slate-200 px-3 py-2 text-xl hover:bg-slate-100"
+        >
+          ☰
+        </button>
+
+
+        <div>
+
+          <h2
+            class="text-lg font-bold text-slate-800"
+          >
+            Admin Dashboard
+          </h2>
+
+          <p
+            class="text-xs text-slate-500"
+          >
+            Carsey.in Management System
+          </p>
+
+        </div>
+
+      </div>
+
+
+
+      <!-- RIGHT -->
+
+      <div
+        class="flex items-center gap-4"
+      >
+
+        <div
+          class="hidden text-right sm:block"
+        >
+
+          <p
+            class="text-sm font-semibold text-slate-800"
+          >
+            Admin
+          </p>
+
+          <p
+            class="text-xs text-slate-500"
+          >
+            Administrator
+          </p>
+
+        </div>
+
+
+        <div
+          class="flex h-10 w-10 items-center justify-center rounded-full bg-slate-900 font-bold text-white"
+        >
+          A
+        </div>
+
+      </div>
+
+    </header>
+
+
+
+    <!-- ======================================= -->
+    <!-- PAGE CONTENT -->
+    <!-- ======================================= -->
+
+    <main
+      class="p-6"
+    >
+
+      <!-- IMPORTANT -->
+      <!-- Child admin pages yahan render honge -->
+
+      <router-outlet></router-outlet>
+
+    </main>
+
+
+  </div>
+
+</div>

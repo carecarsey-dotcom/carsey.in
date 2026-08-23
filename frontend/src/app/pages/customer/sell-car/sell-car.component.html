@@ -1,0 +1,627 @@
+<div class="sell-page">
+
+  <div class="sell-container">
+
+
+    <!-- ================================================= -->
+    <!-- HEADER -->
+    <!-- ================================================= -->
+
+    <div class="page-header">
+
+      <h1>
+        Sell Your Car
+      </h1>
+
+      <p>
+        Enter your car details and get the best value for your car.
+      </p>
+
+    </div>
+
+
+    <!-- ================================================= -->
+    <!-- FORM CARD -->
+    <!-- ================================================= -->
+
+    <div class="form-card">
+
+
+      <form
+        #sellForm="ngForm"
+        (ngSubmit)="submitForm()"
+      >
+
+
+        <!-- ================================================= -->
+        <!-- SELLER DETAILS -->
+        <!-- ================================================= -->
+
+        <div class="section">
+
+          <h2>
+            Seller Details
+          </h2>
+
+
+          <div class="form-grid">
+
+
+            <!-- NAME -->
+
+            <div class="form-group">
+
+              <label>
+                Name *
+              </label>
+
+              <input
+                type="text"
+                name="sellerName"
+                [(ngModel)]="sellerName"
+                (input)="onNameInput($event)"
+                placeholder="Enter your name"
+                autocomplete="name"
+                required
+              />
+
+              <small>
+                Only letters and spaces are allowed.
+              </small>
+
+            </div>
+
+
+            <!-- MOBILE -->
+
+            <div class="form-group">
+
+              <label>
+                Mobile Number *
+              </label>
+
+              <input
+                type="tel"
+                name="mobile"
+                [(ngModel)]="mobile"
+                (input)="onMobileInput($event)"
+                placeholder="Enter 10 digit mobile number"
+                maxlength="10"
+                inputmode="numeric"
+                required
+              />
+
+              <small>
+                Enter exactly 10 digits.
+              </small>
+
+            </div>
+
+
+            <!-- EMAIL -->
+
+            <div class="form-group full">
+
+              <label>
+                Email
+              </label>
+
+              <input
+                type="email"
+                name="email"
+                [(ngModel)]="email"
+                placeholder="Enter your email"
+                autocomplete="email"
+              />
+
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <!-- ================================================= -->
+        <!-- CAR DETAILS -->
+        <!-- ================================================= -->
+
+        <div class="section">
+
+          <h2>
+            Car Details
+          </h2>
+
+
+          <div class="form-grid">
+
+
+            <!-- BRAND -->
+
+            <div class="form-group">
+
+              <label>
+                Brand *
+              </label>
+
+              <input
+                type="text"
+                name="brand"
+                [(ngModel)]="brand"
+                placeholder="e.g. Maruti"
+                required
+              />
+
+            </div>
+
+
+            <!-- MODEL -->
+
+            <div class="form-group">
+
+              <label>
+                Model *
+              </label>
+
+              <input
+                type="text"
+                name="model"
+                [(ngModel)]="model"
+                placeholder="e.g. Swift"
+                required
+              />
+
+            </div>
+
+
+            <!-- VARIANT -->
+
+            <div class="form-group">
+
+              <label>
+                Variant
+              </label>
+
+              <input
+                type="text"
+                name="variant"
+                [(ngModel)]="variant"
+                placeholder="e.g. VXI"
+              />
+
+            </div>
+
+
+            <!-- YEAR -->
+
+            <div class="form-group">
+
+              <label>
+                Manufacturing Year *
+              </label>
+
+              <input
+                type="number"
+                name="manufacturingYear"
+                [(ngModel)]="manufacturingYear"
+                min="1900"
+                max="2030"
+                placeholder="e.g. 2022"
+                required
+              />
+
+            </div>
+
+
+            <!-- FUEL -->
+
+            <div class="form-group">
+
+              <label>
+                Fuel Type *
+              </label>
+
+              <select
+                name="fuelType"
+                [(ngModel)]="fuelType"
+                required
+              >
+
+                <option value="">
+                  Select Fuel Type
+                </option>
+
+                <option value="Petrol">
+                  Petrol
+                </option>
+
+                <option value="Diesel">
+                  Diesel
+                </option>
+
+                <option value="CNG">
+                  CNG
+                </option>
+
+                <option value="Electric">
+                  Electric
+                </option>
+
+                <option value="Hybrid">
+                  Hybrid
+                </option>
+
+              </select>
+
+            </div>
+
+
+            <!-- TRANSMISSION -->
+
+            <div class="form-group">
+
+              <label>
+                Transmission *
+              </label>
+
+              <select
+                name="transmission"
+                [(ngModel)]="transmission"
+                required
+              >
+
+                <option value="">
+                  Select Transmission
+                </option>
+
+                <option value="Manual">
+                  Manual
+                </option>
+
+                <option value="Automatic">
+                  Automatic
+                </option>
+
+              </select>
+
+            </div>
+
+
+            <!-- KM -->
+
+            <div class="form-group">
+
+              <label>
+                KM Driven
+              </label>
+
+              <input
+                type="number"
+                name="kmDriven"
+                [(ngModel)]="kmDriven"
+                min="0"
+                placeholder="e.g. 45000"
+              />
+
+            </div>
+
+
+            <!-- EXPECTED PRICE -->
+
+            <div class="form-group">
+
+              <label>
+                Expected Price
+              </label>
+
+              <input
+                type="number"
+                name="expectedPrice"
+                [(ngModel)]="expectedPrice"
+                min="0"
+                placeholder="e.g. 550000"
+              />
+
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <!-- ================================================= -->
+        <!-- CAR IMAGES -->
+        <!-- ================================================= -->
+
+        <div class="section">
+
+          <h2>
+            Car Images
+          </h2>
+
+          <p class="section-description">
+            Upload front, back, left and right side images.
+          </p>
+
+
+          <div class="image-grid">
+
+
+            <!-- ================================================= -->
+            <!-- FRONT IMAGE -->
+            <!-- ================================================= -->
+
+            <div class="image-upload-card">
+
+              <h3>
+                Front Image
+              </h3>
+
+
+              @if (frontPreview) {
+
+                <div class="image-preview">
+
+                  <img
+                    [src]="frontPreview"
+                    alt="Front vehicle"
+                  />
+
+                  <button
+                    type="button"
+                    class="remove-button"
+                    (click)="removeImage('front')"
+                  >
+                    Remove
+                  </button>
+
+                </div>
+
+              } @else {
+
+                <label class="upload-box">
+
+                  <input
+                    type="file"
+                    accept="image/jpeg,image/jpg,image/png,image/webp"
+                    (change)="onFileSelected($event, 'front')"
+                  />
+
+                  <div class="camera-icon">
+                    📷
+                  </div>
+
+                  <div class="upload-title">
+                    Click to upload image
+                  </div>
+
+                  <div class="upload-info">
+                    JPG, JPEG, PNG — Maximum 5 MB
+                  </div>
+
+                </label>
+
+              }
+
+            </div>
+
+
+            <!-- ================================================= -->
+            <!-- BACK IMAGE -->
+            <!-- ================================================= -->
+
+            <div class="image-upload-card">
+
+              <h3>
+                Back Image
+              </h3>
+
+
+              @if (backPreview) {
+
+                <div class="image-preview">
+
+                  <img
+                    [src]="backPreview"
+                    alt="Back vehicle"
+                  />
+
+                  <button
+                    type="button"
+                    class="remove-button"
+                    (click)="removeImage('back')"
+                  >
+                    Remove
+                  </button>
+
+                </div>
+
+              } @else {
+
+                <label class="upload-box">
+
+                  <input
+                    type="file"
+                    accept="image/jpeg,image/jpg,image/png,image/webp"
+                    (change)="onFileSelected($event, 'back')"
+                  />
+
+                  <div class="camera-icon">
+                    📷
+                  </div>
+
+                  <div class="upload-title">
+                    Click to upload image
+                  </div>
+
+                  <div class="upload-info">
+                    JPG, JPEG, PNG — Maximum 5 MB
+                  </div>
+
+                </label>
+
+              }
+
+            </div>
+
+
+            <!-- ================================================= -->
+            <!-- LEFT IMAGE -->
+            <!-- ================================================= -->
+
+            <div class="image-upload-card">
+
+              <h3>
+                Left Side Image
+              </h3>
+
+
+              @if (leftPreview) {
+
+                <div class="image-preview">
+
+                  <img
+                    [src]="leftPreview"
+                    alt="Left vehicle"
+                  />
+
+                  <button
+                    type="button"
+                    class="remove-button"
+                    (click)="removeImage('left')"
+                  >
+                    Remove
+                  </button>
+
+                </div>
+
+              } @else {
+
+                <label class="upload-box">
+
+                  <input
+                    type="file"
+                    accept="image/jpeg,image/jpg,image/png,image/webp"
+                    (change)="onFileSelected($event, 'left')"
+                  />
+
+                  <div class="camera-icon">
+                    📷
+                  </div>
+
+                  <div class="upload-title">
+                    Click to upload image
+                  </div>
+
+                  <div class="upload-info">
+                    JPG, JPEG, PNG — Maximum 5 MB
+                  </div>
+
+                </label>
+
+              }
+
+            </div>
+
+
+            <!-- ================================================= -->
+            <!-- RIGHT IMAGE -->
+            <!-- ================================================= -->
+
+            <div class="image-upload-card">
+
+              <h3>
+                Right Side Image
+              </h3>
+
+
+              @if (rightPreview) {
+
+                <div class="image-preview">
+
+                  <img
+                    [src]="rightPreview"
+                    alt="Right vehicle"
+                  />
+
+                  <button
+                    type="button"
+                    class="remove-button"
+                    (click)="removeImage('right')"
+                  >
+                    Remove
+                  </button>
+
+                </div>
+
+              } @else {
+
+                <label class="upload-box">
+
+                  <input
+                    type="file"
+                    accept="image/jpeg,image/jpg,image/png,image/webp"
+                    (change)="onFileSelected($event, 'right')"
+                  />
+
+                  <div class="camera-icon">
+                    📷
+                  </div>
+
+                  <div class="upload-title">
+                    Click to upload image
+                  </div>
+
+                  <div class="upload-info">
+                    JPG, JPEG, PNG — Maximum 5 MB
+                  </div>
+
+                </label>
+
+              }
+
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <!-- ================================================= -->
+        <!-- SUBMIT -->
+        <!-- ================================================= -->
+
+        <div class="submit-section">
+
+          <button
+            type="submit"
+            class="submit-button"
+            [disabled]="submitting"
+          >
+
+            @if (submitting) {
+
+              Submitting...
+
+            } @else {
+
+              Submit Sell Car Request
+
+            }
+
+          </button>
+
+
+          <p class="submit-note">
+            Our team will contact you after reviewing your sell car request.
+          </p>
+
+        </div>
+
+
+      </form>
+
+    </div>
+
+  </div>
+
+</div>

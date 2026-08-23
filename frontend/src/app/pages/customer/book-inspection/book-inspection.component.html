@@ -1,0 +1,424 @@
+<div class="min-h-screen bg-gray-100 py-10 px-4">
+
+  <!-- =====================================================
+       PAGE HEADER
+       ===================================================== -->
+
+  <div class="max-w-5xl mx-auto text-center mb-8">
+
+    <h1 class="text-3xl md:text-4xl font-bold text-gray-900">
+      Book Inspection
+    </h1>
+
+    <p class="mt-2 text-gray-600">
+      Book a professional car inspection at your preferred
+      date and time.
+    </p>
+
+  </div>
+
+
+  <!-- =====================================================
+       FORM CONTAINER
+       ===================================================== -->
+
+  <div
+    class="max-w-5xl mx-auto bg-white rounded-2xl shadow-lg p-6 md:p-10"
+  >
+
+    <form
+      (ngSubmit)="submitBooking()"
+      #bookingForm="ngForm"
+      novalidate
+    >
+
+
+      <!-- =================================================
+           ERROR MESSAGE
+           ================================================= -->
+
+      <div
+        *ngIf="errorMessage"
+        class="mb-6 rounded-lg border border-red-200 bg-red-50 px-5 py-4 text-red-700"
+      >
+
+        <div class="font-semibold">
+          {{ errorMessage }}
+        </div>
+
+      </div>
+
+
+      <!-- =================================================
+           CUSTOMER DETAILS
+           ================================================= -->
+
+      <div class="mb-8">
+
+        <h2
+          class="text-xl font-bold text-gray-900 mb-5"
+        >
+          Customer Details
+        </h2>
+
+
+        <div
+          class="grid grid-cols-1 md:grid-cols-2 gap-5"
+        >
+
+
+          <!-- NAME -->
+
+          <div>
+
+            <label
+              class="block text-sm font-semibold text-gray-700 mb-2"
+            >
+              Name *
+            </label>
+
+            <input
+              type="text"
+              name="name"
+              [(ngModel)]="form.name"
+              (input)="onNameInput($event)"
+              placeholder="Enter your name"
+              autocomplete="name"
+              required
+              class="w-full rounded-lg border border-gray-300 px-4 py-3 text-gray-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+            />
+
+            <p class="mt-1 text-xs text-gray-500">
+              Only letters and spaces are allowed.
+            </p>
+
+          </div>
+
+
+          <!-- MOBILE -->
+
+          <div>
+
+            <label
+              class="block text-sm font-semibold text-gray-700 mb-2"
+            >
+              Mobile Number *
+            </label>
+
+            <input
+              type="tel"
+              name="mobile"
+              [(ngModel)]="form.mobile"
+              (input)="onMobileInput($event)"
+              placeholder="Enter 10 digit mobile number"
+              maxlength="10"
+              inputmode="numeric"
+              autocomplete="tel"
+              required
+              class="w-full rounded-lg border border-gray-300 px-4 py-3 text-gray-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+            />
+
+            <p class="mt-1 text-xs text-gray-500">
+              Enter exactly 10 digits.
+            </p>
+
+          </div>
+
+
+          <!-- EMAIL -->
+
+          <div class="md:col-span-2">
+
+            <label
+              class="block text-sm font-semibold text-gray-700 mb-2"
+            >
+              Email *
+            </label>
+
+            <input
+              type="email"
+              name="email"
+              [(ngModel)]="form.email"
+              placeholder="Enter your email address"
+              autocomplete="email"
+              required
+              class="w-full rounded-lg border border-gray-300 px-4 py-3 text-gray-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+            />
+
+          </div>
+
+
+          <!-- CITY -->
+
+          <div>
+
+            <label
+              class="block text-sm font-semibold text-gray-700 mb-2"
+            >
+              City *
+            </label>
+
+            <input
+              type="text"
+              name="city"
+              [(ngModel)]="form.city"
+              placeholder="Enter your city"
+              required
+              class="w-full rounded-lg border border-gray-300 px-4 py-3 text-gray-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+            />
+
+          </div>
+
+
+          <!-- ADDRESS -->
+
+          <div>
+
+            <label
+              class="block text-sm font-semibold text-gray-700 mb-2"
+            >
+              Address *
+            </label>
+
+            <input
+              type="text"
+              name="address"
+              [(ngModel)]="form.address"
+              placeholder="Enter your address"
+              autocomplete="street-address"
+              required
+              class="w-full rounded-lg border border-gray-300 px-4 py-3 text-gray-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+            />
+
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <!-- =================================================
+           DIVIDER
+           ================================================= -->
+
+      <div
+        class="border-t border-gray-200 my-8"
+      ></div>
+
+
+      <!-- =================================================
+           VEHICLE DETAILS
+           ================================================= -->
+
+      <div class="mb-8">
+
+        <h2
+          class="text-xl font-bold text-gray-900 mb-5"
+        >
+          Vehicle Details
+        </h2>
+
+
+        <div
+          class="grid grid-cols-1 md:grid-cols-2 gap-5"
+        >
+
+
+          <!-- VEHICLE NUMBER -->
+
+          <div>
+
+            <label
+              class="block text-sm font-semibold text-gray-700 mb-2"
+            >
+              Vehicle Number *
+            </label>
+
+            <input
+              type="text"
+              name="vehicleNumber"
+              [(ngModel)]="form.vehicleNumber"
+              (input)="onVehicleNumberInput($event)"
+              placeholder="Example: DL01AB1234"
+              required
+              class="w-full rounded-lg border border-gray-300 px-4 py-3 uppercase text-gray-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+            />
+
+            <p class="mt-1 text-xs text-gray-500">
+              Enter your vehicle registration number.
+            </p>
+
+          </div>
+
+
+          <!-- BRAND -->
+
+          <div>
+
+            <label
+              class="block text-sm font-semibold text-gray-700 mb-2"
+            >
+              Vehicle Brand *
+            </label>
+
+            <input
+              type="text"
+              name="brand"
+              [(ngModel)]="form.brand"
+              placeholder="Example: Maruti Suzuki"
+              required
+              class="w-full rounded-lg border border-gray-300 px-4 py-3 text-gray-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+            />
+
+          </div>
+
+
+          <!-- MODEL -->
+
+          <div>
+
+            <label
+              class="block text-sm font-semibold text-gray-700 mb-2"
+            >
+              Vehicle Model *
+            </label>
+
+            <input
+              type="text"
+              name="model"
+              [(ngModel)]="form.model"
+              placeholder="Example: Swift"
+              required
+              class="w-full rounded-lg border border-gray-300 px-4 py-3 text-gray-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+            />
+
+          </div>
+
+
+          <!-- =================================================
+               BOOKING DATE
+               ================================================= -->
+
+          <div>
+
+            <label
+              class="block text-sm font-semibold text-gray-700 mb-2"
+            >
+              Inspection Date *
+            </label>
+
+            <input
+              type="date"
+              name="bookingDate"
+              [(ngModel)]="form.bookingDate"
+              [min]="today"
+              required
+              class="w-full rounded-lg border border-gray-300 px-4 py-3 text-gray-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+            />
+
+          </div>
+
+
+          <!-- =================================================
+               TIME SLOT
+               ================================================= -->
+
+          <div class="md:col-span-2">
+
+            <label
+              class="block text-sm font-semibold text-gray-700 mb-2"
+            >
+              Preferred Time Slot *
+            </label>
+
+            <select
+              name="timeSlot"
+              [(ngModel)]="form.timeSlot"
+              required
+              class="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+            >
+
+              <option
+                value=""
+                disabled
+              >
+                Select time slot
+              </option>
+
+              <option value="09:00 AM - 11:00 AM">
+                09:00 AM - 11:00 AM
+              </option>
+
+              <option value="11:00 AM - 01:00 PM">
+                11:00 AM - 01:00 PM
+              </option>
+
+              <option value="01:00 PM - 03:00 PM">
+                01:00 PM - 03:00 PM
+              </option>
+
+              <option value="03:00 PM - 05:00 PM">
+                03:00 PM - 05:00 PM
+              </option>
+
+              <option value="05:00 PM - 07:00 PM">
+                05:00 PM - 07:00 PM
+              </option>
+
+            </select>
+
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <!-- =================================================
+           SUBMIT BUTTON
+           ================================================= -->
+
+      <div
+        class="border-t border-gray-200 pt-7 flex flex-col sm:flex-row gap-4"
+      >
+
+        <!-- RESET -->
+
+        <button
+          type="button"
+          (click)="resetForm()"
+          [disabled]="submitting"
+          class="w-full sm:w-auto rounded-lg border border-gray-300 px-7 py-3 font-semibold text-gray-700 transition hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          Reset
+        </button>
+
+
+        <!-- SUBMIT -->
+
+        <button
+          type="submit"
+          [disabled]="submitting"
+          class="w-full sm:flex-1 rounded-lg bg-blue-600 px-7 py-3 font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+        >
+
+          <span *ngIf="!submitting">
+            Book Inspection
+          </span>
+
+          <span
+            *ngIf="submitting"
+          >
+            Submitting...
+          </span>
+
+        </button>
+
+      </div>
+
+
+    </form>
+
+  </div>
+
+</div>

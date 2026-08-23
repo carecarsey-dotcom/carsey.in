@@ -1,0 +1,414 @@
+<!-- =====================================================
+     ABOUT HERO
+     ===================================================== -->
+
+<section class="about-hero">
+
+  <div class="hero-content">
+
+    <span class="hero-badge">
+      ABOUT CARSEY.IN
+    </span>
+
+    <h1>
+      A Smarter Way to
+      <span>Buy, Sell & Exchange Cars</span>
+    </h1>
+
+    <p>
+      Carsey.in is a customer-focused used-car marketplace
+      built to make buying, selling, exchanging and inspecting
+      vehicles easier, clearer and more convenient.
+    </p>
+
+
+    <!-- =================================================
+         HERO BUTTONS
+         ================================================= -->
+
+    <div class="hero-buttons">
+
+      <!-- BUY CAR -->
+
+      <a
+        routerLink="/buy-car"
+        class="cta-button primary"
+      >
+        Explore Cars
+      </a>
+
+
+      <!-- SELL CAR -->
+
+      <a
+        routerLink="/sell-car"
+        class="cta-button secondary"
+      >
+        Sell Your Car
+      </a>
+
+    </div>
+
+  </div>
+
+</section>
+
+
+
+<!-- =====================================================
+     INTRODUCTION
+     ===================================================== -->
+
+<section class="about-intro">
+
+  <div class="section-container">
+
+    <div class="intro-grid">
+
+      <div class="intro-content">
+
+        <span class="section-label">
+          WHO WE ARE
+        </span>
+
+        <h2>
+          Making the Used-Car Experience
+          <span>Simple & Transparent</span>
+        </h2>
+
+        <p>
+          Carsey.in is designed around one simple idea:
+          buying or selling a used car should not feel complicated.
+        </p>
+
+        <p>
+          Our platform brings together important vehicle services
+          in one place. Customers can explore cars, sell their
+          existing vehicle, request an upgrade or exchange,
+          book inspections and access vehicle-related information
+          through a simple digital experience.
+        </p>
+
+        <p>
+          We focus on providing useful information, transparent
+          processes and a smooth customer journey from the first
+          enquiry to the next step.
+        </p>
+
+      </div>
+
+
+      <div class="intro-card">
+
+        <div class="card-icon">
+          🚘
+        </div>
+
+        <h3>
+          Built for Better Car Decisions
+        </h3>
+
+        <p>
+          Whether you are looking for your next car or planning
+          to sell your current vehicle, Carsey.in helps you
+          take the next step with greater confidence.
+        </p>
+
+        <div class="card-line"></div>
+
+        <strong>
+          Buy. Sell. Exchange. Inspect.
+        </strong>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</section>
+
+
+
+<!-- =====================================================
+     WHY CARSEY
+     ===================================================== -->
+
+<section class="why-section">
+
+  <div class="section-container">
+
+    <div class="section-heading">
+
+      <span class="section-label">
+        WHY CARSEY.IN
+      </span>
+
+      <h2>
+        Built Around
+        <span>Trust & Convenience</span>
+      </h2>
+
+      <p>
+        We are creating a vehicle marketplace where customers
+        can access essential services without unnecessary complexity.
+      </p>
+
+    </div>
+
+
+    <div class="feature-grid">
+
+      <div
+        class="feature-card"
+        *ngFor="let feature of features"
+      >
+
+        <div class="feature-icon">
+          {{ feature.icon }}
+        </div>
+
+        <h3>
+          {{ feature.title }}
+        </h3>
+
+        <p>
+          {{ feature.description }}
+        </p>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</section>
+
+
+
+<!-- =====================================================
+     SERVICES
+     ===================================================== -->
+
+<section class="services-section">
+
+  <div class="section-container">
+
+    <div class="section-heading">
+
+      <span class="section-label">
+        WHAT WE OFFER
+      </span>
+
+      <h2>
+        Everything You Need
+        <span>Under One Roof</span>
+      </h2>
+
+      <p>
+        Carsey.in brings multiple vehicle services together
+        to make your car journey easier.
+      </p>
+
+    </div>
+
+
+    <div class="service-grid">
+
+      <div
+        class="service-card"
+        *ngFor="let service of services"
+      >
+
+        <div class="service-icon">
+          {{ service.icon }}
+        </div>
+
+        <div>
+
+          <h3>
+            {{ service.title }}
+          </h3>
+
+          <p>
+            {{ service.description }}
+          </p>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</section>
+
+
+
+<!-- =====================================================
+     HOW IT WORKS
+     ===================================================== -->
+
+<section class="process-section">
+
+  <div class="section-container">
+
+    <div class="section-heading">
+
+      <span class="section-label">
+        HOW CARSEY WORKS
+      </span>
+
+      <h2>
+        A Simple
+        <span>Four-Step Journey</span>
+      </h2>
+
+    </div>
+
+
+    <div class="process-grid">
+
+      <div
+        class="process-card"
+        *ngFor="let step of steps"
+      >
+
+        <div class="step-number">
+          {{ step.number }}
+        </div>
+
+        <h3>
+          {{ step.title }}
+        </h3>
+
+        <p>
+          {{ step.description }}
+        </p>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</section>
+
+
+
+<!-- =====================================================
+     MISSION
+     ===================================================== -->
+
+<section class="mission-section">
+
+  <div class="section-container">
+
+    <div class="mission-box">
+
+      <div class="mission-content">
+
+        <span class="section-label">
+          OUR MISSION
+        </span>
+
+        <h2>
+          Changing the Way
+          <span>People Experience Used Cars</span>
+        </h2>
+
+        <p>
+          Our goal is to create a reliable and easy-to-use
+          digital platform for customers looking to buy,
+          sell, exchange or inspect vehicles.
+        </p>
+
+        <p>
+          We believe better information and a transparent
+          process can help customers make better vehicle decisions.
+        </p>
+
+      </div>
+
+
+      <div class="mission-stats">
+
+        <div class="stat">
+          <strong>01</strong>
+          <span>Customer First</span>
+        </div>
+
+        <div class="stat">
+          <strong>02</strong>
+          <span>Transparent Process</span>
+        </div>
+
+        <div class="stat">
+          <strong>03</strong>
+          <span>Vehicle Focused</span>
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</section>
+
+
+
+<!-- =====================================================
+     CTA
+     ===================================================== -->
+
+<section class="about-cta">
+
+  <div class="cta-content">
+
+    <span class="section-label">
+      START YOUR JOURNEY
+    </span>
+
+    <h2>
+      Ready to Find Your
+      <span>Next Car?</span>
+    </h2>
+
+    <p>
+      Explore vehicles, sell your current car,
+      upgrade through exchange or book an inspection.
+    </p>
+
+
+    <!-- =================================================
+         BOTTOM CTA BUTTONS
+         ================================================= -->
+
+    <div class="cta-buttons">
+
+      <!-- BUY CAR -->
+
+      <a
+        routerLink="/buy-car"
+        class="cta-primary"
+      >
+        Explore Cars
+      </a>
+
+
+      <!-- EXCHANGE -->
+
+      <a
+        routerLink="/exchange"
+        class="cta-secondary"
+      >
+        Upgrade / Exchange
+      </a>
+
+    </div>
+
+  </div>
+
+</section>

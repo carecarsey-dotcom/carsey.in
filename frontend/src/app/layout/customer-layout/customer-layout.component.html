@@ -1,0 +1,504 @@
+<div
+  class="min-h-screen bg-white text-slate-900 transition-colors duration-300 dark:bg-[#080b14] dark:text-white"
+>
+
+  <!-- ===================================================== -->
+  <!-- NAVBAR -->
+  <!-- ===================================================== -->
+
+  <header
+    class="sticky top-0 z-50 border-b border-pink-100 bg-white/95 backdrop-blur-xl
+           dark:border-white/10 dark:bg-[#090c16]/95"
+  >
+    <div
+      class="flex h-16 w-full items-center justify-between px-4 sm:px-6 lg:px-10 2xl:px-16"
+    >
+
+      <!-- BRAND LOGO -->
+
+      <a
+        routerLink="/"
+        (click)="closeMobileMenu()"
+        class="flex items-center gap-2"
+      >
+        <div
+          class="flex h-10 w-10 items-center justify-center rounded-xl
+                 bg-gradient-to-br from-pink-500 to-rose-600
+                 text-xl font-black text-white
+                 shadow-lg shadow-pink-500/25"
+        >
+          C
+        </div>
+
+        <span
+          class="text-2xl font-black tracking-tight text-slate-900 dark:text-white"
+        >
+          Carsey<span class="text-pink-500">.in</span>
+        </span>
+      </a>
+
+
+      <!-- ================================================= -->
+      <!-- DESKTOP NAVIGATION -->
+      <!-- ================================================= -->
+
+      <nav class="hidden items-center gap-5 lg:flex xl:gap-7">
+
+        <a
+          routerLink="/buy-car"
+          routerLinkActive="text-pink-500"
+          [routerLinkActiveOptions]="{ exact: true }"
+          class="font-semibold text-slate-700 transition-colors duration-200
+                 hover:text-pink-500 dark:text-slate-300"
+        >
+          Buy Car
+        </a>
+
+        <a
+          routerLink="/sell-car"
+          routerLinkActive="text-pink-500"
+          class="font-semibold text-slate-700 transition-colors duration-200
+                 hover:text-pink-500 dark:text-slate-300"
+        >
+          Sell Car
+        </a>
+
+        <a
+          routerLink="/exchange"
+          routerLinkActive="text-pink-500"
+          class="font-semibold text-slate-700 transition-colors duration-200
+                 hover:text-pink-500 dark:text-slate-300"
+        >
+          Upgrade / Exchange
+        </a>
+
+        <a
+          routerLink="/book-inspection"
+          routerLinkActive="text-pink-500"
+          class="font-semibold text-slate-700 transition-colors duration-200
+                 hover:text-pink-500 dark:text-slate-300"
+        >
+          Book Inspection
+        </a>
+
+        <a
+          routerLink="/about"
+          routerLinkActive="text-pink-500"
+          class="font-semibold text-slate-700 transition-colors duration-200
+                 hover:text-pink-500 dark:text-slate-300"
+        >
+          About
+        </a>
+
+      </nav>
+
+
+      <!-- ================================================= -->
+      <!-- RIGHT SIDE -->
+      <!-- ================================================= -->
+
+      <div class="flex items-center gap-4">
+
+        <!-- DARK MODE TOGGLE -->
+
+        <!-- <button
+          type="button"
+          (click)="toggleDarkMode()"
+          class="relative flex h-10 w-20 items-center rounded-full
+                 border border-pink-200 bg-pink-50 p-1
+                 transition-colors
+                 hover:border-pink-300
+                 dark:border-white/10 dark:bg-slate-800"
+          [attr.aria-label]="
+            darkMode()
+              ? 'Switch to light mode'
+              : 'Switch to dark mode'
+          "
+        >
+
+          <span
+            class="flex h-8 w-8 items-center justify-center rounded-full
+                   bg-white text-sm shadow-md
+                   transition-transform duration-300
+                   dark:bg-slate-700"
+            [class.translate-x-10]="darkMode()"
+          >
+            @if (darkMode()) {
+              🌙
+            } @else {
+              ☀️
+            }
+          </span>
+
+        </button>
+ -->
+
+        <!-- MOBILE MENU BUTTON -->
+
+        <button
+          type="button"
+          (click)="toggleMobileMenu()"
+          class="flex h-10 w-10 items-center justify-center rounded-lg
+                 border border-pink-100 text-xl text-slate-700
+                 transition hover:border-pink-300 hover:text-pink-500
+                 lg:hidden
+                 dark:border-white/10 dark:text-white"
+        >
+
+          @if (mobileMenuOpen()) {
+            ✕
+          } @else {
+            ☰
+          }
+
+        </button>
+
+      </div>
+
+    </div>
+
+
+    <!-- ================================================= -->
+    <!-- MOBILE MENU -->
+    <!-- ================================================= -->
+
+    @if (mobileMenuOpen()) {
+
+      <div
+        class="border-t border-pink-100 bg-white px-5 py-5 lg:hidden
+               dark:border-white/10 dark:bg-[#0d111d]"
+      >
+
+        <nav class="flex flex-col gap-2">
+
+          <a
+            routerLink="/"
+            (click)="closeMobileMenu()"
+            class="rounded-lg px-4 py-3 font-semibold
+                   text-slate-700 transition
+                   hover:bg-pink-50 hover:text-pink-500
+                   dark:text-white dark:hover:bg-white/5"
+          >
+            Home
+          </a>
+
+          <a
+            routerLink="/buy-car"
+            (click)="closeMobileMenu()"
+            class="rounded-lg px-4 py-3 font-semibold
+                   text-slate-700 transition
+                   hover:bg-pink-50 hover:text-pink-500
+                   dark:text-white dark:hover:bg-white/5"
+          >
+            Buy Car
+          </a>
+
+          <a
+            routerLink="/sell-car"
+            (click)="closeMobileMenu()"
+            class="rounded-lg px-4 py-3 font-semibold
+                   text-slate-700 transition
+                   hover:bg-pink-50 hover:text-pink-500
+                   dark:text-white dark:hover:bg-white/5"
+          >
+            Sell Car
+          </a>
+
+          <a
+            routerLink="/exchange"
+            (click)="closeMobileMenu()"
+            class="rounded-lg px-4 py-3 font-semibold
+                   text-slate-700 transition
+                   hover:bg-pink-50 hover:text-pink-500
+                   dark:text-white dark:hover:bg-white/5"
+          >
+            Upgrade / Exchange
+          </a>
+
+          <a
+            routerLink="/book-inspection"
+            (click)="closeMobileMenu()"
+            class="rounded-lg px-4 py-3 font-semibold
+                   text-slate-700 transition
+                   hover:bg-pink-50 hover:text-pink-500
+                   dark:text-white dark:hover:bg-white/5"
+          >
+            Book Inspection
+          </a>
+
+          <a
+            routerLink="/about"
+            (click)="closeMobileMenu()"
+            class="rounded-lg px-4 py-3 font-semibold
+                   text-slate-700 transition
+                   hover:bg-pink-50 hover:text-pink-500
+                   dark:text-white dark:hover:bg-white/5"
+          >
+            About
+          </a>
+
+        </nav>
+
+      </div>
+
+    }
+
+  </header>
+
+
+  <!-- ===================================================== -->
+  <!-- MAIN CONTENT -->
+  <!-- ===================================================== -->
+
+  <main>
+    <router-outlet></router-outlet>
+  </main>
+
+
+  <!-- ===================================================== -->
+  <!-- FOOTER -->
+  <!-- ===================================================== -->
+
+  <footer
+    class="border-t border-pink-100 bg-white text-slate-600
+           dark:border-white/10 dark:bg-[#0d111d] dark:text-slate-400"
+  >
+
+    <div
+      class="w-full px-4 py-12 sm:px-6 lg:px-10 2xl:px-16"
+    >
+
+      <div
+        class="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4"
+      >
+
+        <!-- ================================================= -->
+        <!-- BRAND -->
+        <!-- ================================================= -->
+
+        <div>
+
+          <h2
+            class="text-2xl font-black text-pink-500"
+          >
+            Carsey.in
+          </h2>
+
+          <p
+            class="mt-4 max-w-sm leading-7 text-slate-600
+                   dark:text-slate-400"
+          >
+            India's most transparent used-car marketplace.
+            Every car is professionally inspected, scored,
+            and certified before listing.
+          </p>
+
+
+          <!-- BADGES -->
+
+          <div class="mt-6 flex flex-wrap gap-2">
+
+            <span
+              class="rounded-full border border-pink-100
+                     bg-pink-50 px-3 py-2 text-xs font-semibold
+                     text-pink-600"
+            >
+              🛡 Certified
+            </span>
+
+            <span
+              class="rounded-full border border-pink-100
+                     bg-pink-50 px-3 py-2 text-xs font-semibold
+                     text-pink-600"
+            >
+              🔍 9-Point Inspection
+            </span>
+
+            <span
+              class="rounded-full border border-pink-100
+                     bg-pink-50 px-3 py-2 text-xs font-semibold
+                     text-pink-600"
+            >
+              📋 Transparent Reports
+            </span>
+
+          </div>
+
+        </div>
+
+
+        <!-- ================================================= -->
+        <!-- EXPLORE -->
+        <!-- ================================================= -->
+
+        <div>
+
+          <h3
+            class="mb-5 text-sm font-bold uppercase tracking-wider
+                   text-pink-500"
+          >
+            Explore
+          </h3>
+
+          <div class="flex flex-col gap-3">
+
+            <a
+              routerLink="/buy-car"
+              class="transition-colors hover:text-pink-500"
+            >
+              Browse Cars
+            </a>
+
+            <a
+              routerLink="/buy-car"
+              class="transition-colors hover:text-pink-500"
+            >
+              Petrol Cars
+            </a>
+
+            <a
+              routerLink="/buy-car"
+              class="transition-colors hover:text-pink-500"
+            >
+              Diesel Cars
+            </a>
+
+            <a
+              routerLink="/buy-car"
+              class="transition-colors hover:text-pink-500"
+            >
+              Electric Cars
+            </a>
+
+            <a
+              routerLink="/buy-car"
+              class="transition-colors hover:text-pink-500"
+            >
+              Budget under ₹5L
+            </a>
+
+          </div>
+
+        </div>
+
+
+        <!-- ================================================= -->
+        <!-- COMPANY -->
+        <!-- ================================================= -->
+
+        <div>
+
+          <h3
+            class="mb-5 text-sm font-bold uppercase tracking-wider
+                   text-pink-500"
+          >
+            Company
+          </h3>
+
+          <div class="flex flex-col gap-3">
+
+            <a
+              routerLink="/about"
+              class="transition-colors hover:text-pink-500"
+            >
+              About Us
+            </a>
+
+            <a
+              routerLink="/about"
+              class="transition-colors hover:text-pink-500"
+            >
+              How It Works
+            </a>
+
+            <a
+              routerLink="/about"
+              class="transition-colors hover:text-pink-500"
+            >
+              Inspection Process
+            </a>
+
+            <a
+              routerLink="/about"
+              class="transition-colors hover:text-pink-500"
+            >
+              Contact Us
+            </a>
+
+            <a
+              routerLink="/login"
+              class="transition-colors hover:text-pink-500"
+            >
+              Admin Portal
+            </a>
+
+          </div>
+
+        </div>
+
+
+        <!-- ================================================= -->
+        <!-- SERVICES -->
+        <!-- ================================================= -->
+
+        <div>
+
+          <h3
+            class="mb-5 text-sm font-bold uppercase tracking-wider
+                   text-pink-500"
+          >
+            Services
+          </h3>
+
+          <div class="flex flex-col gap-3">
+
+            <a
+              routerLink="/sell-car"
+              class="transition-colors hover:text-pink-500"
+            >
+              Sell Your Car
+            </a>
+
+            <a
+              routerLink="/exchange"
+              class="transition-colors hover:text-pink-500"
+            >
+              Upgrade / Exchange
+            </a>
+
+            <a
+              routerLink="/book-inspection"
+              class="transition-colors hover:text-pink-500"
+            >
+              Book Inspection
+            </a>
+
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <!-- ================================================= -->
+      <!-- COPYRIGHT -->
+      <!-- ================================================= -->
+
+      <div
+        class="mt-12 border-t border-pink-100 pt-7 text-center
+               dark:border-white/10"
+      >
+
+        <p
+          class="text-sm text-slate-500 dark:text-slate-400"
+        >
+          © 2026 Carsey.in — Buy smarter, drive better.
+        </p>
+
+      </div>
+
+    </div>
+
+  </footer>
+
+</div>

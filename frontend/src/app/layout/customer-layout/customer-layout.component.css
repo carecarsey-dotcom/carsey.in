@@ -1,0 +1,60 @@
+:host {
+  display: block;
+  width: 100%;
+}
+
+
+/* =====================================================
+   NAVBAR TRANSPARENT AT TOP
+   ===================================================== */
+
+header {
+  transition:
+    background-color 0.3s ease,
+    box-shadow 0.3s ease,
+    border-color 0.3s ease,
+    backdrop-filter 0.3s ease;
+}
+
+
+/* =====================================================
+   95% WHITE BACKGROUND AFTER SCROLL
+   ===================================================== */
+
+.bg-white-95 {
+  background-color: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+
+/* =====================================================
+   SMOOTH PAGE
+   ===================================================== */
+
+html {
+  scroll-behavior: smooth;
+}
+
+
+/* =====================================================
+   FOOTER LINKS
+   ===================================================== */
+
+footer a {
+  cursor: pointer;
+}
+
+
+/* =====================================================
+   MOBILE
+   ===================================================== */
+
+@media (max-width: 1023px) {
+
+  header {
+    backdrop-filter: blur(0);
+    -webkit-backdrop-filter: blur(0);
+  }
+
+}
