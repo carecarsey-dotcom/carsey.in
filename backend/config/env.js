@@ -1,6 +1,5 @@
 require("dotenv").config();
 
-
 // ======================================================
 // ENVIRONMENT CONFIGURATION
 // ======================================================
@@ -12,30 +11,40 @@ const env = {
     // ==================================================
 
     PORT:
-        process.env.PORT,
+        process.env.PORT || 5000,
 
     NODE_ENV:
-        process.env.NODE_ENV,
+        process.env.NODE_ENV || "development",
 
 
     // ==================================================
     // DATABASE
     // ==================================================
+    // Local .env ke DB_* variables support honge.
+    // Railway MySQL ke MYSQL* variables bhi support honge.
+    // Railway par MYSQL* automatically available hain.
+    // ==================================================
 
     DB_HOST:
-        process.env.DB_HOST,
+        process.env.DB_HOST ||
+        process.env.MYSQLHOST,
 
     DB_PORT:
-        process.env.DB_PORT,
+        process.env.DB_PORT ||
+        process.env.MYSQLPORT ||
+        3306,
 
     DB_USER:
-        process.env.DB_USER,
+        process.env.DB_USER ||
+        process.env.MYSQLUSER,
 
     DB_PASSWORD:
-        process.env.DB_PASSWORD,
+        process.env.DB_PASSWORD ||
+        process.env.MYSQLPASSWORD,
 
     DB_NAME:
-        process.env.DB_NAME,
+        process.env.DB_NAME ||
+        process.env.MYSQLDATABASE,
 
 
     // ==================================================
@@ -46,7 +55,7 @@ const env = {
         process.env.JWT_SECRET,
 
     JWT_EXPIRES_IN:
-        process.env.JWT_EXPIRES_IN,
+        process.env.JWT_EXPIRES_IN || "1d",
 
 
     // ==================================================
@@ -62,7 +71,7 @@ const env = {
     // ==================================================
 
     UPLOAD_PATH:
-        process.env.UPLOAD_PATH,
+        process.env.UPLOAD_PATH || "uploads",
 
 
     // ==================================================
@@ -73,7 +82,7 @@ const env = {
         process.env.MAIL_HOST,
 
     MAIL_PORT:
-        process.env.MAIL_PORT,
+        process.env.MAIL_PORT || 587,
 
     MAIL_USER:
         process.env.MAIL_USER,
@@ -82,6 +91,44 @@ const env = {
         process.env.MAIL_PASS
 
 };
+
+
+// ======================================================
+// DATABASE CONFIGURATION CHECK
+// ======================================================
+
+console.log("======================================");
+console.log("CARSEY DATABASE CONFIGURATION");
+console.log("======================================");
+
+console.log(
+    "DB_HOST:",
+    env.DB_HOST || "NOT SET"
+);
+
+console.log(
+    "DB_PORT:",
+    env.DB_PORT || "NOT SET"
+);
+
+console.log(
+    "DB_USER:",
+    env.DB_USER || "NOT SET"
+);
+
+console.log(
+    "DB_NAME:",
+    env.DB_NAME || "NOT SET"
+);
+
+console.log(
+    "DB_PASSWORD:",
+    env.DB_PASSWORD
+        ? "SET"
+        : "NOT SET"
+);
+
+console.log("======================================");
 
 
 // ======================================================
