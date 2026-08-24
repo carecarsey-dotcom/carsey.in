@@ -1,48 +1,43 @@
-const nodemailer = require("nodemailer");
+const fs = require("fs");
 
 const env = require("../config/env");
 
+const { Resend } = require("resend");
 
 // ======================================================
-// CREATE MAIL TRANSPORTER
+// CREATE RESEND CLIENT
 // ======================================================
 
-const transporter =
-    nodemailer.createTransport({
-        host:
-            env.MAIL_HOST,
-
-        port:
-            Number(env.MAIL_PORT),
-
-        secure:
-            false,
-
-        family:
-            4,
-
-        auth: {
-            user:
-                env.MAIL_USER,
-
-            pass:
-                env.MAIL_PASS
-        }
-    });
-
+const resend = new Resend(
+    env.RESEND_API_KEY
+);
 
 // ======================================================
-// VERIFY EMAIL CONNECTION
+// VERIFY EMAIL CONFIGURATION
+// ======================================================
+//
+// server.js isi function ko call kar raha hai.
+//
+// Resend SMTP connection ki zarurat nahi hai.
+// Resend HTTPS API ke through email bhejta hai.
 // ======================================================
 
 const verifyEmailConnection = async () => {
-
     try {
+        if (!env.RESEND_API_KEY) {
+            throw new Error(
+                "RESEND_API_KEY is not configured."
+            );
+        }
 
-        await transporter.verify();
+        if (!env.MAIL_FROM) {
+            throw new Error(
+                "MAIL_FROM is not configured."
+            );
+        }
 
         console.log(
-            "Email Service Connected Successfully"
+            "Email Service Configured Successfully"
         );
 
         return true;
@@ -50,43 +45,39 @@ const verifyEmailConnection = async () => {
     } catch (error) {
 
         console.error(
-            "Email Service Connection Error:",
+            "Email Service Configuration Error:",
             error.message
         );
 
         throw error;
-
     }
-
 };
-
 
 // ======================================================
 // VERIFY MAIL CONFIGURATION
 // ======================================================
+//
 // server.js isi function ko call kar raha hai.
 // ======================================================
 
 const verifyMailConfiguration = async () => {
-
     try {
 
-        if (!transporter) {
-
+        if (!env.RESEND_API_KEY) {
             throw new Error(
-                "Email transporter is not configured."
+                "RESEND_API_KEY is not configured."
             );
-
         }
 
-
-        await transporter.verify();
-
+        if (!env.MAIL_FROM) {
+            throw new Error(
+                "MAIL_FROM is not configured."
+            );
+        }
 
         console.log(
             "Email Service Connected Successfully"
         );
-
 
         return true;
 
@@ -97,30 +88,20 @@ const verifyMailConfiguration = async () => {
             error.message
         );
 
-
         return false;
-
     }
-
 };
-
 
 // ======================================================
 // SEND INSPECTION REPORT EMAIL
 // ======================================================
 
 const sendInspectionReportEmail = async ({
-
     to,
-
     subject,
-
     customerName,
-
     pdfPath,
-
     fileName
-
 }) => {
 
     // ==================================================
@@ -128,44 +109,72 @@ const sendInspectionReportEmail = async ({
     // ==================================================
 
     if (!to) {
-
         throw new Error(
             "Recipient email is required."
         );
-
     }
-
 
     // ==================================================
     // VALIDATE PDF
     // ==================================================
 
     if (!pdfPath) {
-
         throw new Error(
             "PDF path is required."
         );
-
     }
 
+    // ==================================================
+    // CHECK PDF EXISTS
+    // ==================================================
+
+    if (!fs.existsSync(pdfPath)) {
+        throw new Error(
+            `PDF file not found: ${pdfPath}`
+        );
+    }
 
     // ==================================================
-    // MAIL OPTIONS
+    // VALIDATE RESEND CONFIGURATION
     // ==================================================
 
-    const mailOptions = {
+    if (!env.RESEND_API_KEY) {
+        throw new Error(
+            "RESEND_API_KEY is not configured."
+        );
+    }
+
+    if (!env.MAIL_FROM) {
+        throw new Error(
+            "MAIL_FROM is not configured."
+        );
+    }
+
+    // ==================================================
+    // READ PDF
+    // ==================================================
+
+    const pdfBuffer =
+        fs.readFileSync(pdfPath);
+
+    // ==================================================
+    // EMAIL DATA
+    // ==================================================
+
+    const emailData = {
 
         from:
-            `"Carsey.in" <${env.MAIL_USER}>`,
+            env.MAIL_FROM,
 
-        to,
+        to: [
+            to
+        ],
 
         subject:
             subject ||
             "Carsey.in - Vehicle Inspection Report",
 
         html: `
-
             <div
                 style="
                     font-family: Arial, sans-serif;
@@ -173,10 +182,15 @@ const sendInspectionReportEmail = async ({
                     margin: auto;
                     padding: 30px;
                     color: #172033;
+                    background: #ffffff;
                 "
             >
 
-                <h1>
+                <h1
+                    style="
+                        margin-bottom: 10px;
+                    "
+                >
                     Carsey.in
                 </h1>
 
@@ -209,39 +223,45 @@ const sendInspectionReportEmail = async ({
                 </strong>
 
             </div>
-
         `,
 
         attachments: [
-
             {
-
                 filename:
                     fileName ||
                     "inspection-report.pdf",
 
-                path:
-                    pdfPath,
-
-                contentType:
-                    "application/pdf"
-
+                content:
+                    pdfBuffer
             }
-
         ]
-
     };
 
-
     // ==================================================
-    // SEND EMAIL
+    // SEND EMAIL USING RESEND
     // ==================================================
 
-    const info =
-        await transporter.sendMail(
-            mailOptions
+    const result =
+        await resend.emails.send(
+            emailData
         );
 
+    // ==================================================
+    // CHECK RESEND ERROR
+    // ==================================================
+
+    if (result.error) {
+
+        console.error(
+            "Resend Email Error:",
+            result.error
+        );
+
+        throw new Error(
+            result.error.message ||
+            "Failed to send email."
+        );
+    }
 
     // ==================================================
     // LOG
@@ -249,9 +269,8 @@ const sendInspectionReportEmail = async ({
 
     console.log(
         "Inspection Report Email Sent:",
-        info.messageId
+        result.data?.id
     );
-
 
     // ==================================================
     // RETURN
@@ -260,33 +279,25 @@ const sendInspectionReportEmail = async ({
     return {
 
         messageId:
-            info.messageId,
+            result.data?.id || null,
 
-        accepted:
-            info.accepted,
+        accepted: [
+            to
+        ],
 
-        rejected:
-            info.rejected
-
+        rejected: []
     };
-
 };
-
 
 // ======================================================
 // SEND ADMIN INSPECTION REPORT
 // ======================================================
 
 const sendInspectionReportToAdmin = async ({
-
     pdfPath,
-
     fileName,
-
     carId,
-
     reportId
-
 }) => {
 
     // ==================================================
@@ -298,9 +309,7 @@ const sendInspectionReportToAdmin = async ({
         throw new Error(
             "ADMIN_EMAIL is not configured."
         );
-
     }
-
 
     // ==================================================
     // SEND TO ADMIN
@@ -320,11 +329,8 @@ const sendInspectionReportToAdmin = async ({
         pdfPath,
 
         fileName
-
     });
-
 };
-
 
 // ======================================================
 // EXPORT
@@ -339,5 +345,4 @@ module.exports = {
     sendInspectionReportEmail,
 
     sendInspectionReportToAdmin
-
 };

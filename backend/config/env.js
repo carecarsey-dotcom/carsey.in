@@ -20,10 +20,10 @@ const env = {
     // ==================================================
     // DATABASE
     // ==================================================
+
     // Local .env ke DB_* variables support honge.
     // Railway MySQL ke MYSQL* variables bhi support honge.
     // Railway par MYSQL* automatically available hain.
-    // ==================================================
 
     DB_HOST:
         process.env.DB_HOST ||
@@ -75,20 +75,14 @@ const env = {
 
 
     // ==================================================
-    // MAIL
+    // RESEND EMAIL
     // ==================================================
 
-    MAIL_HOST:
-        process.env.MAIL_HOST,
+    RESEND_API_KEY:
+        process.env.RESEND_API_KEY,
 
-    MAIL_PORT:
-        process.env.MAIL_PORT || 587,
-
-    MAIL_USER:
-        process.env.MAIL_USER,
-
-    MAIL_PASS:
-        process.env.MAIL_PASS
+    MAIL_FROM:
+        process.env.MAIL_FROM
 
 };
 
@@ -126,6 +120,30 @@ console.log(
     env.DB_PASSWORD
         ? "SET"
         : "NOT SET"
+);
+
+console.log("======================================");
+
+
+// ======================================================
+// EMAIL CONFIGURATION CHECK
+// ======================================================
+
+console.log(
+    "RESEND_API_KEY:",
+    env.RESEND_API_KEY
+        ? "SET"
+        : "NOT SET"
+);
+
+console.log(
+    "MAIL_FROM:",
+    env.MAIL_FROM || "NOT SET"
+);
+
+console.log(
+    "ADMIN_EMAIL:",
+    env.ADMIN_EMAIL || "NOT SET"
 );
 
 console.log("======================================");
