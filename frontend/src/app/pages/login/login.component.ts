@@ -17,25 +17,26 @@ import {
 } from '@angular/common/http';
 
 
+// ======================================================
+// LOGIN RESPONSE
+// ======================================================
+
 interface LoginResponse {
-
   success: boolean;
-
   message: string;
 
   data?: {
-
     token?: string;
-
     admin?: unknown;
-
   };
-
 }
 
 
-@Component({
+// ======================================================
+// COMPONENT
+// ======================================================
 
+@Component({
   selector: 'app-login',
 
   standalone: true,
@@ -46,19 +47,39 @@ interface LoginResponse {
 
   templateUrl:
     './login.component.html'
-
 })
+
 export class LoginComponent
   implements OnInit {
 
 
+  // ====================================================
+  // SERVICES
+  // ====================================================
+
   private readonly http =
     inject(HttpClient);
-
 
   private readonly router =
     inject(Router);
 
+
+  // ====================================================
+  // API URL
+  // ====================================================
+
+  private readonly API_BASE_URL =
+    window.location.hostname === 'localhost' ||
+    window.location.hostname === '127.0.0.1'
+
+      ? 'http://localhost:5000'
+
+      : 'https://carseyin-production.up.railway.app';
+
+
+  // ====================================================
+  // FORM DATA
+  // ====================================================
 
   email = '';
 
@@ -69,9 +90,9 @@ export class LoginComponent
   errorMessage = '';
 
 
-  // ==================================================
+  // ====================================================
   // INIT
-  // ==================================================
+  // ====================================================
 
   ngOnInit(): void {
 
@@ -97,12 +118,13 @@ export class LoginComponent
   }
 
 
-  // ==================================================
+  // ====================================================
   // LOGIN
-  // ==================================================
+  // ====================================================
 
   login(): void {
 
+    // Clear previous error
     this.errorMessage = '';
 
 
@@ -112,43 +134,72 @@ export class LoginComponent
 
     if (
       !this.email ||
+      !this.email.trim()
+    ) {
+
+      this.errorMessage =
+        'Email is required.';
+
+      return;
+    }
+
+
+    if (
       !this.password
     ) {
 
       this.errorMessage =
-        'Email and password are required.';
+        'Password is required.';
 
       return;
-
     }
 
+
+    // ==================================================
+    // START LOADING
+    // ==================================================
 
     this.loading = true;
 
 
     // ==================================================
-    // LOGIN API
+    // API URL
+    // ==================================================
+
+    const loginUrl =
+      `${this.API_BASE_URL}/api/auth/login`;
+
+
+    console.log(
+      'Login API URL:',
+      loginUrl
+    );
+
+
+    // ==================================================
+    // LOGIN REQUEST
     // ==================================================
 
     this.http
       .post<LoginResponse>(
-        'http://localhost:5000/api/auth/login',
+        loginUrl,
         {
           email:
-            this.email,
+            this.email.trim(),
 
           password:
             this.password
         }
       )
+
       .subscribe({
 
-        // ==================================================
+        // =================================================
         // SUCCESS
-        // ==================================================
+        // =================================================
 
         next: (
-          response
+          response: LoginResponse
         ) => {
 
           console.log(
@@ -157,15 +208,20 @@ export class LoginComponent
           );
 
 
+          // ===============================================
+          // SUCCESS + TOKEN
+          // ===============================================
+
           if (
+            response &&
             response.success &&
             response.data?.token
           ) {
 
 
-            // ==================================================
+            // =============================================
             // SAVE JWT TOKEN
-            // ==================================================
+            // =============================================
 
             localStorage.setItem(
               'token',
@@ -178,9 +234,9 @@ export class LoginComponent
             );
 
 
-            // ==================================================
+            // =============================================
             // SAVE ADMIN DATA
-            // ==================================================
+            // =============================================
 
             if (
               response.data.admin
@@ -196,9 +252,16 @@ export class LoginComponent
             }
 
 
-            // ==================================================
+            // =============================================
+            // CLEAR ERROR
+            // =============================================
+
+            this.errorMessage = '';
+
+
+            // =============================================
             // DASHBOARD
-            // ==================================================
+            // =============================================
 
             this.router.navigate(
               ['/admin/dashboard'],
@@ -209,26 +272,34 @@ export class LoginComponent
 
           }
 
+          // ===============================================
+          // LOGIN FAILED FROM BACKEND
+          // ===============================================
+
           else {
 
             this.errorMessage =
-              response.message ||
-              'Login failed.';
+              response?.message ||
+              'Invalid email or password.';
 
           }
 
+
+          // =============================================
+          // STOP LOADING
+          // =============================================
 
           this.loading = false;
 
         },
 
 
-        // ==================================================
+        // =================================================
         // ERROR
-        // ==================================================
+        // =================================================
 
         error: (
-          error
+          error: any
         ) => {
 
           console.error(
@@ -237,10 +308,96 @@ export class LoginComponent
           );
 
 
-          this.errorMessage =
-            error?.error?.message ??
-            'Unable to login.';
+          // =============================================
+          // CONNECTION / CORS ERROR
+          // =============================================
 
+          if (
+            error?.status === 0
+          ) {
+
+            this.errorMessage =
+              'Unable to connect to server. Please try again.';
+
+          }
+
+
+          // =============================================
+          // 401
+          // =============================================
+
+          else if (
+            error?.status === 401
+          ) {
+
+            this.errorMessage =
+              error?.error?.message ||
+              'Invalid email or password.';
+
+          }
+
+
+          // =============================================
+          // 403
+          // =============================================
+
+          else if (
+            error?.status === 403
+          ) {
+
+            this.errorMessage =
+              error?.error?.message ||
+              'Access denied.';
+
+          }
+
+
+          // =============================================
+          // 404
+          // =============================================
+
+          else if (
+            error?.status === 404
+          ) {
+
+            this.errorMessage =
+              'Login API not found. Please check backend route.';
+
+          }
+
+
+          // =============================================
+          // 500
+          // =============================================
+
+          else if (
+            error?.status >= 500
+          ) {
+
+            this.errorMessage =
+              error?.error?.message ||
+              'Server error. Please try again later.';
+
+          }
+
+
+          // =============================================
+          // OTHER ERROR
+          // =============================================
+
+          else {
+
+            this.errorMessage =
+              error?.error?.message ||
+              error?.message ||
+              'Unable to login.';
+
+          }
+
+
+          // =============================================
+          // STOP LOADING
+          // =============================================
 
           this.loading = false;
 
