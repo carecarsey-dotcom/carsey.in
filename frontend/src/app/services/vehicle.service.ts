@@ -400,7 +400,11 @@ export class VehicleService {
   // =====================================================
 
   private apiUrl =
-    'http://localhost:5000/api';
+    (typeof window !== 'undefined' &&
+      (window.location.hostname === 'localhost' ||
+       window.location.hostname === '127.0.0.1'))
+      ? 'http://localhost:5000/api'
+      : 'https://carseyin-production.up.railway.app/api';
 
 
 
@@ -1171,6 +1175,27 @@ export class VehicleService {
     return this.http.get(
 
       `${this.apiUrl}/admin/vehicles`
+
+    );
+
+  }
+
+
+  // =====================================================
+  // GET PUBLISHED VEHICLES
+  //
+  // CUSTOMER / PUBLIC HOME PAGE
+  // IMPORTANT: This does NOT use /admin/vehicles because
+  // the admin endpoint is protected by JWT authentication.
+  // =====================================================
+
+  getPublishedVehicles():
+
+    Observable<any> {
+
+    return this.http.get(
+
+      `${this.apiUrl}/vehicles`
 
     );
 

@@ -146,7 +146,7 @@ export class HomeComponent
 // ===================================================
 
   private apiUrl =
-    'http://localhost:5000/api';
+  'https://carseyin-production.up.railway.app/api';
 
 
 // ===================================================
@@ -1022,10 +1022,8 @@ export class HomeComponent
     // ================================================
 
     return (
-
-      `http://localhost:5000${imagePath}`
-
-    );
+  `https://carseyin-production.up.railway.app${imagePath}`
+);
 
   }
 
