@@ -18,339 +18,47 @@ const fs =
 
 
 // ======================================================
-// VEHICLE REPOSITORY
-// ======================================================
-
-const vehicleRepository =
-    require("../repositories/vehicle.repository");
-
-
-// ======================================================
-// NORMALIZE OVERALL SCORE
+// NORMALIZE INSPECTION SCORE
 // ======================================================
 //
-// Final application score:
-// 0 - 10
+// Old records may contain total scores such as 43, 92 or 95.
+// The application uses a final score on a 0-10 scale:
 //
-// Old records:
-// 43  -> 4.3
-// 92  -> 9.2
-// 95  -> 9.5
+// 43 -> 4.3
+// 92 -> 9.2
+// 95 -> 9.5
 //
-// New records:
-// 4.3 -> 4.3
-// 9.2 -> 9.2
-// 10  -> 10
+// Existing 0-10 scores are kept unchanged.
+//
 // ======================================================
 
-const normalizeOverallScore = (value) => {
+const normalizeOverallScore = (
+    value
+) => {
 
-    if (
-        value === undefined ||
-        value === null ||
-        value === ""
-    ) {
-        throw new Error(
-            "Overall score is required."
-        );
-    }
-
-    const rawScore =
+    const number =
         Number(value);
 
-    if (
-        !Number.isFinite(rawScore)
-    ) {
-        throw new Error(
-            "Overall score must be a valid number."
-        );
-    }
-
-    let score =
-        rawScore > 10
-            ? rawScore / 10
-            : rawScore;
-
-    score =
-        Number(
-            score.toFixed(1)
-        );
 
     if (
-        score < 0 ||
-        score > 10
-    ) {
-        throw new Error(
-            "Overall score must be between 0 and 10."
-        );
-    }
-
-    return score;
-};
-
-
-// ======================================================
-// SAFE VALUE
-// ======================================================
-
-const safeValue = (
-    value,
-    fallback = "-"
-) => {
-
-    if (
-        value === undefined ||
-        value === null ||
-        value === ""
-    ) {
-        return fallback;
-    }
-
-    return value;
-};
-
-
-// ======================================================
-// PARSE JSON SAFELY
-// ======================================================
-
-const parseJsonSafely = (
-    value,
-    fallback = {}
-) => {
-
-    if (
-        value === undefined ||
-        value === null ||
-        value === ""
-    ) {
-        return fallback;
-    }
-
-    if (
-        typeof value === "object"
-    ) {
-        return value;
-    }
-
-    if (
-        typeof value === "string"
+        !Number.isFinite(number)
     ) {
 
-        try {
-
-            return JSON.parse(value);
-
-        } catch (error) {
-
-            return fallback;
-
-        }
+        return NaN;
 
     }
 
-    return fallback;
-};
+
+    const normalized =
+        number > 10 &&
+        number <= 100
+            ? number / 10
+            : number;
 
 
-// ======================================================
-// NORMALIZE VEHICLE DATA
-// ======================================================
-
-const normalizeVehicleData = (
-    vehicleData
-) => {
-
-    if (
-        !vehicleData
-    ) {
-        return {};
-    }
-
-    const vehicle =
-        vehicleData.vehicle &&
-        typeof vehicleData.vehicle === "object"
-            ? vehicleData.vehicle
-            : {};
-
-    const owner =
-        vehicleData.owner &&
-        typeof vehicleData.owner === "object"
-            ? vehicleData.owner
-            : {};
-
-    const inspection =
-        vehicleData.inspection &&
-        typeof vehicleData.inspection === "object"
-            ? vehicleData.inspection
-            : {};
-
-    const checklist =
-        vehicleData.checklist &&
-        typeof vehicleData.checklist === "object"
-            ? vehicleData.checklist
-            : {};
-
-    return {
-
-        vehicle: {
-            ...vehicleData,
-            ...vehicle
-        },
-
-        owner: {
-            ...owner
-        },
-
-        inspection: {
-            ...inspection
-        },
-
-        checklist: {
-            ...checklist
-        }
-
-    };
-
-};
-
-
-// ======================================================
-// BUILD COMPLETE REPORT
-// ======================================================
-//
-// PDF service ko complete data milega:
-// report
-// vehicle
-// owner
-// inspection
-// checklist
-// ======================================================
-
-const buildCompleteReport = (
-    report,
-    vehicleData
-) => {
-
-    const normalizedVehicle =
-        normalizeVehicleData(
-            vehicleData
-        );
-
-    const vehicle =
-        normalizedVehicle.vehicle || {};
-
-    const owner =
-        normalizedVehicle.owner || {};
-
-    const inspection =
-        normalizedVehicle.inspection || {};
-
-    const checklist =
-        normalizedVehicle.checklist || {};
-
-
-    const reportScore =
-        normalizeOverallScore(
-            report.overallScore ??
-            report.overall_score ??
-            0
-        );
-
-
-    return {
-
-        // ==================================================
-        // REPORT
-        // ==================================================
-
-        reportId:
-            report.reportId ??
-            report.report_id,
-
-        carId:
-            report.carId ??
-            report.car_id,
-
-        overallScore:
-            reportScore,
-
-        engineRemark:
-            report.engineRemark ??
-            report.engine_remark ??
-            "Not provided.",
-
-        overallRemark:
-            report.overallRemark ??
-            report.overall_remark ??
-            "Vehicle inspection completed.",
-
-        pdfPath:
-            report.pdfPath ??
-            report.pdf_path ??
-            null,
-
-        publishStatus:
-            report.publishStatus ??
-            report.publish_status ??
-            "No",
-
-        createdAt:
-            report.createdAt ??
-            report.created_at ??
-            null,
-
-
-        // ==================================================
-        // COMPLETE VEHICLE
-        // ==================================================
-
-        vehicle: {
-            ...vehicle
-        },
-
-
-        // ==================================================
-        // OWNER
-        // ==================================================
-
-        owner: {
-            ...owner
-        },
-
-
-        // ==================================================
-        // INSPECTION
-        // ==================================================
-
-        inspection: {
-            ...inspection
-        },
-
-
-        // ==================================================
-        // CHECKLIST
-        // ==================================================
-
-        checklist: {
-            ...checklist
-        },
-
-
-        // ==================================================
-        // FLATTENED DATA
-        // ==================================================
-        // PDF service agar direct properties read kare
-        // to bhi data available rahega.
-        // ==================================================
-
-        ...vehicle,
-
-        ...owner,
-
-        ...inspection
-
-    };
+    return Number(
+        normalized.toFixed(1)
+    );
 
 };
 
@@ -363,15 +71,15 @@ const createInspectionReport = async (
     reportData
 ) => {
 
-    // ==================================================
-    // CAR ID
-    // ==================================================
-
     const carId =
         Number(
             reportData.carId
         );
 
+
+    // --------------------------------------------------
+    // VALIDATE CAR ID
+    // --------------------------------------------------
 
     if (
         !Number.isInteger(carId) ||
@@ -385,9 +93,9 @@ const createInspectionReport = async (
     }
 
 
-    // ==================================================
-    // SCORE
-    // ==================================================
+    // --------------------------------------------------
+    // OVERALL SCORE
+    // --------------------------------------------------
 
     const overallScore =
         normalizeOverallScore(
@@ -395,9 +103,24 @@ const createInspectionReport = async (
         );
 
 
-    // ==================================================
+    if (
+        !Number.isFinite(
+            overallScore
+        ) ||
+        overallScore < 0 ||
+        overallScore > 10
+    ) {
+
+        throw new Error(
+            "Overall score must be between 0 and 10."
+        );
+
+    }
+
+
+    // --------------------------------------------------
     // ENGINE REMARK
-    // ==================================================
+    // --------------------------------------------------
 
     if (
         !reportData.engineRemark ||
@@ -413,9 +136,9 @@ const createInspectionReport = async (
     }
 
 
-    // ==================================================
+    // --------------------------------------------------
     // OVERALL REMARK
-    // ==================================================
+    // --------------------------------------------------
 
     if (
         !reportData.overallRemark ||
@@ -431,9 +154,9 @@ const createInspectionReport = async (
     }
 
 
-    // ==================================================
+    // --------------------------------------------------
     // PUBLISH STATUS
-    // ==================================================
+    // --------------------------------------------------
 
     const publishStatus =
         reportData.publishStatus === "Yes"
@@ -441,16 +164,9 @@ const createInspectionReport = async (
             : "No";
 
 
-    // ==================================================
-    // CREATE DATABASE REPORT
-    // ==================================================
-    //
-    // IMPORTANT:
-    // overallScore yahan already 0-10 hai.
-    //
-    // Example:
-    // 43 -> 4.3
-    // ==================================================
+    // --------------------------------------------------
+    // CREATE REPORT IN DATABASE
+    // --------------------------------------------------
 
     const result =
         await inspectionReportRepository
@@ -493,168 +209,149 @@ const createInspectionReport = async (
 
 
 // ======================================================
-// GET UNLOCKED INSPECTION REPORT
+// GET UNLOCKED REPORT
 // CUSTOMER
 // ======================================================
 
-const getUnlockedInspectionReport =
-    async (
-        carId,
-        requestId
-    ) => {
+const getUnlockedInspectionReport = async (
+    carId,
+    requestId
+) => {
 
-        const numericCarId =
-            Number(carId);
+    const numericCarId =
+        Number(carId);
 
-        const numericRequestId =
-            Number(requestId);
+    const numericRequestId =
+        Number(requestId);
 
 
-        // ==================================================
-        // VALIDATE CAR ID
-        // ==================================================
+    // --------------------------------------------------
+    // VALIDATE CAR ID
+    // --------------------------------------------------
 
-        if (
-            !Number.isInteger(
+    if (
+        !Number.isInteger(
+            numericCarId
+        ) ||
+        numericCarId <= 0
+    ) {
+
+        throw new Error(
+            "Invalid car ID."
+        );
+
+    }
+
+
+    // --------------------------------------------------
+    // VALIDATE REQUEST ID
+    // --------------------------------------------------
+
+    if (
+        !Number.isInteger(
+            numericRequestId
+        ) ||
+        numericRequestId <= 0
+    ) {
+
+        throw new Error(
+            "Invalid unlock request ID."
+        );
+
+    }
+
+
+    // --------------------------------------------------
+    // CHECK APPROVED REQUEST
+    // --------------------------------------------------
+
+    const unlockRequest =
+        await inspectionReportRepository
+            .getApprovedUnlockRequest(
+                numericRequestId,
                 numericCarId
-            ) ||
-            numericCarId <= 0
-        ) {
-
-            throw new Error(
-                "Invalid car ID."
             );
+
+
+    if (!unlockRequest) {
+
+        throw new Error(
+            "Report unlock request is not approved."
+        );
+
+    }
+
+
+    // --------------------------------------------------
+    // GET PUBLISHED REPORT
+    // --------------------------------------------------
+
+    const report =
+        await inspectionReportRepository
+            .getInspectionReportByCarId(
+                numericCarId
+            );
+
+
+    if (!report) {
+
+        throw new Error(
+            "Inspection report is not available."
+        );
+
+    }
+
+
+    return {
+
+        request: {
+
+            requestId:
+                unlockRequest.request_id,
+
+            carId:
+                unlockRequest.car_id,
+
+            status:
+                unlockRequest.status
+
+        },
+
+        report: {
+
+            reportId:
+                report.report_id,
+
+            carId:
+                report.car_id,
+
+            overallScore:
+                report.overall_score,
+
+            engineRemark:
+                report.engine_remark,
+
+            overallRemark:
+                report.overall_remark,
+
+            pdfPath:
+                report.pdf_path,
+
+            publishStatus:
+                report.publish_status,
+
+            createdAt:
+                report.created_at
 
         }
-
-
-        // ==================================================
-        // VALIDATE REQUEST ID
-        // ==================================================
-
-        if (
-            !Number.isInteger(
-                numericRequestId
-            ) ||
-            numericRequestId <= 0
-        ) {
-
-            throw new Error(
-                "Invalid unlock request ID."
-            );
-
-        }
-
-
-        // ==================================================
-        // CHECK APPROVED REQUEST
-        // ==================================================
-
-        const unlockRequest =
-            await inspectionReportRepository
-                .getApprovedUnlockRequest(
-                    numericRequestId,
-                    numericCarId
-                );
-
-
-        if (
-            !unlockRequest
-        ) {
-
-            throw new Error(
-                "Report unlock request is not approved."
-            );
-
-        }
-
-
-        // ==================================================
-        // GET PUBLISHED REPORT
-        // ==================================================
-
-        const report =
-            await inspectionReportRepository
-                .getInspectionReportByCarId(
-                    numericCarId
-                );
-
-
-        if (
-            !report
-        ) {
-
-            throw new Error(
-                "Inspection report is not available."
-            );
-
-        }
-
-
-        // ==================================================
-        // NORMALIZE SCORE FOR RESPONSE
-        // ==================================================
-
-        const overallScore =
-            normalizeOverallScore(
-                report.overall_score
-            );
-
-
-        // ==================================================
-        // RETURN
-        // ==================================================
-
-        return {
-
-            request: {
-
-                requestId:
-                    unlockRequest.request_id,
-
-                carId:
-                    unlockRequest.car_id,
-
-                status:
-                    unlockRequest.status
-
-            },
-
-
-            report: {
-
-                reportId:
-                    report.report_id,
-
-                carId:
-                    report.car_id,
-
-                overallScore,
-
-                engineRemark:
-                    report.engine_remark,
-
-                overallRemark:
-                    report.overall_remark,
-
-                pdfPath:
-                    report.pdf_path,
-
-                publishStatus:
-                    report.publish_status,
-
-                createdAt:
-                    report.created_at
-
-            }
-
-        };
 
     };
 
+};
+
 
 // ======================================================
-// GET ALL INSPECTION REPORTS
+// GET ALL REPORTS
 // ADMIN
 // ======================================================
 
@@ -666,27 +363,9 @@ const getAllInspectionReports =
                 .getAllInspectionReports();
 
 
-        const normalizedReports =
-            Array.isArray(reports)
-                ? reports.map(
-                    report => ({
-
-                        ...report,
-
-                        overall_score:
-                            normalizeOverallScore(
-                                report.overall_score
-                            )
-
-                    })
-                )
-                : [];
-
-
         return {
 
-            reports:
-                normalizedReports
+            reports
 
         };
 
@@ -697,23 +376,6 @@ const getAllInspectionReports =
 // GET REPORT BY ID
 // ADMIN
 // ======================================================
-//
-// IMPORTANT FIX:
-// Pehle yahan sirf inspection_reports ka data aa raha tha.
-//
-// Ab:
-// report
-// +
-// vehicle
-// +
-// owner
-// +
-// inspection
-// +
-// checklist
-//
-// sab PDF ko diya jayega.
-// ======================================================
 
 const getInspectionReportById =
     async (
@@ -723,10 +385,6 @@ const getInspectionReportById =
         const numericReportId =
             Number(reportId);
 
-
-        // ==================================================
-        // VALIDATE REPORT ID
-        // ==================================================
 
         if (
             !Number.isInteger(
@@ -742,10 +400,6 @@ const getInspectionReportById =
         }
 
 
-        // ==================================================
-        // GET REPORT
-        // ==================================================
-
         const report =
             await inspectionReportRepository
                 .getInspectionReportById(
@@ -753,9 +407,7 @@ const getInspectionReportById =
                 );
 
 
-        if (
-            !report
-        ) {
+        if (!report) {
 
             throw new Error(
                 "Inspection report not found."
@@ -764,33 +416,7 @@ const getInspectionReportById =
         }
 
 
-        // ==================================================
-        // GET VEHICLE DATA
-        // ==================================================
-
-        const vehicleData =
-            await vehicleRepository
-                .getVehicleById(
-                    report.car_id
-                );
-
-
-        if (
-            !vehicleData
-        ) {
-
-            throw new Error(
-                "Vehicle data not found for inspection report."
-            );
-
-        }
-
-
-        // ==================================================
-        // NORMALIZED REPORT
-        // ==================================================
-
-        const baseReport = {
+        return {
 
             reportId:
                 report.report_id,
@@ -799,9 +425,7 @@ const getInspectionReportById =
                 report.car_id,
 
             overallScore:
-                normalizeOverallScore(
-                    report.overall_score
-                ),
+                report.overall_score,
 
             engineRemark:
                 report.engine_remark,
@@ -820,22 +444,28 @@ const getInspectionReportById =
 
         };
 
-
-        // ==================================================
-        // COMPLETE REPORT
-        // ==================================================
-
-        return buildCompleteReport(
-            baseReport,
-            vehicleData
-        );
-
     };
 
 
 // ======================================================
 // UPDATE INSPECTION REPORT
 // ADMIN
+// ======================================================
+//
+// IMPORTANT FLOW:
+//
+// publishStatus = Yes
+//       ↓
+// PDF generate
+//       ↓
+// PDF save
+//       ↓
+// DB path save
+//       ↓
+// inspection report publish
+//       ↓
+// ADMIN EMAIL
+//
 // ======================================================
 
 const updateInspectionReport =
@@ -848,9 +478,9 @@ const updateInspectionReport =
             Number(reportId);
 
 
-        // ==================================================
+        // --------------------------------------------------
         // VALIDATE REPORT ID
-        // ==================================================
+        // --------------------------------------------------
 
         if (
             !Number.isInteger(
@@ -866,9 +496,9 @@ const updateInspectionReport =
         }
 
 
-        // ==================================================
+        // --------------------------------------------------
         // GET EXISTING REPORT
-        // ==================================================
+        // --------------------------------------------------
 
         const existingReport =
             await inspectionReportRepository
@@ -877,9 +507,7 @@ const updateInspectionReport =
                 );
 
 
-        if (
-            !existingReport
-        ) {
+        if (!existingReport) {
 
             throw new Error(
                 "Inspection report not found."
@@ -888,9 +516,9 @@ const updateInspectionReport =
         }
 
 
-        // ==================================================
+        // --------------------------------------------------
         // SCORE
-        // ==================================================
+        // --------------------------------------------------
 
         const overallScore =
             normalizeOverallScore(
@@ -898,9 +526,24 @@ const updateInspectionReport =
             );
 
 
-        // ==================================================
+        if (
+            !Number.isFinite(
+                overallScore
+            ) ||
+            overallScore < 0 ||
+            overallScore > 10
+        ) {
+
+            throw new Error(
+                "Overall score must be between 0 and 10."
+            );
+
+        }
+
+
+        // --------------------------------------------------
         // ENGINE REMARK
-        // ==================================================
+        // --------------------------------------------------
 
         if (
             !reportData.engineRemark ||
@@ -916,9 +559,9 @@ const updateInspectionReport =
         }
 
 
-        // ==================================================
+        // --------------------------------------------------
         // OVERALL REMARK
-        // ==================================================
+        // --------------------------------------------------
 
         if (
             !reportData.overallRemark ||
@@ -934,9 +577,9 @@ const updateInspectionReport =
         }
 
 
-        // ==================================================
+        // --------------------------------------------------
         // PUBLISH STATUS
-        // ==================================================
+        // --------------------------------------------------
 
         if (
             reportData.publishStatus !== "Yes" &&
@@ -951,12 +594,14 @@ const updateInspectionReport =
 
 
         // ==================================================
-        // UPDATE DATABASE
+        // UPDATE INSPECTION REPORT DATABASE
         // ==================================================
 
         await inspectionReportRepository
             .updateInspectionReport(
+
                 numericReportId,
+
                 {
 
                     overallScore,
@@ -975,12 +620,19 @@ const updateInspectionReport =
                         reportData.publishStatus
 
                 }
+
             );
 
 
         // ==================================================
         // GET COMPLETE VEHICLE DATA
         // ==================================================
+
+        const vehicleRepository =
+            require(
+                "../repositories/vehicle.repository"
+            );
+
 
         const vehicleData =
             await vehicleRepository
@@ -989,9 +641,7 @@ const updateInspectionReport =
                 );
 
 
-        if (
-            !vehicleData
-        ) {
+        if (!vehicleData) {
 
             throw new Error(
                 "Vehicle data not found."
@@ -1001,46 +651,74 @@ const updateInspectionReport =
 
 
         // ==================================================
-        // COMPLETE REPORT FOR PDF
+        // COMPLETE DATA FOR PDF
+        // ==================================================
+        //
+        // Ye wahi data hai jo Add Vehicle /
+        // Inspection se aaya hai.
+        //
         // ==================================================
 
-        const completeReport =
-            buildCompleteReport(
+        const completeReport = {
 
-                {
+            reportId:
+                numericReportId,
 
-                    reportId:
-                        numericReportId,
+            carId:
+                existingReport.car_id,
 
-                    carId:
-                        existingReport.car_id,
+            overallScore,
 
-                    overallScore,
+            engineRemark:
+                String(
+                    reportData.engineRemark
+                ).trim(),
 
-                    engineRemark:
-                        String(
-                            reportData.engineRemark
-                        ).trim(),
+            overallRemark:
+                String(
+                    reportData.overallRemark
+                ).trim(),
 
-                    overallRemark:
-                        String(
-                            reportData.overallRemark
-                        ).trim(),
+            publishStatus:
+                reportData.publishStatus,
 
-                    publishStatus:
-                        reportData.publishStatus,
 
-                    pdfPath:
-                        existingReport.pdf_path,
+            // ------------------------------------------------
+            // VEHICLE DATA
+            // ------------------------------------------------
 
-                    createdAt:
-                        existingReport.created_at
+            vehicle:
+                vehicleData.vehicle ||
+                {},
 
-                },
 
-                vehicleData
+            // ------------------------------------------------
+            // OWNER DATA
+            // ------------------------------------------------
 
-            );
+            owner:
+                vehicleData.owner ||
+                {},
+
+
+            // ------------------------------------------------
+            // INSPECTION DATA
+            // ------------------------------------------------
+
+            inspection:
+                vehicleData.inspection ||
+                {},
+
+
+            // ------------------------------------------------
+            // CHECKLIST
+            // ------------------------------------------------
+
+            checklist:
+                vehicleData.checklist ||
+                {}
+
+        };
 
 
         // ==================================================
@@ -1055,7 +733,7 @@ const updateInspectionReport =
 
 
         // ==================================================
-        // VALIDATE PDF
+        // VALIDATE GENERATED PDF
         // ==================================================
 
         if (
@@ -1071,7 +749,7 @@ const updateInspectionReport =
 
 
         // ==================================================
-        // CHECK PDF EXISTS
+        // CHECK PDF FILE EXISTS
         // ==================================================
 
         if (
@@ -1093,24 +771,93 @@ const updateInspectionReport =
 
         await inspectionReportRepository
             .updateInspectionReportPdfPath(
+
                 numericReportId,
+
                 pdf.pdfPath
+
             );
 
 
         // ==================================================
-        // ADMIN EMAIL
+        // IMPORTANT
+        // PDF SUCCESS + PUBLISH = REPORT PUBLISHED
+        // ==================================================
+        //
+        // Ye synchronization important hai.
+        //
+        // Kuch old vehicle records me:
+        //
+        // cars.status = Published
+        //
+        // lekin:
+        //
+        // inspection_reports.publish_status = No
+        //
+        // reh gaya tha.
+        //
+        // Is wajah se customer email par:
+        //
+        // "Inspection report is not published."
+        //
+        // aa raha tha.
+        //
+        // ==================================================
+
+        if (
+            reportData.publishStatus === "Yes"
+        ) {
+
+            await inspectionReportRepository
+                .updateInspectionReport(
+
+                    numericReportId,
+
+                    {
+
+                        overallScore,
+
+                        engineRemark:
+                            String(
+                                reportData.engineRemark
+                            ).trim(),
+
+                        overallRemark:
+                            String(
+                                reportData.overallRemark
+                            ).trim(),
+
+                        publishStatus:
+                            "Yes"
+
+                    }
+
+                );
+
+        }
+
+
+        // ==================================================
+        // ADMIN EMAIL RESULT
         // ==================================================
 
         let adminEmailResult =
             null;
 
 
+        // ==================================================
+        // SEND ADMIN EMAIL ONLY AFTER PUBLISH
+        // ==================================================
+
         if (
             reportData.publishStatus === "Yes"
         ) {
 
             try {
+
+                // ------------------------------------------------
+                // ADMIN EMAIL CHECK
+                // ------------------------------------------------
 
                 if (
                     !env.ADMIN_EMAIL
@@ -1122,6 +869,16 @@ const updateInspectionReport =
 
                 }
 
+
+                console.log(
+                    "Sending inspection PDF to admin:",
+                    env.ADMIN_EMAIL
+                );
+
+
+                // ------------------------------------------------
+                // SEND SAME GENERATED PDF
+                // ------------------------------------------------
 
                 adminEmailResult =
                     await emailService
@@ -1142,9 +899,17 @@ const updateInspectionReport =
                         });
 
 
-            } catch (
-                emailError
-            ) {
+                console.log(
+                    "Admin inspection report email sent successfully."
+                );
+
+
+            }
+            catch (emailError) {
+
+                // ------------------------------------------------
+                // EMAIL FAILURE SHOULD NOT DELETE PDF
+                // ------------------------------------------------
 
                 console.error(
                     "Admin Email Error:",
@@ -1172,6 +937,7 @@ const updateInspectionReport =
         // ==================================================
 
         const pdfUrl =
+            pdf.pdfUrl ||
             `/uploads/reports/${pdf.fileName}`;
 
 
@@ -1187,11 +953,11 @@ const updateInspectionReport =
             carId:
                 existingReport.car_id,
 
-            overallScore,
-
             message:
                 reportData.publishStatus === "Yes"
+
                     ? "Inspection report published, PDF generated and admin email processed successfully."
+
                     : "Inspection report updated successfully.",
 
             pdfPath:
@@ -1220,9 +986,31 @@ const sendReportToCustomerEmail =
         customerEmail
     ) => {
 
-        // ==================================================
+        // --------------------------------------------------
+        // VALIDATE REPORT ID
+        // --------------------------------------------------
+
+        const numericReportId =
+            Number(reportId);
+
+
+        if (
+            !Number.isInteger(
+                numericReportId
+            ) ||
+            numericReportId <= 0
+        ) {
+
+            throw new Error(
+                "Invalid report ID."
+            );
+
+        }
+
+
+        // --------------------------------------------------
         // VALIDATE EMAIL
-        // ==================================================
+        // --------------------------------------------------
 
         if (
             !customerEmail ||
@@ -1263,20 +1051,18 @@ const sendReportToCustomerEmail =
         }
 
 
-        // ==================================================
+        // --------------------------------------------------
         // GET REPORT DELIVERY DATA
-        // ==================================================
+        // --------------------------------------------------
 
-        const report =
+        let report =
             await inspectionReportRepository
                 .getReportDeliveryData(
-                    reportId
+                    numericReportId
                 );
 
 
-        if (
-            !report
-        ) {
+        if (!report) {
 
             throw new Error(
                 "Inspection report not found."
@@ -1286,22 +1072,12 @@ const sendReportToCustomerEmail =
 
 
         // ==================================================
-        // CHECK PUBLISHED
+        // CHECK PDF PATH FIRST
         // ==================================================
-
-        if (
-            report.publish_status !== "Yes"
-        ) {
-
-            throw new Error(
-                "Inspection report is not published."
-            );
-
-        }
-
-
-        // ==================================================
-        // CHECK PDF PATH
+        //
+        // Agar PDF already generated hai to usi PDF ko use
+        // karna hai.
+        //
         // ==================================================
 
         if (
@@ -1319,15 +1095,232 @@ const sendReportToCustomerEmail =
         // BUILD ABSOLUTE PDF PATH
         // ==================================================
 
-        const pdfAbsolutePath =
-            path.join(
-                process.cwd(),
+        let pdfAbsolutePath;
+
+
+        if (
+            path.isAbsolute(
                 report.pdf_path
-            );
+            )
+        ) {
+
+            pdfAbsolutePath =
+                report.pdf_path;
+
+        }
+        else {
+
+            pdfAbsolutePath =
+                path.join(
+                    process.cwd(),
+                    report.pdf_path
+                );
+
+        }
 
 
         // ==================================================
         // CHECK PDF EXISTS
+        // ==================================================
+
+        if (
+            !fs.existsSync(
+                pdfAbsolutePath
+            )
+        ) {
+
+            throw new Error(
+                "Inspection report PDF file not found on server."
+            );
+
+        }
+
+
+        // ==================================================
+        // IMPORTANT PUBLISH FIX
+        // ==================================================
+        //
+        // Problem:
+        //
+        // Vehicle Published = Yes
+        // PDF generated = Yes
+        // inspection_reports.publish_status = No
+        //
+        // Result:
+        //
+        // "Inspection report is not published."
+        //
+        // Ab agar valid final PDF already exists, report ko
+        // automatically Yes par synchronize karenge.
+        //
+        // Existing score/remarks ko change nahi karenge.
+        //
+        // ==================================================
+
+        if (
+            report.publish_status !== "Yes"
+        ) {
+
+            console.warn(
+                "Inspection report publish_status was not Yes."
+            );
+
+            console.warn(
+                "Synchronizing report status because final PDF exists."
+            );
+
+
+            const currentScore =
+                normalizeOverallScore(
+                    report.overall_score
+                );
+
+
+            const safeScore =
+                Number.isFinite(
+                    currentScore
+                )
+                    ? currentScore
+                    : 0;
+
+
+            const safeEngineRemark =
+                report.engine_remark ||
+                "Inspection completed.";
+
+
+            const safeOverallRemark =
+                report.overall_remark ||
+                "Vehicle inspection completed.";
+
+
+            try {
+
+                await inspectionReportRepository
+                    .updateInspectionReport(
+
+                        numericReportId,
+
+                        {
+
+                            overallScore:
+                                safeScore,
+
+                            engineRemark:
+                                safeEngineRemark,
+
+                            overallRemark:
+                                safeOverallRemark,
+
+                            publishStatus:
+                                "Yes"
+
+                        }
+
+                    );
+
+
+                // ------------------------------------------------
+                // RELOAD REPORT AFTER UPDATE
+                // ------------------------------------------------
+
+                const refreshedReport =
+                    await inspectionReportRepository
+                        .getReportDeliveryData(
+                            numericReportId
+                        );
+
+
+                if (
+                    refreshedReport
+                ) {
+
+                    report =
+                        refreshedReport;
+
+                }
+
+
+                console.log(
+                    "Inspection report publish_status synchronized to Yes."
+                );
+
+
+            }
+            catch (publishError) {
+
+                console.error(
+                    "Inspection report publish synchronization failed:",
+                    publishError
+                );
+
+
+                throw new Error(
+                    `Unable to publish inspection report: ${publishError.message}`
+                );
+
+            }
+
+        }
+
+
+        // ==================================================
+        // FINAL PUBLISH CHECK
+        // ==================================================
+
+        if (
+            report.publish_status !== "Yes"
+        ) {
+
+            throw new Error(
+                "Inspection report is not published."
+            );
+
+        }
+
+
+        // ==================================================
+        // RECHECK PDF PATH
+        // ==================================================
+
+        if (
+            !report.pdf_path
+        ) {
+
+            throw new Error(
+                "Inspection report PDF has not been generated."
+            );
+
+        }
+
+
+        // ==================================================
+        // REBUILD PDF ABSOLUTE PATH
+        // ==================================================
+
+        if (
+            path.isAbsolute(
+                report.pdf_path
+            )
+        ) {
+
+            pdfAbsolutePath =
+                report.pdf_path;
+
+        }
+        else {
+
+            pdfAbsolutePath =
+                path.join(
+                    process.cwd(),
+                    report.pdf_path
+                );
+
+        }
+
+
+        // ==================================================
+        // FINAL PDF EXISTENCE CHECK
         // ==================================================
 
         if (
@@ -1381,6 +1374,18 @@ const sendReportToCustomerEmail =
 
             message:
                 "Inspection report sent to customer email successfully.",
+
+            reportId:
+                report.report_id,
+
+            carId:
+                report.car_id,
+
+            publishStatus:
+                report.publish_status,
+
+            pdfPath:
+                report.pdf_path,
 
             email:
                 emailResult
