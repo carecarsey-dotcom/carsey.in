@@ -4,6 +4,7 @@
 
 const app = require("./app");
 
+
 // ======================================================
 // EMAIL SERVICE
 // ======================================================
@@ -11,12 +12,13 @@ const app = require("./app");
 const emailService =
     require("./services/email.service");
 
+
 // ======================================================
 // PORT
 // ======================================================
+
 // Railway automatically PORT environment variable deta hai.
 // Local development ke liye 5000 fallback hai.
-// ======================================================
 
 const PORT =
     process.env.PORT || 5000;
@@ -36,25 +38,32 @@ const server = app.listen(
         );
 
         console.log(
-            `Environment: ${process.env.NODE_ENV || "development"}`
+            `Environment: ${
+                process.env.NODE_ENV ||
+                "development"
+            }`
         );
+
 
         // ==================================================
         // EMAIL CONFIGURATION CHECK
         // ==================================================
+
         // Email configuration fail hone par server crash
         // nahi hona chahiye.
-        // ==================================================
 
         if (
             emailService &&
-            typeof emailService.verifyMailConfiguration ===
-                "function"
+            typeof emailService
+                .verifyMailConfiguration ===
+            "function"
         ) {
 
-            Promise.resolve(
-                emailService.verifyMailConfiguration()
-            )
+            Promise
+                .resolve(
+                    emailService
+                        .verifyMailConfiguration()
+                )
                 .then(() => {
 
                     console.log(
@@ -69,7 +78,8 @@ const server = app.listen(
                     );
 
                     console.error(
-                        error.message || error
+                        error.message ||
+                        error
                     );
 
                     console.warn(
@@ -83,9 +93,7 @@ const server = app.listen(
             console.warn(
                 "verifyMailConfiguration() is not available in email.service."
             );
-
         }
-
     }
 );
 
@@ -105,7 +113,6 @@ server.on(
         console.error(
             error
         );
-
     }
 );
 
@@ -125,7 +132,6 @@ process.on(
         console.error(
             reason
         );
-
     }
 );
 
@@ -145,6 +151,5 @@ process.on(
         console.error(
             error
         );
-
     }
 );
