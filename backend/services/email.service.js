@@ -9,7 +9,6 @@ const env = require("../config/env");
 
 const transporter =
     nodemailer.createTransport({
-
         host:
             env.MAIL_HOST,
 
@@ -19,16 +18,16 @@ const transporter =
         secure:
             false,
 
-        auth: {
+        family:
+            4,
 
+        auth: {
             user:
                 env.MAIL_USER,
 
             pass:
                 env.MAIL_PASS
-
         }
-
     });
 
 
