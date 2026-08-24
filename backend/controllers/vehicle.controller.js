@@ -74,13 +74,12 @@ const addVehicle = async (
 
                 message:
                     "Vehicle, inspection report, checklist and PDF processing completed successfully."
-
             }
 
         });
 
-
     }
+
     catch (error) {
 
         console.error(
@@ -96,7 +95,12 @@ const addVehicle = async (
 
             message:
                 error.message ||
-                "Unable to add vehicle."
+                "Unable to add vehicle.",
+
+            error:
+                process.env.NODE_ENV === "development"
+                    ? error.stack
+                    : undefined
 
         });
 
@@ -137,6 +141,7 @@ const getAllAdminVehicles = async (
         });
 
     }
+
     catch (error) {
 
         console.error(
@@ -199,6 +204,7 @@ const getPublishedVehicles = async (
         });
 
     }
+
     catch (error) {
 
         console.error(
@@ -326,6 +332,7 @@ const getCompleteVehicleData = async (
         });
 
     }
+
     catch (error) {
 
         console.error(

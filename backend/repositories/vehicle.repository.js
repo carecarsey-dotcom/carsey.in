@@ -4,6 +4,7 @@ const db = require("../config/db");
 // ADD VEHICLE + OWNER + INSPECTION REPORT + CHECKLIST
 // ======================================================
 
+
 const addVehicle = (vehicle) => {
   return new Promise((resolve, reject) => {
     const allowedStatuses = [
