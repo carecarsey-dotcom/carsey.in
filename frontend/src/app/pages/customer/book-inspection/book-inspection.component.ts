@@ -48,11 +48,8 @@ interface InspectionBookingResponse {
   standalone: true,
 
   imports: [
-
     CommonModule,
-
     FormsModule
-
   ],
 
   templateUrl: './book-inspection.component.html',
@@ -76,9 +73,12 @@ export class BookInspectionComponent {
   // ====================================================
   // API URL
   // ====================================================
+  // IMPORTANT:
+  // Production Railway Backend URL
+  // ====================================================
 
   private apiUrl =
-    'http://localhost:5000/api/vehicles/book-inspection';
+    'https://carseyin-production.up.railway.app/api/vehicles/book-inspection';
 
 
   // ====================================================
@@ -236,6 +236,7 @@ export class BookInspectionComponent {
 
   submitBooking(): void {
 
+
     // ==================================================
     // CLEAR OLD MESSAGES
     // ==================================================
@@ -280,6 +281,15 @@ export class BookInspectionComponent {
       this.errorMessage =
         'Please fill all required fields.';
 
+
+      // =================================================
+      // FAIL ALERT
+      // =================================================
+
+      alert(
+        'Unable to submit inspection booking.\n\nPlease fill all required fields.'
+      );
+
       return;
 
     }
@@ -290,13 +300,24 @@ export class BookInspectionComponent {
     // ==================================================
 
     if (
+
       !/^[a-zA-Z\s]+$/.test(
         this.form.name.trim()
       )
+
     ) {
 
       this.errorMessage =
         'Name should contain only letters and spaces.';
+
+
+      // =================================================
+      // FAIL ALERT
+      // =================================================
+
+      alert(
+        'Unable to submit inspection booking.\n\nName should contain only letters and spaces.'
+      );
 
       return;
 
@@ -308,13 +329,24 @@ export class BookInspectionComponent {
     // ==================================================
 
     if (
+
       !/^[0-9]{10}$/.test(
         this.form.mobile
       )
+
     ) {
 
       this.errorMessage =
         'Mobile number must contain exactly 10 digits.';
+
+
+      // =================================================
+      // FAIL ALERT
+      // =================================================
+
+      alert(
+        'Unable to submit inspection booking.\n\nMobile number must contain exactly 10 digits.'
+      );
 
       return;
 
@@ -326,13 +358,24 @@ export class BookInspectionComponent {
     // ==================================================
 
     if (
+
       !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(
         this.form.email.trim()
       )
+
     ) {
 
       this.errorMessage =
         'Please enter a valid email address.';
+
+
+      // =================================================
+      // FAIL ALERT
+      // =================================================
+
+      alert(
+        'Unable to submit inspection booking.\n\nPlease enter a valid email address.'
+      );
 
       return;
 
@@ -344,11 +387,22 @@ export class BookInspectionComponent {
     // ==================================================
 
     if (
+
       this.form.bookingDate < this.today
+
     ) {
 
       this.errorMessage =
         'Please select a valid future date.';
+
+
+      // =================================================
+      // FAIL ALERT
+      // =================================================
+
+      alert(
+        'Unable to submit inspection booking.\n\nPlease select a valid future date.'
+      );
 
       return;
 
@@ -379,8 +433,15 @@ export class BookInspectionComponent {
       // =================================================
 
       next: (
+
         response: InspectionBookingResponse
+
       ) => {
+
+
+        // =================================================
+        // STOP LOADING
+        // =================================================
 
         this.submitting = false;
 
@@ -391,19 +452,19 @@ export class BookInspectionComponent {
 
         if (response.success) {
 
-          // -----------------------------------------------
-          // ONLY SUCCESS ALERT
-          // BOOKING ID WILL NOT BE SHOWN
-          // -----------------------------------------------
+
+          // ===============================================
+          // SUCCESS ALERT
+          // ===============================================
 
           alert(
             'Booking Submitted Successfully'
           );
 
 
-          // -----------------------------------------------
+          // ===============================================
           // RESET FORM
-          // -----------------------------------------------
+          // ===============================================
 
           this.form = {
 
@@ -430,9 +491,9 @@ export class BookInspectionComponent {
           };
 
 
-          // -----------------------------------------------
+          // ===============================================
           // CLEAR STATES
-          // -----------------------------------------------
+          // ===============================================
 
           this.successMessage = '';
 
@@ -445,13 +506,35 @@ export class BookInspectionComponent {
 
         } else {
 
-          // -----------------------------------------------
-          // API SUCCESS FALSE
-          // -----------------------------------------------
+
+          // ===============================================
+          // API RETURNED success:false
+          // ===============================================
 
           this.errorMessage =
+
             response.message ||
+
             'Unable to submit inspection booking.';
+
+
+          // ===============================================
+          // FAIL ALERT
+          // ===============================================
+
+          alert(
+
+            'Unable to submit inspection booking.\n\n' +
+
+            (
+
+              response.message ||
+
+              'Please try again.'
+
+            )
+
+          );
 
         }
 
@@ -463,21 +546,60 @@ export class BookInspectionComponent {
       // =================================================
 
       error: (
+
         error
+
       ) => {
 
+
+        // ===============================================
+        // CONSOLE ERROR
+        // ===============================================
+
         console.error(
+
           'Inspection Booking Error:',
+
           error
+
         );
 
+
+        // ===============================================
+        // STOP LOADING
+        // ===============================================
 
         this.submitting = false;
 
 
-        this.errorMessage =
+        // ===============================================
+        // GET BACKEND ERROR MESSAGE
+        // ===============================================
+
+        const backendMessage =
+
           error?.error?.message ||
+
+          error?.message ||
+
           'Unable to submit inspection booking. Please try again.';
+
+
+        this.errorMessage =
+          backendMessage;
+
+
+        // ===============================================
+        // FAIL ALERT
+        // ===============================================
+
+        alert(
+
+          'Unable to submit inspection booking.\n\n' +
+
+          backendMessage
+
+        );
 
       }
 
@@ -491,6 +613,7 @@ export class BookInspectionComponent {
   // ====================================================
 
   resetForm(): void {
+
 
     this.form = {
 
@@ -524,6 +647,8 @@ export class BookInspectionComponent {
     this.errorMessage = '';
 
     this.bookingId = null;
+
+    this.submitting = false;
 
   }
 
