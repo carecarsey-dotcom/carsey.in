@@ -214,9 +214,7 @@ export class CarDetailsComponent
   // ===================================================
 
   private apiUrl =
-  'https://dependable-determination-production-434d.up.railway.app/api';
-
-
+  'https://carseyin-production.up.railway.app/api';
   // ===================================================
   // VEHICLE
   // ===================================================
@@ -1100,8 +1098,7 @@ export class CarDetailsComponent
 
     // If only a filename or uploads-relative path is returned,
     // the backend static uploads route is still the source.
-    return `https://dependable-determination-production-434d.up.railway.app${imagePath}`;
-
+    return `https://carseyin-production.up.railway.app${imagePath}`;
   }
 
 
