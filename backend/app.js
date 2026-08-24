@@ -1,6 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 const path = require("path");
+const fs = require("fs");
 
 require("dotenv").config();
 require("./config/db");
@@ -136,7 +137,9 @@ app.use(
 // ======================================================
 
 app.use(
-    express.json()
+    express.json({
+        limit: "50mb"
+    })
 );
 
 
@@ -146,22 +149,152 @@ app.use(
 
 app.use(
     express.urlencoded({
-        extended: true
+        extended: true,
+        limit: "50mb"
     })
+);
+
+
+// ======================================================
+// RAILWAY / LOCAL UPLOAD DIRECTORY
+// ======================================================
+//
+// Railway Volume:
+//
+//     /app/uploads
+//
+// Local development:
+//
+//     backend/uploads
+//
+// Railway Volume ko automatically detect kiya jayega.
+//
+// ======================================================
+
+const railwayUploadDirectory =
+    "/app/uploads";
+
+const localUploadDirectory =
+    path.join(
+        __dirname,
+        "uploads"
+    );
+
+
+// ======================================================
+// SELECT UPLOAD DIRECTORY
+// ======================================================
+
+const uploadDirectory =
+    fs.existsSync(
+        railwayUploadDirectory
+    )
+        ? railwayUploadDirectory
+        : localUploadDirectory;
+
+
+// ======================================================
+// CREATE UPLOAD DIRECTORY
+// ======================================================
+
+if (
+    !fs.existsSync(
+        uploadDirectory
+    )
+) {
+    fs.mkdirSync(
+        uploadDirectory,
+        {
+            recursive: true
+        }
+    );
+}
+
+
+// ======================================================
+// VEHICLE IMAGE DIRECTORY
+// ======================================================
+
+const vehicleUploadDirectory =
+    path.join(
+        uploadDirectory,
+        "vehicles"
+    );
+
+
+// ======================================================
+// CREATE VEHICLE IMAGE DIRECTORY
+// ======================================================
+
+if (
+    !fs.existsSync(
+        vehicleUploadDirectory
+    )
+) {
+    fs.mkdirSync(
+        vehicleUploadDirectory,
+        {
+            recursive: true
+        }
+    );
+}
+
+
+// ======================================================
+// DEBUG UPLOAD PATH
+// ======================================================
+
+console.log(
+    "========================================"
+);
+
+console.log(
+    "UPLOAD DIRECTORY:"
+);
+
+console.log(
+    uploadDirectory
+);
+
+console.log(
+    "VEHICLE UPLOAD DIRECTORY:"
+);
+
+console.log(
+    vehicleUploadDirectory
+);
+
+console.log(
+    "========================================"
 );
 
 
 // ======================================================
 // STATIC UPLOAD FOLDER
 // ======================================================
+//
+// Browser URL:
+//
+// /uploads/vehicles/filename.jpg
+//
+// Railway physical path:
+//
+// /app/uploads/vehicles/filename.jpg
+//
+// Local physical path:
+//
+// backend/uploads/vehicles/filename.jpg
+//
+// ======================================================
 
 app.use(
     "/uploads",
     express.static(
-        path.join(
-            __dirname,
-            "uploads"
-        )
+        uploadDirectory,
+        {
+            maxAge: "1d",
+            fallthrough: true
+        }
     )
 );
 
@@ -384,14 +517,10 @@ app.use(
 // ------------------------------------------------------
 
 app.get(
-
     "/api/admin/vehicles",
-
     verifyToken,
-
     vehicleController
         .getAllAdminVehicles
-
 );
 
 
@@ -443,12 +572,46 @@ app.use(
 // GET
 // /api/admin/vehicles/:carId/images
 //
+// PUT
+// /api/admin/vehicles/:carId/images/:imageId
+//
+// DELETE
+// /api/admin/vehicles/:carId/images/:imageId
+//
+// PUT
+// /api/admin/vehicles/:carId/images/:imageId/primary
+//
 // ======================================================
 
 app.use(
     "/api/admin/vehicles",
     verifyToken,
     vehicleImageRoutes
+);
+
+
+// ======================================================
+// HEALTH CHECK
+// ======================================================
+
+app.get(
+    "/health",
+    (req, res) => {
+
+        return res.status(200).json({
+
+            success: true,
+
+            message:
+                "Carsey.in Backend is Healthy.",
+
+            uploadDirectory,
+
+            vehicleUploadDirectory
+
+        });
+
+    }
 );
 
 

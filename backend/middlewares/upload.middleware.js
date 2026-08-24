@@ -3,17 +3,57 @@ const path = require("path");
 const fs = require("fs");
 
 // ======================================================
-// UPLOAD DIRECTORY
+// RAILWAY VOLUME
+// ======================================================
+//
+// Railway Volume mount path:
+// /app/uploads
+//
+// Local development:
+// backend/uploads
+//
+// ======================================================
+
+const railwayUploadRoot = "/app/uploads";
+
+const localUploadRoot = path.join(
+    __dirname,
+    "..",
+    "uploads"
+);
+
+// ======================================================
+// SELECT UPLOAD ROOT
+// ======================================================
+
+const uploadRootDirectory = fs.existsSync(
+    railwayUploadRoot
+)
+    ? railwayUploadRoot
+    : localUploadRoot;
+
+// ======================================================
+// VEHICLE UPLOAD DIRECTORY
 // ======================================================
 
 const uploadDirectory = path.join(
-    __dirname,
-    "..",
-    "uploads",
+    uploadRootDirectory,
     "vehicles"
 );
 
-// Folder automatically create ho jayega
+// ======================================================
+// CREATE UPLOAD DIRECTORY
+// ======================================================
+
+if (!fs.existsSync(uploadRootDirectory)) {
+    fs.mkdirSync(
+        uploadRootDirectory,
+        {
+            recursive: true
+        }
+    );
+}
+
 if (!fs.existsSync(uploadDirectory)) {
     fs.mkdirSync(
         uploadDirectory,
@@ -24,10 +64,50 @@ if (!fs.existsSync(uploadDirectory)) {
 }
 
 // ======================================================
-// STORAGE
+// DEBUG
+// ======================================================
+
+console.log(
+    "=========================================="
+);
+
+console.log(
+    "UPLOAD ROOT DIRECTORY:"
+);
+
+console.log(
+    uploadRootDirectory
+);
+
+console.log(
+    "VEHICLE UPLOAD DIRECTORY:"
+);
+
+console.log(
+    uploadDirectory
+);
+
+console.log(
+    "RAILWAY VOLUME EXISTS:"
+);
+
+console.log(
+    fs.existsSync(railwayUploadRoot)
+);
+
+console.log(
+    "=========================================="
+);
+
+// ======================================================
+// MULTER STORAGE
 // ======================================================
 
 const storage = multer.diskStorage({
+
+    // ==================================================
+    // DESTINATION
+    // ==================================================
 
     destination: (
         req,
@@ -35,11 +115,26 @@ const storage = multer.diskStorage({
         cb
     ) => {
 
+        // Make absolutely sure folder exists
+        if (!fs.existsSync(uploadDirectory)) {
+
+            fs.mkdirSync(
+                uploadDirectory,
+                {
+                    recursive: true
+                }
+            );
+        }
+
         cb(
             null,
             uploadDirectory
         );
     },
+
+    // ==================================================
+    // FILE NAME
+    // ==================================================
 
     filename: (
         req,
@@ -79,23 +174,24 @@ const fileFilter = (
 ) => {
 
     const allowedExtensions =
-        /jpeg|jpg|png|webp/;
+        /\.(jpeg|jpg|png|webp)$/i;
 
-    const extension =
+    const allowedMimeTypes =
+        /^(image\/jpeg|image\/jpg|image\/png|image\/webp)$/i;
+
+    const extensionValid =
         allowedExtensions.test(
-            path.extname(
-                file.originalname
-            ).toLowerCase()
+            file.originalname
         );
 
-    const mimeType =
-        allowedExtensions.test(
+    const mimeTypeValid =
+        allowedMimeTypes.test(
             file.mimetype
         );
 
     if (
-        extension &&
-        mimeType
+        extensionValid &&
+        mimeTypeValid
     ) {
 
         return cb(
@@ -107,7 +203,8 @@ const fileFilter = (
     return cb(
         new Error(
             "Only JPG, JPEG, PNG and WEBP images are allowed."
-        )
+        ),
+        false
     );
 };
 
@@ -115,27 +212,26 @@ const fileFilter = (
 // MULTER
 // ======================================================
 
-const upload =
-    multer({
+const upload = multer({
 
-        storage,
+    storage,
 
-        limits: {
+    limits: {
 
-            fileSize:
-                5 * 1024 * 1024,
+        // Maximum 5 MB per image
+        fileSize:
+            5 * 1024 * 1024,
 
-            files: 10
+        // Maximum 10 images
+        files: 10
+    },
 
-        },
+    fileFilter
 
-        fileFilter
-
-    });
+});
 
 // ======================================================
 // EXPORT
 // ======================================================
 
-module.exports =
-    upload;
+module.exports = upload;
