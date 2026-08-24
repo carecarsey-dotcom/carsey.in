@@ -523,76 +523,68 @@ export class SellCarComponent {
 
     }
 
+// ===================================================
+// SUBMIT
+// ===================================================
 
-    // ===================================================
-    // SUBMIT
-    // ===================================================
+this.submitting = true;
 
-    this.submitting = true;
+this.http.post<any>(
+  'https://carseyin-production.up.railway.app/api/vehicles/sell-car',
+  formData
+)
+.subscribe({
 
+  // =================================================
+  // SUCCESS
+  // =================================================
 
-    this.http.post<any>(
-      'http://localhost:5000/api/vehicles/sell-car',
-      formData
-    )
-    .subscribe({
+  next: (response) => {
 
-      // =================================================
-      // SUCCESS
-      // =================================================
+    console.log(
+      'Sell Car Response:',
+      response
+    );
 
-      next: (response) => {
+    this.submitting = false;
 
-        console.log(
-          'Sell Car Response:',
-          response
-        );
+    // =================================================
+    // ALERT
+    // =================================================
 
+    alert(
+      'Sell Car Request Submitted Successfully'
+    );
 
-        this.submitting = false;
+    // =================================================
+    // RESET
+    // =================================================
 
+    this.resetForm();
 
-        // =================================================
-        // ALERT
-        // =================================================
+  },
 
-        alert(
-          'Sell Car Request Submitted Successfully'
-        );
+  // =================================================
+  // ERROR
+  // =================================================
 
+  error: (error) => {
 
-        // =================================================
-        // RESET
-        // =================================================
+    console.error(
+      'Sell Car Error:',
+      error
+    );
 
-        this.resetForm();
+    this.submitting = false;
 
-      },
+    alert(
+      error?.error?.message ||
+      'Unable to submit sell car request. Please try again.'
+    );
 
+  }
 
-      // =================================================
-      // ERROR
-      // =================================================
-
-      error: (error) => {
-
-        console.error(
-          'Sell Car Error:',
-          error
-        );
-
-
-        this.submitting = false;
-
-
-        alert(
-          error?.error?.message ||
-          'Unable to submit sell car request. Please try again.'
-        );
-
-      }
-
-    });
+});
 
   }
 
