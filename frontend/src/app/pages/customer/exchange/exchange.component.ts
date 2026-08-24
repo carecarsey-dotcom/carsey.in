@@ -71,7 +71,7 @@ export class ExchangeComponent {
   // ====================================================
 
   private apiUrl =
-    'http://localhost:5000/api/vehicles/exchange';
+  'https://carseyin-production.up.railway.app/api/vehicles/exchange';
 
 
   // ====================================================
