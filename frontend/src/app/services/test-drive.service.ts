@@ -13,6 +13,17 @@ import {
 
 
 // ======================================================
+// API CONFIG
+// ======================================================
+
+const API_BASE_URL =
+  window.location.hostname === 'localhost' ||
+  window.location.hostname === '127.0.0.1'
+    ? 'http://localhost:5000/api'
+    : 'https://carseyin-production.up.railway.app/api';
+
+
+// ======================================================
 // TEST DRIVE REQUEST INTERFACE
 // ======================================================
 
@@ -37,7 +48,6 @@ export interface TestDriveRequest {
   status?: string;
 
   created_at?: string;
-
 }
 
 
@@ -62,9 +72,7 @@ export interface TestDriveResponse {
     status?: string;
 
     message?: string;
-
   };
-
 }
 
 
@@ -81,11 +89,12 @@ export class TestDriveService {
     inject(HttpClient);
 
 
- private apiUrl =
-  window.location.hostname === 'localhost' ||
-  window.location.hostname === '127.0.0.1'
-    ? 'http://localhost:5000/api'
-    : 'https://carseyin-production.up.railway.app/api';
+  // ====================================================
+  // API URL
+  // ====================================================
+
+  private apiUrl =
+    API_BASE_URL;
 
 
   // ====================================================
@@ -99,7 +108,6 @@ export class TestDriveService {
     return this.http.get<TestDriveResponse>(
       `${this.apiUrl}/admin/test-drive-requests`
     );
-
   }
 
 
@@ -116,7 +124,6 @@ export class TestDriveService {
     return this.http.get<TestDriveResponse>(
       `${this.apiUrl}/admin/test-drive-requests/${requestId}`
     );
-
   }
 
 
@@ -127,6 +134,7 @@ export class TestDriveService {
 
   updateStatus(
     requestId: number,
+
     status:
       'Pending' |
       'Approved' |
@@ -140,7 +148,6 @@ export class TestDriveService {
         status
       }
     );
-
   }
 
 
@@ -164,9 +171,7 @@ export class TestDriveService {
       preferredDate: string;
 
       preferredTime: string;
-
     }
-
   ):
     Observable<TestDriveResponse> {
 
@@ -174,7 +179,5 @@ export class TestDriveService {
       `${this.apiUrl}/vehicles/${carId}/test-drive`,
       data
     );
-
   }
-
 }

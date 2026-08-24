@@ -13,6 +13,17 @@ import {
 
 
 // ======================================================
+// API CONFIG
+// ======================================================
+
+const API_BASE_URL =
+  window.location.hostname === 'localhost' ||
+  window.location.hostname === '127.0.0.1'
+    ? 'http://localhost:5000/api'
+    : 'https://carseyin-production.up.railway.app/api';
+
+
+// ======================================================
 // SELL CAR REQUEST
 // ======================================================
 
@@ -53,7 +64,6 @@ export interface SellCarRequest {
   status?: string;
 
   created_at?: string;
-
 }
 
 
@@ -76,9 +86,7 @@ export interface SellCarResponse {
     sellId?: number;
 
     status?: string;
-
   };
-
 }
 
 
@@ -95,8 +103,12 @@ export class SellCarService {
     inject(HttpClient);
 
 
+  // ====================================================
+  // API URL
+  // ====================================================
+
   private apiUrl =
-    'http://localhost:5000/api';
+    API_BASE_URL;
 
 
   // ====================================================
@@ -109,7 +121,6 @@ export class SellCarService {
     return this.http.get<SellCarResponse>(
       `${this.apiUrl}/admin/sell-car-requests`
     );
-
   }
 
 
@@ -125,7 +136,6 @@ export class SellCarService {
     return this.http.get<SellCarResponse>(
       `${this.apiUrl}/admin/sell-car-requests/${sellId}`
     );
-
   }
 
 
@@ -134,25 +144,19 @@ export class SellCarService {
   // ====================================================
 
   updateStatus(
-
     sellId: number,
 
     status:
       'Approved' |
       'Rejected'
-
   ):
     Observable<SellCarResponse> {
 
     return this.http.patch<SellCarResponse>(
       `${this.apiUrl}/admin/sell-car-requests/${sellId}/status`,
-
       {
         status
       }
-
     );
-
   }
-
 }

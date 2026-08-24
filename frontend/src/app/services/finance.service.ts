@@ -13,6 +13,17 @@ import {
 
 
 // ======================================================
+// API CONFIG
+// ======================================================
+
+const API_BASE_URL =
+  window.location.hostname === 'localhost' ||
+  window.location.hostname === '127.0.0.1'
+    ? 'http://localhost:5000/api'
+    : 'https://carseyin-production.up.railway.app/api';
+
+
+// ======================================================
 // FINANCE REQUEST
 // ======================================================
 
@@ -37,7 +48,6 @@ export interface FinanceRequest {
   status?: string;
 
   created_at?: string;
-
 }
 
 
@@ -76,9 +86,7 @@ export interface FinanceResponse {
     status?: string;
 
     createdAt?: string;
-
   };
-
 }
 
 
@@ -95,8 +103,12 @@ export class FinanceService {
     inject(HttpClient);
 
 
+  // ====================================================
+  // API URL
+  // ====================================================
+
   private apiUrl =
-    'http://localhost:5000/api';
+    API_BASE_URL;
 
 
   // ====================================================
@@ -109,7 +121,6 @@ export class FinanceService {
     return this.http.get<FinanceResponse>(
       `${this.apiUrl}/admin/finance-requests`
     );
-
   }
 
 
@@ -125,7 +136,6 @@ export class FinanceService {
     return this.http.get<FinanceResponse>(
       `${this.apiUrl}/admin/finance-requests/${financeId}`
     );
-
   }
 
 
@@ -140,19 +150,15 @@ export class FinanceService {
       'Pending' |
       'Approved' |
       'Rejected'
-
   ):
     Observable<FinanceResponse> {
 
     return this.http.patch<FinanceResponse>(
       `${this.apiUrl}/admin/finance-requests/${financeId}/status`,
-
       {
         status
       }
-
     );
-
   }
 
 
@@ -176,9 +182,7 @@ export class FinanceService {
       monthlyIncome: number;
 
       downPayment: number;
-
     }
-
   ):
     Observable<FinanceResponse> {
 
@@ -186,7 +190,5 @@ export class FinanceService {
       `${this.apiUrl}/vehicles/${carId}/finance`,
       data
     );
-
   }
-
 }

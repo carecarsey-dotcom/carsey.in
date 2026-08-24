@@ -12,13 +12,22 @@ import {
 } from 'rxjs';
 
 
+// ======================================================
+// API CONFIG
+// ======================================================
+
+const API_BASE_URL =
+  window.location.hostname === 'localhost' ||
+  window.location.hostname === '127.0.0.1'
+    ? 'http://localhost:5000/api'
+    : 'https://carseyin-production.up.railway.app/api';
+
+
 @Injectable({
   providedIn: 'root'
 })
 
-
 export class InspectionBookingService {
-
 
   private readonly http =
     inject(HttpClient);
@@ -29,7 +38,7 @@ export class InspectionBookingService {
   // ======================================================
 
   private readonly apiUrl =
-    'http://localhost:5000/api';
+    API_BASE_URL;
 
 
   // ======================================================
@@ -41,7 +50,6 @@ export class InspectionBookingService {
     return this.http.get<any>(
       `${this.apiUrl}/admin/inspection-bookings`
     );
-
   }
 
 
@@ -54,11 +62,8 @@ export class InspectionBookingService {
   ): Observable<any> {
 
     return this.http.get<any>(
-
       `${this.apiUrl}/admin/inspection-bookings/${bookingId}`
-
     );
-
   }
 
 
@@ -67,26 +72,19 @@ export class InspectionBookingService {
   // ======================================================
 
   updateBookingStatus(
-
     bookingId: number,
 
     status:
       'Pending' |
       'Approved' |
       'Rejected'
-
   ): Observable<any> {
 
     return this.http.patch<any>(
-
       `${this.apiUrl}/admin/inspection-bookings/${bookingId}/status`,
-
       {
         status
       }
-
     );
-
   }
-
 }

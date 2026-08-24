@@ -12,6 +12,21 @@ import {
 } from 'rxjs';
 
 
+// ======================================================
+// API CONFIG
+// ======================================================
+
+const API_BASE_URL =
+  window.location.hostname === 'localhost' ||
+  window.location.hostname === '127.0.0.1'
+    ? 'http://localhost:5000/api'
+    : 'https://carseyin-production.up.railway.app/api';
+
+
+// ======================================================
+// EXCHANGE REQUEST
+// ======================================================
+
 export interface ExchangeRequest {
 
   exchange_id: number;
@@ -43,9 +58,12 @@ export interface ExchangeRequest {
   status?: string;
 
   created_at?: string;
-
 }
 
+
+// ======================================================
+// RESPONSE
+// ======================================================
 
 export interface ExchangeResponse {
 
@@ -62,11 +80,13 @@ export interface ExchangeResponse {
     exchangeId?: number;
 
     status?: string;
-
   };
-
 }
 
+
+// ======================================================
+// SERVICE
+// ======================================================
 
 @Injectable({
   providedIn: 'root'
@@ -77,8 +97,12 @@ export class ExchangeService {
     inject(HttpClient);
 
 
+  // ====================================================
+  // API URL
+  // ====================================================
+
   private apiUrl =
-    'http://localhost:5000/api';
+    API_BASE_URL;
 
 
   // ==========================================
@@ -91,7 +115,6 @@ export class ExchangeService {
     return this.http.get<ExchangeResponse>(
       `${this.apiUrl}/admin/exchange-requests`
     );
-
   }
 
 
@@ -107,7 +130,6 @@ export class ExchangeService {
     return this.http.get<ExchangeResponse>(
       `${this.apiUrl}/admin/exchange-requests/${exchangeId}`
     );
-
   }
 
 
@@ -116,26 +138,19 @@ export class ExchangeService {
   // ==========================================
 
   updateStatus(
-
     exchangeId: number,
 
     status:
       'Approved' |
       'Rejected'
-
   ):
     Observable<ExchangeResponse> {
 
     return this.http.patch<ExchangeResponse>(
-
       `${this.apiUrl}/admin/exchange-requests/${exchangeId}/status`,
-
       {
         status
       }
-
     );
-
   }
-
 }

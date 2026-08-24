@@ -13,6 +13,17 @@ import {
 
 
 // ======================================================
+// API CONFIG
+// ======================================================
+
+const API_BASE_URL =
+  window.location.hostname === 'localhost' ||
+  window.location.hostname === '127.0.0.1'
+    ? 'http://localhost:5000/api'
+    : 'https://carseyin-production.up.railway.app/api';
+
+
+// ======================================================
 // LOAN REQUEST INTERFACE
 // ======================================================
 
@@ -39,7 +50,6 @@ export interface LoanRequest {
   status?: string;
 
   created_at?: string;
-
 }
 
 
@@ -78,9 +88,7 @@ export interface LoanResponse {
     status?: string;
 
     createdAt?: string;
-
   };
-
 }
 
 
@@ -97,8 +105,12 @@ export class LoanService {
     inject(HttpClient);
 
 
+  // ====================================================
+  // API URL
+  // ====================================================
+
   private apiUrl =
-    'http://localhost:5000/api';
+    API_BASE_URL;
 
 
   // ====================================================
@@ -111,7 +123,6 @@ export class LoanService {
     return this.http.get<LoanResponse>(
       `${this.apiUrl}/admin/loan-requests`
     );
-
   }
 
 
@@ -127,7 +138,6 @@ export class LoanService {
     return this.http.get<LoanResponse>(
       `${this.apiUrl}/admin/loan-requests/${loanId}`
     );
-
   }
 
 
@@ -136,26 +146,19 @@ export class LoanService {
   // ====================================================
 
   updateStatus(
-
     loanId: number,
 
     status:
       'Approved' |
       'Rejected'
-
   ):
     Observable<LoanResponse> {
 
     return this.http.patch<LoanResponse>(
-
       `${this.apiUrl}/admin/loan-requests/${loanId}/status`,
-
       {
         status
       }
-
     );
-
   }
-
 }
