@@ -38,13 +38,10 @@ interface LoginResponse {
 
 @Component({
   selector: 'app-login',
-
   standalone: true,
-
   imports: [
     FormsModule
   ],
-
   templateUrl:
     './login.component.html'
 })
@@ -141,6 +138,7 @@ export class LoginComponent
         'Email is required.';
 
       return;
+
     }
 
 
@@ -152,6 +150,7 @@ export class LoginComponent
         'Password is required.';
 
       return;
+
     }
 
 
@@ -163,7 +162,7 @@ export class LoginComponent
 
 
     // ==================================================
-    // API URL
+    // LOGIN API URL
     // ==================================================
 
     const loginUrl =
@@ -191,7 +190,6 @@ export class LoginComponent
             this.password
         }
       )
-
       .subscribe({
 
         // =================================================
@@ -271,6 +269,7 @@ export class LoginComponent
             );
 
           }
+
 
           // ===============================================
           // LOGIN FAILED FROM BACKEND
