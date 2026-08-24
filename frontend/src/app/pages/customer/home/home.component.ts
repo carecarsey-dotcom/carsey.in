@@ -145,7 +145,7 @@ export class HomeComponent
 // API URL
 // ===================================================
 
-  private apiUrl =
+ private apiUrl =
   'https://carseyin-production.up.railway.app/api';
 
 
@@ -1021,7 +1021,7 @@ export class HomeComponent
     // BACKEND IMAGE URL
     // ================================================
 
-    return (
+ return (
   `https://carseyin-production.up.railway.app${imagePath}`
 );
 
