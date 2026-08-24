@@ -11,10 +11,34 @@ const vehicleController =
 // ======================================================
 
 if (!vehicleController) {
+
     throw new Error(
         "vehicle.controller.js could not be loaded."
     );
+
 }
+
+
+// ======================================================
+// CONTROLLER FUNCTION SAFETY
+// ======================================================
+
+const checkController = (
+    functionName
+) => {
+
+    if (
+        typeof vehicleController[functionName] !==
+        "function"
+    ) {
+
+        return false;
+
+    }
+
+    return true;
+
+};
 
 
 // ======================================================
@@ -40,25 +64,33 @@ router.get(
         ) {
 
             if (
-                typeof vehicleController
-                    .getAllAdminVehicles !==
-                "function"
+                !checkController(
+                    "getAllAdminVehicles"
+                )
             ) {
+
                 return res.status(500).json({
+
                     success: false,
+
                     message:
                         "getAllAdminVehicles controller function is missing."
+
                 });
+
             }
 
             return vehicleController
                 .getAllAdminVehicles(
                     req,
-                    res
+                    res,
+                    next
                 );
+
         }
 
         next();
+
     }
 );
 
@@ -73,6 +105,9 @@ router.get(
 // Customer website ke liye
 // Sirf published vehicles
 //
+// IMPORTANT:
+// Ye route "/:carId" se PEHLE hona chahiye.
+//
 // ======================================================
 
 router.get(
@@ -80,15 +115,20 @@ router.get(
     (req, res, next) => {
 
         if (
-            typeof vehicleController
-                .getPublishedVehicles !==
-            "function"
+            !checkController(
+                "getPublishedVehicles"
+            )
         ) {
+
             return res.status(500).json({
+
                 success: false,
+
                 message:
                     "getPublishedVehicles controller function is missing."
+
             });
+
         }
 
         return vehicleController
@@ -97,6 +137,95 @@ router.get(
                 res,
                 next
             );
+
+    }
+);
+
+
+// ======================================================
+// CUSTOMER - GET VEHICLE INSPECTION REPORT
+// ======================================================
+//
+// GET
+// /api/vehicles/:carId/inspection-report
+//
+// IMPORTANT:
+// Ye route "/:carId" se PEHLE hona chahiye.
+//
+// ======================================================
+
+router.get(
+    "/:carId/inspection-report",
+    (req, res, next) => {
+
+        if (
+            !checkController(
+                "getVehicleInspectionReport"
+            )
+        ) {
+
+            return res.status(500).json({
+
+                success: false,
+
+                message:
+                    "getVehicleInspectionReport controller function is missing."
+
+            });
+
+        }
+
+        return vehicleController
+            .getVehicleInspectionReport(
+                req,
+                res,
+                next
+            );
+
+    }
+);
+
+
+// ======================================================
+// CUSTOMER - GET VEHICLE IMAGES
+// ======================================================
+//
+// GET
+// /api/vehicles/:carId/images
+//
+// IMPORTANT:
+// Ye route "/:carId" se PEHLE hona chahiye.
+//
+// ======================================================
+
+router.get(
+    "/:carId/images",
+    (req, res, next) => {
+
+        if (
+            !checkController(
+                "getVehicleImages"
+            )
+        ) {
+
+            return res.status(500).json({
+
+                success: false,
+
+                message:
+                    "getVehicleImages controller function is missing."
+
+            });
+
+        }
+
+        return vehicleController
+            .getVehicleImages(
+                req,
+                res,
+                next
+            );
+
     }
 );
 
@@ -112,15 +241,9 @@ router.get(
 //
 // /api/vehicles/30
 //
-// ======================================================
-//
 // IMPORTANT:
-// Ye route missing tha.
-// Isi wajah se:
-//
-// GET /api/vehicles/30
-//
-// Route Not Found aa raha tha.
+// Ye route LAST mein hona chahiye,
+// kyunki ":carId" generic parameter hai.
 //
 // ======================================================
 
@@ -129,15 +252,20 @@ router.get(
     (req, res, next) => {
 
         if (
-            typeof vehicleController
-                .getCompleteVehicleData !==
-            "function"
+            !checkController(
+                "getCompleteVehicleData"
+            )
         ) {
+
             return res.status(500).json({
+
                 success: false,
+
                 message:
                     "getCompleteVehicleData controller function is missing."
+
             });
+
         }
 
         return vehicleController
@@ -146,6 +274,7 @@ router.get(
                 res,
                 next
             );
+
     }
 );
 
@@ -157,7 +286,11 @@ router.get(
 // GET
 // /api/vehicles
 //
-// Existing route ko remove nahi kiya gaya.
+// Existing route preserved.
+//
+// IMPORTANT:
+// Isko "/:carId" ke BAAD nahi rakhna chahiye,
+// warna "/" request ke flow mein confusion ho sakta hai.
 //
 // ======================================================
 
@@ -165,16 +298,69 @@ router.get(
     "/",
     (req, res, next) => {
 
+        // --------------------------------------------------
+        // IMPORTANT
+        // --------------------------------------------------
+        //
+        // Agar router /api/admin/vehicles par mounted hai,
+        // to upar wala admin handler request handle karega.
+        //
+        // Agar router /api/vehicles par mounted hai,
+        // to customer published vehicles return honge.
+        //
+        // --------------------------------------------------
+
         if (
-            typeof vehicleController
-                .getPublishedVehicles !==
-            "function"
+            req.baseUrl ===
+            "/api/admin/vehicles"
         ) {
+
+            if (
+                !checkController(
+                    "getAllAdminVehicles"
+                )
+            ) {
+
+                return res.status(500).json({
+
+                    success: false,
+
+                    message:
+                        "getAllAdminVehicles controller function is missing."
+
+                });
+
+            }
+
+            return vehicleController
+                .getAllAdminVehicles(
+                    req,
+                    res,
+                    next
+                );
+
+        }
+
+
+        // --------------------------------------------------
+        // CUSTOMER
+        // --------------------------------------------------
+
+        if (
+            !checkController(
+                "getPublishedVehicles"
+            )
+        ) {
+
             return res.status(500).json({
+
                 success: false,
+
                 message:
                     "getPublishedVehicles controller function is missing."
+
             });
+
         }
 
         return vehicleController
@@ -183,76 +369,7 @@ router.get(
                 res,
                 next
             );
-    }
-);
 
-
-// ======================================================
-// CUSTOMER - GET VEHICLE INSPECTION REPORT
-// ======================================================
-//
-// GET
-// /api/vehicles/:carId/inspection-report
-//
-// ======================================================
-
-router.get(
-    "/:carId/inspection-report",
-    (req, res, next) => {
-
-        if (
-            typeof vehicleController
-                .getVehicleInspectionReport !==
-            "function"
-        ) {
-            return res.status(500).json({
-                success: false,
-                message:
-                    "getVehicleInspectionReport controller function is missing."
-            });
-        }
-
-        return vehicleController
-            .getVehicleInspectionReport(
-                req,
-                res,
-                next
-            );
-    }
-);
-
-
-// ======================================================
-// CUSTOMER - GET VEHICLE IMAGES
-// ======================================================
-//
-// GET
-// /api/vehicles/:carId/images
-//
-// ======================================================
-
-router.get(
-    "/:carId/images",
-    (req, res, next) => {
-
-        if (
-            typeof vehicleController
-                .getVehicleImages !==
-            "function"
-        ) {
-            return res.status(500).json({
-                success: false,
-                message:
-                    "getVehicleImages controller function is missing."
-            });
-        }
-
-        return vehicleController
-            .getVehicleImages(
-                req,
-                res,
-                next
-            );
     }
 );
 
@@ -271,15 +388,20 @@ router.post(
     (req, res, next) => {
 
         if (
-            typeof vehicleController
-                .addVehicle !==
-            "function"
+            !checkController(
+                "addVehicle"
+            )
         ) {
+
             return res.status(500).json({
+
                 success: false,
+
                 message:
                     "addVehicle controller function is missing."
+
             });
+
         }
 
         return vehicleController
@@ -288,6 +410,7 @@ router.post(
                 res,
                 next
             );
+
     }
 );
 

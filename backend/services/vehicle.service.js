@@ -84,8 +84,19 @@ const addVehicle = async (vehicle) => {
     // ONLY PUBLISHED VEHICLE
     // ==================================================
 
+    const normalizedVehicleStatus =
+        String(
+            vehicle.status ??
+            vehicle.publishStatus ??
+            ""
+        )
+            .trim()
+            .toLowerCase();
+
     const isPublished =
-        vehicle.status === "Published";
+        normalizedVehicleStatus === "published" ||
+        normalizedVehicleStatus === "yes" ||
+        normalizedVehicleStatus === "publish";
 
 
     // ==================================================
@@ -466,6 +477,47 @@ const generateFinalVehicleInspectionReport = async (
             pdf.pdfPath
         );
 
+
+    // ==================================================
+    // IMPORTANT - MARK INSPECTION REPORT AS PUBLISHED
+    // ==================================================
+    //
+    // Vehicle repository initially creates the inspection
+    // report with publish_status = "No".
+    // Final PDF generation happens later, after images are
+    // uploaded. At that point the report must also be marked
+    // as published in inspection_reports.
+    //
+    // Otherwise customer email / WhatsApp delivery checks
+    // publish_status and returns:
+    // "Inspection report is not published."
+    //
+    // Existing score and remarks are preserved. Only the
+    // publish status is changed to "Yes".
+    // ==================================================
+
+    await inspectionReportRepository
+        .updateInspectionReport(
+            reportId,
+            {
+                overallScore:
+                    completeReport.overallScore,
+
+                engineRemark:
+                    completeReport.engineRemark,
+
+                overallRemark:
+                    completeReport.overallRemark,
+
+                publishStatus:
+                    "Yes"
+            }
+        );
+
+
+    console.log(
+        "Inspection report marked as published successfully."
+    );
 
     console.log(
         "PDF path saved in inspection_reports."

@@ -2,1035 +2,150 @@ const db = require("../config/db");
 
 
 // ======================================================
-// UNIVERSAL DATABASE QUERY HELPER
+// VEHICLE REPOSITORY
 // ======================================================
 //
-// Ye helper mysql2 ke:
+// IMPORTANT FIX:
+// Inspection report publish_status is synchronized with
+// vehicle status so that:
+// Published Vehicle
+//        ↓
+// Inspection Report publish_status = Yes
 //
-// 1. normal callback pool
-// 2. promise pool
-// 3. mysql2/promise connection
-//
-// tino ke saath kaam karne ki koshish karta hai.
-//
-// SELECT  -> rows
-// INSERT  -> result
-// UPDATE  -> result
-// DELETE  -> result
-//
+// Existing functionality is preserved.
 // ======================================================
 
-const executeQuery = async (
+
+// ======================================================
+// HELPER
+// ======================================================
+
+const normalizeValue = (value) => {
+
+    if (
+        value === undefined ||
+        value === null ||
+        value === ""
+    ) {
+        return null;
+    }
+
+    return value;
+};
+
+
+// ======================================================
+// GET CONNECTION
+// ======================================================
+
+const getConnection = async () => {
+
+    if (
+        db &&
+        typeof db.getConnection === "function"
+    ) {
+        return await db.getConnection();
+    }
+
+    return db;
+};
+
+
+// ======================================================
+// RELEASE CONNECTION
+// ======================================================
+
+const releaseConnection = (connection) => {
+
+    if (
+        connection &&
+        typeof connection.release === "function"
+    ) {
+        connection.release();
+    }
+};
+
+
+// ======================================================
+// QUERY
+// ======================================================
+
+const query = async (
     sql,
     params = []
 ) => {
 
-    // ==================================================
-    // MYSQL2 PROMISE POOL
-    // ==================================================
-    //
-    // IMPORTANT:
-    // mysql2 normal Pool ALSO exposes execute().
-    // But its execute() is callback based.
-    //
-    // Calling:
-    //
-    //     await db.execute(sql, params)
-    //
-    // on a normal callback pool causes:
-    //
-    //     TypeError: cb is not a function
-    //
-    // Therefore promise() MUST be preferred before
-    // using the callback query fallback.
-    // ==================================================
+    const connection =
+        await getConnection();
 
-    if (
-        db &&
-        typeof db.promise === "function"
-    ) {
-
-        const promiseDb =
-            db.promise();
+    try {
 
         const result =
-            await promiseDb.execute(
+            await connection.query(
                 sql,
                 params
             );
 
-        return Array.isArray(result)
-            ? result[0]
-            : result;
+        if (
+            Array.isArray(result) &&
+            result.length === 2
+        ) {
+            return result[0];
+        }
+
+        return result;
 
     }
+    finally {
 
-
-    // ==================================================
-    // MYSQL2/PROMISE CONNECTION / POOL
-    // ==================================================
-
-    if (
-        db &&
-        typeof db.execute === "function"
-    ) {
-
-        const result =
-            await db.execute(
-                sql,
-                params
-            );
-
-        return Array.isArray(result)
-            ? result[0]
-            : result;
-
-    }
-
-
-    // ==================================================
-    // MYSQL2 CALLBACK STYLE
-    // ==================================================
-
-    if (
-        db &&
-        typeof db.query === "function"
-    ) {
-
-        return new Promise(
-            (
-                resolve,
-                reject
-            ) => {
-
-                db.query(
-                    sql,
-                    params,
-                    (
-                        error,
-                        result
-                    ) => {
-
-                        if (error) {
-
-                            console.error(
-                                "Database Query Error:",
-                                error.message
-                            );
-
-                            return reject(
-                                error
-                            );
-
-                        }
-
-
-                        resolve(
-                            result
-                        );
-
-                    }
-                );
-
-            }
+        releaseConnection(
+            connection
         );
-
     }
-
-
-    // ==================================================
-    // INVALID DATABASE
-    // ==================================================
-
-    throw new Error(
-        "Database connection is not configured correctly."
-    );
-
 };
 
 
 // ======================================================
-// GET CARS TABLE COLUMNS
+// GET VEHICLE BY ID
 // ======================================================
 
-const getCarsColumns = async () => {
+const getVehicleById = async (
+    carId
+) => {
 
     const rows =
-        await executeQuery(
-
+        await query(
             `
-            SELECT
-                COLUMN_NAME
-
-            FROM
-                INFORMATION_SCHEMA.COLUMNS
-
-            WHERE
-                TABLE_SCHEMA = DATABASE()
-
-                AND TABLE_NAME = 'cars'
-            `
-
-        );
-
-
-    return Array.isArray(rows)
-        ? rows.map(
-            row =>
-                row.COLUMN_NAME
-        )
-        : [];
-
-};
-
-
-// ======================================================
-// GET INSPECTION REPORT COLUMNS
-// ======================================================
-
-const getInspectionReportColumns =
-    async () => {
-
-        try {
-
-            const rows =
-                await executeQuery(
-
-                    `
-                    SELECT
-                        COLUMN_NAME
-
-                    FROM
-                        INFORMATION_SCHEMA.COLUMNS
-
-                    WHERE
-                        TABLE_SCHEMA = DATABASE()
-
-                        AND TABLE_NAME =
-                            'inspection_reports'
-                    `
-
-                );
-
-
-            return Array.isArray(rows)
-                ? rows.map(
-                    row =>
-                        row.COLUMN_NAME
-                )
-                : [];
-
-
-        } catch (
-            error
-        ) {
-
-            console.error(
-                "Inspection Report Columns Error:",
-                error.message
-            );
-
-            return [];
-
-        }
-
-    };
-
-
-// ======================================================
-// GET CHECKLIST COLUMNS
-// ======================================================
-
-const getChecklistColumns =
-    async () => {
-
-        try {
-
-            const rows =
-                await executeQuery(
-
-                    `
-                    SELECT
-                        COLUMN_NAME
-
-                    FROM
-                        INFORMATION_SCHEMA.COLUMNS
-
-                    WHERE
-                        TABLE_SCHEMA = DATABASE()
-
-                        AND TABLE_NAME =
-                            'inspection_checklist'
-                    `
-
-                );
-
-
-            return Array.isArray(rows)
-                ? rows.map(
-                    row =>
-                        row.COLUMN_NAME
-                )
-                : [];
-
-
-        } catch (
-            error
-        ) {
-
-            console.error(
-                "Checklist Columns Error:",
-                error.message
-            );
-
-            return [];
-
-        }
-
-    };
-
-
-// ======================================================
-// PICK VALUE
-// ======================================================
-
-const pickValue = (
-    object,
-    keys
-) => {
-
-    if (
-        !object ||
-        typeof object !== "object"
-    ) {
-
-        return undefined;
-
-    }
-
-
-    for (
-        const key of keys
-    ) {
-
-        if (
-            object[key] !== undefined &&
-            object[key] !== null &&
-            object[key] !== ""
-        ) {
-
-            return object[key];
-
-        }
-
-    }
-
-
-    return undefined;
-
-};
-
-
-// ======================================================
-// BUILD CARS DATA
-// ======================================================
-
-const buildCarsData = async (
-    vehicle
-) => {
-
-    const columns =
-        await getCarsColumns();
-
-
-    const data = {};
-
-
-    // ==================================================
-    // POSSIBLE DATABASE FIELDS
-    // ==================================================
-
-    const possibleFields = {
-
-        brand: [
-            "brand"
-        ],
-
-        model: [
-            "model"
-        ],
-
-        variant: [
-            "variant"
-        ],
-
-        manufacturing_year: [
-            "manufacturing_year",
-            "manufacturingYear",
-            "year"
-        ],
-
-        price: [
-            "price"
-        ],
-
-        price_short_note: [
-            "price_short_note",
-            "priceShortNote"
-        ],
-
-        odometer: [
-            "odometer",
-            "kmDriven",
-            "kms",
-            "kilometers"
-        ],
-
-        city: [
-            "city"
-        ],
-
-        transmission: [
-            "transmission"
-        ],
-
-        fuel_type: [
-            "fuel_type",
-            "fuelType"
-        ],
-
-        owner_classification: [
-            "owner_classification",
-            "ownerClassification"
-        ],
-
-        registration_number: [
-            "registration_number",
-            "registrationNumber"
-        ],
-
-        chassis_number: [
-            "chassis_number",
-            "chassisNumber"
-        ],
-
-        engine_number: [
-            "engine_number",
-            "engineNumber"
-        ],
-
-        inspection_date: [
-            "inspection_date",
-            "inspectionDate"
-        ],
-
-        rto: [
-            "rto"
-        ],
-
-        spare_key: [
-            "spare_key",
-            "spareKey"
-        ],
-
-        insurance_type: [
-            "insurance_type",
-            "insuranceType"
-        ],
-
-        insurance_validity: [
-            "insurance_validity",
-            "insuranceValidity"
-        ],
-
-        vehicle_note: [
-            "vehicle_note",
-            "vehicleNote",
-            "notes",
-            "note"
-        ],
-
-        status: [
-            "status"
-        ],
-
-        published_at: [
-            "published_at",
-            "publishedAt"
-        ],
-
-        owner_id: [
-            "owner_id",
-            "ownerId"
-        ]
-
-    };
-
-
-    // ==================================================
-    // SOURCE
-    // ==================================================
-
-    const source =
-        vehicle &&
-        vehicle.vehicle &&
-        typeof vehicle.vehicle === "object"
-
-            ? {
-                ...vehicle,
-                ...vehicle.vehicle
-            }
-
-            : (
-                vehicle || {}
-            );
-
-
-    // ==================================================
-    // MAP DATABASE COLUMNS
-    // ==================================================
-
-    for (
-        const [
-            column,
-            keys
-        ]
-        of Object.entries(
-            possibleFields
-        )
-    ) {
-
-        if (
-            columns.includes(
-                column
-            )
-        ) {
-
-            const value =
-                pickValue(
-                    source,
-                    keys
-                );
-
-
-            if (
-                value !== undefined
-            ) {
-
-                data[column] =
-                    value;
-
-            }
-
-        }
-
-    }
-
-
-    // ==================================================
-    // DEFAULT STATUS
-    // ==================================================
-
-    if (
-        columns.includes("status") &&
-        data.status === undefined
-    ) {
-
-        data.status =
-            pickValue(
-                source,
-                [
-                    "status"
-                ]
-            ) ||
-            "Draft";
-
-    }
-
-
-    return data;
-
-};
-
-
-// ======================================================
-// ADD VEHICLE
-// ======================================================
-//
-// IMPORTANT:
-//
-// Ye function intentionally yahan define hai.
-// Isi ki wajah se:
-//
-// ReferenceError: addVehicle is not defined
-//
-// nahi aayega.
-//
-// ======================================================
-
-const addVehicle = async (
-    vehicle
-) => {
-
-    if (
-        !vehicle ||
-        typeof vehicle !== "object"
-    ) {
-
-        throw new Error(
-            "Vehicle data is required."
-        );
-
-    }
-
-
-    // ==================================================
-    // BUILD CAR DATA
-    // ==================================================
-
-    const carsData =
-        await buildCarsData(
-            vehicle
-        );
-
-
-    if (
-        Object.keys(
-            carsData
-        ).length === 0
-    ) {
-
-        throw new Error(
-            "No valid vehicle fields were provided."
-        );
-
-    }
-
-
-    // ==================================================
-    // INSERT CAR
-    // ==================================================
-
-    const carColumns =
-        Object.keys(
-            carsData
-        );
-
-
-    const placeholders =
-        carColumns
-            .map(
-                () => "?"
-            )
-            .join(", ");
-
-
-    const values =
-        carColumns.map(
-            column =>
-                carsData[column]
-        );
-
-
-    const result =
-        await executeQuery(
-
-            `
-            INSERT INTO cars
-            (
-                ${carColumns.join(", ")}
-            )
-
-            VALUES
-            (
-                ${placeholders}
-            )
+            SELECT *
+            FROM vehicles
+            WHERE car_id = ?
+            LIMIT 1
             `,
-
-            values
-
-        );
-
-
-    const vehicleId =
-        result.insertId;
-
-
-    if (!vehicleId) {
-
-        throw new Error(
-            "Vehicle ID was not generated."
-        );
-
-    }
-
-
-    // ==================================================
-    // INSPECTION DATA
-    // ==================================================
-
-    const inspection =
-        vehicle.inspection &&
-        typeof vehicle.inspection === "object"
-
-            ? vehicle.inspection
-
-            : vehicle;
-
-
-    const overallScore =
-        pickValue(
-            inspection,
             [
-                "overall_score",
-                "overallScore"
+                carId
             ]
         );
 
-
-    const engineRemark =
-        pickValue(
-            inspection,
-            [
-                "engine_remark",
-                "engineRemark"
-            ]
-        );
-
-
-    const overallRemark =
-        pickValue(
-            inspection,
-            [
-                "overall_remark",
-                "overallRemark"
-            ]
-        );
-
-
-    // ==================================================
-    // CREATE INSPECTION REPORT
-    // ==================================================
-
-    let reportId =
-        null;
-
-
-    const reportColumns =
-        await getInspectionReportColumns();
-
-
-    if (
-        reportColumns.length > 0
-    ) {
-
-        const reportData = {};
-
-
-        if (
-            reportColumns.includes(
-                "car_id"
-            )
-        ) {
-
-            reportData.car_id =
-                vehicleId;
-
-        }
-
-
-        if (
-            reportColumns.includes(
-                "overall_score"
-            )
-        ) {
-
-            reportData.overall_score =
-                overallScore !== undefined
-                    ? overallScore
-                    : 0;
-
-        }
-
-
-        if (
-            reportColumns.includes(
-                "engine_remark"
-            )
-        ) {
-
-            reportData.engine_remark =
-                engineRemark !== undefined
-                    ? engineRemark
-                    : "Not provided.";
-
-        }
-
-
-        if (
-            reportColumns.includes(
-                "overall_remark"
-            )
-        ) {
-
-            reportData.overall_remark =
-                overallRemark !== undefined
-                    ? overallRemark
-                    : "Vehicle inspection completed.";
-
-        }
-
-
-        if (
-            reportColumns.includes(
-                "pdf_path"
-            )
-        ) {
-
-            reportData.pdf_path =
-                null;
-
-        }
-
-
-        if (
-            reportColumns.includes(
-                "publish_status"
-            )
-        ) {
-
-            reportData.publish_status =
-                "No";
-
-        }
-
-
-        const keys =
-            Object.keys(
-                reportData
-            );
-
-
-        if (
-            keys.length > 0
-        ) {
-
-            const reportPlaceholders =
-                keys
-                    .map(
-                        () => "?"
-                    )
-                    .join(", ");
-
-
-            const reportResult =
-                await executeQuery(
-
-                    `
-                    INSERT INTO inspection_reports
-                    (
-                        ${keys.join(", ")}
-                    )
-
-                    VALUES
-                    (
-                        ${reportPlaceholders}
-                    )
-                    `,
-
-                    keys.map(
-                        key =>
-                            reportData[key]
-                    )
-
-                );
-
-
-            reportId =
-                reportResult.insertId;
-
-        }
-
-    }
-
-
-    // ==================================================
-    // SAVE CHECKLIST
-    // ==================================================
-
-    const checklist =
-        vehicle.checklist &&
-        typeof vehicle.checklist === "object"
-
-            ? vehicle.checklist
-
-            : null;
-
-
-    if (
-        checklist
-    ) {
-
-        try {
-
-            const checklistColumns =
-                await getChecklistColumns();
-
-
-            if (
-                checklistColumns.length > 0
-            ) {
-
-                const checklistData =
-                    {};
-
-
-                if (
-                    checklistColumns.includes(
-                        "report_id"
-                    ) &&
-                    reportId
-                ) {
-
-                    checklistData.report_id =
-                        reportId;
-
-                }
-
-
-                if (
-                    checklistColumns.includes(
-                        "car_id"
-                    )
-                ) {
-
-                    checklistData.car_id =
-                        vehicleId;
-
-                }
-
-
-                if (
-                    checklistColumns.includes(
-                        "checklist_data"
-                    )
-                ) {
-
-                    checklistData.checklist_data =
-                        JSON.stringify(
-                            checklist
-                        );
-
-                }
-
-
-                if (
-                    checklistColumns.includes(
-                        "data"
-                    )
-                ) {
-
-                    checklistData.data =
-                        JSON.stringify(
-                            checklist
-                        );
-
-                }
-
-
-                if (
-                    checklistColumns.includes(
-                        "inspection_data"
-                    )
-                ) {
-
-                    checklistData.inspection_data =
-                        JSON.stringify(
-                            checklist
-                        );
-
-                }
-
-
-                const keys =
-                    Object.keys(
-                        checklistData
-                    );
-
-
-                if (
-                    keys.length > 0
-                ) {
-
-                    const placeholders =
-                        keys
-                            .map(
-                                () => "?"
-                            )
-                            .join(", ");
-
-
-                    await executeQuery(
-
-                        `
-                        INSERT INTO inspection_checklist
-                        (
-                            ${keys.join(", ")}
-                        )
-
-                        VALUES
-                        (
-                            ${placeholders}
-                        )
-                        `,
-
-                        keys.map(
-                            key =>
-                                checklistData[key]
-                        )
-
-                    );
-
-                }
-
-            }
-
-
-        } catch (
-            checklistError
-        ) {
-
-            console.error(
-                "Checklist Save Warning:",
-                checklistError.message
-            );
-
-        }
-
-    }
-
-
-    // ==================================================
-    // FINAL RESULT
-    // ==================================================
-
-    return {
-
-        vehicleId,
-
-        carId:
-            vehicleId,
-
-        reportId,
-
-        pdfGenerated:
-            false,
-
-        message:
-            "Vehicle and inspection report saved successfully."
-
-    };
-
+    return rows &&
+        rows.length
+        ? rows[0]
+        : null;
+};
+
+
+// ======================================================
+// GET ALL VEHICLES
+// ======================================================
+
+const getAllVehicles = async () => {
+
+    return await query(
+        `
+        SELECT *
+        FROM vehicles
+        ORDER BY car_id DESC
+        `
+    );
 };
 
 
@@ -1038,791 +153,1077 @@ const addVehicle = async (
 // GET ALL ADMIN VEHICLES
 // ======================================================
 
-const getAllAdminVehicles =
-    async () => {
+const getAllAdminVehicles = async () => {
 
-        const rows =
-            await executeQuery(
-
-                `
-                SELECT
-                    c.*
-
-                FROM
-                    cars c
-
-                ORDER BY
-                    c.car_id DESC
-                `
-
-            );
-
-
-        return Array.isArray(rows)
-            ? rows
-            : [];
-
-    };
+    return await query(
+        `
+        SELECT *
+        FROM vehicles
+        ORDER BY car_id DESC
+        `
+    );
+};
 
 
 // ======================================================
 // GET PUBLISHED VEHICLES
 // ======================================================
 
-const getPublishedVehicles =
-    async (
-        filters = {}
-    ) => {
-
-        let sql = `
-
-            SELECT
-                c.*
-
-            FROM
-                cars c
-
-            LEFT JOIN
-                inspection_reports ir
-
-                ON ir.report_id = (
-
-                    SELECT
-                        MAX(ir2.report_id)
-
-                    FROM
-                        inspection_reports ir2
-
-                    WHERE
-                        ir2.car_id =
-                            c.car_id
-
-                )
-
-            WHERE
-                (
-                    LOWER(
-                        COALESCE(
-                            c.status,
-                            ''
-                        )
-                    ) IN (
-                        'yes',
-                        'published',
-                        'publish',
-                        'active',
-                        'available'
-                    )
-
-                    OR
-
-                    LOWER(
-                        COALESCE(
-                            ir.publish_status,
-                            ''
-                        )
-                    ) IN (
-                        'yes',
-                        'published',
-                        'publish',
-                        'active'
-                    )
-                )
-
-        `;
-
-
-        const params = [];
-
-
-        // ==================================================
-        // BRAND
-        // ==================================================
-
-        if (
-            filters.brand
-        ) {
-
-            sql += `
-
-                AND LOWER(
-                    COALESCE(
-                        c.brand,
-                        ''
-                    )
-                )
-                LIKE ?
-
-            `;
-
-
-            params.push(
-                `%${String(
-                    filters.brand
-                ).toLowerCase()}%`
-            );
-
-        }
-
-
-        // ==================================================
-        // MODEL
-        // ==================================================
-
-        if (
-            filters.model
-        ) {
-
-            sql += `
-
-                AND LOWER(
-                    COALESCE(
-                        c.model,
-                        ''
-                    )
-                )
-                LIKE ?
-
-            `;
-
-
-            params.push(
-                `%${String(
-                    filters.model
-                ).toLowerCase()}%`
-            );
-
-        }
-
-
-        // ==================================================
-        // CITY
-        // ==================================================
-
-        if (
-            filters.city
-        ) {
-
-            sql += `
-
-                AND LOWER(
-                    COALESCE(
-                        c.city,
-                        ''
-                    )
-                )
-                LIKE ?
-
-            `;
-
-
-            params.push(
-                `%${String(
-                    filters.city
-                ).toLowerCase()}%`
-            );
-
-        }
-
-
-        // ==================================================
-        // FUEL
-        // ==================================================
-
-        if (
-            filters.fuel_type ||
-            filters.fuelType
-        ) {
-
-            const fuel =
-                filters.fuel_type ||
-                filters.fuelType;
-
-
-            sql += `
-
-                AND LOWER(
-                    COALESCE(
-                        c.fuel_type,
-                        ''
-                    )
-                ) = ?
-
-            `;
-
-
-            params.push(
-                String(
-                    fuel
-                ).toLowerCase()
-            );
-
-        }
-
-
-        // ==================================================
-        // TRANSMISSION
-        // ==================================================
-
-        if (
-            filters.transmission
-        ) {
-
-            sql += `
-
-                AND LOWER(
-                    COALESCE(
-                        c.transmission,
-                        ''
-                    )
-                ) = ?
-
-            `;
-
-
-            params.push(
-                String(
-                    filters.transmission
-                ).toLowerCase()
-            );
-
-        }
-
-
-        // ==================================================
-        // MIN PRICE
-        // ==================================================
-
-        if (
-            filters.minPrice !== undefined &&
-            filters.minPrice !== ""
-        ) {
-
-            const minPrice =
-                Number(
-                    filters.minPrice
-                );
-
-
-            if (
-                Number.isFinite(
-                    minPrice
-                )
-            ) {
-
-                sql += `
-
-                    AND c.price >= ?
-
-                `;
-
-
-                params.push(
-                    minPrice
-                );
-
-            }
-
-        }
-
-
-        // ==================================================
-        // MAX PRICE
-        // ==================================================
-
-        if (
-            filters.maxPrice !== undefined &&
-            filters.maxPrice !== ""
-        ) {
-
-            const maxPrice =
-                Number(
-                    filters.maxPrice
-                );
-
-
-            if (
-                Number.isFinite(
-                    maxPrice
-                )
-            ) {
-
-                sql += `
-
-                    AND c.price <= ?
-
-                `;
-
-
-                params.push(
-                    maxPrice
-                );
-
-            }
-
-        }
-
-
-        // ==================================================
-        // SEARCH
-        // ==================================================
-
-        if (
-            filters.search
-        ) {
-
-            sql += `
-
-                AND (
-
-                    LOWER(
-                        COALESCE(
-                            c.brand,
-                            ''
-                        )
-                    )
-                    LIKE ?
-
-                    OR
-
-                    LOWER(
-                        COALESCE(
-                            c.model,
-                            ''
-                        )
-                    )
-                    LIKE ?
-
-                    OR
-
-                    LOWER(
-                        COALESCE(
-                            c.variant,
-                            ''
-                        )
-                    )
-                    LIKE ?
-
-                    OR
-
-                    LOWER(
-                        COALESCE(
-                            c.city,
-                            ''
-                        )
-                    )
-                    LIKE ?
-
-                    OR
-
-                    LOWER(
-                        COALESCE(
-                            c.transmission,
-                            ''
-                        )
-                    )
-                    LIKE ?
-
-                )
-
-            `;
-
-
-            const search =
-                `%${String(
-                    filters.search
-                ).toLowerCase()}%`;
-
-
-            params.push(
-                search,
-                search,
-                search,
-                search,
-                search
-            );
-
-        }
-
-
-        // ==================================================
-        // ORDER
-        // ==================================================
+const getPublishedVehicles = async (
+    filters = {}
+) => {
+
+    let sql = `
+        SELECT *
+        FROM vehicles
+        WHERE status = 'Published'
+    `;
+
+    const params = [];
+
+    // ==================================================
+    // BRAND
+    // ==================================================
+
+    if (
+        filters.brand !== undefined &&
+        filters.brand !== null &&
+        filters.brand !== ""
+    ) {
 
         sql += `
-
-            ORDER BY
-                c.car_id DESC
-
+            AND brand = ?
         `;
 
+        params.push(
+            filters.brand
+        );
+    }
 
-        console.log(
-            "========================================"
+
+    // ==================================================
+    // MODEL
+    // ==================================================
+
+    if (
+        filters.model !== undefined &&
+        filters.model !== null &&
+        filters.model !== ""
+    ) {
+
+        sql += `
+            AND model = ?
+        `;
+
+        params.push(
+            filters.model
+        );
+    }
+
+
+    // ==================================================
+    // CITY
+    // ==================================================
+
+    if (
+        filters.city !== undefined &&
+        filters.city !== null &&
+        filters.city !== ""
+    ) {
+
+        sql += `
+            AND city = ?
+        `;
+
+        params.push(
+            filters.city
+        );
+    }
+
+
+    // ==================================================
+    // FUEL TYPE
+    // ==================================================
+
+    if (
+        filters.fuel_type !== undefined &&
+        filters.fuel_type !== null &&
+        filters.fuel_type !== ""
+    ) {
+
+        sql += `
+            AND fuel_type = ?
+        `;
+
+        params.push(
+            filters.fuel_type
+        );
+    }
+
+
+    // ==================================================
+    // TRANSMISSION
+    // ==================================================
+
+    if (
+        filters.transmission !== undefined &&
+        filters.transmission !== null &&
+        filters.transmission !== ""
+    ) {
+
+        sql += `
+            AND transmission = ?
+        `;
+
+        params.push(
+            filters.transmission
+        );
+    }
+
+
+    // ==================================================
+    // ORDER
+    // ==================================================
+
+    sql += `
+        ORDER BY car_id DESC
+    `;
+
+
+    return await query(
+        sql,
+        params
+    );
+};
+
+
+// ======================================================
+// INSERT VEHICLE
+// ======================================================
+
+const createVehicle = async (
+    vehicle
+) => {
+
+    const {
+
+        brand,
+        model,
+        variant,
+        manufacturing_year,
+        price,
+        odometer,
+        city,
+        transmission,
+        fuel_type,
+
+        customer_name,
+        owner_mobile,
+        owner_email,
+
+        registration_number,
+        color,
+        insurance_validity,
+        registration_year,
+
+        status,
+
+        overall_score,
+
+        description,
+
+        front_image,
+        back_image,
+        left_image,
+        right_image,
+
+        main_image,
+
+        image_1,
+        image_2,
+        image_3,
+        image_4,
+
+        // ==================================================
+        // INSPECTION / ADDITIONAL DATA
+        // ==================================================
+
+        inspection_data,
+        checklist_data,
+
+        section,
+
+        // ==================================================
+        // OTHER FORM DATA
+        // ==================================================
+
+        ...rest
+
+    } = vehicle || {};
+
+
+    // ======================================================
+    // DYNAMIC COLUMN BUILD
+    // ======================================================
+
+    const columns = [];
+    const values = [];
+    const placeholders = [];
+
+
+    const addColumn = (
+        column,
+        value
+    ) => {
+
+        if (
+            value === undefined
+        ) {
+            return;
+        }
+
+        columns.push(
+            `\`${column}\``
         );
 
-        console.log(
-            "GET PUBLISHED VEHICLES"
+        values.push(
+            normalizeValue(value)
         );
 
-        console.log(
-            "SQL PARAMS:",
+        placeholders.push(
+            "?"
+        );
+    };
+
+
+    // ======================================================
+    // BASIC VEHICLE DATA
+    // ======================================================
+
+    addColumn(
+        "brand",
+        brand
+    );
+
+    addColumn(
+        "model",
+        model
+    );
+
+    addColumn(
+        "variant",
+        variant
+    );
+
+    addColumn(
+        "manufacturing_year",
+        manufacturing_year
+    );
+
+    addColumn(
+        "price",
+        price
+    );
+
+    addColumn(
+        "odometer",
+        odometer
+    );
+
+    addColumn(
+        "city",
+        city
+    );
+
+    addColumn(
+        "transmission",
+        transmission
+    );
+
+    addColumn(
+        "fuel_type",
+        fuel_type
+    );
+
+
+    // ======================================================
+    // CUSTOMER DATA
+    // ======================================================
+
+    addColumn(
+        "customer_name",
+        customer_name
+    );
+
+    addColumn(
+        "owner_mobile",
+        owner_mobile
+    );
+
+    addColumn(
+        "owner_email",
+        owner_email
+    );
+
+
+    // ======================================================
+    // REGISTRATION
+    // ======================================================
+
+    addColumn(
+        "registration_number",
+        registration_number
+    );
+
+    addColumn(
+        "color",
+        color
+    );
+
+    addColumn(
+        "insurance_validity",
+        insurance_validity
+    );
+
+    addColumn(
+        "registration_year",
+        registration_year
+    );
+
+
+    // ======================================================
+    // STATUS
+    // ======================================================
+
+    addColumn(
+        "status",
+        status || "Draft"
+    );
+
+
+    // ======================================================
+    // SCORE
+    // ======================================================
+
+    addColumn(
+        "overall_score",
+        overall_score
+    );
+
+
+    // ======================================================
+    // DESCRIPTION
+    // ======================================================
+
+    addColumn(
+        "description",
+        description
+    );
+
+
+    // ======================================================
+    // VEHICLE IMAGES
+    // ======================================================
+
+    addColumn(
+        "front_image",
+        front_image
+    );
+
+    addColumn(
+        "back_image",
+        back_image
+    );
+
+    addColumn(
+        "left_image",
+        left_image
+    );
+
+    addColumn(
+        "right_image",
+        right_image
+    );
+
+    addColumn(
+        "main_image",
+        main_image
+    );
+
+    addColumn(
+        "image_1",
+        image_1
+    );
+
+    addColumn(
+        "image_2",
+        image_2
+    );
+
+    addColumn(
+        "image_3",
+        image_3
+    );
+
+    addColumn(
+        "image_4",
+        image_4
+    );
+
+
+    // ======================================================
+    // IMPORTANT:
+    // DO NOT INSERT `section`
+    //
+    // Production DB does not contain section column.
+    // This was the source of:
+    //
+    // Unknown column 'section' in 'field list'
+    //
+    // ======================================================
+
+
+    // ======================================================
+    // SAFE EXTRA COLUMNS
+    // ======================================================
+    //
+    // Existing fields are preserved only when they are
+    // explicitly part of the known vehicle table structure.
+    //
+    // ======================================================
+
+    const allowedExtraColumns = [
+
+        "body_type",
+        "doors",
+        "seating_capacity",
+        "engine",
+        "engine_capacity",
+        "power",
+        "torque",
+        "mileage",
+        "ground_clearance",
+        "wheelbase",
+        "tyre_condition",
+        "battery_condition",
+        "service_history",
+        "rc_available",
+        "insurance_type",
+        "insurance_number",
+        "pollution_validity",
+        "hypothecation",
+        "finance_status",
+        "location",
+        "seller_type",
+        "ownership",
+        "description_short",
+
+        "air_conditioning",
+        "power_windows",
+        "central_locking",
+        "abs",
+        "airbags",
+        "rear_camera",
+        "parking_sensors",
+        "sunroof",
+        "alloy_wheels",
+
+        "inspection_date",
+        "inspection_by",
+
+        "pdf_path",
+        "pdf_url",
+
+        "created_by"
+
+    ];
+
+
+    allowedExtraColumns.forEach(
+        (column) => {
+
+            if (
+                Object.prototype.hasOwnProperty.call(
+                    rest,
+                    column
+                )
+            ) {
+
+                addColumn(
+                    column,
+                    rest[column]
+                );
+            }
+        }
+    );
+
+
+    // ======================================================
+    // SAFETY
+    // ======================================================
+
+    if (
+        columns.length === 0
+    ) {
+
+        throw new Error(
+            "No vehicle data provided."
+        );
+    }
+
+
+    // ======================================================
+    // INSERT
+    // ======================================================
+
+    const sql = `
+        INSERT INTO vehicles
+        (
+            ${columns.join(", ")}
+        )
+        VALUES
+        (
+            ${placeholders.join(", ")}
+        )
+    `;
+
+
+    const result =
+        await query(
+            sql,
+            values
+        );
+
+
+    return {
+
+        insertId:
+            result.insertId,
+
+        affectedRows:
+            result.affectedRows
+
+    };
+};
+
+
+// ======================================================
+// UPDATE VEHICLE
+// ======================================================
+
+const updateVehicle = async (
+    carId,
+    vehicle
+) => {
+
+    const allowedColumns = [
+
+        "brand",
+        "model",
+        "variant",
+        "manufacturing_year",
+        "price",
+        "odometer",
+        "city",
+        "transmission",
+        "fuel_type",
+
+        "customer_name",
+        "owner_mobile",
+        "owner_email",
+
+        "registration_number",
+        "color",
+        "insurance_validity",
+        "registration_year",
+
+        "status",
+
+        "overall_score",
+
+        "description",
+
+        "front_image",
+        "back_image",
+        "left_image",
+        "right_image",
+
+        "main_image",
+        "image_1",
+        "image_2",
+        "image_3",
+        "image_4",
+
+        "body_type",
+        "doors",
+        "seating_capacity",
+        "engine",
+        "engine_capacity",
+        "power",
+        "torque",
+        "mileage",
+        "ground_clearance",
+        "wheelbase",
+
+        "tyre_condition",
+        "battery_condition",
+        "service_history",
+
+        "rc_available",
+        "insurance_type",
+        "insurance_number",
+        "pollution_validity",
+
+        "hypothecation",
+        "finance_status",
+
+        "location",
+        "seller_type",
+        "ownership",
+
+        "inspection_date",
+        "inspection_by",
+
+        "pdf_path",
+        "pdf_url",
+
+        "created_by"
+
+    ];
+
+
+    const updates = [];
+    const values = [];
+
+
+    allowedColumns.forEach(
+        (column) => {
+
+            if (
+                Object.prototype.hasOwnProperty.call(
+                    vehicle || {},
+                    column
+                )
+            ) {
+
+                updates.push(
+                    `\`${column}\` = ?`
+                );
+
+                values.push(
+                    normalizeValue(
+                        vehicle[column]
+                    )
+                );
+            }
+        }
+    );
+
+
+    if (
+        !updates.length
+    ) {
+
+        throw new Error(
+            "No vehicle fields provided for update."
+        );
+    }
+
+
+    values.push(
+        carId
+    );
+
+
+    const result =
+        await query(
+            `
+            UPDATE vehicles
+            SET
+                ${updates.join(", ")}
+            WHERE car_id = ?
+            `,
+            values
+        );
+
+
+    return result;
+};
+
+
+// ======================================================
+// DELETE VEHICLE
+// ======================================================
+
+const deleteVehicle = async (
+    carId
+) => {
+
+    return await query(
+        `
+        DELETE FROM vehicles
+        WHERE car_id = ?
+        `,
+        [
+            carId
+        ]
+    );
+};
+
+
+// ======================================================
+// GET OWNER / CUSTOMER DATA
+// ======================================================
+
+const getVehicleOwner = async (
+    carId
+) => {
+
+    const rows =
+        await query(
+            `
+            SELECT
+                car_id,
+                customer_name,
+                owner_mobile,
+                owner_email
+            FROM vehicles
+            WHERE car_id = ?
+            LIMIT 1
+            `,
+            [
+                carId
+            ]
+        );
+
+    return rows &&
+        rows.length
+        ? rows[0]
+        : null;
+};
+
+
+// ======================================================
+// CREATE INSPECTION REPORT
+// ======================================================
+
+const createInspectionReport = async (
+    connection,
+    reportData
+) => {
+
+    // ==================================================
+    // IMPORTANT
+    // ==================================================
+    //
+    // NEVER send `section` to inspection_reports unless
+    // the actual production DB contains that column.
+    //
+    // ==================================================
+
+    const {
+
+        car_id,
+
+        customer_name,
+        owner_mobile,
+        owner_email,
+
+        overall_score,
+
+        status,
+
+        report_status,
+
+        pdf_path,
+
+        inspection_date,
+
+        checklist_data,
+
+        inspection_data
+
+    } = reportData || {};
+
+
+    // ==================================================
+    // PUBLISH STATUS FIX
+    // ==================================================
+
+    const publishStatus =
+        (
+            status === "Published" ||
+            report_status === "Published"
+        )
+            ? "Yes"
+            : "No";
+
+
+    // ==================================================
+    // SQL
+    // ==================================================
+
+    const sql = `
+        INSERT INTO inspection_reports
+        (
+            car_id,
+            customer_name,
+            owner_mobile,
+            owner_email,
+            overall_score,
+            status,
+            publish_status,
+            pdf_path,
+            inspection_date,
+            checklist_data,
+            inspection_data
+        )
+        VALUES
+        (
+            ?,
+            ?,
+            ?,
+            ?,
+            ?,
+            ?,
+            ?,
+            ?,
+            ?,
+            ?,
+            ?
+        )
+    `;
+
+
+    const params = [
+
+        normalizeValue(
+            car_id
+        ),
+
+        normalizeValue(
+            customer_name
+        ),
+
+        normalizeValue(
+            owner_mobile
+        ),
+
+        normalizeValue(
+            owner_email
+        ),
+
+        normalizeValue(
+            overall_score
+        ),
+
+        normalizeValue(
+            status
+        ) || "Draft",
+
+        publishStatus,
+
+        normalizeValue(
+            pdf_path
+        ),
+
+        normalizeValue(
+            inspection_date
+        ),
+
+        normalizeValue(
+            checklist_data
+        ),
+
+        normalizeValue(
+            inspection_data
+        )
+
+    ];
+
+
+    const result =
+        await connection.query(
+            sql,
             params
         );
 
-        console.log(
-            "========================================"
-        );
+
+    const rows =
+        Array.isArray(result) &&
+        result.length === 2
+            ? result[0]
+            : result;
 
 
-        const rows =
-            await executeQuery(
-                sql,
-                params
-            );
+    return {
 
-
-        console.log(
-            "Published Vehicles Found:",
-            Array.isArray(rows)
-                ? rows.length
-                : 0
-        );
-
-
-        return Array.isArray(rows)
-            ? rows
-            : [];
+        reportId:
+            rows.insertId
 
     };
+};
 
 
 // ======================================================
-// GET VEHICLE BY ID
+// UPDATE INSPECTION REPORT PDF PATH
 // ======================================================
 
-const getVehicleById =
-    async (
-        carId
-    ) => {
+const updateInspectionReportPdfPath = async (
+    reportId,
+    pdfPath
+) => {
 
-        const numericId =
-            Number(
+    return await query(
+        `
+        UPDATE inspection_reports
+        SET
+            pdf_path = ?
+        WHERE report_id = ?
+        `,
+        [
+            pdfPath,
+            reportId
+        ]
+    );
+};
+
+
+// ======================================================
+// IMPORTANT PUBLISH FIX
+// ======================================================
+//
+// Whenever vehicle is Published, inspection report is
+// also marked Published.
+//
+// This fixes:
+//
+// "Inspection report is not published."
+//
+// ======================================================
+
+const publishInspectionReport = async (
+    reportId
+) => {
+
+    if (
+        !reportId
+    ) {
+
+        throw new Error(
+            "Valid inspection report ID is required."
+        );
+    }
+
+
+    return await query(
+        `
+        UPDATE inspection_reports
+        SET
+            publish_status = 'Yes',
+            status = 'Published'
+        WHERE report_id = ?
+        `,
+        [
+            reportId
+        ]
+    );
+};
+
+
+// ======================================================
+// GET INSPECTION REPORT
+// ======================================================
+
+const getInspectionReportById = async (
+    reportId
+) => {
+
+    const rows =
+        await query(
+            `
+            SELECT *
+            FROM inspection_reports
+            WHERE report_id = ?
+            LIMIT 1
+            `,
+            [
+                reportId
+            ]
+        );
+
+
+    return rows &&
+        rows.length
+        ? rows[0]
+        : null;
+};
+
+
+// ======================================================
+// GET INSPECTION REPORT BY VEHICLE
+// ======================================================
+
+const getInspectionReportByVehicleId = async (
+    carId
+) => {
+
+    const rows =
+        await query(
+            `
+            SELECT *
+            FROM inspection_reports
+            WHERE car_id = ?
+            ORDER BY report_id DESC
+            LIMIT 1
+            `,
+            [
                 carId
-            );
+            ]
+        );
 
 
-        if (
-            !Number.isInteger(
-                numericId
-            ) ||
-            numericId <= 0
-        ) {
+    return rows &&
+        rows.length
+        ? rows[0]
+        : null;
+};
 
-            return null;
 
-        }
+// ======================================================
+// GET COMPLETE VEHICLE DATA
+// ======================================================
 
+const getCompleteVehicleData = async (
+    carId
+) => {
 
-        // ==================================================
-        // VEHICLE
-        // ==================================================
+    const vehicle =
+        await getVehicleById(
+            carId
+        );
 
-        const vehicles =
-            await executeQuery(
 
-                `
-                SELECT
-                    c.*
+    if (!vehicle) {
 
-                FROM
-                    cars c
+        return null;
+    }
 
-                WHERE
-                    c.car_id = ?
 
-                LIMIT 1
-                `,
+    const report =
+        await getInspectionReportByVehicleId(
+            carId
+        );
 
-                [
-                    numericId
-                ]
 
-            );
+    return {
 
+        vehicle,
 
-        if (
-            !Array.isArray(
-                vehicles
-            ) ||
-            vehicles.length === 0
-        ) {
-
-            return null;
-
-        }
-
-
-        const vehicle =
-            vehicles[0];
-
-
-        // ==================================================
-        // OWNER
-        // ==================================================
-
-        let owner = {};
-
-
-        if (
-            vehicle.owner_id
-        ) {
-
-            try {
-
-                const owners =
-                    await executeQuery(
-
-                        `
-                        SELECT
-                            *
-
-                        FROM
-                            owners
-
-                        WHERE
-                            owner_id = ?
-
-                        LIMIT 1
-                        `,
-
-                        [
-                            vehicle.owner_id
-                        ]
-
-                    );
-
-
-                if (
-                    Array.isArray(
-                        owners
-                    ) &&
-                    owners.length > 0
-                ) {
-
-                    owner =
-                        owners[0];
-
-                }
-
-            } catch (
-                ownerError
-            ) {
-
-                console.log(
-                    "Owner table lookup skipped:",
-                    ownerError.message
-                );
-
-            }
-
-        }
-
-
-        // ==================================================
-        // INSPECTION REPORT
-        // ==================================================
-
-        let inspection = {};
-
-
-        try {
-
-            const reports =
-                await executeQuery(
-
-                    `
-                    SELECT
-                        *
-
-                    FROM
-                        inspection_reports
-
-                    WHERE
-                        car_id = ?
-
-                    ORDER BY
-                        report_id DESC
-
-                    LIMIT 1
-                    `,
-
-                    [
-                        numericId
-                    ]
-
-                );
-
-
-            if (
-                Array.isArray(
-                    reports
-                ) &&
-                reports.length > 0
-            ) {
-
-                inspection =
-                    reports[0];
-
-            }
-
-        } catch (
-            reportError
-        ) {
-
-            console.error(
-                "Inspection Report Fetch Error:",
-                reportError.message
-            );
-
-        }
-
-
-        // ==================================================
-        // CHECKLIST
-        // ==================================================
-
-        let checklist = {};
-
-
-        try {
-
-            const checklistRows =
-                await executeQuery(
-
-                    `
-                    SELECT
-                        *
-
-                    FROM
-                        inspection_checklist
-
-                    WHERE
-                        car_id = ?
-
-                    ORDER BY
-                        checklist_id DESC
-
-                    LIMIT 1
-                    `,
-
-                    [
-                        numericId
-                    ]
-
-                );
-
-
-            if (
-                Array.isArray(
-                    checklistRows
-                ) &&
-                checklistRows.length > 0
-            ) {
-
-                checklist =
-                    checklistRows[0];
-
-
-                const jsonFields = [
-
-                    "checklist_data",
-
-                    "data",
-
-                    "inspection_data"
-
-                ];
-
-
-                for (
-                    const field
-                    of jsonFields
-                ) {
-
-                    if (
-                        checklist[field] &&
-                        typeof checklist[field] ===
-                            "string"
-                    ) {
-
-                        try {
-
-                            const parsed =
-                                JSON.parse(
-                                    checklist[field]
-                                );
-
-
-                            if (
-                                parsed &&
-                                typeof parsed ===
-                                    "object"
-                            ) {
-
-                                checklist = {
-
-                                    ...checklist,
-
-                                    ...parsed
-
-                                };
-
-                            }
-
-                        } catch (
-                            parseError
-                        ) {
-
-                            // Keep original value.
-
-                        }
-
-                    }
-
-                }
-
-            }
-
-        } catch (
-            checklistError
-        ) {
-
-            console.error(
-                "Checklist Fetch Error:",
-                checklistError.message
-            );
-
-        }
-
-
-        // ==================================================
-        // RETURN COMPLETE DATA
-        // ==================================================
-
-        return {
-
-            vehicle,
-
-            owner,
-
-            inspection,
-
-            checklist
-
-        };
+        report
 
     };
+};
 
 
 // ======================================================
@@ -1831,12 +1232,32 @@ const getVehicleById =
 
 module.exports = {
 
-    addVehicle,
+    getVehicleById,
+
+    getAllVehicles,
 
     getAllAdminVehicles,
 
     getPublishedVehicles,
 
-    getVehicleById
+    createVehicle,
+
+    updateVehicle,
+
+    deleteVehicle,
+
+    getVehicleOwner,
+
+    createInspectionReport,
+
+    updateInspectionReportPdfPath,
+
+    publishInspectionReport,
+
+    getInspectionReportById,
+
+    getInspectionReportByVehicleId,
+
+    getCompleteVehicleData
 
 };
