@@ -83,13 +83,12 @@ interface VehicleResponse {
 
   message?: string;
 
-  data?: {
-
-    vehicles?: Vehicle[];
-
-    vehicle?: Vehicle;
-
-  };
+  data?:
+    | Vehicle[]
+    | {
+        vehicles?: Vehicle[];
+        vehicle?: Vehicle;
+      };
 
   vehicles?: Vehicle[];
 
@@ -314,37 +313,57 @@ export class HomeComponent
             response
           );
 
-
-          let vehicleList:
-            Vehicle[] = [];
+let vehicleList: Vehicle[] = [];
 
 
-          // ===========================================
-          // RESPONSE STRUCTURE 1
-          // ===========================================
+// =====================================================
+// RESPONSE STRUCTURE 1
+// BACKEND RETURNS:
+// data: [ ...vehicles ]
+// =====================================================
 
-          if (
-            response?.data?.vehicles
-          ) {
+if (
+  Array.isArray(response?.data)
+) {
 
-            vehicleList =
-              response.data.vehicles;
+  vehicleList =
+    response.data;
 
-          }
+}
 
 
-          // ===========================================
-          // RESPONSE STRUCTURE 2
-          // ===========================================
+// =====================================================
+// RESPONSE STRUCTURE 2
+// BACKEND RETURNS:
+// data: { vehicles: [...] }
+// =====================================================
 
-          else if (
-            response?.vehicles
-          ) {
+else if (
+  response?.data &&
+  !Array.isArray(response.data) &&
+  Array.isArray(response.data.vehicles)
+) {
 
-            vehicleList =
-              response.vehicles;
+  vehicleList =
+    response.data.vehicles;
 
-          }
+}
+
+
+// =====================================================
+// RESPONSE STRUCTURE 3
+// BACKEND RETURNS:
+// vehicles: [...]
+// =====================================================
+
+else if (
+  Array.isArray(response?.vehicles)
+) {
+
+  vehicleList =
+    response.vehicles;
+
+}
 
 
           // ===========================================
