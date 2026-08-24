@@ -56,9 +56,11 @@ export class ReportUnlockService {
     inject(HttpClient);
 
 
-  private apiUrl =
-    'http://localhost:5000/api';
-
+private apiUrl =
+  window.location.hostname === 'localhost' ||
+  window.location.hostname === '127.0.0.1'
+    ? 'http://localhost:5000/api'
+    : 'https://carseyin-production.up.railway.app/api';
 
   // ======================================================
   // GET REPORT UNLOCK REQUESTS
