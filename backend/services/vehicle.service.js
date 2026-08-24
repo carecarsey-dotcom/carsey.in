@@ -583,6 +583,109 @@ const generateFinalVehicleInspectionReport = async (
 };
 
 
+
+// ======================================================
+// GET COMPLETE VEHICLE DATA
+// CUSTOMER VEHICLE DETAIL
+// ======================================================
+//
+// GET
+// /api/vehicles/:carId
+//
+// Complete vehicle + owner + inspection + checklist
+// + related saved data
+//
+// ======================================================
+
+const getCompleteVehicleData = async (
+    vehicleId
+) => {
+
+    const numericVehicleId =
+        Number(vehicleId);
+
+    if (
+        !Number.isInteger(numericVehicleId) ||
+        numericVehicleId <= 0
+    ) {
+
+        throw new Error(
+            "Valid vehicle ID is required."
+        );
+
+    }
+
+    // ==================================================
+    // GET COMPLETE VEHICLE DATA FROM REPOSITORY
+    // ==================================================
+
+    const vehicleData =
+        await vehicleRepository.getVehicleById(
+            numericVehicleId
+        );
+
+    // ==================================================
+    // VEHICLE NOT FOUND
+    // ==================================================
+
+    if (!vehicleData) {
+
+        throw new Error(
+            "Vehicle not found."
+        );
+
+    }
+
+    // ==================================================
+    // GET VEHICLE IMAGES
+    // ==================================================
+
+    let vehicleImages = [];
+
+    try {
+
+        vehicleImages =
+            await vehicleImageRepository
+                .getVehicleImages(
+                    numericVehicleId
+                );
+
+    } catch (imageError) {
+
+        console.error(
+            "Vehicle Detail Image Fetch Error:",
+            imageError.message
+        );
+
+        vehicleImages = [];
+
+    }
+
+    if (!Array.isArray(vehicleImages)) {
+
+        vehicleImages = [];
+
+    }
+
+    // ==================================================
+    // RETURN COMPLETE VEHICLE DATA
+    // ==================================================
+
+    return {
+
+        ...vehicleData,
+
+        images:
+            vehicleImages,
+
+        vehicleImages:
+            vehicleImages
+
+    };
+
+};
+
+
 // ======================================================
 // GET ALL ADMIN VEHICLES
 // ======================================================
@@ -799,6 +902,9 @@ module.exports = {
     addVehicle,
 
     generateFinalVehicleInspectionReport,
+
+    getCompleteVehicleData,
+
 
     getAllAdminVehicles,
 
