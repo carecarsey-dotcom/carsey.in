@@ -168,9 +168,17 @@ interface ReportData {
 
   pdf_path?: string;
 
+  pdfPath?: string;
+
+  pdf_url?: string;
+
+  pdfUrl?: string;
+
   publish_status?: string;
 
   created_at?: string;
+
+  createdAt?: string;
 
   vehicle: Vehicle;
 
@@ -203,9 +211,17 @@ interface ReportListItem {
 
   pdf_path?: string;
 
+  pdfPath?: string;
+
+  pdf_url?: string;
+
+  pdfUrl?: string;
+
   publish_status?: string;
 
   created_at?: string;
+
+  createdAt?: string;
 
 }
 
@@ -215,18 +231,26 @@ interface ReportListItem {
 // =====================================================
 
 @Component({
+
   selector: 'app-reports',
+
   standalone: true,
+
   imports: [
     CommonModule,
     FormsModule
   ],
-  templateUrl: './reports.component.html',
-  styleUrl: './reports.component.css'
+
+  templateUrl:
+    './reports.component.html',
+
+  styleUrl:
+    './reports.component.css'
+
 })
+
 export class ReportsComponent
   implements OnInit {
-
 
   // =====================================================
   // SERVICE
@@ -235,15 +259,28 @@ export class ReportsComponent
   private vehicleService =
     inject(VehicleService);
 
+
   // =====================================================
-  // BACKEND GENERATED PDF VIEWER
+  // SANITIZER
   // =====================================================
 
   private sanitizer =
     inject(DomSanitizer);
 
+
+  // =====================================================
+  // PDF VIEWER URL
+  // =====================================================
+
   pdfViewerUrl:
     SafeResourceUrl | null = null;
+
+
+  // =====================================================
+  // RAW PDF URL
+  // =====================================================
+
+  pdfUrl = '';
 
 
   // =====================================================
@@ -279,6 +316,8 @@ export class ReportsComponent
 
   detailsLoading = false;
 
+  pdfGenerating = false;
+
 
   // =====================================================
   // ERROR
@@ -299,7 +338,7 @@ export class ReportsComponent
 
 
   // =====================================================
-  // LOAD REPORTS
+  // LOAD ALL REPORTS
   // =====================================================
 
   loadReports(): void {
@@ -307,6 +346,12 @@ export class ReportsComponent
     this.loading = true;
 
     this.errorMessage = '';
+
+    this.selectedReport = null;
+
+    this.pdfViewerUrl = null;
+
+    this.pdfUrl = '';
 
 
     this.vehicleService
@@ -336,43 +381,13 @@ export class ReportsComponent
           );
 
 
-          /*
-           * Backend response ke multiple possible
-           * structures handle kar rahe hain.
-           *
-           * FORMAT 1:
-           *
-           * {
-           *   success: true,
-           *   data: [...]
-           * }
-           *
-           *
-           * FORMAT 2:
-           *
-           * {
-           *   success: true,
-           *   data: {
-           *      reports: [...]
-           *   }
-           * }
-           *
-           *
-           * FORMAT 3:
-           *
-           * {
-           *   success: true,
-           *   reports: [...]
-           * }
-           */
-
-
           let reportData: any[] = [];
 
 
-          // -----------------------------------------------
-          // data directly array
-          // -----------------------------------------------
+          // =================================================
+          // FORMAT 1
+          // data = []
+          // =================================================
 
           if (
             Array.isArray(
@@ -386,9 +401,10 @@ export class ReportsComponent
           }
 
 
-          // -----------------------------------------------
-          // data.reports
-          // -----------------------------------------------
+          // =================================================
+          // FORMAT 2
+          // data.reports = []
+          // =================================================
 
           else if (
             Array.isArray(
@@ -402,9 +418,10 @@ export class ReportsComponent
           }
 
 
-          // -----------------------------------------------
-          // response.reports
-          // -----------------------------------------------
+          // =================================================
+          // FORMAT 3
+          // response.reports = []
+          // =================================================
 
           else if (
             Array.isArray(
@@ -418,9 +435,9 @@ export class ReportsComponent
           }
 
 
-          // -----------------------------------------------
-          // Normalize report data
-          // -----------------------------------------------
+          // =================================================
+          // NORMALIZE
+          // =================================================
 
           this.reports =
             reportData.map(
@@ -430,47 +447,69 @@ export class ReportsComponent
 
                   report_id:
                     Number(
-                      report.report_id ??
-                      report.reportId ??
+                      report?.report_id ??
+                      report?.reportId ??
                       0
                     ),
 
                   car_id:
                     Number(
-                      report.car_id ??
-                      report.carId ??
-                      report.vehicle_id ??
+                      report?.car_id ??
+                      report?.carId ??
+                      report?.vehicle_id ??
                       0
                     ),
 
                   overall_score:
-                    report.overall_score ??
-                    report.overallScore ??
-                    0,
+                    Number(
+                      report?.overall_score ??
+                      report?.overallScore ??
+                      0
+                    ),
 
                   engine_remark:
-                    report.engine_remark ??
-                    report.engineRemark ??
+                    report?.engine_remark ??
+                    report?.engineRemark ??
                     '',
 
                   overall_remark:
-                    report.overall_remark ??
-                    report.overallRemark ??
+                    report?.overall_remark ??
+                    report?.overallRemark ??
                     '',
 
                   pdf_path:
-                    report.pdf_path ??
-                    report.pdfPath ??
+                    report?.pdf_path ??
+                    report?.pdfPath ??
+                    '',
+
+                  pdfPath:
+                    report?.pdfPath ??
+                    report?.pdf_path ??
+                    '',
+
+                  pdf_url:
+                    report?.pdf_url ??
+                    report?.pdfUrl ??
+                    '',
+
+                  pdfUrl:
+                    report?.pdfUrl ??
+                    report?.pdf_url ??
                     '',
 
                   publish_status:
-                    report.publish_status ??
-                    report.publishStatus ??
+                    report?.publish_status ??
+                    report?.publishStatus ??
                     'No',
 
                   created_at:
-                    report.created_at ??
-                    report.createdAt ??
+                    report?.created_at ??
+                    report?.createdAt ??
+                    '',
+
+                  createdAt:
+                    report?.createdAt ??
+                    report?.created_at ??
                     ''
 
                 };
@@ -485,9 +524,9 @@ export class ReportsComponent
           );
 
 
-          // -----------------------------------------------
-          // Empty
-          // -----------------------------------------------
+          // =================================================
+          // EMPTY
+          // =================================================
 
           if (
             this.reports.length === 0
@@ -564,10 +603,9 @@ export class ReportsComponent
         report: ReportListItem
       ) => {
 
-
-        // -----------------------------------------------
+        // ===============================================
         // SEARCH
-        // -----------------------------------------------
+        // ===============================================
 
         const matchesSearch =
 
@@ -586,9 +624,9 @@ export class ReportsComponent
             .includes(search);
 
 
-        // -----------------------------------------------
+        // ===============================================
         // STATUS
-        // -----------------------------------------------
+        // ===============================================
 
         const matchesStatus =
 
@@ -621,11 +659,57 @@ export class ReportsComponent
 
     this.errorMessage = '';
 
+    this.pdfViewerUrl = null;
+
+    this.pdfUrl = '';
+
 
     console.log(
       'Opening Report:',
       report
     );
+
+
+    const reportId =
+      Number(
+        report.report_id
+      );
+
+
+    const carId =
+      Number(
+        report.car_id
+      );
+
+
+    if (
+      !reportId ||
+      reportId <= 0
+    ) {
+
+      this.errorMessage =
+        'Invalid inspection report ID.';
+
+      this.detailsLoading = false;
+
+      return;
+
+    }
+
+
+    if (
+      !carId ||
+      carId <= 0
+    ) {
+
+      this.errorMessage =
+        'Invalid vehicle ID.';
+
+      this.detailsLoading = false;
+
+      return;
+
+    }
 
 
     // ===================================================
@@ -634,7 +718,7 @@ export class ReportsComponent
 
     this.vehicleService
       .getVehicleById(
-        Number(report.car_id)
+        carId
       )
       .subscribe({
 
@@ -672,40 +756,33 @@ export class ReportsComponent
             response.data;
 
 
-          /*
-           * API kabhi direct vehicle deta hai:
-           *
-           * data = {
-           *   car_id: 8,
-           *   brand: "Audi"
-           * }
-           *
-           *
-           * Ya:
-           *
-           * data = {
-           *   vehicle: {...},
-           *   owner: {...},
-           *   inspection: {...},
-           *   checklist: {...}
-           * }
-           *
-           * Dono handle honge.
-           */
-
+          // =================================================
+          // VEHICLE
+          // =================================================
 
           const vehicle: Vehicle =
-            data.vehicle ??
+            data?.vehicle ??
             data;
 
 
-          const owner: Owner | null =
-            data.owner ??
+          // =================================================
+          // OWNER
+          // =================================================
+
+          const owner:
+            Owner | null =
+            data?.owner ??
             null;
 
 
-          const inspection: Inspection | null =
-            data.inspection ??
+          // =================================================
+          // INSPECTION
+          // =================================================
+
+          const inspection:
+            Inspection | null =
+
+            data?.inspection ??
             {
 
               overall_score:
@@ -720,11 +797,62 @@ export class ReportsComponent
             };
 
 
+          // =================================================
+          // CHECKLIST
+          // =================================================
+
           const checklist: {
             [key: string]: ChecklistItem;
           } =
-            data.checklist ??
+
+            data?.checklist ??
             {};
+
+
+          // =================================================
+          // PDF PATH
+          // =================================================
+
+          const dataPdfPath =
+            data?.pdf_path ??
+            data?.pdfPath ??
+            data?.report?.pdf_path ??
+            data?.report?.pdfPath ??
+            '';
+
+          const listPdfPath =
+            report?.pdf_path ??
+            report?.pdfPath ??
+            '';
+
+
+          const dataPdfUrl =
+            data?.pdf_url ??
+            data?.pdfUrl ??
+            data?.report?.pdf_url ??
+            data?.report?.pdfUrl ??
+            '';
+
+          const listPdfUrl =
+            report?.pdf_url ??
+            report?.pdfUrl ??
+            '';
+
+
+          const finalPdfPath =
+            String(
+              dataPdfPath ||
+              listPdfPath ||
+              ''
+            ).trim();
+
+
+          const finalPdfUrl =
+            String(
+              dataPdfUrl ||
+              listPdfUrl ||
+              ''
+            ).trim();
 
 
           // =================================================
@@ -734,50 +862,84 @@ export class ReportsComponent
           this.selectedReport = {
 
             report_id:
-              data.report_id ??
-              data.reportId ??
-              report.report_id,
+              Number(
+                data?.report_id ??
+                data?.reportId ??
+                report.report_id
+              ),
 
             reportId:
-              data.reportId ??
-              data.report_id ??
-              report.report_id,
+              Number(
+                data?.reportId ??
+                data?.report_id ??
+                report.report_id
+              ),
 
             car_id:
-              vehicle.car_id ??
-              data.car_id ??
-              data.carId ??
-              report.car_id,
+              Number(
+                vehicle?.car_id ??
+                data?.car_id ??
+                data?.carId ??
+                report.car_id
+              ),
 
             carId:
-              vehicle.car_id ??
-              data.car_id ??
-              data.carId ??
-              report.car_id,
+              Number(
+                vehicle?.car_id ??
+                data?.car_id ??
+                data?.carId ??
+                report.car_id
+              ),
 
             overall_score:
-              data.overall_score ??
-              report.overall_score,
+              Number(
+                data?.overall_score ??
+                data?.overallScore ??
+                report.overall_score ??
+                0
+              ),
 
             engine_remark:
-              data.engine_remark ??
-              report.engine_remark,
+              data?.engine_remark ??
+              data?.engineRemark ??
+              report.engine_remark ??
+              '',
 
             overall_remark:
-              data.overall_remark ??
-              report.overall_remark,
+              data?.overall_remark ??
+              data?.overallRemark ??
+              report.overall_remark ??
+              '',
 
             pdf_path:
-              data.pdf_path ??
-              report.pdf_path,
+              finalPdfPath,
+
+            pdfPath:
+              finalPdfPath,
+
+            pdf_url:
+              finalPdfUrl,
+
+            pdfUrl:
+              finalPdfUrl,
 
             publish_status:
-              data.publish_status ??
-              report.publish_status,
+              data?.publish_status ??
+              data?.publishStatus ??
+              report.publish_status ??
+              'No',
 
             created_at:
-              data.created_at ??
-              report.created_at,
+              data?.created_at ??
+              data?.createdAt ??
+              report.created_at ??
+              '',
+
+            createdAt:
+              data?.createdAt ??
+              data?.created_at ??
+              report.created_at ??
+              '',
 
             vehicle,
 
@@ -789,51 +951,6 @@ export class ReportsComponent
 
           };
 
-          // =================================================
-          // USE THE EXACT PDF GENERATED BY BACKEND
-          // =================================================
-
-          const selectedPdfPath =
-            this.selectedReport.pdf_path;
-
-          if (
-            selectedPdfPath &&
-            String(selectedPdfPath).trim() !== ''
-          ) {
-            // IMPORTANT:
-            // Always show the PDF path that is currently saved in
-            // inspection_reports.pdf_path.
-            // Cache-buster is added only to prevent Chrome from showing
-            // an older cached copy when the backend overwrites the same file.
-            let generatedPdfUrl =
-              this.buildPdfUrl(
-                String(selectedPdfPath)
-              );
-
-            if (generatedPdfUrl) {
-              generatedPdfUrl =
-                generatedPdfUrl +
-                (generatedPdfUrl.includes('?') ? '&' : '?') +
-                'v=' +
-                Date.now();
-            }
-
-            this.pdfViewerUrl =
-              generatedPdfUrl
-                ? this.sanitizer
-                    .bypassSecurityTrustResourceUrl(
-                      generatedPdfUrl
-                    )
-                : null;
-
-            console.log(
-              'REPORT PDF VIEWER URL:',
-              generatedPdfUrl
-            );
-          } else {
-            this.pdfViewerUrl = null;
-          }
-
 
           console.log(
             'FINAL SELECTED REPORT:',
@@ -841,7 +958,73 @@ export class ReportsComponent
           );
 
 
-          this.detailsLoading = false;
+          // =================================================
+          // EXISTING PDF FOUND
+          // =================================================
+
+          if (
+            finalPdfUrl
+          ) {
+
+            const generatedPdfUrl =
+              this.buildPdfUrl(
+                finalPdfUrl
+              );
+
+
+            this.setPdfViewer(
+              generatedPdfUrl
+            );
+
+
+            this.detailsLoading = false;
+
+            return;
+
+          }
+
+
+          if (
+            finalPdfPath
+          ) {
+
+            const generatedPdfUrl =
+              this.buildPdfUrl(
+                finalPdfPath
+              );
+
+
+            this.setPdfViewer(
+              generatedPdfUrl
+            );
+
+
+            this.detailsLoading = false;
+
+            return;
+
+          }
+
+
+          // =================================================
+          // IMPORTANT FIX
+          //
+          // PDF PATH EMPTY HAI
+          // TO BACKEND SE PDF GENERATE KARO
+          // =================================================
+
+          console.log(
+            'PDF PATH NOT FOUND.'
+          );
+
+          console.log(
+            'Generating backend inspection PDF...'
+          );
+
+
+          this.generateMissingPdf(
+            reportId
+          );
 
         },
 
@@ -876,6 +1059,779 @@ export class ReportsComponent
 
 
   // =====================================================
+  // GENERATE MISSING PDF
+  // =====================================================
+
+  private generateMissingPdf(
+    reportId: number
+  ): void {
+
+    if (
+      !reportId ||
+      reportId <= 0
+    ) {
+
+      this.errorMessage =
+        'Valid inspection report ID is required.';
+
+      this.detailsLoading = false;
+
+      return;
+
+    }
+
+
+    this.pdfGenerating = true;
+
+
+    this.vehicleService
+      .generateInspectionReportPdf(
+        reportId
+      )
+      .subscribe({
+
+        // ===============================================
+        // SUCCESS
+        // ===============================================
+
+        next: (
+          response: any
+        ) => {
+
+          console.log(
+            'GENERATED INSPECTION PDF RESPONSE:',
+            response
+          );
+
+
+          if (
+            !response?.success
+          ) {
+
+            this.errorMessage =
+              response?.message ||
+              'Unable to generate inspection report PDF.';
+
+            this.pdfGenerating = false;
+
+            this.detailsLoading = false;
+
+            return;
+
+          }
+
+
+          const generatedData =
+            response?.data ??
+            {};
+
+
+          const pdfPath =
+            String(
+              generatedData?.pdfPath ??
+              generatedData?.pdf_path ??
+              ''
+            ).trim();
+
+
+          const pdfUrl =
+            String(
+              generatedData?.pdfUrl ??
+              generatedData?.pdf_url ??
+              ''
+            ).trim();
+
+
+          // =================================================
+          // PREFER BACKEND RETURNED PDF URL
+          // =================================================
+
+          const finalPath =
+            pdfUrl ||
+            pdfPath;
+
+
+          if (
+            !finalPath
+          ) {
+
+            console.error(
+              'PDF generated but URL/path missing:',
+              response
+            );
+
+
+            this.errorMessage =
+              'PDF was generated but its URL/path was not returned by backend.';
+
+
+            this.pdfGenerating = false;
+
+            this.detailsLoading = false;
+
+            return;
+
+          }
+
+
+          // =================================================
+          // SAVE PATH IN SELECTED REPORT
+          // =================================================
+
+          if (
+            this.selectedReport
+          ) {
+
+            this.selectedReport.pdf_path =
+              pdfPath ||
+              pdfUrl;
+
+            this.selectedReport.pdfPath =
+              pdfPath ||
+              pdfUrl;
+
+            this.selectedReport.pdf_url =
+              pdfUrl ||
+              pdfPath;
+
+            this.selectedReport.pdfUrl =
+              pdfUrl ||
+              pdfPath;
+
+          }
+
+
+          // =================================================
+          // BUILD FULL URL
+          // =================================================
+
+          const fullPdfUrl =
+            this.buildPdfUrl(
+              finalPath
+            );
+
+
+          console.log(
+            'FINAL GENERATED PDF URL:',
+            fullPdfUrl
+          );
+
+
+          // =================================================
+          // SHOW PDF
+          // =================================================
+
+          this.setPdfViewer(
+            fullPdfUrl
+          );
+
+
+          this.pdfGenerating = false;
+
+          this.detailsLoading = false;
+
+        },
+
+
+        // ===============================================
+        // ERROR
+        // ===============================================
+
+        error: (
+          error: any
+        ) => {
+
+          console.error(
+            'GENERATE INSPECTION PDF ERROR:',
+            error
+          );
+
+
+          this.errorMessage =
+            error?.error?.message ||
+            error?.message ||
+            'Unable to generate inspection report PDF.';
+
+
+          this.pdfGenerating = false;
+
+          this.detailsLoading = false;
+
+        }
+
+      });
+
+  }
+
+
+  // =====================================================
+  // SET PDF VIEWER
+  // =====================================================
+
+  private setPdfViewer(
+    pdfUrl: string
+  ): void {
+
+    const cleanUrl =
+      String(
+        pdfUrl || ''
+      ).trim();
+
+
+    if (!cleanUrl) {
+
+      this.pdfViewerUrl = null;
+
+      this.pdfUrl = '';
+
+      return;
+
+    }
+
+
+    this.pdfUrl =
+      cleanUrl;
+
+
+    this.pdfViewerUrl =
+      this.sanitizer
+        .bypassSecurityTrustResourceUrl(
+          cleanUrl
+        );
+
+
+    console.log(
+      'PDF VIEWER URL:',
+      cleanUrl
+    );
+
+  }
+
+
+  // =====================================================
+  // BUILD BACKEND PDF URL
+  // =====================================================
+
+  private buildPdfUrl(
+    pdfPath: string
+  ): string {
+
+    const rawPath =
+      String(
+        pdfPath || ''
+      ).trim();
+
+
+    if (!rawPath) {
+
+      return '';
+
+    }
+
+
+    // ===================================================
+    // ALREADY FULL URL
+    // ===================================================
+
+    if (
+      /^https?:\/\//i.test(
+        rawPath
+      )
+    ) {
+
+      return rawPath;
+
+    }
+
+
+    // ===================================================
+    // NORMALIZE
+    // ===================================================
+
+    let normalizedPath =
+      rawPath
+        .replace(
+          /\\/g,
+          '/'
+        )
+        .trim();
+
+
+    normalizedPath =
+      normalizedPath.replace(
+        /^\/+/,
+        ''
+      );
+
+
+    // ===================================================
+    // BACKEND BASE URL
+    // ===================================================
+
+    const hostname =
+      window.location.hostname;
+
+
+    let backendBaseUrl = '';
+
+
+    // ===================================================
+    // LOCAL DEVELOPMENT
+    // ===================================================
+
+    if (
+      hostname === 'localhost' ||
+      hostname === '127.0.0.1'
+    ) {
+
+      backendBaseUrl =
+        'http://localhost:5000';
+
+    }
+
+
+    // ===================================================
+    // PRODUCTION
+    // ===================================================
+
+    else {
+
+      backendBaseUrl =
+        'https://carseyin-production.up.railway.app';
+
+    }
+
+
+    // ===================================================
+    // uploads/...
+    // ===================================================
+
+    if (
+      normalizedPath
+        .toLowerCase()
+        .startsWith(
+          'uploads/'
+        )
+    ) {
+
+      return (
+        backendBaseUrl +
+        '/' +
+        normalizedPath
+      );
+
+    }
+
+
+    // ===================================================
+    // upload/...
+    // ===================================================
+
+    if (
+      normalizedPath
+        .toLowerCase()
+        .startsWith(
+          'upload/'
+        )
+    ) {
+
+      return (
+        backendBaseUrl +
+        '/' +
+        normalizedPath
+      );
+
+    }
+
+
+    // ===================================================
+    // reports/...
+    // ===================================================
+
+    if (
+      normalizedPath
+        .toLowerCase()
+        .startsWith(
+          'reports/'
+        )
+    ) {
+
+      return (
+        backendBaseUrl +
+        '/uploads/' +
+        normalizedPath
+      );
+
+    }
+
+
+    // ===================================================
+    // /api/...
+    // ===================================================
+
+    if (
+      normalizedPath
+        .toLowerCase()
+        .startsWith(
+          'api/'
+        )
+    ) {
+
+      return (
+        backendBaseUrl +
+        '/' +
+        normalizedPath
+      );
+
+    }
+
+
+    // ===================================================
+    // DEFAULT
+    // ===================================================
+
+    return (
+      backendBaseUrl +
+      '/uploads/' +
+      normalizedPath
+    );
+
+  }
+
+
+  // =====================================================
+  // OPEN SAME BACKEND PDF
+  // =====================================================
+
+  openGeneratedPdf(): void {
+
+    if (
+      !this.selectedReport
+    ) {
+
+      alert(
+        'Please open a report first.'
+      );
+
+      return;
+
+    }
+
+
+    const pdfPath =
+      this.selectedReport.pdf_url ||
+      this.selectedReport.pdfUrl ||
+      this.selectedReport.pdf_path ||
+      this.selectedReport.pdfPath ||
+      '';
+
+
+    if (
+      !String(
+        pdfPath
+      ).trim()
+    ) {
+
+      alert(
+        'Generated PDF path is not available for this report.'
+      );
+
+      return;
+
+    }
+
+
+    const pdfUrl =
+      this.buildPdfUrl(
+        String(
+          pdfPath
+        )
+      );
+
+
+    if (!pdfUrl) {
+
+      alert(
+        'Unable to build PDF URL.'
+      );
+
+      return;
+
+    }
+
+
+    console.log(
+      'OPENING BACKEND GENERATED PDF'
+    );
+
+    console.log(
+      'PDF PATH:',
+      pdfPath
+    );
+
+    console.log(
+      'PDF URL:',
+      pdfUrl
+    );
+
+
+    const pdfWindow =
+      window.open(
+        pdfUrl,
+        '_blank',
+        'noopener,noreferrer'
+      );
+
+
+    if (!pdfWindow) {
+
+      alert(
+        'Please allow pop-ups to open the inspection PDF.'
+      );
+
+    }
+
+  }
+
+
+  // =====================================================
+  // DOWNLOAD SAME BACKEND PDF
+  // =====================================================
+
+  downloadGeneratedPdf(): void {
+
+    if (
+      !this.selectedReport
+    ) {
+
+      alert(
+        'Please open a report first.'
+      );
+
+      return;
+
+    }
+
+
+    const pdfPath =
+      this.selectedReport.pdf_url ||
+      this.selectedReport.pdfUrl ||
+      this.selectedReport.pdf_path ||
+      this.selectedReport.pdfPath ||
+      '';
+
+
+    if (
+      !String(
+        pdfPath
+      ).trim()
+    ) {
+
+      alert(
+        'Generated PDF path is not available for this report.'
+      );
+
+      return;
+
+    }
+
+
+    const pdfUrl =
+      this.buildPdfUrl(
+        String(
+          pdfPath
+        )
+      );
+
+
+    const link =
+      document.createElement(
+        'a'
+      );
+
+
+    link.href =
+      pdfUrl;
+
+
+    link.target =
+      '_blank';
+
+
+    link.rel =
+      'noopener noreferrer';
+
+
+    link.download =
+      this.getPdfFileName(
+        String(
+          pdfPath
+        )
+      );
+
+
+    document.body.appendChild(
+      link
+    );
+
+
+    link.click();
+
+
+    document.body.removeChild(
+      link
+    );
+
+  }
+
+
+  // =====================================================
+  // PDF FILE NAME
+  // =====================================================
+
+  private getPdfFileName(
+    pdfPath: string
+  ): string {
+
+    const normalized =
+      String(
+        pdfPath || ''
+      )
+        .replace(
+          /\\/g,
+          '/'
+        );
+
+
+    const parts =
+      normalized.split('/');
+
+
+    const lastPart =
+      parts[
+        parts.length - 1
+      ];
+
+
+    if (
+      lastPart &&
+      lastPart
+        .toLowerCase()
+        .endsWith('.pdf')
+    ) {
+
+      return lastPart;
+
+    }
+
+
+    const reportId =
+      this.selectedReport?.report_id ??
+      this.selectedReport?.reportId ??
+      'inspection-report';
+
+
+    return (
+      'inspection-report-' +
+      String(
+        reportId
+      ) +
+      '.pdf'
+    );
+
+  }
+
+
+  // =====================================================
+  // PRINT / SAVE PDF
+  // =====================================================
+
+  printReport(): void {
+
+    if (
+      !this.selectedReport
+    ) {
+
+      alert(
+        'Please open a report first.'
+      );
+
+      return;
+
+    }
+
+
+    const pdfPath =
+      this.selectedReport.pdf_url ||
+      this.selectedReport.pdfUrl ||
+      this.selectedReport.pdf_path ||
+      this.selectedReport.pdfPath ||
+      '';
+
+
+    if (
+      !String(
+        pdfPath
+      ).trim()
+    ) {
+
+      this.errorMessage =
+        'PDF is not available for this inspection report.';
+
+
+      alert(
+        this.errorMessage
+      );
+
+
+      return;
+
+    }
+
+
+    const pdfUrl =
+      this.buildPdfUrl(
+        String(
+          pdfPath
+        )
+      );
+
+
+    console.log(
+      'OPENING BACKEND GENERATED PDF'
+    );
+
+    console.log(
+      'PDF PATH:',
+      pdfPath
+    );
+
+    console.log(
+      'PDF URL:',
+      pdfUrl
+    );
+
+
+    const pdfWindow =
+      window.open(
+        pdfUrl,
+        '_blank',
+        'noopener,noreferrer'
+      );
+
+
+    if (!pdfWindow) {
+
+      alert(
+        'Please allow pop-ups to open the inspection PDF.'
+      );
+
+    }
+
+  }
+
+
+  // =====================================================
   // CLOSE REPORT
   // =====================================================
 
@@ -884,11 +1840,21 @@ export class ReportsComponent
     this.selectedReport =
       null;
 
+
     this.pdfViewerUrl =
       null;
 
+
+    this.pdfUrl =
+      '';
+
+
     this.errorMessage =
       '';
+
+
+    this.pdfGenerating =
+      false;
 
   }
 
@@ -906,7 +1872,6 @@ export class ReportsComponent
     item: ChecklistItem;
 
   }[] {
-
 
     const checklist =
       this.selectedReport?.checklist;
@@ -1021,7 +1986,9 @@ export class ReportsComponent
 
 
     const date =
-      new Date(value);
+      new Date(
+        value
+      );
 
 
     if (
@@ -1039,11 +2006,14 @@ export class ReportsComponent
       'en-IN',
       {
 
-        day: '2-digit',
+        day:
+          '2-digit',
 
-        month: 'short',
+        month:
+          'short',
 
-        year: 'numeric'
+        year:
+          'numeric'
 
       }
     );
@@ -1071,11 +2041,15 @@ export class ReportsComponent
 
 
     const amount =
-      Number(value);
+      Number(
+        value
+      );
 
 
     if (
-      Number.isNaN(amount)
+      Number.isNaN(
+        amount
+      )
     ) {
 
       return '-';
@@ -1087,215 +2061,26 @@ export class ReportsComponent
       'en-IN',
       {
 
-        style: 'currency',
+        style:
+          'currency',
 
-        currency: 'INR',
+        currency:
+          'INR',
 
-        maximumFractionDigits: 0
+        maximumFractionDigits:
+          0
 
       }
-    ).format(amount);
-
-  }
-
-
-  // =====================================================
-  // PRINT / SAVE PDF
-  // =====================================================
-
-  // =====================================================
-  // MAIN PRINT / SAVE PDF
-  // =====================================================
-  // Uses the SAME PDF generated by backend inspectionReportPdf.
-  // The original browser PDF code is preserved below.
-  // =====================================================
-
-  printReport(): void {
-
-    if (!this.selectedReport) {
-      alert('Please open a report first.');
-      return;
-    }
-
-    const pdfPath =
-      this.selectedReport.pdf_path;
-
-    if (
-      !pdfPath ||
-      String(pdfPath).trim() === ''
-    ) {
-      this.errorMessage =
-        'PDF is not available for this inspection report. Please regenerate/update the vehicle report first.';
-      alert(this.errorMessage);
-      return;
-    }
-
-    const pdfUrl =
-      this.buildPdfUrl(String(pdfPath));
-
-    console.log('OPENING BACKEND GENERATED PDF');
-    console.log('PDF PATH:', pdfPath);
-    console.log('PDF URL:', pdfUrl);
-
-    const pdfWindow =
-      window.open(
-        pdfUrl,
-        '_blank',
-        'noopener,noreferrer'
-      );
-
-    if (!pdfWindow) {
-      alert(
-        'Please allow pop-ups to open the inspection PDF.'
-      );
-      return;
-    }
-  }
-
-
-  // =====================================================
-  // BUILD BACKEND PDF URL
-  // =====================================================
-
-  private buildPdfUrl(pdfPath: string): string {
-
-    const rawPath =
-      String(pdfPath || '').trim();
-
-    if (!rawPath) {
-      return '';
-    }
-
-    if (/^https?:\/\//i.test(rawPath)) {
-      return rawPath;
-    }
-
-    const backendBaseUrl =
-      'http://localhost:5000';
-
-    let normalizedPath =
-      rawPath
-        .replace(/\\/g, '/')
-        .trim();
-
-    normalizedPath =
-      normalizedPath.replace(/^\/+/, '');
-
-    if (normalizedPath.toLowerCase().startsWith('uploads/')) {
-      return backendBaseUrl + '/' + normalizedPath;
-    }
-
-    if (normalizedPath.toLowerCase().startsWith('upload/')) {
-      return backendBaseUrl + '/' + normalizedPath;
-    }
-
-    if (normalizedPath.toLowerCase().startsWith('reports/')) {
-      return backendBaseUrl + '/uploads/' + normalizedPath;
-    }
-
-    return backendBaseUrl + '/uploads/' + normalizedPath;
-  }
-
-
-  // =====================================================
-  // OPEN SAME BACKEND PDF
-  // =====================================================
-
-  openGeneratedPdf(): void {
-
-    if (!this.selectedReport) {
-      alert('Please open a report first.');
-      return;
-    }
-
-    const pdfPath =
-      this.selectedReport.pdf_path;
-
-    if (!pdfPath || String(pdfPath).trim() === '') {
-      alert(
-        'Generated PDF path is not available for this report.'
-      );
-      return;
-    }
-
-    const pdfUrl =
-      this.buildPdfUrl(String(pdfPath));
-
-    window.open(
-      pdfUrl,
-      '_blank',
-      'noopener,noreferrer'
+    ).format(
+      amount
     );
+
   }
 
 
   // =====================================================
-  // DOWNLOAD SAME BACKEND PDF
-  // =====================================================
-
-  downloadGeneratedPdf(): void {
-
-    if (!this.selectedReport) {
-      alert('Please open a report first.');
-      return;
-    }
-
-    const pdfPath =
-      this.selectedReport.pdf_path;
-
-    if (!pdfPath || String(pdfPath).trim() === '') {
-      alert(
-        'Generated PDF path is not available for this report.'
-      );
-      return;
-    }
-
-    const link = document.createElement('a');
-    link.href = this.buildPdfUrl(String(pdfPath));
-    link.target = '_blank';
-    link.rel = 'noopener noreferrer';
-    link.download = this.getPdfFileName(String(pdfPath));
-
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  }
-
-
-  // =====================================================
-  // PDF FILE NAME
-  // =====================================================
-
-  private getPdfFileName(pdfPath: string): string {
-
-    const normalized =
-      String(pdfPath || '').replace(/\\/g, '/');
-
-    const parts = normalized.split('/');
-    const lastPart = parts[parts.length - 1];
-
-    if (
-      lastPart &&
-      lastPart.toLowerCase().endsWith('.pdf')
-    ) {
-      return lastPart;
-    }
-
-    const reportId =
-      this.selectedReport?.report_id ??
-      this.selectedReport?.reportId ??
-      'inspection-report';
-
-    return (
-      'inspection-report-' +
-      String(reportId) +
-      '.pdf'
-    );
-  }
-
-
-  // =====================================================
-  // OLD BROWSER PDF IMPLEMENTATION - PRESERVED
+  // OLD BROWSER PDF IMPLEMENTATION
+  // PRESERVED
   // =====================================================
 
   printLegacyReport(): void {
@@ -1318,24 +2103,28 @@ export class ReportsComponent
 
 
     const vehicle =
-      report.vehicle || {};
+      report.vehicle ||
+      {};
 
 
     const owner =
-      report.owner || {};
+      report.owner ||
+      {};
 
 
     const inspection =
-      report.inspection || {};
+      report.inspection ||
+      {};
 
 
     const checklist =
-      report.checklist || {};
+      report.checklist ||
+      {};
 
 
-    // =================================================
+    // ===================================================
     // SAFE TEXT
-    // =================================================
+    // ===================================================
 
     const escapeHtml = (
       value: any
@@ -1352,28 +2141,25 @@ export class ReportsComponent
       }
 
 
-      return String(value)
-
+      return String(
+        value
+      )
         .replace(
           /&/g,
           '&amp;'
         )
-
         .replace(
           /</g,
           '&lt;'
         )
-
         .replace(
           />/g,
           '&gt;'
         )
-
         .replace(
           /"/g,
           '&quot;'
         )
-
         .replace(
           /'/g,
           '&#039;'
@@ -1382,9 +2168,9 @@ export class ReportsComponent
     };
 
 
-    // =================================================
+    // ===================================================
     // MONEY
-    // =================================================
+    // ===================================================
 
     const money = (
       value: any
@@ -1402,11 +2188,15 @@ export class ReportsComponent
 
 
       const amount =
-        Number(value);
+        Number(
+          value
+        );
 
 
       if (
-        Number.isNaN(amount)
+        Number.isNaN(
+          amount
+        )
       ) {
 
         return '-';
@@ -1418,27 +2208,34 @@ export class ReportsComponent
         'en-IN',
         {
 
-          style: 'currency',
+          style:
+            'currency',
 
-          currency: 'INR',
+          currency:
+            'INR',
 
-          maximumFractionDigits: 0
+          maximumFractionDigits:
+            0
 
         }
-      ).format(amount);
+      ).format(
+        amount
+      );
 
     };
 
 
-    // =================================================
+    // ===================================================
     // DATE
-    // =================================================
+    // ===================================================
 
     const date = (
       value: any
     ): string => {
 
-      if (!value) {
+      if (
+        !value
+      ) {
 
         return '-';
 
@@ -1446,7 +2243,9 @@ export class ReportsComponent
 
 
       const parsed =
-        new Date(value);
+        new Date(
+          value
+        );
 
 
       if (
@@ -1466,11 +2265,14 @@ export class ReportsComponent
         'en-IN',
         {
 
-          day: '2-digit',
+          day:
+            '2-digit',
 
-          month: 'short',
+          month:
+            'short',
 
-          year: 'numeric'
+          year:
+            'numeric'
 
         }
       );
@@ -1478,9 +2280,9 @@ export class ReportsComponent
     };
 
 
-    // =================================================
+    // ===================================================
     // CHECKLIST TITLES
-    // =================================================
+    // ===================================================
 
     const checklistTitles: {
       [key: string]: string;
@@ -1522,9 +2324,9 @@ export class ReportsComponent
     };
 
 
-    // =================================================
+    // ===================================================
     // CHECKLIST HTML
-    // =================================================
+    // ===================================================
 
     let checklistHtml = '';
 
@@ -1537,7 +2339,8 @@ export class ReportsComponent
       ) => {
 
         const item =
-          checklist[key] || {};
+          checklist[key] ||
+          {};
 
 
         const title =
@@ -1571,8 +2374,9 @@ export class ReportsComponent
 
 
         const lowerStatus =
-          String(status)
-            .toLowerCase();
+          String(
+            status
+          ).toLowerCase();
 
 
         let statusClass =
@@ -1580,10 +2384,18 @@ export class ReportsComponent
 
 
         if (
-          lowerStatus.includes('good') ||
-          lowerStatus.includes('ok') ||
-          lowerStatus.includes('pass') ||
-          lowerStatus.includes('excellent')
+          lowerStatus.includes(
+            'good'
+          ) ||
+          lowerStatus.includes(
+            'ok'
+          ) ||
+          lowerStatus.includes(
+            'pass'
+          ) ||
+          lowerStatus.includes(
+            'excellent'
+          )
         ) {
 
           statusClass =
@@ -1593,9 +2405,15 @@ export class ReportsComponent
 
 
         if (
-          lowerStatus.includes('bad') ||
-          lowerStatus.includes('poor') ||
-          lowerStatus.includes('fail')
+          lowerStatus.includes(
+            'bad'
+          ) ||
+          lowerStatus.includes(
+            'poor'
+          ) ||
+          lowerStatus.includes(
+            'fail'
+          )
         ) {
 
           statusClass =
@@ -1610,7 +2428,9 @@ export class ReportsComponent
 
             <td class="check-name">
 
-              ${escapeHtml(title)}
+              ${escapeHtml(
+                title
+              )}
 
             </td>
 
@@ -1620,7 +2440,9 @@ export class ReportsComponent
                 class="check-status ${statusClass}"
               >
 
-                ${escapeHtml(status)}
+                ${escapeHtml(
+                  status
+                )}
 
               </span>
 
@@ -1628,7 +2450,9 @@ export class ReportsComponent
 
             <td>
 
-              ${escapeHtml(remark)}
+              ${escapeHtml(
+                remark
+              )}
 
             </td>
 
@@ -1664,9 +2488,9 @@ export class ReportsComponent
     }
 
 
-    // =================================================
+    // ===================================================
     // OPEN PRINT WINDOW
-    // =================================================
+    // ===================================================
 
     const printWindow:
       Window | null =
@@ -1677,7 +2501,9 @@ export class ReportsComponent
       );
 
 
-    if (!printWindow) {
+    if (
+      !printWindow
+    ) {
 
       alert(
         'Please allow pop-ups for printing the report.'
@@ -1688,9 +2514,9 @@ export class ReportsComponent
     }
 
 
-    // =================================================
+    // ===================================================
     // PRINT HTML
-    // =================================================
+    // ===================================================
 
     printWindow.document.open();
 
@@ -1713,7 +2539,6 @@ export class ReportsComponent
 <title>
   Carsey.in - Vehicle Inspection Report
 </title>
-
 
 <style>
 
@@ -2221,10 +3046,6 @@ body {
 }
 
 
-/* =================================================
-   PAGE BREAK
-================================================= */
-
 .section,
 .info-table,
 .inspection-grid,
@@ -2264,7 +3085,6 @@ body {
 
 <body>
 
-
 <div class="report">
 
 
@@ -2294,10 +3114,12 @@ body {
     </span>
 
     <span class="meta-value">
+
       #${escapeHtml(
         report.report_id ??
         report.reportId
       )}
+
     </span>
 
 
@@ -2306,11 +3128,13 @@ body {
     </span>
 
     <span class="meta-value">
+
       #${escapeHtml(
         vehicle.car_id ??
         report.car_id ??
         report.carId
       )}
+
     </span>
 
   </div>
@@ -2342,7 +3166,9 @@ body {
           </span>
 
           <span class="value">
-            ${escapeHtml(vehicle.brand)}
+            ${escapeHtml(
+              vehicle.brand
+            )}
           </span>
 
         </td>
@@ -2355,7 +3181,9 @@ body {
           </span>
 
           <span class="value">
-            ${escapeHtml(vehicle.model)}
+            ${escapeHtml(
+              vehicle.model
+            )}
           </span>
 
         </td>
@@ -2368,7 +3196,9 @@ body {
           </span>
 
           <span class="value">
-            ${escapeHtml(vehicle.variant)}
+            ${escapeHtml(
+              vehicle.variant
+            )}
           </span>
 
         </td>
@@ -2400,7 +3230,9 @@ body {
           </span>
 
           <span class="value">
-            ${money(vehicle.price)}
+            ${money(
+              vehicle.price
+            )}
           </span>
 
         </td>
@@ -2757,8 +3589,9 @@ body {
       </tr>
 
 
+      <tr>
 
-        <td colspan="2">
+        <td colspan="3">
 
           <span class="label">
             Address
@@ -2933,7 +3766,6 @@ body {
 
 </div>
 
-
 </body>
 
 </html>
@@ -2944,26 +3776,26 @@ body {
     printWindow.document.close();
 
 
-    // =================================================
+    // ===================================================
     // PRINT
-    // =================================================
+    // ===================================================
 
-    printWindow.onload = () => {
+    printWindow.onload =
+      () => {
 
-      setTimeout(
-        () => {
+        setTimeout(
+          () => {
 
-          printWindow.focus();
+            printWindow.focus();
 
-          printWindow.print();
+            printWindow.print();
 
-        },
-        500
-      );
+          },
+          500
+        );
 
-    };
+      };
 
   }
-
 
 }
