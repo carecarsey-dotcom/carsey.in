@@ -1,23 +1,7 @@
 const db = require("../config/db");
 
-
 // ======================================================
 // UNIVERSAL DATABASE QUERY HELPER
-// ======================================================
-//
-// Ye helper mysql2 ke:
-//
-// 1. normal callback pool
-// 2. promise pool
-// 3. mysql2/promise connection
-//
-// tino ke saath kaam karne ki koshish karta hai.
-//
-// SELECT  -> rows
-// INSERT  -> result
-// UPDATE  -> result
-// DELETE  -> result
-//
 // ======================================================
 
 const executeQuery = async (
@@ -27,22 +11,6 @@ const executeQuery = async (
 
     // ==================================================
     // MYSQL2 PROMISE POOL
-    // ==================================================
-    //
-    // IMPORTANT:
-    // mysql2 normal Pool ALSO exposes execute().
-    // But its execute() is callback based.
-    //
-    // Calling:
-    //
-    //     await db.execute(sql, params)
-    //
-    // on a normal callback pool causes:
-    //
-    //     TypeError: cb is not a function
-    //
-    // Therefore promise() MUST be preferred before
-    // using the callback query fallback.
     // ==================================================
 
     if (
@@ -65,7 +33,6 @@ const executeQuery = async (
 
     }
 
-
     // ==================================================
     // MYSQL2/PROMISE CONNECTION / POOL
     // ==================================================
@@ -86,7 +53,6 @@ const executeQuery = async (
             : result;
 
     }
-
 
     // ==================================================
     // MYSQL2 CALLBACK STYLE
@@ -124,7 +90,6 @@ const executeQuery = async (
 
                         }
 
-
                         resolve(
                             result
                         );
@@ -137,14 +102,62 @@ const executeQuery = async (
 
     }
 
-
-    // ==================================================
-    // INVALID DATABASE
-    // ==================================================
-
     throw new Error(
         "Database connection is not configured correctly."
     );
+
+};
+
+
+// ======================================================
+// GET TABLE COLUMNS
+// ======================================================
+
+const getTableColumns = async (
+    tableName
+) => {
+
+    try {
+
+        const rows =
+            await executeQuery(
+
+                `
+                SELECT
+                    COLUMN_NAME
+
+                FROM
+                    INFORMATION_SCHEMA.COLUMNS
+
+                WHERE
+                    TABLE_SCHEMA = DATABASE()
+
+                    AND TABLE_NAME = ?
+                `,
+
+                [
+                    tableName
+                ]
+
+            );
+
+        return Array.isArray(rows)
+            ? rows.map(
+                row =>
+                    row.COLUMN_NAME
+            )
+            : [];
+
+    } catch (error) {
+
+        console.error(
+            `Get ${tableName} Columns Error:`,
+            error.message
+        );
+
+        return [];
+
+    }
 
 };
 
@@ -155,31 +168,9 @@ const executeQuery = async (
 
 const getCarsColumns = async () => {
 
-    const rows =
-        await executeQuery(
-
-            `
-            SELECT
-                COLUMN_NAME
-
-            FROM
-                INFORMATION_SCHEMA.COLUMNS
-
-            WHERE
-                TABLE_SCHEMA = DATABASE()
-
-                AND TABLE_NAME = 'cars'
-            `
-
-        );
-
-
-    return Array.isArray(rows)
-        ? rows.map(
-            row =>
-                row.COLUMN_NAME
-        )
-        : [];
+    return await getTableColumns(
+        "cars"
+    );
 
 };
 
@@ -191,48 +182,9 @@ const getCarsColumns = async () => {
 const getInspectionReportColumns =
     async () => {
 
-        try {
-
-            const rows =
-                await executeQuery(
-
-                    `
-                    SELECT
-                        COLUMN_NAME
-
-                    FROM
-                        INFORMATION_SCHEMA.COLUMNS
-
-                    WHERE
-                        TABLE_SCHEMA = DATABASE()
-
-                        AND TABLE_NAME =
-                            'inspection_reports'
-                    `
-
-                );
-
-
-            return Array.isArray(rows)
-                ? rows.map(
-                    row =>
-                        row.COLUMN_NAME
-                )
-                : [];
-
-
-        } catch (
-            error
-        ) {
-
-            console.error(
-                "Inspection Report Columns Error:",
-                error.message
-            );
-
-            return [];
-
-        }
+        return await getTableColumns(
+            "inspection_reports"
+        );
 
     };
 
@@ -244,48 +196,23 @@ const getInspectionReportColumns =
 const getChecklistColumns =
     async () => {
 
-        try {
+        return await getTableColumns(
+            "inspection_checklist"
+        );
 
-            const rows =
-                await executeQuery(
-
-                    `
-                    SELECT
-                        COLUMN_NAME
-
-                    FROM
-                        INFORMATION_SCHEMA.COLUMNS
-
-                    WHERE
-                        TABLE_SCHEMA = DATABASE()
-
-                        AND TABLE_NAME =
-                            'inspection_checklist'
-                    `
-
-                );
+    };
 
 
-            return Array.isArray(rows)
-                ? rows.map(
-                    row =>
-                        row.COLUMN_NAME
-                )
-                : [];
+// ======================================================
+// GET CAR IMAGES COLUMNS
+// ======================================================
 
+const getCarImagesColumns =
+    async () => {
 
-        } catch (
-            error
-        ) {
-
-            console.error(
-                "Checklist Columns Error:",
-                error.message
-            );
-
-            return [];
-
-        }
+        return await getTableColumns(
+            "car_images"
+        );
 
     };
 
@@ -308,7 +235,6 @@ const pickValue = (
 
     }
 
-
     for (
         const key of keys
     ) {
@@ -325,7 +251,6 @@ const pickValue = (
 
     }
 
-
     return undefined;
 
 };
@@ -341,7 +266,6 @@ const buildCarsData = async (
 
     const columns =
         await getCarsColumns();
-
 
     const data = {};
 
@@ -512,7 +436,6 @@ const buildCarsData = async (
                     keys
                 );
 
-
             if (
                 value !== undefined
             ) {
@@ -555,17 +478,6 @@ const buildCarsData = async (
 
 // ======================================================
 // ADD VEHICLE
-// ======================================================
-//
-// IMPORTANT:
-//
-// Ye function intentionally yahan define hai.
-// Isi ki wajah se:
-//
-// ReferenceError: addVehicle is not defined
-//
-// nahi aayega.
-//
 // ======================================================
 
 const addVehicle = async (
@@ -616,14 +528,12 @@ const addVehicle = async (
             carsData
         );
 
-
     const placeholders =
         carColumns
             .map(
                 () => "?"
             )
             .join(", ");
-
 
     const values =
         carColumns.map(
@@ -884,6 +794,11 @@ const addVehicle = async (
                 const checklistData =
                     {};
 
+
+                // IMPORTANT:
+                // Only use columns that REALLY exist.
+                // This prevents:
+                // Unknown column 'car_id'
 
                 if (
                     checklistColumns.includes(
@@ -1498,6 +1413,112 @@ const getPublishedVehicles =
 
 
 // ======================================================
+// GET VEHICLE IMAGES
+// ======================================================
+// IMPORTANT FIX
+// Images are actually stored in car_images.
+// For car_id = 40 DB currently contains images.
+// ======================================================
+
+const getVehicleImages =
+    async (
+        carId
+    ) => {
+
+        const numericId =
+            Number(
+                carId
+            );
+
+
+        if (
+            !Number.isInteger(
+                numericId
+            ) ||
+            numericId <= 0
+        ) {
+
+            return [];
+
+        }
+
+
+        try {
+
+            const columns =
+                await getCarImagesColumns();
+
+
+            if (
+                !columns.includes(
+                    "car_id"
+                )
+            ) {
+
+                console.error(
+                    "car_images table does not contain car_id."
+                );
+
+                return [];
+
+            }
+
+
+            const rows =
+                await executeQuery(
+
+                    `
+                    SELECT
+                        *
+
+                    FROM
+                        car_images
+
+                    WHERE
+                        car_id = ?
+
+                    ORDER BY
+                        is_primary DESC,
+                        image_id ASC
+                    `,
+
+                    [
+                        numericId
+                    ]
+
+                );
+
+
+            console.log(
+                "Vehicle Images Found:",
+                numericId,
+                Array.isArray(rows)
+                    ? rows.length
+                    : 0
+            );
+
+
+            return Array.isArray(rows)
+                ? rows
+                : [];
+
+        } catch (
+            imageError
+        ) {
+
+            console.error(
+                "Vehicle Images Fetch Error:",
+                imageError.message
+            );
+
+            return [];
+
+        }
+
+    };
+
+
+// ======================================================
 // GET VEHICLE BY ID
 // ======================================================
 
@@ -1691,100 +1712,178 @@ const getVehicleById =
         // ==================================================
         // CHECKLIST
         // ==================================================
+        // IMPORTANT FIX:
+        //
+        // inspection_checklist may NOT have car_id.
+        // So never blindly execute:
+        //
+        // WHERE car_id = ?
+        //
+        // First check actual table columns.
+        // ==================================================
 
         let checklist = {};
 
 
         try {
 
-            const checklistRows =
-                await executeQuery(
-
-                    `
-                    SELECT
-                        *
-
-                    FROM
-                        inspection_checklist
-
-                    WHERE
-                        car_id = ?
-
-                    ORDER BY
-                        checklist_id DESC
-
-                    LIMIT 1
-                    `,
-
-                    [
-                        numericId
-                    ]
-
-                );
+            const checklistColumns =
+                await getChecklistColumns();
 
 
             if (
-                Array.isArray(
-                    checklistRows
-                ) &&
-                checklistRows.length > 0
+                checklistColumns.length > 0
             ) {
 
-                checklist =
-                    checklistRows[0];
+                let checklistRows = [];
 
 
-                const jsonFields = [
+                // ==================================================
+                // PREFERRED: REPORT ID
+                // ==================================================
 
-                    "checklist_data",
-
-                    "data",
-
-                    "inspection_data"
-
-                ];
-
-
-                for (
-                    const field
-                    of jsonFields
+                if (
+                    checklistColumns.includes(
+                        "report_id"
+                    ) &&
+                    inspection &&
+                    inspection.report_id
                 ) {
 
-                    if (
-                        checklist[field] &&
-                        typeof checklist[field] ===
-                            "string"
+                    checklistRows =
+                        await executeQuery(
+
+                            `
+                            SELECT
+                                *
+
+                            FROM
+                                inspection_checklist
+
+                            WHERE
+                                report_id = ?
+
+                            ORDER BY
+                                checklist_id DESC
+
+                            LIMIT 1
+                            `,
+
+                            [
+                                inspection.report_id
+                            ]
+
+                        );
+
+                }
+
+
+                // ==================================================
+                // FALLBACK: CAR ID
+                // ==================================================
+
+                else if (
+                    checklistColumns.includes(
+                        "car_id"
+                    )
+                ) {
+
+                    checklistRows =
+                        await executeQuery(
+
+                            `
+                            SELECT
+                                *
+
+                            FROM
+                                inspection_checklist
+
+                            WHERE
+                                car_id = ?
+
+                            ORDER BY
+                                checklist_id DESC
+
+                            LIMIT 1
+                            `,
+
+                            [
+                                numericId
+                            ]
+
+                        );
+
+                }
+
+
+                if (
+                    Array.isArray(
+                        checklistRows
+                    ) &&
+                    checklistRows.length > 0
+                ) {
+
+                    checklist =
+                        checklistRows[0];
+
+
+                    // ==================================================
+                    // PARSE JSON CHECKLIST FIELDS
+                    // ==================================================
+
+                    const jsonFields = [
+
+                        "checklist_data",
+
+                        "data",
+
+                        "inspection_data"
+
+                    ];
+
+
+                    for (
+                        const field
+                        of jsonFields
                     ) {
 
-                        try {
-
-                            const parsed =
-                                JSON.parse(
-                                    checklist[field]
-                                );
-
-
-                            if (
-                                parsed &&
-                                typeof parsed ===
-                                    "object"
-                            ) {
-
-                                checklist = {
-
-                                    ...checklist,
-
-                                    ...parsed
-
-                                };
-
-                            }
-
-                        } catch (
-                            parseError
+                        if (
+                            checklist[field] &&
+                            typeof checklist[field] ===
+                                "string"
                         ) {
 
-                            // Keep original value.
+                            try {
+
+                                const parsed =
+                                    JSON.parse(
+                                        checklist[field]
+                                    );
+
+
+                                if (
+                                    parsed &&
+                                    typeof parsed ===
+                                        "object"
+                                ) {
+
+                                    checklist = {
+
+                                        ...checklist,
+
+                                        ...parsed
+
+                                    };
+
+                                }
+
+                            } catch (
+                                parseError
+                            ) {
+
+                                // Keep original value.
+
+                            }
 
                         }
 
@@ -1793,6 +1892,7 @@ const getVehicleById =
                 }
 
             }
+
 
         } catch (
             checklistError
@@ -1807,7 +1907,48 @@ const getVehicleById =
 
 
         // ==================================================
-        // RETURN COMPLETE DATA
+        // VEHICLE IMAGES
+        // ==================================================
+        // THIS IS THE MAIN FIX.
+        //
+        // DB example for car_id 40:
+        //
+        // image_id 99
+        // image_path /uploads/vehicles/....jpg
+        //
+        // image_id 100
+        // image_path /uploads/vehicles/....jpg
+        //
+        // image_id 101
+        // image_path /uploads/vehicles/....jpg
+        // ==================================================
+
+        let images = [];
+
+
+        try {
+
+            images =
+                await getVehicleImages(
+                    numericId
+                );
+
+        } catch (
+            imageError
+        ) {
+
+            console.error(
+                "Vehicle Images Fetch Error:",
+                imageError.message
+            );
+
+            images = [];
+
+        }
+
+
+        // ==================================================
+        // FINAL COMPLETE DATA
         // ==================================================
 
         return {
@@ -1818,7 +1959,13 @@ const getVehicleById =
 
             inspection,
 
-            checklist
+            checklist,
+
+            // IMPORTANT:
+            // Frontend can now read:
+            // response.data.images
+
+            images
 
         };
 
@@ -1837,6 +1984,8 @@ module.exports = {
 
     getPublishedVehicles,
 
-    getVehicleById
+    getVehicleById,
+
+    getVehicleImages
 
 };
