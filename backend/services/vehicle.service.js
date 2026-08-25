@@ -481,92 +481,63 @@ const generateFinalVehicleInspectionReport = async (
     // ==================================================
     // IMPORTANT - MARK INSPECTION REPORT AS PUBLISHED
     // ==================================================
-    //
-    // Vehicle repository initially creates the inspection
-    // report with publish_status = "No".
-    // Final PDF generation happens later, after images are
-    // uploaded. At that point the report must also be marked
-    // as published in inspection_reports.
-    //
-    // Otherwise customer email / WhatsApp delivery checks
-    // publish_status and returns:
-    // "Inspection report is not published."
-    //
-    // Existing score and remarks are preserved. Only the
-    // publish status is changed to "Yes".
-    // ==================================================
 
     await inspectionReportRepository
-        .updateInspectionReport(
-            reportId,
-            {
-                overallScore:
-                    completeReport.overallScore,
-
-                engineRemark:
-                    completeReport.engineRemark,
-
-                overallRemark:
-                    completeReport.overallRemark,
-
-                publishStatus:
-                    "Yes"
-            }
+        .markInspectionReportPublished(
+            reportId
         );
 
 
-    console.log(
-        "Inspection report marked as published successfully."
-    );
-
-    console.log(
-        "PDF path saved in inspection_reports."
-    );
-
-
     // ==================================================
-    // SEND PDF TO ADMIN
+    // SEND ADMIN EMAIL
     // ==================================================
 
-    let adminEmailResult = null;
+    let adminEmailResult = {
+
+        success: false,
+
+        message:
+            "Admin email was not sent."
+
+    };
 
 
-    if (env.ADMIN_EMAIL) {
+    if (
+        env.ADMIN_EMAIL
+    ) {
 
         try {
 
             adminEmailResult =
                 await emailService
-                    .sendInspectionReportEmail({
+                    .sendInspectionReportToAdmin({
+                        vehicle:
+                            vehicleData.vehicle || {},
 
-                        to:
-                            env.ADMIN_EMAIL,
+                        owner:
+                            vehicleData.owner || {},
 
-                        subject:
-                            `Carsey.in - Vehicle Published #${numericVehicleId}`,
+                        inspection:
+                            vehicleData.inspection || {},
 
-                        customerName:
-                            "Carsey.in Admin",
+                        checklist:
+                            vehicleData.checklist || {},
 
                         pdfPath:
                             pdf.filePath,
 
-                        fileName:
-                            pdf.fileName
+                        pdfUrl:
+                            pdf.pdfUrl
 
                     });
-
-
-            console.log(
-                "Admin Vehicle PDF Email Sent Successfully."
-            );
 
         } catch (emailError) {
 
             console.error(
-                "Admin Vehicle PDF Email Error:",
-                emailError.message
+                "Admin Email Error:",
+                emailError
             );
+
 
             adminEmailResult = {
 
@@ -946,6 +917,112 @@ const getPublishedVehicles = async (
 
 
 // ======================================================
+// DELETE VEHICLE
+// ADMIN
+// ======================================================
+//
+// Deletes the vehicle through the repository layer.
+// The repository is responsible for the actual database
+// deletion and related vehicle records.
+//
+// ======================================================
+
+const deleteVehicle = async (
+    vehicleId
+) => {
+
+    const numericVehicleId =
+        Number(vehicleId);
+
+
+    // ==================================================
+    // VALIDATE VEHICLE ID
+    // ==================================================
+
+    if (
+        !Number.isInteger(numericVehicleId) ||
+        numericVehicleId <= 0
+    ) {
+
+        throw new Error(
+            "Valid vehicle ID is required."
+        );
+
+    }
+
+
+    // ==================================================
+    // DELETE VEHICLE FROM REPOSITORY
+    // ==================================================
+
+    const result =
+        await vehicleRepository
+            .deleteVehicle(
+                numericVehicleId
+            );
+
+
+    // ==================================================
+    // VEHICLE NOT FOUND / NOT DELETED
+    // ==================================================
+
+    if (!result) {
+
+        return {
+
+            deleted: false,
+
+            vehicleId:
+                numericVehicleId,
+
+            message:
+                "Vehicle not found or could not be deleted."
+
+        };
+
+    }
+
+
+    if (result.deleted === false) {
+
+        return {
+
+            ...result,
+
+            deleted: false,
+
+            vehicleId:
+                numericVehicleId
+
+        };
+
+    }
+
+
+    // ==================================================
+    // SUCCESS
+    // ==================================================
+
+    return {
+
+        ...result,
+
+        deleted: true,
+
+        vehicleId:
+            numericVehicleId,
+
+        message:
+            result.message ||
+            "Vehicle deleted successfully."
+
+    };
+
+};
+
+
+
+// ======================================================
 // EXPORT
 // ======================================================
 
@@ -957,9 +1034,10 @@ module.exports = {
 
     getCompleteVehicleData,
 
-
     getAllAdminVehicles,
 
-    getPublishedVehicles
+    getPublishedVehicles,
+
+    deleteVehicle
 
 };

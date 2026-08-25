@@ -2,6 +2,7 @@ const vehicleService =
     require("../services/vehicle.service");
 
 
+
 // ======================================================
 // ADD VEHICLE
 // ======================================================
@@ -10,7 +11,6 @@ const addVehicle = async (
     req,
     res
 ) => {
-
     try {
 
         // ==================================================
@@ -74,6 +74,7 @@ const addVehicle = async (
 
                 message:
                     "Vehicle, inspection report, checklist and PDF processing completed successfully."
+
             }
 
         });
@@ -105,8 +106,9 @@ const addVehicle = async (
         });
 
     }
-
 };
+
+
 
 
 
@@ -164,6 +166,8 @@ const getAllAdminVehicles = async (
     }
 
 };
+
+
 
 
 
@@ -227,6 +231,8 @@ const getPublishedVehicles = async (
     }
 
 };
+
+
 
 
 
@@ -358,6 +364,152 @@ const getCompleteVehicleData = async (
 
 
 
+
+
+// ======================================================
+// DELETE VEHICLE
+// ADMIN
+// ======================================================
+//
+// DELETE
+// /api/admin/vehicles/:carId
+//
+// Example:
+// /api/admin/vehicles/30
+//
+// ======================================================
+
+const deleteVehicle = async (
+    req,
+    res
+) => {
+
+    try {
+
+        // ==================================================
+        // GET VEHICLE ID
+        // ==================================================
+
+        const rawCarId =
+            req.params.carId;
+
+
+        const carId =
+            Number(rawCarId);
+
+
+        // ==================================================
+        // VALIDATE VEHICLE ID
+        // ==================================================
+
+        if (
+            !Number.isInteger(carId) ||
+            carId <= 0
+        ) {
+
+            return res.status(400).json({
+
+                success:
+                    false,
+
+                message:
+                    "Valid vehicle ID is required."
+
+            });
+
+        }
+
+
+        // ==================================================
+        // DELETE VEHICLE
+        // ==================================================
+
+        const result =
+            await vehicleService
+                .deleteVehicle(
+                    carId
+                );
+
+
+        // ==================================================
+        // VEHICLE NOT FOUND
+        // ==================================================
+
+        if (
+            !result ||
+            result.deleted === false
+        ) {
+
+            return res.status(404).json({
+
+                success:
+                    false,
+
+                message:
+                    result?.message ||
+                    "Vehicle not found."
+
+            });
+
+        }
+
+
+        // ==================================================
+        // SUCCESS RESPONSE
+        // ==================================================
+
+        return res.status(200).json({
+
+            success:
+                true,
+
+            message:
+                result.message ||
+                "Vehicle deleted successfully.",
+
+            data: {
+
+                vehicleId:
+                    carId
+
+            }
+
+        });
+
+    }
+
+    catch (error) {
+
+        console.error(
+            "Delete Vehicle Error:",
+            error
+        );
+
+
+        return res.status(500).json({
+
+            success:
+                false,
+
+            message:
+                error.message ||
+                "Unable to delete vehicle.",
+
+            error:
+                process.env.NODE_ENV === "development"
+                    ? error.stack
+                    : undefined
+
+        });
+
+    }
+
+};
+
+
+
+
+
 // ======================================================
 // EXPORT
 // ======================================================
@@ -370,6 +522,8 @@ module.exports = {
 
     getPublishedVehicles,
 
-    getCompleteVehicleData
+    getCompleteVehicleData,
+
+    deleteVehicle
 
 };

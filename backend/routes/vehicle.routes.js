@@ -2,11 +2,14 @@ const express = require("express");
 
 const router = express.Router();
 
+
 const vehicleController =
     require("../controllers/vehicle.controller");
 
+
 const vehicleImageRepository =
     require("../repositories/vehicleImage.repository");
+
 
 
 // ======================================================
@@ -14,10 +17,13 @@ const vehicleImageRepository =
 // ======================================================
 
 if (!vehicleController) {
+
     throw new Error(
         "vehicle.controller.js could not be loaded."
     );
+
 }
+
 
 
 // ======================================================
@@ -32,11 +38,16 @@ const checkController = (
         typeof vehicleController[functionName] !==
         "function"
     ) {
+
         return false;
+
     }
 
+
     return true;
+
 };
+
 
 
 // ======================================================
@@ -62,12 +73,18 @@ router.get(
                     "getAllAdminVehicles"
                 )
             ) {
+
                 return res.status(500).json({
+
                     success: false,
+
                     message:
                         "getAllAdminVehicles controller function is missing."
+
                 });
+
             }
+
 
             return vehicleController
                 .getAllAdminVehicles(
@@ -75,11 +92,15 @@ router.get(
                     res,
                     next
                 );
+
         }
 
+
         next();
+
     }
 );
+
 
 
 // ======================================================
@@ -106,12 +127,18 @@ router.get(
                 "getPublishedVehicles"
             )
         ) {
+
             return res.status(500).json({
+
                 success: false,
+
                 message:
                     "getPublishedVehicles controller function is missing."
+
             });
+
         }
+
 
         return vehicleController
             .getPublishedVehicles(
@@ -119,8 +146,10 @@ router.get(
                 res,
                 next
             );
+
     }
 );
+
 
 
 // ======================================================
@@ -144,12 +173,18 @@ router.get(
                 "getVehicleInspectionReport"
             )
         ) {
+
             return res.status(500).json({
+
                 success: false,
+
                 message:
                     "getVehicleInspectionReport controller function is missing."
+
             });
+
         }
+
 
         return vehicleController
             .getVehicleInspectionReport(
@@ -157,8 +192,10 @@ router.get(
                 res,
                 next
             );
+
     }
 );
+
 
 
 // ======================================================
@@ -203,10 +240,14 @@ router.get(
             ) {
 
                 return res.status(400).json({
+
                     success: false,
+
                     message:
                         "Valid vehicle ID is required."
+
                 });
+
             }
 
 
@@ -252,12 +293,15 @@ router.get(
 
             });
 
-        } catch (error) {
+        }
+
+        catch (error) {
 
             console.error(
                 "GET VEHICLE IMAGES ROUTE ERROR:",
                 error
             );
+
 
             return res.status(500).json({
 
@@ -278,6 +322,7 @@ router.get(
 
     }
 );
+
 
 
 // ======================================================
@@ -305,12 +350,18 @@ router.get(
                 "getCompleteVehicleData"
             )
         ) {
+
             return res.status(500).json({
+
                 success: false,
+
                 message:
                     "getCompleteVehicleData controller function is missing."
+
             });
+
         }
+
 
         return vehicleController
             .getCompleteVehicleData(
@@ -318,8 +369,10 @@ router.get(
                 res,
                 next
             );
+
     }
 );
+
 
 
 // ======================================================
@@ -337,6 +390,7 @@ router.get(
     "/",
     (req, res, next) => {
 
+
         // --------------------------------------------------
         // ADMIN
         // --------------------------------------------------
@@ -351,12 +405,18 @@ router.get(
                     "getAllAdminVehicles"
                 )
             ) {
+
                 return res.status(500).json({
+
                     success: false,
+
                     message:
                         "getAllAdminVehicles controller function is missing."
+
                 });
+
             }
+
 
             return vehicleController
                 .getAllAdminVehicles(
@@ -364,6 +424,7 @@ router.get(
                     res,
                     next
                 );
+
         }
 
 
@@ -378,12 +439,16 @@ router.get(
         ) {
 
             return res.status(500).json({
+
                 success: false,
+
                 message:
                     "getPublishedVehicles controller function is missing."
+
             });
 
         }
+
 
         return vehicleController
             .getPublishedVehicles(
@@ -394,6 +459,7 @@ router.get(
 
     }
 );
+
 
 
 // ======================================================
@@ -416,12 +482,16 @@ router.post(
         ) {
 
             return res.status(500).json({
+
                 success: false,
+
                 message:
                     "addVehicle controller function is missing."
+
             });
 
         }
+
 
         return vehicleController
             .addVehicle(
@@ -432,6 +502,61 @@ router.post(
 
     }
 );
+
+
+
+// ======================================================
+// ADMIN - DELETE VEHICLE
+// ======================================================
+//
+// DELETE
+// /api/admin/vehicles/:carId
+//
+// Example:
+// /api/admin/vehicles/30
+//
+// ======================================================
+
+router.delete(
+    "/:carId",
+    (req, res, next) => {
+
+        // --------------------------------------------------
+        // CHECK DELETE CONTROLLER
+        // --------------------------------------------------
+
+        if (
+            !checkController(
+                "deleteVehicle"
+            )
+        ) {
+
+            return res.status(500).json({
+
+                success: false,
+
+                message:
+                    "deleteVehicle controller function is missing."
+
+            });
+
+        }
+
+
+        // --------------------------------------------------
+        // DELETE VEHICLE
+        // --------------------------------------------------
+
+        return vehicleController
+            .deleteVehicle(
+                req,
+                res,
+                next
+            );
+
+    }
+);
+
 
 
 // ======================================================

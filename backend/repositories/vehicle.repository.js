@@ -1412,6 +1412,125 @@ const getPublishedVehicles =
     };
 
 
+
+
+// ======================================================
+// DELETE VEHICLE
+// ADMIN
+// ======================================================
+//
+// Deletes the vehicle through the repository layer.
+// The repository is responsible for the actual database
+// deletion and related vehicle records.
+//
+// ======================================================
+
+const deleteVehicle = async (
+    vehicleId
+) => {
+
+    // ==================================================
+    // CONVERT VEHICLE ID TO NUMBER
+    // ==================================================
+
+    const numericVehicleId =
+        Number(vehicleId);
+
+
+    // ==================================================
+    // VALIDATE VEHICLE ID
+    // ==================================================
+
+    if (
+        !Number.isInteger(numericVehicleId) ||
+        numericVehicleId <= 0
+    ) {
+
+        throw new Error(
+            "Valid vehicle ID is required."
+        );
+
+    }
+
+
+    // ==================================================
+    // DELETE VEHICLE FROM REPOSITORY
+    // ==================================================
+
+    const result =
+        await vehicleRepository
+            .deleteVehicle(
+                numericVehicleId
+            );
+
+
+    // ==================================================
+    // VEHICLE NOT FOUND / NOT DELETED
+    // ==================================================
+
+    if (!result) {
+
+        return {
+
+            deleted:
+                false,
+
+            vehicleId:
+                numericVehicleId,
+
+            message:
+                "Vehicle not found or could not be deleted."
+
+        };
+
+    }
+
+
+    // ==================================================
+    // REPOSITORY EXPLICITLY RETURNED FALSE
+    // ==================================================
+
+    if (
+        result.deleted === false
+    ) {
+
+        return {
+
+            ...result,
+
+            deleted:
+                false,
+
+            vehicleId:
+                numericVehicleId
+
+        };
+
+    }
+
+
+    // ==================================================
+    // SUCCESS
+    // ==================================================
+
+    return {
+
+        ...result,
+
+        deleted:
+            true,
+
+        vehicleId:
+            numericVehicleId,
+
+        message:
+            result.message ||
+            "Vehicle deleted successfully."
+
+    };
+
+};
+
 // ======================================================
 // GET VEHICLE IMAGES
 // ======================================================
@@ -1986,6 +2105,8 @@ module.exports = {
 
     getVehicleById,
 
-    getVehicleImages
+    getVehicleImages,
+
+    deleteVehicle
 
 };
