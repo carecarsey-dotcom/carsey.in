@@ -616,19 +616,31 @@ const getVehicleImages = async (
                 req.params.carId
             );
 
-
-        if (!carId) {
+        if (
+            !Number.isInteger(carId) ||
+            carId <= 0
+        ) {
 
             return res.status(400).json({
-
                 success: false,
-
                 message:
                     "Valid vehicle ID is required."
-
             });
-
         }
+
+
+        console.log(
+            "========================================"
+        );
+
+        console.log(
+            "GET VEHICLE IMAGES API"
+        );
+
+        console.log(
+            "Vehicle ID:",
+            carId
+        );
 
 
         const images =
@@ -636,6 +648,53 @@ const getVehicleImages = async (
                 .getVehicleImages(
                     carId
                 );
+
+
+        console.log(
+            "Vehicle Images Found:",
+            Array.isArray(images)
+                ? images.length
+                : 0
+        );
+
+
+        if (
+            Array.isArray(images)
+        ) {
+
+            images.forEach(
+                (
+                    image,
+                    index
+                ) => {
+
+                    console.log(
+                        `Image ${index + 1}:`,
+                        {
+                            image_id:
+                                image.image_id,
+
+                            car_id:
+                                image.car_id,
+
+                            image_type:
+                                image.image_type,
+
+                            image_path:
+                                image.image_path,
+
+                            is_primary:
+                                image.is_primary
+                        }
+                    );
+                }
+            );
+        }
+
+
+        console.log(
+            "========================================"
+        );
 
 
         return res.status(200).json({
@@ -647,19 +706,21 @@ const getVehicleImages = async (
 
             data: {
 
-                images
+                carId,
 
+                images:
+                    Array.isArray(images)
+                        ? images
+                        : []
             }
-
         });
 
     } catch (error) {
 
         console.error(
-            "Get Vehicle Images Error:",
+            "GET VEHICLE IMAGES ERROR:",
             error
         );
-
 
         return res.status(500).json({
 
@@ -667,12 +728,14 @@ const getVehicleImages = async (
 
             message:
                 error.message ||
-                "Unable to fetch vehicle images."
+                "Unable to fetch vehicle images.",
 
+            data: {
+
+                images: []
+            }
         });
-
     }
-
 };
 
 

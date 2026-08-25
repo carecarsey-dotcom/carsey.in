@@ -5,20 +5,29 @@ const vehicleImageRepository =
 // ======================================================
 // ALLOWED IMAGE TYPES
 // ======================================================
-// Must exactly match car_images.image_type ENUM
-// ======================================================
 
 const ALLOWED_IMAGE_TYPES = [
+
     "Exterior Front Photo",
+
     "Engine Photo",
+
     "Exterior LHS Photo",
+
     "Dicky Boot",
+
     "Open Dickey",
+
     "Exterior RHS Photo",
+
     "Interior Photo",
+
     "Interior RHS",
+
     "Interior LHS",
+
     "Rear Right",
+
     "Rear Left"
 ];
 
@@ -62,25 +71,12 @@ const addVehicleImage = async (
         );
     }
 
-    // --------------------------------------------------
-    // If new image is primary, remove primary from
-    // existing images first.
-    // --------------------------------------------------
-
-    if (isPrimary) {
-
-        await vehicleImageRepository
-            .clearPrimaryImage(
-                carId
-            );
-    }
-
     return await vehicleImageRepository
         .addVehicleImage(
             carId,
             imageType,
             imagePath,
-            isPrimary
+            Boolean(isPrimary)
         );
 };
 
@@ -99,10 +95,15 @@ const getVehicleImages = async (
         );
     }
 
-    return await vehicleImageRepository
-        .getVehicleImages(
-            carId
-        );
+    const images =
+        await vehicleImageRepository
+            .getVehicleImages(
+                carId
+            );
+
+    return Array.isArray(images)
+        ? images
+        : [];
 };
 
 
@@ -175,30 +176,13 @@ const updateVehicleImage = async (
         );
     }
 
-    /*
-     * imagePath optional rakha gaya hai.
-     *
-     * Agar edit vehicle me sirf image type / primary change
-     * ho raha hai aur nayi file upload nahi hui hai,
-     * existing image path repository/database se preserve
-     * kiya ja sakta hai.
-     */
-
-    if (isPrimary) {
-
-        await vehicleImageRepository
-            .clearPrimaryImage(
-                carId
-            );
-    }
-
     return await vehicleImageRepository
         .updateVehicleImage(
             imageId,
             carId,
             imageType,
             imagePath || null,
-            isPrimary
+            Boolean(isPrimary)
         );
 };
 
@@ -273,19 +257,6 @@ const setPrimaryImage = async (
             "Valid vehicle ID is required."
         );
     }
-
-    // --------------------------------------------------
-    // First remove primary from all images of vehicle
-    // --------------------------------------------------
-
-    await vehicleImageRepository
-        .clearPrimaryImage(
-            carId
-        );
-
-    // --------------------------------------------------
-    // Then make selected image primary
-    // --------------------------------------------------
 
     return await vehicleImageRepository
         .setPrimaryImage(
