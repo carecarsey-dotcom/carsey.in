@@ -5,17 +5,18 @@ const router = express.Router();
 const vehicleController =
     require("../controllers/vehicle.controller");
 
+const vehicleImageRepository =
+    require("../repositories/vehicleImage.repository");
+
 
 // ======================================================
 // CONTROLLER SAFETY
 // ======================================================
 
 if (!vehicleController) {
-
     throw new Error(
         "vehicle.controller.js could not be loaded."
     );
-
 }
 
 
@@ -31,13 +32,10 @@ const checkController = (
         typeof vehicleController[functionName] !==
         "function"
     ) {
-
         return false;
-
     }
 
     return true;
-
 };
 
 
@@ -54,10 +52,6 @@ router.get(
     "/",
     (req, res, next) => {
 
-        // --------------------------------------------------
-        // Admin mounted route
-        // --------------------------------------------------
-
         if (
             req.baseUrl ===
             "/api/admin/vehicles"
@@ -68,16 +62,11 @@ router.get(
                     "getAllAdminVehicles"
                 )
             ) {
-
                 return res.status(500).json({
-
                     success: false,
-
                     message:
                         "getAllAdminVehicles controller function is missing."
-
                 });
-
             }
 
             return vehicleController
@@ -86,11 +75,9 @@ router.get(
                     res,
                     next
                 );
-
         }
 
         next();
-
     }
 );
 
@@ -119,16 +106,11 @@ router.get(
                 "getPublishedVehicles"
             )
         ) {
-
             return res.status(500).json({
-
                 success: false,
-
                 message:
                     "getPublishedVehicles controller function is missing."
-
             });
-
         }
 
         return vehicleController
@@ -137,7 +119,6 @@ router.get(
                 res,
                 next
             );
-
     }
 );
 
@@ -163,16 +144,11 @@ router.get(
                 "getVehicleInspectionReport"
             )
         ) {
-
             return res.status(500).json({
-
                 success: false,
-
                 message:
                     "getVehicleInspectionReport controller function is missing."
-
             });
-
         }
 
         return vehicleController
@@ -181,7 +157,6 @@ router.get(
                 res,
                 next
             );
-
     }
 );
 
@@ -194,37 +169,112 @@ router.get(
 // /api/vehicles/:carId/images
 //
 // IMPORTANT:
-// Ye route "/:carId" se PEHLE hona chahiye.
+// Yahan vehicleController.getVehicleImages()
+// par depend nahi karenge.
+//
+// Directly existing
+// vehicleImageRepository.getVehicleImages()
+// use hoga.
+//
+// Isse "getVehicleImages controller function is missing"
+// wali problem completely remove ho jayegi.
 //
 // ======================================================
 
 router.get(
     "/:carId/images",
-    (req, res, next) => {
+    async (req, res) => {
 
-        if (
-            !checkController(
-                "getVehicleImages"
-            )
-        ) {
+        try {
+
+            const carId =
+                Number(
+                    req.params.carId
+                );
+
+
+            // --------------------------------------------------
+            // VALIDATE CAR ID
+            // --------------------------------------------------
+
+            if (
+                !Number.isInteger(carId) ||
+                carId <= 0
+            ) {
+
+                return res.status(400).json({
+                    success: false,
+                    message:
+                        "Valid vehicle ID is required."
+                });
+            }
+
+
+            // --------------------------------------------------
+            // GET IMAGES FROM DATABASE
+            // --------------------------------------------------
+
+            const images =
+                await vehicleImageRepository
+                    .getVehicleImages(
+                        carId
+                    );
+
+
+            // --------------------------------------------------
+            // NORMALIZE RESULT
+            // --------------------------------------------------
+
+            const imageList =
+                Array.isArray(images)
+                    ? images
+                    : [];
+
+
+            // --------------------------------------------------
+            // SUCCESS RESPONSE
+            // --------------------------------------------------
+
+            return res.status(200).json({
+
+                success: true,
+
+                message:
+                    "Vehicle images fetched successfully.",
+
+                data: {
+
+                    carId: carId,
+
+                    images: imageList
+
+                }
+
+            });
+
+        } catch (error) {
+
+            console.error(
+                "GET VEHICLE IMAGES ROUTE ERROR:",
+                error
+            );
 
             return res.status(500).json({
 
                 success: false,
 
                 message:
-                    "getVehicleImages controller function is missing."
+                    "Failed to fetch vehicle images.",
+
+                error:
+                    process.env.NODE_ENV ===
+                    "development"
+                        ? error.message
+                        : undefined
 
             });
 
         }
-
-        return vehicleController
-            .getVehicleImages(
-                req,
-                res,
-                next
-            );
 
     }
 );
@@ -238,7 +288,6 @@ router.get(
 // /api/vehicles/:carId
 //
 // Example:
-//
 // /api/vehicles/30
 //
 // IMPORTANT:
@@ -256,16 +305,11 @@ router.get(
                 "getCompleteVehicleData"
             )
         ) {
-
             return res.status(500).json({
-
                 success: false,
-
                 message:
                     "getCompleteVehicleData controller function is missing."
-
             });
-
         }
 
         return vehicleController
@@ -274,7 +318,6 @@ router.get(
                 res,
                 next
             );
-
     }
 );
 
@@ -288,10 +331,6 @@ router.get(
 //
 // Existing route preserved.
 //
-// IMPORTANT:
-// Isko "/:carId" ke BAAD nahi rakhna chahiye,
-// warna "/" request ke flow mein confusion ho sakta hai.
-//
 // ======================================================
 
 router.get(
@@ -299,15 +338,7 @@ router.get(
     (req, res, next) => {
 
         // --------------------------------------------------
-        // IMPORTANT
-        // --------------------------------------------------
-        //
-        // Agar router /api/admin/vehicles par mounted hai,
-        // to upar wala admin handler request handle karega.
-        //
-        // Agar router /api/vehicles par mounted hai,
-        // to customer published vehicles return honge.
-        //
+        // ADMIN
         // --------------------------------------------------
 
         if (
@@ -320,16 +351,11 @@ router.get(
                     "getAllAdminVehicles"
                 )
             ) {
-
                 return res.status(500).json({
-
                     success: false,
-
                     message:
                         "getAllAdminVehicles controller function is missing."
-
                 });
-
             }
 
             return vehicleController
@@ -338,7 +364,6 @@ router.get(
                     res,
                     next
                 );
-
         }
 
 
@@ -353,12 +378,9 @@ router.get(
         ) {
 
             return res.status(500).json({
-
                 success: false,
-
                 message:
                     "getPublishedVehicles controller function is missing."
-
             });
 
         }
@@ -394,12 +416,9 @@ router.post(
         ) {
 
             return res.status(500).json({
-
                 success: false,
-
                 message:
                     "addVehicle controller function is missing."
-
             });
 
         }
