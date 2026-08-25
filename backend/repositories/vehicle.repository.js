@@ -1419,9 +1419,14 @@ const getPublishedVehicles =
 // ADMIN
 // ======================================================
 //
-// Deletes the vehicle through the repository layer.
-// The repository is responsible for the actual database
-// deletion and related vehicle records.
+// Deletes vehicle and its related database records.
+//
+// Delete order:
+//
+// 1. inspection_checklist
+// 2. inspection_reports
+// 3. car_images
+// 4. cars
 //
 // ======================================================
 
@@ -1442,7 +1447,9 @@ const deleteVehicle = async (
     // ==================================================
 
     if (
-        !Number.isInteger(numericVehicleId) ||
+        !Number.isInteger(
+            numericVehicleId
+        ) ||
         numericVehicleId <= 0
     ) {
 
@@ -1454,21 +1461,35 @@ const deleteVehicle = async (
 
 
     // ==================================================
-    // DELETE VEHICLE FROM REPOSITORY
+    // CHECK VEHICLE EXISTS
     // ==================================================
 
-    const result =
-        await vehicleRepository
-            .deleteVehicle(
+    const vehicleRows =
+        await executeQuery(
+
+            `
+            SELECT
+                *
+            FROM
+                cars
+            WHERE
+                car_id = ?
+            LIMIT 1
+            `,
+
+            [
                 numericVehicleId
-            );
+            ]
+
+        );
 
 
-    // ==================================================
-    // VEHICLE NOT FOUND / NOT DELETED
-    // ==================================================
-
-    if (!result) {
+    if (
+        !Array.isArray(
+            vehicleRows
+        ) ||
+        vehicleRows.length === 0
+    ) {
 
         return {
 
@@ -1479,7 +1500,7 @@ const deleteVehicle = async (
                 numericVehicleId,
 
             message:
-                "Vehicle not found or could not be deleted."
+                "Vehicle not found."
 
         };
 
@@ -1487,22 +1508,322 @@ const deleteVehicle = async (
 
 
     // ==================================================
-    // REPOSITORY EXPLICITLY RETURNED FALSE
+    // GET INSPECTION REPORT IDS
     // ==================================================
 
+    let reportIds = [];
+
+
+    try {
+
+        const reportColumns =
+            await getInspectionReportColumns();
+
+
+        if (
+            reportColumns.includes(
+                "car_id"
+            ) &&
+            reportColumns.includes(
+                "report_id"
+            )
+        ) {
+
+            const reports =
+                await executeQuery(
+
+                    `
+                    SELECT
+                        report_id
+                    FROM
+                        inspection_reports
+                    WHERE
+                        car_id = ?
+                    `,
+
+                    [
+                        numericVehicleId
+                    ]
+
+                );
+
+
+            if (
+                Array.isArray(
+                    reports
+                )
+            ) {
+
+                reportIds =
+                    reports
+                        .map(
+                            report =>
+                                report.report_id
+                        )
+                        .filter(
+                            id =>
+                                id !== null &&
+                                id !== undefined
+                        );
+
+            }
+
+        }
+
+    }
+    catch (
+        reportFetchError
+    ) {
+
+        console.error(
+
+            "Delete Vehicle - Report ID Fetch Error:",
+
+            reportFetchError.message
+
+        );
+
+    }
+
+
+    // ==================================================
+    // DELETE INSPECTION CHECKLIST
+    // ==================================================
+
+    try {
+
+        const checklistColumns =
+            await getChecklistColumns();
+
+
+        // ------------------------------------------------
+        // DELETE USING REPORT ID
+        // ------------------------------------------------
+
+        if (
+            checklistColumns.includes(
+                "report_id"
+            ) &&
+            reportIds.length > 0
+        ) {
+
+            for (
+                const reportId
+                of reportIds
+            ) {
+
+                await executeQuery(
+
+                    `
+                    DELETE FROM
+                        inspection_checklist
+                    WHERE
+                        report_id = ?
+                    `,
+
+                    [
+                        reportId
+                    ]
+
+                );
+
+            }
+
+        }
+
+
+        // ------------------------------------------------
+        // FALLBACK: DELETE USING CAR ID
+        // ------------------------------------------------
+
+        if (
+            checklistColumns.includes(
+                "car_id"
+            )
+        ) {
+
+            await executeQuery(
+
+                `
+                DELETE FROM
+                    inspection_checklist
+                WHERE
+                    car_id = ?
+                `,
+
+                [
+                    numericVehicleId
+                ]
+
+            );
+
+        }
+
+    }
+    catch (
+        checklistDeleteError
+    ) {
+
+        console.error(
+
+            "Delete Vehicle - Checklist Delete Error:",
+
+            checklistDeleteError.message
+
+        );
+
+        throw checklistDeleteError;
+
+    }
+
+
+    // ==================================================
+    // DELETE INSPECTION REPORTS
+    // ==================================================
+
+    try {
+
+        const reportColumns =
+            await getInspectionReportColumns();
+
+
+        if (
+            reportColumns.includes(
+                "car_id"
+            )
+        ) {
+
+            await executeQuery(
+
+                `
+                DELETE FROM
+                    inspection_reports
+                WHERE
+                    car_id = ?
+                `,
+
+                [
+                    numericVehicleId
+                ]
+
+            );
+
+        }
+
+    }
+    catch (
+        reportDeleteError
+    ) {
+
+        console.error(
+
+            "Delete Vehicle - Inspection Report Delete Error:",
+
+            reportDeleteError.message
+
+        );
+
+        throw reportDeleteError;
+
+    }
+
+
+    // ==================================================
+    // DELETE VEHICLE IMAGES FROM DATABASE
+    // ==================================================
+
+    try {
+
+        const imageColumns =
+            await getCarImagesColumns();
+
+
+        if (
+            imageColumns.includes(
+                "car_id"
+            )
+        ) {
+
+            await executeQuery(
+
+                `
+                DELETE FROM
+                    car_images
+                WHERE
+                    car_id = ?
+                `,
+
+                [
+                    numericVehicleId
+                ]
+
+            );
+
+        }
+
+    }
+    catch (
+        imageDeleteError
+    ) {
+
+        console.error(
+
+            "Delete Vehicle - Image Delete Error:",
+
+            imageDeleteError.message
+
+        );
+
+        throw imageDeleteError;
+
+    }
+
+
+    // ==================================================
+    // DELETE VEHICLE FROM CARS TABLE
+    // ==================================================
+
+    const deleteResult =
+        await executeQuery(
+
+            `
+            DELETE FROM
+                cars
+            WHERE
+                car_id = ?
+            `,
+
+            [
+                numericVehicleId
+            ]
+
+        );
+
+
+    // ==================================================
+    // CHECK DELETE RESULT
+    // ==================================================
+
+    const affectedRows =
+        Number(
+            deleteResult?.affectedRows || 0
+        );
+
+
     if (
-        result.deleted === false
+        affectedRows === 0
     ) {
 
         return {
-
-            ...result,
 
             deleted:
                 false,
 
             vehicleId:
-                numericVehicleId
+                numericVehicleId,
+
+            message:
+                "Vehicle was not deleted."
 
         };
 
@@ -1515,8 +1836,6 @@ const deleteVehicle = async (
 
     return {
 
-        ...result,
-
         deleted:
             true,
 
@@ -1524,7 +1843,6 @@ const deleteVehicle = async (
             numericVehicleId,
 
         message:
-            result.message ||
             "Vehicle deleted successfully."
 
     };
