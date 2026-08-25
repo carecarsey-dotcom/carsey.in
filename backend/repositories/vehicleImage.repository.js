@@ -2,7 +2,6 @@ const db =
     require("../config/db");
 
 
-
 // ======================================================
 // ADD VEHICLE IMAGE
 // ======================================================
@@ -57,6 +56,11 @@ const addVehicleImage = (
 
                         if (error) {
 
+                            console.error(
+                                "ADD VEHICLE IMAGE DB ERROR:",
+                                error
+                            );
+
                             return reject(
                                 error
                             );
@@ -92,6 +96,11 @@ const addVehicleImage = (
 
                         if (error) {
 
+                            console.error(
+                                "CLEAR PRIMARY BEFORE ADD ERROR:",
+                                error
+                            );
+
                             return reject(
                                 error
                             );
@@ -115,7 +124,6 @@ const addVehicleImage = (
 };
 
 
-
 // ======================================================
 // GET VEHICLE IMAGES
 // ======================================================
@@ -130,14 +138,23 @@ const getVehicleImages = (
             reject
         ) => {
 
+            // --------------------------------------------------
+            // IMPORTANT:
+            // Do not depend on created_at for the public
+            // vehicle image API.
+            //
+            // This prevents production DB schema mismatch
+            // from causing /api/vehicles/:carId/images
+            // to return 500.
+            // --------------------------------------------------
+
             const sql = `
                 SELECT
                     image_id,
                     car_id,
                     image_type,
                     image_path,
-                    is_primary,
-                    created_at
+                    is_primary
                 FROM car_images
                 WHERE car_id = ?
                 ORDER BY
@@ -157,14 +174,30 @@ const getVehicleImages = (
 
                     if (error) {
 
+                        console.error(
+                            "GET VEHICLE IMAGES DB ERROR:",
+                            error
+                        );
+
+                        console.error(
+                            "GET VEHICLE IMAGES CAR ID:",
+                            carId
+                        );
+
                         return reject(
                             error
                         );
 
                     }
 
+                    // --------------------------------------------------
+                    // Always return an array.
+                    // --------------------------------------------------
+
                     resolve(
-                        images
+                        Array.isArray(images)
+                            ? images
+                            : []
                     );
 
                 }
@@ -174,7 +207,6 @@ const getVehicleImages = (
     );
 
 };
-
 
 
 // ======================================================
@@ -198,8 +230,7 @@ const getVehicleImageById = (
                     car_id,
                     image_type,
                     image_path,
-                    is_primary,
-                    created_at
+                    is_primary
                 FROM car_images
                 WHERE image_id = ?
                   AND car_id = ?
@@ -218,6 +249,11 @@ const getVehicleImageById = (
                 ) => {
 
                     if (error) {
+
+                        console.error(
+                            "GET SINGLE VEHICLE IMAGE DB ERROR:",
+                            error
+                        );
 
                         return reject(
                             error
@@ -240,7 +276,6 @@ const getVehicleImageById = (
 };
 
 
-
 // ======================================================
 // UPDATE VEHICLE IMAGE
 // ======================================================
@@ -261,32 +296,75 @@ const updateVehicleImage = (
 
             const updateImage = () => {
 
-                const sql = `
-                    UPDATE car_images
-                    SET
-                        image_type = ?,
-                        image_path = ?,
-                        is_primary = ?
-                    WHERE
-                        image_id = ?
-                        AND car_id = ?
-                `;
+                // --------------------------------------------------
+                // IMPORTANT:
+                // If imagePath is null/empty, preserve existing
+                // database image_path instead of setting NULL.
+                // --------------------------------------------------
 
-                db.query(
-                    sql,
-                    [
+                let sql;
+                let params;
+
+                if (
+                    imagePath !== null &&
+                    imagePath !== undefined &&
+                    String(imagePath).trim() !== ""
+                ) {
+
+                    sql = `
+                        UPDATE car_images
+                        SET
+                            image_type = ?,
+                            image_path = ?,
+                            is_primary = ?
+                        WHERE
+                            image_id = ?
+                            AND car_id = ?
+                    `;
+
+                    params = [
                         imageType,
                         imagePath,
                         isPrimary ? 1 : 0,
                         imageId,
                         carId
-                    ],
+                    ];
+
+                } else {
+
+                    sql = `
+                        UPDATE car_images
+                        SET
+                            image_type = ?,
+                            is_primary = ?
+                        WHERE
+                            image_id = ?
+                            AND car_id = ?
+                    `;
+
+                    params = [
+                        imageType,
+                        isPrimary ? 1 : 0,
+                        imageId,
+                        carId
+                    ];
+
+                }
+
+                db.query(
+                    sql,
+                    params,
                     (
                         error,
                         result
                     ) => {
 
                         if (error) {
+
+                            console.error(
+                                "UPDATE VEHICLE IMAGE DB ERROR:",
+                                error
+                            );
 
                             return reject(
                                 error
@@ -332,6 +410,11 @@ const updateVehicleImage = (
 
                         if (error) {
 
+                            console.error(
+                                "CLEAR PRIMARY BEFORE UPDATE ERROR:",
+                                error
+                            );
+
                             return reject(
                                 error
                             );
@@ -353,7 +436,6 @@ const updateVehicleImage = (
     );
 
 };
-
 
 
 // ======================================================
@@ -391,6 +473,11 @@ const deleteVehicleImage = (
 
                     if (error) {
 
+                        console.error(
+                            "DELETE VEHICLE IMAGE DB ERROR:",
+                            error
+                        );
+
                         return reject(
                             error
                         );
@@ -411,7 +498,6 @@ const deleteVehicleImage = (
     );
 
 };
-
 
 
 // ======================================================
@@ -445,6 +531,11 @@ const deleteVehicleImages = (
 
                     if (error) {
 
+                        console.error(
+                            "DELETE ALL VEHICLE IMAGES DB ERROR:",
+                            error
+                        );
+
                         return reject(
                             error
                         );
@@ -464,7 +555,6 @@ const deleteVehicleImages = (
     );
 
 };
-
 
 
 // ======================================================
@@ -499,6 +589,11 @@ const clearPrimaryImage = (
 
                     if (error) {
 
+                        console.error(
+                            "CLEAR PRIMARY IMAGE DB ERROR:",
+                            error
+                        );
+
                         return reject(
                             error
                         );
@@ -518,7 +613,6 @@ const clearPrimaryImage = (
 };
 
 
-
 // ======================================================
 // SET PRIMARY IMAGE
 // ======================================================
@@ -534,72 +628,138 @@ const setPrimaryImage = (
             reject
         ) => {
 
-            const setPrimary = () => {
+            // --------------------------------------------------
+            // First verify that the selected image belongs
+            // to the requested vehicle.
+            // --------------------------------------------------
 
-                const sql = `
-                    UPDATE car_images
-                    SET is_primary = 1
-                    WHERE
-                        image_id = ?
-                        AND car_id = ?
-                `;
-
-                db.query(
-                    sql,
-                    [
-                        imageId,
-                        carId
-                    ],
-                    (
-                        error,
-                        result
-                    ) => {
-
-                        if (error) {
-
-                            return reject(
-                                error
-                            );
-
-                        }
-
-                        resolve({
-                            imageId,
-                            carId,
-                            affectedRows:
-                                result.affectedRows
-                        });
-
-                    }
-                );
-
-            };
-
-
-            const clearSql = `
-                UPDATE car_images
-                SET is_primary = 0
-                WHERE car_id = ?
+            const verifySql = `
+                SELECT
+                    image_id
+                FROM car_images
+                WHERE
+                    image_id = ?
+                    AND car_id = ?
+                LIMIT 1
             `;
 
             db.query(
-                clearSql,
+                verifySql,
                 [
+                    imageId,
                     carId
                 ],
                 (
-                    error
+                    verifyError,
+                    rows
                 ) => {
 
-                    if (error) {
+                    if (verifyError) {
+
+                        console.error(
+                            "VERIFY PRIMARY IMAGE DB ERROR:",
+                            verifyError
+                        );
 
                         return reject(
-                            error
+                            verifyError
                         );
 
                     }
 
-                    setPrimary();
+                    if (
+                        !rows ||
+                        rows.length === 0
+                    ) {
+
+                        return reject(
+                            new Error(
+                                "Vehicle image not found for this vehicle."
+                            )
+                        );
+
+                    }
+
+                    // --------------------------------------------------
+                    // Clear all primary images first.
+                    // --------------------------------------------------
+
+                    const clearSql = `
+                        UPDATE car_images
+                        SET is_primary = 0
+                        WHERE car_id = ?
+                    `;
+
+                    db.query(
+                        clearSql,
+                        [
+                            carId
+                        ],
+                        (
+                            clearError
+                        ) => {
+
+                            if (clearError) {
+
+                                console.error(
+                                    "CLEAR PRIMARY BEFORE SET ERROR:",
+                                    clearError
+                                );
+
+                                return reject(
+                                    clearError
+                                );
+
+                            }
+
+                            // --------------------------------------------------
+                            // Set selected image as primary.
+                            // --------------------------------------------------
+
+                            const setSql = `
+                                UPDATE car_images
+                                SET is_primary = 1
+                                WHERE
+                                    image_id = ?
+                                    AND car_id = ?
+                            `;
+
+                            db.query(
+                                setSql,
+                                [
+                                    imageId,
+                                    carId
+                                ],
+                                (
+                                    error,
+                                    result
+                                ) => {
+
+                                    if (error) {
+
+                                        console.error(
+                                            "SET PRIMARY IMAGE DB ERROR:",
+                                            error
+                                        );
+
+                                        return reject(
+                                            error
+                                        );
+
+                                    }
+
+                                    resolve({
+                                        imageId,
+                                        carId,
+                                        affectedRows:
+                                            result.affectedRows
+                                    });
+
+                                }
+                            );
+
+                        }
+                    );
 
                 }
             );
@@ -608,7 +768,6 @@ const setPrimaryImage = (
     );
 
 };
-
 
 
 // ======================================================
