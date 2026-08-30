@@ -223,7 +223,7 @@ const upload = multer({
             5 * 1024 * 1024,
 
         // Maximum 10 images
-        files: 10
+        files: 66
     },
 
     fileFilter
