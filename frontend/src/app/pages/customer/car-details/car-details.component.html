@@ -225,7 +225,7 @@
           </div>
 
 
-          <!-- THUMBNAILS -->
+          <!-- THUMBNAILS: SHOW ONLY FIRST 5 + VIEW MORE -->
 
           @if (
             getImages(vehicle()!).length > 0
@@ -236,14 +236,14 @@
             >
 
               @for (
-                image of getImages(vehicle()!);
+                image of getImages(vehicle()!).slice(0, 5);
                 track $index
               ) {
 
                 <button
                   type="button"
                   (click)="changeImage($index)"
-                  class="h-20 w-28 shrink-0 overflow-hidden rounded-xl border-2 transition"
+                  class="h-20 w-28 shrink-0 overflow-hidden rounded-xl border-2 transition hover:scale-[1.02]"
                   [class.border-pink-500]="
                     activeImageIndex() === $index
                   "
@@ -258,6 +258,18 @@
                     class="h-full w-full object-cover"
                   />
 
+                </button>
+
+              }
+
+              @if (getImages(vehicle()!).length > 5) {
+
+                <button
+                  type="button"
+                  (click)="galleryDialog.showModal()"
+                  class="flex h-20 w-32 shrink-0 items-center justify-center rounded-xl border-2 border-pink-200 bg-gradient-to-r from-violet-600 to-fuchsia-500 px-4 text-sm font-bold text-white shadow-sm transition hover:scale-[1.02]"
+                >
+                  View More Images
                 </button>
 
               }
@@ -1000,6 +1012,123 @@
       </div>
 
     </main>
+
+  }
+
+
+  <!-- ===================================================== -->
+  <!-- FULL IMAGE GALLERY / SLIDER MODAL -->
+  <!-- ===================================================== -->
+
+  @if (!loading() && !error() && vehicle() && getImages(vehicle()!).length > 5) {
+
+    <dialog
+      #galleryDialog
+      class="fixed inset-0 z-[200] m-0 h-screen w-screen max-h-none max-w-none bg-transparent p-0 backdrop:bg-slate-950/80"
+    >
+
+      <div
+        class="flex h-screen w-screen items-center justify-center bg-slate-950/85 p-4 backdrop-blur-sm"
+      >
+
+        <div
+          class="relative flex h-[92vh] w-full max-w-6xl flex-col overflow-hidden rounded-3xl border border-white/10 bg-slate-950 shadow-2xl"
+        >
+
+          <!-- HEADER -->
+
+          <div
+            class="flex items-center justify-between border-b border-white/10 px-5 py-4"
+          >
+            <div>
+              <h2 class="text-lg font-black text-white sm:text-xl">
+                {{ vehicle()!.brand }} {{ vehicle()!.model }} — Images
+              </h2>
+              <p class="mt-1 text-xs text-slate-400">
+                Image {{ activeImageIndex() + 1 }} of {{ getImages(vehicle()!).length }}
+              </p>
+            </div>
+
+            <button
+              type="button"
+              (click)="galleryDialog.close()"
+              class="rounded-full bg-white/10 px-4 py-2 text-lg font-bold text-white transition hover:bg-white/20"
+              aria-label="Close image gallery"
+            >
+              ✕
+            </button>
+
+          </div>
+
+          <!-- SLIDER -->
+
+          <div
+            class="relative flex min-h-0 flex-1 items-center justify-center p-4 sm:p-6"
+          >
+
+            <img
+              [src]="getImageUrl(getImages(vehicle()!)[activeImageIndex()])"
+              [alt]="vehicle()!.brand + ' ' + vehicle()!.model + ' image ' + (activeImageIndex() + 1)"
+              class="max-h-full max-w-full rounded-2xl object-contain"
+            />
+
+            @if (getImages(vehicle()!).length > 1) {
+
+              <button
+                type="button"
+                (click)="previousImage()"
+                class="absolute left-4 top-1/2 flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full bg-white/15 text-3xl font-bold text-white shadow-lg backdrop-blur-md transition hover:scale-105 hover:bg-white/25 sm:left-7"
+                aria-label="Previous image"
+              >
+                ‹
+              </button>
+
+              <button
+                type="button"
+                (click)="nextImage()"
+                class="absolute right-4 top-1/2 flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full bg-white/15 text-3xl font-bold text-white shadow-lg backdrop-blur-md transition hover:scale-105 hover:bg-white/25 sm:right-7"
+                aria-label="Next image"
+              >
+                ›
+              </button>
+
+            }
+
+          </div>
+
+          <!-- BOTTOM SLIDER BAR -->
+
+          <div
+            class="flex items-center justify-center gap-4 border-t border-white/10 px-5 py-4"
+          >
+
+            <button
+              type="button"
+              (click)="previousImage()"
+              class="rounded-xl bg-white/10 px-5 py-2.5 text-sm font-bold text-white transition hover:bg-white/20"
+            >
+              ← Previous
+            </button>
+
+            <span class="min-w-20 text-center text-sm font-semibold text-white">
+              {{ activeImageIndex() + 1 }} / {{ getImages(vehicle()!).length }}
+            </span>
+
+            <button
+              type="button"
+              (click)="nextImage()"
+              class="rounded-xl bg-white/10 px-5 py-2.5 text-sm font-bold text-white transition hover:bg-white/20"
+            >
+              Next →
+            </button>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </dialog>
 
   }
 

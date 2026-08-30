@@ -2,6 +2,8 @@ import {
   Component,
   OnInit,
   OnDestroy,
+  ElementRef,
+  ViewChild,
   inject,
   signal
 } from '@angular/core';
@@ -253,6 +255,56 @@ export class CarDetailsComponent
 
   activeImageIndex =
     signal(0);
+
+  // ===================================================
+  // FULL IMAGE GALLERY
+  // ===================================================
+  // Keeps the existing View More button working when the
+  // dialog reference is declared later in the HTML template.
+  // No existing vehicle/detail functionality is removed.
+  // ===================================================
+
+  @ViewChild('galleryDialog')
+  private galleryDialogElement?:
+    ElementRef<HTMLDialogElement>;
+
+  galleryDialog = {
+    showModal: (): void => {
+      this.openGallery();
+    }
+  };
+
+  openGallery(): void {
+    const dialog =
+      this.galleryDialogElement?.nativeElement;
+
+    if (!dialog) {
+      return;
+    }
+
+    this.stopImageAutoSlide();
+
+    const images =
+      this.getImages(this.vehicle());
+
+    if (!images.length) {
+      return;
+    }
+
+    const currentIndex =
+      this.activeImageIndex();
+
+    if (
+      currentIndex < 0 ||
+      currentIndex >= images.length
+    ) {
+      this.activeImageIndex.set(0);
+    }
+
+    if (!dialog.open) {
+      dialog.showModal();
+    }
+  }
 
   // ===================================================
   // IMAGE AUTO SLIDER
