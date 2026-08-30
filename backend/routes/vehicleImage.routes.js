@@ -8,7 +8,6 @@ const vehicleImageController =
 const upload =
     require("../middlewares/upload.middleware");
 
-
 // ======================================================
 // UPLOAD VEHICLE IMAGES
 // ======================================================
@@ -17,12 +16,11 @@ router.post(
     "/:carId/images",
     upload.array(
         "images",
-        10
+        66
     ),
     vehicleImageController
         .uploadVehicleImages
 );
-
 
 // ======================================================
 // GET VEHICLE IMAGES
@@ -34,7 +32,6 @@ router.get(
         .getVehicleImages
 );
 
-
 // ======================================================
 // GET SINGLE VEHICLE IMAGE
 // ======================================================
@@ -44,7 +41,6 @@ router.get(
     vehicleImageController
         .getVehicleImageById
 );
-
 
 // ======================================================
 // UPDATE VEHICLE IMAGE
@@ -57,7 +53,6 @@ router.put(
         .updateVehicleImage
 );
 
-
 // ======================================================
 // DELETE VEHICLE IMAGE
 // ======================================================
@@ -68,7 +63,6 @@ router.delete(
         .deleteVehicleImage
 );
 
-
 // ======================================================
 // SET PRIMARY VEHICLE IMAGE
 // ======================================================
@@ -78,7 +72,6 @@ router.put(
     vehicleImageController
         .setPrimaryImage
 );
-
 
 // ======================================================
 // EXPORT
