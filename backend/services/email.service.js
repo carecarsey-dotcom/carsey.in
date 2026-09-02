@@ -7,10 +7,29 @@ const { Resend } = require("resend");
 // ======================================================
 // CREATE RESEND CLIENT
 // ======================================================
+//
+// Resend client ko immediately create nahi kar rahe.
+// Isse RESEND_API_KEY missing hone par server startup
+// par crash nahi hoga.
+// ======================================================
 
-const resend = new Resend(
-    env.RESEND_API_KEY
-);
+let resend = null;
+
+const getResendClient = () => {
+    if (!env.RESEND_API_KEY) {
+        throw new Error(
+            "RESEND_API_KEY is not configured."
+        );
+    }
+
+    if (!resend) {
+        resend = new Resend(
+            env.RESEND_API_KEY
+        );
+    }
+
+    return resend;
+};
 
 // ======================================================
 // VERIFY EMAIL CONFIGURATION
@@ -36,6 +55,9 @@ const verifyEmailConnection = async () => {
             );
         }
 
+        // Resend client initialize
+        getResendClient();
+
         console.log(
             "Email Service Configured Successfully"
         );
@@ -43,7 +65,6 @@ const verifyEmailConnection = async () => {
         return true;
 
     } catch (error) {
-
         console.error(
             "Email Service Configuration Error:",
             error.message
@@ -62,7 +83,6 @@ const verifyEmailConnection = async () => {
 
 const verifyMailConfiguration = async () => {
     try {
-
         if (!env.RESEND_API_KEY) {
             throw new Error(
                 "RESEND_API_KEY is not configured."
@@ -75,6 +95,9 @@ const verifyMailConfiguration = async () => {
             );
         }
 
+        // Resend client initialize
+        getResendClient();
+
         console.log(
             "Email Service Connected Successfully"
         );
@@ -82,7 +105,6 @@ const verifyMailConfiguration = async () => {
         return true;
 
     } catch (error) {
-
         console.error(
             "Email Service Connection Error:",
             error.message
@@ -151,6 +173,13 @@ const sendInspectionReportEmail = async ({
     }
 
     // ==================================================
+    // GET RESEND CLIENT
+    // ==================================================
+
+    const resendClient =
+        getResendClient();
+
+    // ==================================================
     // READ PDF
     // ==================================================
 
@@ -162,7 +191,6 @@ const sendInspectionReportEmail = async ({
     // ==================================================
 
     const emailData = {
-
         from:
             env.MAIL_FROM,
 
@@ -242,7 +270,7 @@ const sendInspectionReportEmail = async ({
     // ==================================================
 
     const result =
-        await resend.emails.send(
+        await resendClient.emails.send(
             emailData
         );
 
@@ -251,7 +279,6 @@ const sendInspectionReportEmail = async ({
     // ==================================================
 
     if (result.error) {
-
         console.error(
             "Resend Email Error:",
             result.error
@@ -277,7 +304,6 @@ const sendInspectionReportEmail = async ({
     // ==================================================
 
     return {
-
         messageId:
             result.data?.id || null,
 
@@ -305,7 +331,6 @@ const sendInspectionReportToAdmin = async ({
     // ==================================================
 
     if (!env.ADMIN_EMAIL) {
-
         throw new Error(
             "ADMIN_EMAIL is not configured."
         );
@@ -345,4 +370,5 @@ module.exports = {
     sendInspectionReportEmail,
 
     sendInspectionReportToAdmin
+
 };
