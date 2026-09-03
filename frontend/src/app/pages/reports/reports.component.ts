@@ -318,6 +318,12 @@ export class ReportsComponent
 
   pdfGenerating = false;
 
+  // =====================================================
+  // SEND EMAIL LOADING
+  // =====================================================
+
+  sendEmailLoading = false;
+
 
   // =====================================================
   // ERROR
@@ -662,6 +668,8 @@ export class ReportsComponent
     this.pdfViewerUrl = null;
 
     this.pdfUrl = '';
+
+    this.sendEmailLoading = false;
 
 
     console.log(
@@ -1827,6 +1835,159 @@ export class ReportsComponent
       );
 
     }
+
+  }
+
+
+  // =====================================================
+  // SEND REPORT TO CUSTOMER EMAIL
+  // =====================================================
+
+  sendReportEmail(): void {
+
+    if (!this.selectedReport) {
+
+      alert(
+        'Please open a report first.'
+      );
+
+      return;
+    }
+
+
+    const customerEmail =
+      String(
+        this.selectedReport.owner?.email || ''
+      )
+        .trim()
+        .toLowerCase();
+
+
+    if (!customerEmail) {
+
+      alert(
+        'Customer email is not available for this report.'
+      );
+
+      return;
+    }
+
+
+    const reportId =
+      Number(
+        this.selectedReport.report_id ??
+        this.selectedReport.reportId
+      );
+
+
+    if (
+      !Number.isInteger(reportId) ||
+      reportId <= 0
+    ) {
+
+      alert(
+        'Invalid inspection report ID.'
+      );
+
+      return;
+    }
+
+
+    if (this.sendEmailLoading) {
+      return;
+    }
+
+
+    const confirmed =
+      window.confirm(
+        `Send inspection report #${reportId} to ${customerEmail}?`
+      );
+
+
+    if (!confirmed) {
+      return;
+    }
+
+
+    this.sendEmailLoading = true;
+    this.errorMessage = '';
+
+
+    this.vehicleService
+      .sendInspectionReportEmail(
+        reportId,
+        customerEmail
+      )
+      .subscribe({
+
+        // =================================================
+        // SUCCESS
+        // =================================================
+
+        next: (response: any) => {
+
+          console.log(
+            'Inspection Report Email Response:',
+            response
+          );
+
+
+          this.sendEmailLoading = false;
+
+
+          if (
+            response?.success
+          ) {
+
+            alert(
+              response?.message ||
+              `Inspection report #${reportId} sent successfully to ${customerEmail}.`
+            );
+
+            return;
+          }
+
+
+          alert(
+            response?.message ||
+            'Unable to send inspection report email.'
+          );
+
+        },
+
+
+        // =================================================
+        // ERROR
+        // =================================================
+
+        error: (error: any) => {
+
+          console.error(
+            'Send Inspection Report Email Error:',
+            error
+          );
+
+
+          this.sendEmailLoading = false;
+
+
+          const message =
+            error?.error?.message ||
+            error?.message ||
+            'Unable to send inspection report email.';
+
+
+          this.errorMessage =
+            message;
+
+
+          alert(
+            message
+          );
+
+        }
+
+      });
 
   }
 

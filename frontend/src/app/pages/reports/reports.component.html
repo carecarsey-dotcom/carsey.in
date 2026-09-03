@@ -284,6 +284,21 @@
 
       </button>
 
+      <button
+        type="button"
+        class="print-btn"
+        (click)="sendReportEmail()"
+        [disabled]="sendEmailLoading || !selectedReport?.owner?.email"
+      >
+
+        {{
+          sendEmailLoading
+            ? '📧 Sending...'
+            : '📧 Send Email'
+        }}
+
+      </button>
+
     </div>
 
 
