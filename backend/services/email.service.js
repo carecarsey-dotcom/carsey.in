@@ -55,6 +55,12 @@ const verifyEmailConnection = async () => {
             );
         }
 
+        if (!env.ADMIN_EMAIL) {
+            throw new Error(
+                "ADMIN_EMAIL is not configured."
+            );
+        }
+
         // Resend client initialize
         getResendClient();
 
@@ -92,6 +98,12 @@ const verifyMailConfiguration = async () => {
         if (!env.MAIL_FROM) {
             throw new Error(
                 "MAIL_FROM is not configured."
+            );
+        }
+
+        if (!env.ADMIN_EMAIL) {
+            throw new Error(
+                "ADMIN_EMAIL is not configured."
             );
         }
 
@@ -191,8 +203,7 @@ const sendInspectionReportEmail = async ({
     // ==================================================
 
     const emailData = {
-        from:
-            env.MAIL_FROM,
+        from: env.MAIL_FROM,
 
         to: [
             to
@@ -237,7 +248,7 @@ const sendInspectionReportEmail = async ({
 
                 <p>
                     Please find the inspection report
-                    PDF attached below.
+                    PDF attached with this email.
                 </p>
 
                 <br>
@@ -269,50 +280,86 @@ const sendInspectionReportEmail = async ({
     // SEND EMAIL USING RESEND
     // ==================================================
 
-    const result =
-        await resendClient.emails.send(
-            emailData
+    try {
+
+        console.log(
+            "Sending inspection report email..."
         );
 
-    // ==================================================
-    // CHECK RESEND ERROR
-    // ==================================================
-
-    if (result.error) {
-        console.error(
-            "Resend Email Error:",
-            result.error
+        console.log(
+            "From:",
+            env.MAIL_FROM
         );
 
-        throw new Error(
-            result.error.message ||
-            "Failed to send email."
-        );
-    }
-
-    // ==================================================
-    // LOG
-    // ==================================================
-
-    console.log(
-        "Inspection Report Email Sent:",
-        result.data?.id
-    );
-
-    // ==================================================
-    // RETURN
-    // ==================================================
-
-    return {
-        messageId:
-            result.data?.id || null,
-
-        accepted: [
+        console.log(
+            "To:",
             to
-        ],
+        );
 
-        rejected: []
-    };
+        console.log(
+            "PDF:",
+            pdfPath
+        );
+
+        const result =
+            await resendClient.emails.send(
+                emailData
+            );
+
+        // ==================================================
+        // CHECK RESEND ERROR
+        // ==================================================
+
+        if (result.error) {
+
+            console.error(
+                "Resend Email Error:",
+                result.error
+            );
+
+            throw new Error(
+                result.error.message ||
+                "Failed to send email."
+            );
+        }
+
+        // ==================================================
+        // LOG SUCCESS
+        // ==================================================
+
+        console.log(
+            "Inspection Report Email Sent Successfully:"
+        );
+
+        console.log(
+            "Resend Message ID:",
+            result.data?.id
+        );
+
+        // ==================================================
+        // RETURN
+        // ==================================================
+
+        return {
+            messageId:
+                result.data?.id || null,
+
+            accepted: [
+                to
+            ],
+
+            rejected: []
+        };
+
+    } catch (error) {
+
+        console.error(
+            "Inspection Report Email Failed:",
+            error.message
+        );
+
+        throw error;
+    }
 };
 
 // ======================================================
@@ -335,6 +382,15 @@ const sendInspectionReportToAdmin = async ({
             "ADMIN_EMAIL is not configured."
         );
     }
+
+    // ==================================================
+    // LOG ADMIN EMAIL
+    // ==================================================
+
+    console.log(
+        "Sending inspection report to admin:",
+        env.ADMIN_EMAIL
+    );
 
     // ==================================================
     // SEND TO ADMIN
@@ -370,5 +426,4 @@ module.exports = {
     sendInspectionReportEmail,
 
     sendInspectionReportToAdmin
-
 };

@@ -25,7 +25,6 @@ const env = {
 
     // Local .env ke DB_* variables support honge.
     // Railway MySQL ke MYSQL* variables bhi support honge.
-    // Railway par MYSQL* automatically available hain.
 
     DB_HOST:
         process.env.DB_HOST ||
@@ -85,7 +84,6 @@ const env = {
 
     MAIL_FROM:
         process.env.MAIL_FROM
-
 };
 
 
