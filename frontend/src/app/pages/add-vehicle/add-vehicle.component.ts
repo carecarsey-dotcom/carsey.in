@@ -1389,16 +1389,8 @@ private validateCompleteForm(showMessage = true): boolean {
                   '========================================'
                 );
 
-
-                this.http
-
-                  .patch(
-
-                    `http://localhost:5000/api/admin/vehicles/${vehicleId}/publish`,
-
-                    {}
-
-                  )
+this.vehicleService
+  .publishVehicle(vehicleId)
 
                   .subscribe({
 
