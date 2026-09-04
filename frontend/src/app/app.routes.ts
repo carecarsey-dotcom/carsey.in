@@ -32,17 +32,15 @@ export const routes: Routes = [
       // =================================================
 
       {
-
-        path: '',
-
-        loadComponent: () =>
-          import(
-            './pages/customer/home/home.component'
-          ).then(
-            m => m.HomeComponent
-          )
-
-      },
+  path: '',
+  title: 'Carsey.in – Buy, Sell & Exchange Cars',
+  loadComponent: () =>
+    import(
+      './pages/customer/home/home.component'
+    ).then(
+      m => m.HomeComponent
+    )
+},
 
 
       // =================================================
@@ -72,38 +70,32 @@ export const routes: Routes = [
       // SELL CAR
       // /sell-car
       // =================================================
-
-      {
-
-        path: 'sell-car',
-
-        loadComponent: () =>
-          import(
-            './pages/customer/sell-car/sell-car.component'
-          ).then(
-            m => m.SellCarComponent
-          )
-
-      },
+{
+  path: 'sell-car',
+  title: 'Sell Your Car Online | Carsey.in',
+  loadComponent: () =>
+    import(
+      './pages/customer/sell-car/sell-car.component'
+    ).then(
+      m => m.SellCarComponent
+    )
+},
 
 
       // =================================================
       // UPGRADE / EXCHANGE
       // /exchange
       // =================================================
-
-      {
-
-        path: 'exchange',
-
-        loadComponent: () =>
-          import(
-            './pages/customer/exchange/exchange.component'
-          ).then(
-            m => m.ExchangeComponent
-          )
-
-      },
+{
+  path: 'exchange',
+  title: 'Exchange Your Car | Carsey.in',
+  loadComponent: () =>
+    import(
+      './pages/customer/exchange/exchange.component'
+    ).then(
+      m => m.ExchangeComponent
+    )
+},
 
 
       // =================================================
@@ -111,19 +103,16 @@ export const routes: Routes = [
       // /book-inspection
       // =================================================
 
-      
       {
-
-        path: 'book-inspection',
-
-        loadComponent: () =>
-          import(
-            './pages/customer/book-inspection/book-inspection.component'
-          ).then(
-            m => m.BookInspectionComponent
-          )
-
-      },
+  path: 'book-inspection',
+  title: 'Book Car Inspection | Carsey.in',
+  loadComponent: () =>
+    import(
+      './pages/customer/book-inspection/book-inspection.component'
+    ).then(
+      m => m.BookInspectionComponent
+    )
+},
       
 
 
@@ -132,19 +121,16 @@ export const routes: Routes = [
       // /about
       // =================================================
 
-      
       {
-
-        path: 'about',
-
-        loadComponent: () =>
-          import(
-            './pages/customer/about/about.component'
-          ).then(
-            m => m.AboutComponent
-          )
-
-      },
+  path: 'about',
+  title: 'About Carsey.in',
+  loadComponent: () =>
+    import(
+      './pages/customer/about/about.component'
+    ).then(
+      m => m.AboutComponent
+    )
+},
       
 
 

@@ -25,6 +25,11 @@ import {
   FormsModule
 } from '@angular/forms';
 
+import {
+  Title,
+  Meta
+} from '@angular/platform-browser';
+
 
 // =====================================================
 // VEHICLE IMAGE
@@ -204,6 +209,17 @@ export class CarDetailsComponent
 
 
   // ===================================================
+  // SEO
+  // ===================================================
+
+  private titleService =
+    inject(Title);
+
+  private metaService =
+    inject(Meta);
+
+
+  // ===================================================
   // ROUTE
   // ===================================================
 
@@ -305,6 +321,179 @@ export class CarDetailsComponent
       dialog.showModal();
     }
   }
+
+  // ===================================================
+  // DYNAMIC VEHICLE SEO
+  // ===================================================
+
+  private updateVehicleSeo(
+    vehicle: Vehicle
+  ): void {
+
+    const brand =
+      String(vehicle.brand || '').trim();
+
+    const model =
+      String(vehicle.model || '').trim();
+
+    const variant =
+      String(vehicle.variant || '').trim();
+
+    const year =
+      vehicle.manufacturing_year
+        ? String(vehicle.manufacturing_year)
+        : '';
+
+    const location =
+      String(
+        vehicle.location ||
+        vehicle.city ||
+        ''
+      ).trim();
+
+    const vehicleName =
+      [
+        year,
+        brand,
+        model,
+        variant
+      ]
+        .filter(Boolean)
+        .join(' ');
+
+    const safeVehicleName =
+      vehicleName ||
+      'Used Car';
+
+    const title =
+      `${safeVehicleName} for Sale${location ? ` in ${location}` : ''} | Carsey.in`;
+
+    const description =
+      `Explore ${safeVehicleName} for sale on Carsey.in${location ? ` in ${location}` : ''}. View car price, images, specifications, inspection details and request a test drive.`;
+
+    const canonicalUrl =
+      `https://carsey.in/car/${vehicle.car_id}`;
+
+    // Page title
+    this.titleService.setTitle(title);
+
+    // Meta description
+    this.metaService.updateTag(
+      {
+        name: 'description',
+        content: description
+      }
+    );
+
+    // Robots
+    this.metaService.updateTag(
+      {
+        name: 'robots',
+        content: 'index, follow'
+      }
+    );
+
+    // Open Graph
+    this.metaService.updateTag(
+      {
+        property: 'og:title',
+        content: title
+      }
+    );
+
+    this.metaService.updateTag(
+      {
+        property: 'og:description',
+        content: description
+      }
+    );
+
+    this.metaService.updateTag(
+      {
+        property: 'og:type',
+        content: 'website'
+      }
+    );
+
+    this.metaService.updateTag(
+      {
+        property: 'og:url',
+        content: canonicalUrl
+      }
+    );
+
+    this.metaService.updateTag(
+      {
+        property: 'og:site_name',
+        content: 'Carsey.in'
+      }
+    );
+
+    // Twitter
+    this.metaService.updateTag(
+      {
+        name: 'twitter:card',
+        content: 'summary_large_image'
+      }
+    );
+
+    this.metaService.updateTag(
+      {
+        name: 'twitter:title',
+        content: title
+      }
+    );
+
+    this.metaService.updateTag(
+      {
+        name: 'twitter:description',
+        content: description
+      }
+    );
+
+    // Canonical URL
+    this.setCanonicalUrl(canonicalUrl);
+  }
+
+
+  // ===================================================
+  // CANONICAL URL
+  // ===================================================
+
+  private setCanonicalUrl(
+    url: string
+  ): void {
+
+    if (typeof document === 'undefined') {
+      return;
+    }
+
+    let canonical =
+      document.querySelector(
+        'link[rel="canonical"]'
+      ) as HTMLLinkElement | null;
+
+    if (!canonical) {
+
+      canonical =
+        document.createElement('link');
+
+      canonical.setAttribute(
+        'rel',
+        'canonical'
+      );
+
+      document.head.appendChild(
+        canonical
+      );
+    }
+
+    canonical.setAttribute(
+      'href',
+      url
+    );
+  }
+
 
   // ===================================================
   // IMAGE AUTO SLIDER
@@ -455,6 +644,9 @@ export class CarDetailsComponent
               selectedVehicle
             );
 
+            // Update page SEO using the actual vehicle information.
+            this.updateVehicleSeo(selectedVehicle);
+
             this.activeImageIndex.set(0);
 
             // Load the public image collection separately.
@@ -554,6 +746,9 @@ export class CarDetailsComponent
             this.vehicle.set(
               selectedVehicle
             );
+
+            // Update page SEO using the actual published vehicle information.
+            this.updateVehicleSeo(selectedVehicle);
 
             this.activeImageIndex.set(0);
 
