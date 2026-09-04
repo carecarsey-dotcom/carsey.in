@@ -1768,7 +1768,7 @@ export class VehicleService {
 
     Observable<any> {
 
-    return this.http.put(
+    return this.http.patch(
 
       `${this.apiUrl}/admin/vehicles/${carId}/publish`,
 
