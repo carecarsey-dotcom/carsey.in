@@ -71,7 +71,7 @@ export class LoginComponent
 
       ? 'http://localhost:5000'
 
-      : 'https://carseyin-production.up.railway.app';
+      : 'https://api.carsey.in';
 
 
   // ====================================================

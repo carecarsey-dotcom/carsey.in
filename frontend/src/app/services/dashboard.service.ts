@@ -72,7 +72,7 @@ export class DashboardService {
   // http://localhost:5000
   //
   // PRODUCTION:
-  // https://carseyin-production.up.railway.app
+  // https://api.carsey.in
   //
   // ====================================================
 
@@ -84,7 +84,7 @@ export class DashboardService {
 
       ? 'http://localhost:5000'
 
-      : 'https://carseyin-production.up.railway.app';
+      : 'https://api.carsey.in';
 
 
   // ====================================================

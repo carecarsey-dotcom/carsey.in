@@ -71,7 +71,7 @@ export class ExchangeComponent {
   // ====================================================
 
   private apiUrl =
-  'https://carseyin-production.up.railway.app/api/vehicles/exchange';
+  'https://api.carsey.in/api/vehicles/exchange';
 
 
   // ====================================================

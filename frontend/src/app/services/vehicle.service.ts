@@ -404,7 +404,7 @@ export class VehicleService {
       (window.location.hostname === 'localhost' ||
        window.location.hostname === '127.0.0.1'))
       ? 'http://localhost:5000/api'
-      : 'https://carseyin-production.up.railway.app/api';
+      : 'https://api.carsey.in/api';
 
 
 

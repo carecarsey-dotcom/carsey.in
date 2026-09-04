@@ -530,7 +530,7 @@ export class SellCarComponent {
 this.submitting = true;
 
 this.http.post<any>(
-  'https://carseyin-production.up.railway.app/api/vehicles/sell-car',
+  'https://api.carsey.in/api/vehicles/sell-car',
   formData
 )
 .subscribe({

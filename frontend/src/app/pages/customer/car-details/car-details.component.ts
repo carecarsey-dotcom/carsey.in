@@ -216,7 +216,7 @@ export class CarDetailsComponent
   // ===================================================
 
   private apiUrl =
-  'https://carseyin-production.up.railway.app/api';
+  'https://api.carsey.in/api';
   // ===================================================
   // VEHICLE
   // ===================================================
@@ -1150,7 +1150,7 @@ export class CarDetailsComponent
 
     // If only a filename or uploads-relative path is returned,
     // the backend static uploads route is still the source.
-    return `https://carseyin-production.up.railway.app${imagePath}`;
+    return `https://api.carsey.in${imagePath}`;
   }
 
 

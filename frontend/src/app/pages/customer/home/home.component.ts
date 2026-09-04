@@ -145,7 +145,7 @@ export class HomeComponent
 // ===================================================
 
  private apiUrl =
-  'https://carseyin-production.up.railway.app/api';
+  'https://api.carsey.in/api';
 
 
 // ===================================================
@@ -1041,7 +1041,7 @@ else if (
     // ================================================
 
  return (
-  `https://carseyin-production.up.railway.app${imagePath}`
+  `https://api.carsey.in${imagePath}`
 );
 
   }

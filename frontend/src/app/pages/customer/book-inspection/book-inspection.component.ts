@@ -78,7 +78,7 @@ export class BookInspectionComponent {
   // ====================================================
 
   private apiUrl =
-    'https://carseyin-production.up.railway.app/api/vehicles/book-inspection';
+    'https://api.carsey.in/api/vehicles/book-inspection';
 
 
   // ====================================================
