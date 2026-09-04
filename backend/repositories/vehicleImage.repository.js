@@ -48,6 +48,11 @@ const addVehicleImage = (
             );
         };
 
+        // ==================================================
+        // IMPORTANT:
+        // Only one primary image is allowed per vehicle.
+        // ==================================================
+
         if (isPrimary) {
 
             const clearSql = `
@@ -91,11 +96,25 @@ const addVehicleImage = (
 // No inspection.
 // No created_at.
 // No other table.
+//
+// IMPORTANT FIX:
+// Images are strictly fetched using the requested car_id.
+// The returned rows are also validated before returning.
 // ======================================================
 
 const getVehicleImages = (carId) => {
 
     return new Promise((resolve, reject) => {
+
+        if (
+            carId === null ||
+            carId === undefined ||
+            String(carId).trim() === ""
+        ) {
+            return resolve([]);
+        }
+
+        const normalizedCarId = String(carId).trim();
 
         const sql = `
             SELECT
@@ -113,7 +132,7 @@ const getVehicleImages = (carId) => {
 
         db.query(
             sql,
-            [carId],
+            [normalizedCarId],
             (error, images) => {
 
                 if (error) {
@@ -125,17 +144,41 @@ const getVehicleImages = (carId) => {
 
                     console.error(
                         "GET VEHICLE IMAGES CAR ID:",
-                        carId
+                        normalizedCarId
                     );
 
                     return reject(error);
                 }
 
-                resolve(
-                    Array.isArray(images)
-                        ? images
-                        : []
-                );
+                if (!Array.isArray(images)) {
+                    return resolve([]);
+                }
+
+                // ==================================================
+                // FINAL SAFETY CHECK
+                // Never return an image belonging to another car.
+                // ==================================================
+
+                const validImages = images.filter((image) => {
+
+                    if (!image) {
+                        return false;
+                    }
+
+                    if (
+                        image.car_id === null ||
+                        image.car_id === undefined
+                    ) {
+                        return false;
+                    }
+
+                    return (
+                        String(image.car_id).trim() ===
+                        normalizedCarId
+                    );
+                });
+
+                resolve(validImages);
             }
         );
     });
@@ -152,6 +195,15 @@ const getVehicleImageById = (
 ) => {
 
     return new Promise((resolve, reject) => {
+
+        if (
+            imageId === null ||
+            imageId === undefined ||
+            carId === null ||
+            carId === undefined
+        ) {
+            return resolve(null);
+        }
 
         const sql = `
             SELECT
@@ -185,11 +237,30 @@ const getVehicleImageById = (
                     return reject(error);
                 }
 
-                resolve(
-                    rows && rows.length > 0
-                        ? rows[0]
-                        : null
-                );
+                if (
+                    !rows ||
+                    rows.length === 0
+                ) {
+                    return resolve(null);
+                }
+
+                const image = rows[0];
+
+                // ==================================================
+                // FINAL OWNERSHIP VALIDATION
+                // ==================================================
+
+                if (
+                    !image ||
+                    image.car_id === null ||
+                    image.car_id === undefined ||
+                    String(image.car_id).trim() !==
+                        String(carId).trim()
+                ) {
+                    return resolve(null);
+                }
+
+                resolve(image);
             }
         );
     });

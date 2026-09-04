@@ -288,7 +288,7 @@
         type="button"
         class="print-btn"
         (click)="sendReportEmail()"
-        [disabled]="sendEmailLoading || !selectedReport?.owner?.email"
+[disabled]="sendEmailLoading || !selectedReport || !selectedReport.owner?.email"
       >
 
         {{

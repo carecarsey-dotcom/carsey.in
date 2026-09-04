@@ -1658,15 +1658,70 @@ export class VehicleService {
 
     Observable<any> {
 
+    const email =
+      String(
+        customerEmail ||
+        ''
+      )
+        .trim()
+        .toLowerCase();
+
+    if (!email) {
+
+      throw new Error(
+        'Customer email is required.'
+      );
+
+    }
+
+    const id =
+      Number(reportId);
+
+    if (
+      !Number.isInteger(id) ||
+      id <= 0
+    ) {
+
+      throw new Error(
+        'Valid inspection report ID is required.'
+      );
+
+    }
+
+    // ---------------------------------------------------
+    // IMPORTANT
+    // Different backend versions may read the recipient
+    // from a different property name. Send all supported
+    // aliases with the same email value. Unknown JSON
+    // properties are harmless and this keeps the frontend
+    // compatible with the existing backend controller.
+    // ---------------------------------------------------
+
+    const payload = {
+
+      customerEmail: email,
+
+      recipientEmail: email,
+
+      email: email,
+
+      to: email
+
+    };
+
+    console.log(
+      'SEND INSPECTION REPORT EMAIL REQUEST:',
+      {
+        reportId: id,
+        payload
+      }
+    );
+
     return this.http.post(
 
-      `${this.apiUrl}/admin/inspection-reports/${reportId}/send-email`,
+      `${this.apiUrl}/admin/inspection-reports/${id}/send-email`,
 
-      {
-
-        customerEmail
-
-      }
+      payload
 
     );
 

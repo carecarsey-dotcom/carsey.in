@@ -15,14 +15,8 @@ const MARGIN_RIGHT = 28;
 const MARGIN_TOP = 28;
 const MARGIN_BOTTOM = 40;
 
-const CONTENT_WIDTH =
-    PAGE_WIDTH -
-    MARGIN_LEFT -
-    MARGIN_RIGHT;
-
-const PAGE_BOTTOM =
-    PAGE_HEIGHT -
-    MARGIN_BOTTOM;
+const CONTENT_WIDTH = PAGE_WIDTH - MARGIN_LEFT - MARGIN_RIGHT;
+const PAGE_BOTTOM = PAGE_HEIGHT - MARGIN_BOTTOM;
 
 // ======================================================
 // COLORS
@@ -44,14 +38,15 @@ const COLORS = {
 };
 
 // ======================================================
-// SAFE VALUE
+// BASIC HELPERS
 // ======================================================
 
 const safeValue = (value, fallback = "-") => {
     if (
         value === undefined ||
         value === null ||
-        value === ""
+        value === "" ||
+        (typeof value === "string" && value.trim() === "")
     ) {
         return fallback;
     }
@@ -67,56 +62,45 @@ const safeValue = (value, fallback = "-") => {
     return String(value);
 };
 
-// ======================================================
-// FIRST AVAILABLE VALUE
-// ======================================================
-
-const firstValue = (
-    object,
-    keys,
-    fallback = "-"
-) => {
-    if (
-        !object ||
-        typeof object !== "object"
-    ) {
+const firstValue = (object, keys, fallback = "-") => {
+    if (!object || typeof object !== "object") {
         return fallback;
     }
 
     for (const key of keys) {
+        const value = object[key];
+
         if (
-            object[key] !== undefined &&
-            object[key] !== null &&
-            object[key] !== ""
+            value !== undefined &&
+            value !== null &&
+            value !== "" &&
+            !(typeof value === "string" && value.trim() === "")
         ) {
-            return object[key];
+            return value;
         }
     }
 
     return fallback;
 };
 
-// ======================================================
-// TITLE CASE
-// ======================================================
-
-const titleCase = (value) => {
-    if (!value) {
+const normalizeScore = (value) => {
+    if (
+        value === undefined ||
+        value === null ||
+        value === "" ||
+        Number.isNaN(Number(value))
+    ) {
         return "-";
     }
 
-    return String(value)
-        .replace(/[_-]+/g, " ")
-        .replace(/\s+/g, " ")
-        .trim()
-        .replace(/\b\w/g, (char) =>
-            char.toUpperCase()
-        );
-};
+    const numeric = Number(value);
 
-// ======================================================
-// FORMAT PRICE
-// ======================================================
+    if (numeric > 10 && numeric <= 100) {
+        return `${(numeric / 10).toFixed(1)}`;
+    }
+
+    return numeric.toFixed(1);
+};
 
 const formatPrice = (value) => {
     if (
@@ -127,18 +111,18 @@ const formatPrice = (value) => {
         return "-";
     }
 
-    const number = Number(value);
+    if (typeof value === "string" && value.toLowerCase().includes("rs")) {
+        return value;
+    }
 
-    if (Number.isNaN(number)) {
+    const numeric = Number(String(value).replace(/,/g, ""));
+
+    if (Number.isNaN(numeric)) {
         return String(value);
     }
 
-    return `Rs. ${number.toLocaleString("en-IN")}`;
+    return `Rs. ${numeric.toLocaleString("en-IN")}`;
 };
-
-// ======================================================
-// FORMAT DATE
-// ======================================================
 
 const formatDate = (value) => {
     if (!value) {
@@ -152,450 +136,23 @@ const formatDate = (value) => {
             return String(value);
         }
 
-        return date.toLocaleDateString(
-            "en-IN",
-            {
-                day: "2-digit",
-                month: "short",
-                year: "numeric"
-            }
-        );
+        return date.toLocaleDateString("en-IN", {
+            day: "2-digit",
+            month: "2-digit",
+            year: "numeric"
+        });
     } catch (error) {
         return String(value);
     }
 };
 
-// ======================================================
-// FORMAT SCORE
-// ======================================================
-
-const normalizeScore = (value) => {
-    if (
-        value === undefined ||
-        value === null ||
-        value === ""
-    ) {
-        return null;
-    }
-
-    const number = Number(value);
-
-    if (Number.isNaN(number)) {
-        return value;
-    }
-
-    if (
-        number > 10 &&
-        number <= 100
-    ) {
-        return Number(
-            (number / 10).toFixed(1)
-        );
-    }
-
-    return Number(
-        number.toFixed(1)
-    );
-};
-
-const formatScore = (value) => {
-    const normalized =
-        normalizeScore(value);
-
-    if (normalized === null) {
-        return "-";
-    }
-
-    return String(normalized);
-};
-
-// ======================================================
-// GET CHECKLIST ARRAY
-// ======================================================
-
-const getChecklistArray = (report) => {
-    let checklist =
-        report.checklist ||
-        report.inspectionChecklist ||
-        report.checklists ||
-        report.inspection?.checklist ||
-        report.inspection?.inspectionChecklist ||
-        [];
-
-    if (Array.isArray(checklist)) {
-        return checklist;
-    }
-
-    if (typeof checklist === "string") {
-        try {
-            const parsed =
-                JSON.parse(checklist);
-
-            if (Array.isArray(parsed)) {
-                return parsed;
-            }
-
-            if (
-                parsed &&
-                typeof parsed === "object"
-            ) {
-                checklist = parsed;
-            }
-        } catch (error) {
-            return [];
-        }
-    }
-
-    if (
-        checklist &&
-        typeof checklist === "object" &&
-        !Array.isArray(checklist)
-    ) {
-        return Object.entries(checklist).map(
-            ([key, value]) => {
-                if (
-                    value &&
-                    typeof value === "object"
-                ) {
-                    return {
-                        ...value,
-                        area: firstValue(
-                            value,
-                            [
-                                "area",
-                                "inspection_area",
-                                "inspectionArea",
-                                "name",
-                                "title",
-                                "label"
-                            ],
-                            titleCase(key)
-                        )
-                    };
-                }
-
-                return {
-                    area: titleCase(key),
-                    status: value,
-                    remark: "-"
-                };
-            }
-        );
-    }
-
-    return [];
-};
-
-// ======================================================
-// NORMALIZE CHECKLIST
-// ======================================================
-
-const normalizeChecklist = (report) => {
-    const checklist =
-        getChecklistArray(report);
-
-    if (checklist.length > 0) {
-        return checklist.map(
-            (item, index) => {
-                item =
-                    item &&
-                    typeof item === "object"
-                        ? item
-                        : {
-                            status: item
-                        };
-
-                const area =
-                    firstValue(
-                        item,
-                        [
-                            "area",
-                            "inspection_area",
-                            "inspectionArea",
-                            "name",
-                            "title",
-                            "label"
-                        ],
-                        `Inspection ${index + 1}`
-                    );
-
-                const status =
-                    firstValue(
-                        item,
-                        [
-                            "status",
-                            "condition",
-                            "result",
-                            "value",
-                            "inspectionStatus",
-                            "inspection_status"
-                        ],
-                        "-"
-                    );
-
-                const remark =
-                    firstValue(
-                        item,
-                        [
-                            "remark",
-                            "remarks",
-                            "note",
-                            "comment",
-                            "description"
-                        ],
-                        "-"
-                    );
-
-                return {
-                    area: titleCase(area),
-                    status: safeValue(status),
-                    remark: safeValue(remark)
-                };
-            }
-        );
-    }
-
-    const inspection =
-        report.inspection &&
-        typeof report.inspection === "object"
-            ? report.inspection
-            : {};
-
-    const categories = [
-        {
-            area: "Exterior",
-            status: firstValue(
-                report,
-                [
-                    "exterior_status",
-                    "exteriorStatus"
-                ],
-                firstValue(
-                    inspection,
-                    [
-                        "exterior_status",
-                        "exteriorStatus"
-                    ],
-                    "-"
-                )
-            ),
-            remark: firstValue(
-                report,
-                [
-                    "exterior_remark",
-                    "exteriorRemark"
-                ],
-                firstValue(
-                    inspection,
-                    [
-                        "exterior_remark",
-                        "exteriorRemark"
-                    ],
-                    "-"
-                )
-            )
-        },
-        {
-            area: "Interior And Electricals",
-            status: firstValue(
-                report,
-                [
-                    "interior_electricals_status",
-                    "interiorElectricalsStatus",
-                    "interior_status",
-                    "interiorStatus"
-                ],
-                firstValue(
-                    inspection,
-                    [
-                        "interior_electricals_status",
-                        "interiorElectricalsStatus",
-                        "interior_status",
-                        "interiorStatus"
-                    ],
-                    "-"
-                )
-            ),
-            remark: firstValue(
-                report,
-                [
-                    "interior_electricals_remark",
-                    "interiorElectricalsRemark",
-                    "interior_remark",
-                    "interiorRemark"
-                ],
-                firstValue(
-                    inspection,
-                    [
-                        "interior_electricals_remark",
-                        "interiorElectricalsRemark",
-                        "interior_remark",
-                        "interiorRemark"
-                    ],
-                    "-"
-                )
-            )
-        },
-        {
-            area: "Engine Bay",
-            status: firstValue(
-                report,
-                [
-                    "engine_bay_status",
-                    "engineBayStatus"
-                ],
-                "-"
-            ),
-            remark: firstValue(
-                report,
-                [
-                    "engine_bay_remark",
-                    "engineBayRemark"
-                ],
-                "-"
-            )
-        },
-        {
-            area: "Transmission System",
-            status: firstValue(
-                report,
-                [
-                    "transmission_system_status",
-                    "transmissionSystemStatus"
-                ],
-                "-"
-            ),
-            remark: firstValue(
-                report,
-                [
-                    "transmission_system_remark",
-                    "transmissionSystemRemark"
-                ],
-                "-"
-            )
-        },
-        {
-            area: "Suspension And Steering",
-            status: firstValue(
-                report,
-                [
-                    "suspension_steering_status",
-                    "suspensionSteeringStatus"
-                ],
-                "-"
-            ),
-            remark: firstValue(
-                report,
-                [
-                    "suspension_steering_remark",
-                    "suspensionSteeringRemark"
-                ],
-                "-"
-            )
-        },
-        {
-            area: "Braking System",
-            status: firstValue(
-                report,
-                [
-                    "braking_system_status",
-                    "brakingSystemStatus"
-                ],
-                "-"
-            ),
-            remark: firstValue(
-                report,
-                [
-                    "braking_system_remark",
-                    "brakingSystemRemark"
-                ],
-                "-"
-            )
-        },
-        {
-            area: "Tyres And Wheels",
-            status: firstValue(
-                report,
-                [
-                    "tyres_wheels_status",
-                    "tyresWheelsStatus",
-                    "tyres_status",
-                    "tyresStatus"
-                ],
-                "-"
-            ),
-            remark: firstValue(
-                report,
-                [
-                    "tyres_wheels_remark",
-                    "tyresWheelsRemark",
-                    "tyres_remark",
-                    "tyresRemark"
-                ],
-                "-"
-            )
-        },
-        {
-            area: "Electricals And AC",
-            status: firstValue(
-                report,
-                [
-                    "electricals_ac_status",
-                    "electricalsAcStatus",
-                    "electrical_status",
-                    "electricalStatus"
-                ],
-                "-"
-            ),
-            remark: firstValue(
-                report,
-                [
-                    "electricals_ac_remark",
-                    "electricalsAcRemark",
-                    "electrical_remark",
-                    "electricalRemark"
-                ],
-                "-"
-            )
-        },
-        {
-            area: "Documents And Title",
-            status: firstValue(
-                report,
-                [
-                    "documents_title_status",
-                    "documentsTitleStatus",
-                    "documents_status",
-                    "documentsStatus"
-                ],
-                "-"
-            ),
-            remark: firstValue(
-                report,
-                [
-                    "documents_title_remark",
-                    "documentsTitleRemark",
-                    "documents_remark",
-                    "documentsRemark"
-                ],
-                "-"
-            )
-        }
-    ];
-
-    return categories.map(
-        (item) => ({
-            area: item.area,
-            status: safeValue(
-                item.status,
-                "-"
-            ),
-            remark: safeValue(
-                item.remark,
-                "-"
-            )
-        })
-    );
+const titleCase = (value) => {
+    return String(value)
+        .replace(/[_-]+/g, " ")
+        .replace(/\./g, " ")
+        .replace(/\s+/g, " ")
+        .trim()
+        .replace(/\b\w/g, (char) => char.toUpperCase());
 };
 
 // ======================================================
@@ -608,6 +165,8 @@ const getReportId = (report) => {
         [
             "reportId",
             "report_id",
+            "inspectionReportId",
+            "inspection_report_id",
             "id"
         ],
         "-"
@@ -615,37 +174,34 @@ const getReportId = (report) => {
 };
 
 // ======================================================
-// CAR ID
-// IMPORTANT:
-// This is used internally only for loading images.
-// It is NEVER rendered inside the PDF.
+// PAGE NUMBER HELPER
 // ======================================================
 
-const getCarId = (report) => {
-    return firstValue(
-        report,
-        [
-            "carId",
-            "car_id",
-            "vehicleId",
-            "vehicle_id"
-        ],
-        "-"
+const addPageWithFooter = (doc, reportId, pageNumber) => {
+    doc.addPage();
+
+    drawFooter(
+        doc,
+        reportId,
+        pageNumber
     );
+
+    return MARGIN_TOP;
 };
 
 // ======================================================
-// DRAW FOOTER
-// CAR ID IS NOT SHOWN
+// FOOTER
 // ======================================================
 
 const drawFooter = (
     doc,
-    pageNumber,
-    reportId
+    reportId,
+    pageNumber
 ) => {
-    const footerY =
-        PAGE_HEIGHT - 25;
+    const currentPage =
+        Number.isFinite(Number(pageNumber))
+            ? Number(pageNumber)
+            : doc.page?.number || 1;
 
     doc.save();
 
@@ -654,12 +210,11 @@ const drawFooter = (
         .lineWidth(0.5)
         .moveTo(
             MARGIN_LEFT,
-            footerY - 8
+            PAGE_HEIGHT - 25
         )
         .lineTo(
-            PAGE_WIDTH -
-                MARGIN_RIGHT,
-            footerY - 8
+            PAGE_WIDTH - MARGIN_RIGHT,
+            PAGE_HEIGHT - 25
         )
         .stroke();
 
@@ -668,142 +223,34 @@ const drawFooter = (
         .fontSize(7)
         .fillColor(COLORS.gray)
         .text(
-            "Generated by Carsey.in",
+            `Vehicle Inspection Report #${safeValue(reportId)}`,
             MARGIN_LEFT,
-            footerY,
+            PAGE_HEIGHT - 19,
             {
-                width: 220,
+                width: 260,
                 align: "left"
             }
         );
 
-    // ONLY REPORT ID
-    // NO CAR ID
-    doc.text(
-        `Vehicle Inspection Report #${reportId} | Page ${pageNumber}`,
-        PAGE_WIDTH - 280,
-        footerY,
-        {
-            width: 252,
-            align: "right"
-        }
-    );
+    doc
+        .font("Helvetica")
+        .fontSize(7)
+        .fillColor(COLORS.gray)
+        .text(
+            `Page ${currentPage}`,
+            PAGE_WIDTH - MARGIN_RIGHT - 100,
+            PAGE_HEIGHT - 19,
+            {
+                width: 100,
+                align: "right"
+            }
+        );
 
     doc.restore();
 };
 
 // ======================================================
-// ADD NEW PAGE WITH FOOTER
-// ======================================================
-
-const addPageWithFooter = (
-    doc,
-    reportId
-) => {
-    drawFooter(
-        doc,
-        doc.page.number,
-        reportId
-    );
-
-    doc.addPage();
-
-    return MARGIN_TOP;
-};
-
-// ======================================================
-// DRAW HEADER
-// CAR ID COMPLETELY REMOVED
-// ======================================================
-
-const drawReportHeader = (
-    doc,
-    report
-) => {
-    const reportId =
-        getReportId(report);
-
-    const headerHeight = 72;
-
-    doc
-        .roundedRect(
-            MARGIN_LEFT,
-            MARGIN_TOP,
-            CONTENT_WIDTH,
-            headerHeight,
-            7
-        )
-        .fillAndStroke(
-            COLORS.white,
-            COLORS.border
-        );
-
-    // Brand
-    doc
-        .font("Helvetica-Bold")
-        .fontSize(24)
-        .fillColor(COLORS.dark)
-        .text(
-            "Carsey.in",
-            MARGIN_LEFT + 14,
-            MARGIN_TOP + 13
-        );
-
-    // Subtitle
-    doc
-        .font("Helvetica")
-        .fontSize(10)
-        .fillColor(COLORS.gray)
-        .text(
-            "Vehicle Inspection Report",
-            MARGIN_LEFT + 15,
-            MARGIN_TOP + 42
-        );
-
-    // REPORT
-    doc
-        .font("Helvetica-Bold")
-        .fontSize(8)
-        .fillColor(COLORS.gray)
-        .text(
-            "REPORT",
-            PAGE_WIDTH - 130,
-            MARGIN_TOP + 15,
-            {
-                width: 90,
-                align: "right"
-            }
-        );
-
-    // REPORT NUMBER
-    doc
-        .font("Helvetica-Bold")
-        .fontSize(18)
-        .fillColor(COLORS.dark)
-        .text(
-            `#${reportId}`,
-            PAGE_WIDTH - 130,
-            MARGIN_TOP + 27,
-            {
-                width: 90,
-                align: "right"
-            }
-        );
-
-    // ==================================================
-    // IMPORTANT:
-    // CAR ID BLOCK REMOVED COMPLETELY
-    // ==================================================
-
-    return (
-        MARGIN_TOP +
-        headerHeight +
-        12
-    );
-};
-
-// ======================================================
-// DRAW SECTION HEADER
+// SECTION HEADER
 // ======================================================
 
 const drawSectionHeader = (
@@ -811,15 +258,14 @@ const drawSectionHeader = (
     title,
     y
 ) => {
-    const height = 25;
+    const height = 28;
 
     doc
-        .roundedRect(
+        .rect(
             MARGIN_LEFT,
             y,
             CONTENT_WIDTH,
-            height,
-            5
+            height
         )
         .fill(COLORS.navy);
 
@@ -832,8 +278,7 @@ const drawSectionHeader = (
             MARGIN_LEFT + 10,
             y + 7,
             {
-                width:
-                    CONTENT_WIDTH - 20,
+                width: CONTENT_WIDTH - 20,
                 ellipsis: true
             }
         );
@@ -858,8 +303,7 @@ const drawField = (
         .fontSize(6.5)
         .fillColor(COLORS.gray)
         .text(
-            safeValue(label, "-")
-                .toUpperCase(),
+            safeValue(label, "-").toUpperCase(),
             x,
             y,
             {
@@ -886,6 +330,421 @@ const drawField = (
 };
 
 // ======================================================
+// GET NESTED VEHICLE DATA
+// ======================================================
+
+const getVehicleObject = (report) => {
+    if (
+        report &&
+        report.vehicle &&
+        typeof report.vehicle === "object" &&
+        !Array.isArray(report.vehicle)
+    ) {
+        return report.vehicle;
+    }
+
+    if (
+        report &&
+        report.vehicleData &&
+        typeof report.vehicleData === "object" &&
+        !Array.isArray(report.vehicleData)
+    ) {
+        return report.vehicleData;
+    }
+
+    return {};
+};
+
+// ======================================================
+// GET OWNER OBJECT
+// ======================================================
+
+const getOwnerObject = (report) => {
+    if (
+        report &&
+        report.owner &&
+        typeof report.owner === "object" &&
+        !Array.isArray(report.owner)
+    ) {
+        return report.owner;
+    }
+
+    if (
+        report &&
+        report.customer &&
+        typeof report.customer === "object" &&
+        !Array.isArray(report.customer)
+    ) {
+        return report.customer;
+    }
+
+    if (
+        report &&
+        report.customerDetails &&
+        typeof report.customerDetails === "object" &&
+        !Array.isArray(report.customerDetails)
+    ) {
+        return report.customerDetails;
+    }
+
+    return {};
+};
+
+// ======================================================
+// NORMALIZE REPORT
+// ======================================================
+
+const normalizeReport = (sourceReport) => {
+    const report =
+        sourceReport &&
+        typeof sourceReport === "object"
+            ? sourceReport
+            : {};
+
+    const vehicleData = getVehicleObject(report);
+    const ownerData = getOwnerObject(report);
+
+    const inspectionData =
+        report.inspection &&
+        typeof report.inspection === "object"
+            ? report.inspection
+            : {};
+
+    const customerName = firstValue(
+        ownerData,
+        [
+            "ownerName",
+            "owner_name",
+            "customerName",
+            "customer_name",
+            "name",
+            "fullName",
+            "full_name",
+            "customer",
+            "customer_name"
+        ],
+        firstValue(
+            vehicleData,
+            [
+                "ownerName",
+                "owner_name",
+                "customerName",
+                "customer_name",
+                "name",
+                "fullName",
+                "full_name"
+            ],
+            firstValue(
+                report,
+                [
+                    "ownerName",
+                    "owner_name",
+                    "customerName",
+                    "customer_name",
+                    "name",
+                    "fullName",
+                    "full_name"
+                ],
+                "-"
+            )
+        )
+    );
+
+    const customerMobile = firstValue(
+        ownerData,
+        [
+            "mobile",
+            "ownerMobile",
+            "owner_mobile",
+            "customerMobile",
+            "customer_mobile",
+            "phone",
+            "phoneNumber",
+            "phone_number",
+            "mobileNumber",
+            "mobile_number"
+        ],
+        firstValue(
+            vehicleData,
+            [
+                "mobile",
+                "ownerMobile",
+                "owner_mobile",
+                "customerMobile",
+                "customer_mobile",
+                "phone",
+                "phoneNumber",
+                "phone_number",
+                "mobileNumber",
+                "mobile_number"
+            ],
+            firstValue(
+                report,
+                [
+                    "mobile",
+                    "ownerMobile",
+                    "owner_mobile",
+                    "customerMobile",
+                    "customer_mobile",
+                    "phone",
+                    "phoneNumber",
+                    "phone_number",
+                    "mobileNumber",
+                    "mobile_number"
+                ],
+                "-"
+            )
+        )
+    );
+
+    const customerEmail = firstValue(
+        ownerData,
+        [
+            "email",
+            "ownerEmail",
+            "owner_email",
+            "customerEmail",
+            "customer_email"
+        ],
+        firstValue(
+            vehicleData,
+            [
+                "email",
+                "ownerEmail",
+                "owner_email",
+                "customerEmail",
+                "customer_email"
+            ],
+            firstValue(
+                report,
+                [
+                    "email",
+                    "ownerEmail",
+                    "owner_email",
+                    "customerEmail",
+                    "customer_email"
+                ],
+                "-"
+            )
+        )
+    );
+
+    const customerAddress = firstValue(
+        ownerData,
+        [
+            "address",
+            "ownerAddress",
+            "owner_address",
+            "customerAddress",
+            "customer_address",
+            "fullAddress",
+            "full_address",
+            "location",
+            "city"
+        ],
+        firstValue(
+            vehicleData,
+            [
+                "address",
+                "ownerAddress",
+                "owner_address",
+                "customerAddress",
+                "customer_address",
+                "fullAddress",
+                "full_address",
+                "location",
+                "city"
+            ],
+            firstValue(
+                report,
+                [
+                    "address",
+                    "ownerAddress",
+                    "owner_address",
+                    "customerAddress",
+                    "customer_address",
+                    "fullAddress",
+                    "full_address",
+                    "location",
+                    "city"
+                ],
+                "-"
+            )
+        )
+    );
+
+    const checklist =
+        report.checklist ||
+        report.inspection_checklist ||
+        report.inspectionChecklist ||
+        report.checklists ||
+        report.detailedInspection ||
+        inspectionData.checklist ||
+        inspectionData.inspection_checklist ||
+        inspectionData.inspectionChecklist ||
+        inspectionData.checklists ||
+        inspectionData.detailedInspection ||
+        [];
+
+    const mergedVehicle = {
+        ...vehicleData,
+
+        customer_name: customerName,
+        customerName: customerName,
+
+        owner_name: customerName,
+        ownerName: customerName,
+
+        owner_mobile: customerMobile,
+        ownerMobile: customerMobile,
+
+        owner_email: customerEmail,
+        ownerEmail: customerEmail,
+
+        owner_address: customerAddress,
+        ownerAddress: customerAddress
+    };
+
+    const mergedOwner = {
+        ...ownerData,
+
+        ownerName: customerName,
+        owner_name: customerName,
+        name: customerName,
+
+        mobile: customerMobile,
+        ownerMobile: customerMobile,
+        owner_mobile: customerMobile,
+
+        email: customerEmail,
+        ownerEmail: customerEmail,
+        owner_email: customerEmail,
+
+        address: customerAddress,
+        ownerAddress: customerAddress,
+        owner_address: customerAddress
+    };
+
+    return {
+        ...vehicleData,
+        ...ownerData,
+        ...inspectionData,
+        ...report,
+
+        customer_name: customerName,
+        customerName: customerName,
+
+        owner_name: customerName,
+        ownerName: customerName,
+
+        owner_mobile: customerMobile,
+        ownerMobile: customerMobile,
+
+        owner_email: customerEmail,
+        ownerEmail: customerEmail,
+
+        owner_address: customerAddress,
+        ownerAddress: customerAddress,
+
+        vehicle: mergedVehicle,
+        owner: mergedOwner,
+
+        inspection: inspectionData,
+
+        checklist,
+        inspection_checklist: checklist,
+        inspectionChecklist: checklist,
+        detailedInspection: checklist,
+
+        overallScore: normalizeScore(
+            firstValue(
+                report,
+                [
+                    "overallScore",
+                    "overall_score",
+                    "score"
+                ],
+                firstValue(
+                    inspectionData,
+                    [
+                        "overallScore",
+                        "overall_score",
+                        "score"
+                    ],
+                    null
+                )
+            )
+        ),
+
+        engineRemark: firstValue(
+            report,
+            [
+                "engineRemark",
+                "engine_remark",
+                "engineNotes",
+                "engine_notes"
+            ],
+            firstValue(
+                inspectionData,
+                [
+                    "engineRemark",
+                    "engine_remark",
+                    "engineNotes",
+                    "engine_notes"
+                ],
+                "Not provided."
+            )
+        ),
+
+        overallRemark: firstValue(
+            report,
+            [
+                "overallRemark",
+                "overall_remark",
+                "remarks",
+                "remark",
+                "comments",
+                "comment"
+            ],
+            firstValue(
+                inspectionData,
+                [
+                    "overallRemark",
+                    "overall_remark",
+                    "remarks",
+                    "remark",
+                    "comments",
+                    "comment"
+                ],
+                "Vehicle inspection completed."
+            )
+        ),
+
+        vehicleNote: firstValue(
+            report,
+            [
+                "vehicleNote",
+                "vehicle_note",
+                "note",
+                "vehicleNotes",
+                "vehicle_notes"
+            ],
+            firstValue(
+                vehicleData,
+                [
+                    "vehicleNote",
+                    "vehicle_note",
+                    "note",
+                    "vehicleNotes",
+                    "vehicle_notes"
+                ],
+                "-"
+            )
+        )
+    };
+};
+
+// ======================================================
 // DRAW VEHICLE DETAILS
 // ======================================================
 
@@ -902,93 +761,91 @@ const drawVehicleDetails = (
 
     y += 5;
 
-    const rowHeight = 43;
+    const vehicle =
+        getVehicleObject(report);
 
+    const rowHeight = 43;
     const columnWidth =
         CONTENT_WIDTH / 3;
+
+    const getVehicleValue = (
+        keys,
+        fallback = "-"
+    ) => {
+        return firstValue(
+            report,
+            keys,
+            firstValue(
+                vehicle,
+                keys,
+                fallback
+            )
+        );
+    };
 
     const vehicleFields = [
         [
             "Brand",
-            firstValue(
-                report,
-                [
-                    "brand",
-                    "make",
-                    "vehicleBrand"
-                ],
-                "-"
-            )
+            getVehicleValue([
+                "brand",
+                "make",
+                "vehicleBrand"
+            ])
         ],
+
         [
             "Model",
-            firstValue(
-                report,
-                [
-                    "model",
-                    "vehicleModel"
-                ],
-                "-"
-            )
+            getVehicleValue([
+                "model",
+                "vehicleModel"
+            ])
         ],
+
         [
             "Variant",
-            firstValue(
-                report,
-                [
-                    "variant",
-                    "vehicleVariant"
-                ],
-                "-"
-            )
+            getVehicleValue([
+                "variant",
+                "vehicleVariant"
+            ])
         ],
+
         [
             "Manufacturing Year",
-            firstValue(
-                report,
-                [
-                    "manufacturingYear",
-                    "manufacturing_year",
-                    "year",
-                    "manufactureYear"
-                ],
-                "-"
-            )
+            getVehicleValue([
+                "manufacturingYear",
+                "manufacturing_year",
+                "year",
+                "manufactureYear"
+            ])
         ],
+
         [
             "Price",
             formatPrice(
-                firstValue(
-                    report,
-                    [
-                        "price",
-                        "vehiclePrice",
-                        "sellingPrice",
-                        "askingPrice"
-                    ],
-                    ""
-                )
+                getVehicleValue([
+                    "price",
+                    "vehiclePrice",
+                    "sellingPrice",
+                    "askingPrice"
+                ], "")
             )
         ],
+
         [
             "Price Note",
-            firstValue(
-                report,
-                [
-                    "priceShortNote",
-                    "price_short_note",
-                    "priceNote",
-                    "price_note"
-                ],
-                "-"
-            )
+            getVehicleValue([
+                "priceShortNote",
+                "price_short_note",
+                "priceNote",
+                "price_note"
+            ])
         ],
+
         [
             "Odometer",
             (() => {
                 const value =
-                    firstValue(
-                        report,
+                    getVehicleValue(
                         [
                             "odometer",
                             "kilometers",
@@ -1000,204 +857,135 @@ const drawVehicleDetails = (
                         "-"
                     );
 
-                return value === "-"
-                    ? "-"
-                    : `${value} KM`;
+                if (value === "-") {
+                    return "-";
+                }
+
+                const stringValue =
+                    String(value);
+
+                if (
+                    stringValue
+                        .toLowerCase()
+                        .includes("km")
+                ) {
+                    return stringValue;
+                }
+
+                return `${value} KM`;
             })()
         ],
+
         [
             "Fuel Type",
-            firstValue(
-                report,
-                [
-                    "fuelType",
-                    "fuel_type",
-                    "fuel"
-                ],
-                "-"
-            )
+            getVehicleValue([
+                "fuelType",
+                "fuel_type",
+                "fuel"
+            ])
         ],
+
         [
             "Transmission",
-            firstValue(
-                report,
-                ["transmission"],
-                "-"
-            )
+            getVehicleValue([
+                "transmission"
+            ])
         ],
+
         [
             "Owner Classification",
-            firstValue(
-                report,
-                [
-                    "ownerClassification",
-                    "owner_classification",
-                    "ownerType",
-                    "owner_type"
-                ],
-                "-"
-            )
+            getVehicleValue([
+                "ownerClassification",
+                "owner_classification",
+                "ownerType",
+                "owner_type"
+            ])
         ],
+
         [
             "Registration Number",
-            firstValue(
-                report,
-                [
-                    "registrationNumber",
-                    "registration_number",
-                    "registrationNo",
-                    "registration_no",
-                    "regNumber",
-                    "reg_no"
-                ],
-                "-"
-            )
+            getVehicleValue([
+                "registrationNumber",
+                "registration_number",
+                "registrationNo",
+                "registration_no",
+                "regNumber",
+                "reg_no"
+            ])
         ],
+
         [
             "Chassis Number",
-            firstValue(
-                report,
-                [
-                    "chassisNumber",
-                    "chassis_number",
-                    "chassisNo",
-                    "chassis_no"
-                ],
-                "-"
-            )
+            getVehicleValue([
+                "chassisNumber",
+                "chassis_number",
+                "chassisNo",
+                "chassis_no"
+            ])
         ],
+
         [
             "Engine Number",
-            firstValue(
-                report,
-                [
-                    "engineNumber",
-                    "engine_number",
-                    "engineNo",
-                    "engine_no"
-                ],
-                "-"
-            )
+            getVehicleValue([
+                "engineNumber",
+                "engine_number",
+                "engineNo",
+                "engine_no"
+            ])
         ],
-        // [
-        //     "Address",
-        //     firstValue(
-        //         report,
-        //         [
-        //             "address",
-        //             "vehicleAddress",
-        //             "vehicle_address",
-        //             "fullAddress",
-        //             "full_address",
-        //             "location",
-        //             "vehicleLocation"
-        //         ],
-        //         firstValue(
-        //             report.owner,
-        //             [
-        //                 "address",
-        //                 "ownerAddress",
-        //                 "owner_address",
-        //                 "fullAddress",
-        //                 "full_address"
-        //             ],
-        //             "-"
-        //         )
-        //     )
-        // ],
+
         [
             "Inspection Date",
             formatDate(
-                firstValue(
-                    report,
-                    [
-                        "inspectionDate",
-                        "inspection_date",
-                        "inspectionDateTime"
-                    ],
-                    ""
-                )
+                getVehicleValue([
+                    "inspectionDate",
+                    "inspection_date",
+                    "inspectionDateTime"
+                ], "")
             )
         ],
+
         [
             "RTO",
-            firstValue(
-                report,
-                [
-                    "rto",
-                    "rtoName",
-                    "rto_name",
-                    "rtoCode",
-                    "rto_code"
-                ],
-                "-"
-            )
+            getVehicleValue([
+                "rto",
+                "rtoName",
+                "rto_name",
+                "rtoCode",
+                "rto_code"
+            ])
         ],
+
         [
             "Spare Key",
-            firstValue(
-                report,
-                [
-                    "spareKey",
-                    "spare_key",
-                    "spareKeys",
-                    "spare_keys"
-                ],
-                "-"
-            )
+            getVehicleValue([
+                "spareKey",
+                "spare_key",
+                "spareKeys",
+                "spare_keys"
+            ])
         ],
+
         [
             "Insurance Type",
-            firstValue(
-                report,
-                [
-                    "insuranceType",
-                    "insurance_type",
-                    "insurance"
-                ],
-                "-"
-            )
+            getVehicleValue([
+                "insuranceType",
+                "insurance_type",
+                "insurance"
+            ])
         ],
+
         [
             "Insurance Validity",
             formatDate(
-                firstValue(
-                    report,
-                    [
-                        "insuranceValidity",
-                        "insurance_validity",
-                        "insuranceExpiry",
-                        "insurance_expiry",
-                        "insuranceValidTill",
-                        "insurance_valid_till"
-                    ],
-                    ""
-                )
-            )
-        ],
-        [
-            "Status",
-            firstValue(
-                report,
-                [
-                    "status",
-                    "publishStatus",
-                    "publish_status"
-                ],
-                "Published"
-            )
-        ],
-        [
-            "Created Date",
-            formatDate(
-                firstValue(
-                    report,
-                    [
-                        "createdAt",
-                        "created_at"
-                    ],
-                    new Date()
-                )
+                getVehicleValue([
+                    "insuranceValidity",
+                    "insurance_validity",
+                    "insuranceExpiry",
+                    "insurance_expiry",
+                    "insuranceValidTill",
+                    "insurance_valid_till"
+                ], "")
             )
         ]
     ];
@@ -1214,6 +1002,13 @@ const drawVehicleDetails = (
             );
 
         const rowY = y;
+
+        if (
+            rowY + rowHeight >
+            PAGE_BOTTOM
+        ) {
+            return y;
+        }
 
         doc
             .rect(
@@ -1239,16 +1034,15 @@ const drawVehicleDetails = (
             doc
                 .moveTo(
                     MARGIN_LEFT +
-                        columnWidth *
-                            column,
+                    columnWidth *
+                    column,
                     rowY
                 )
                 .lineTo(
                     MARGIN_LEFT +
-                        columnWidth *
-                            column,
-                    rowY +
-                        rowHeight
+                    columnWidth *
+                    column,
+                    rowY + rowHeight
                 )
                 .stroke();
         }
@@ -1259,7 +1053,7 @@ const drawVehicleDetails = (
                     doc,
                     MARGIN_LEFT +
                         columnWidth *
-                            index +
+                        index +
                         8,
                     rowY + 8,
                     columnWidth,
@@ -1282,7 +1076,17 @@ const drawVehicleDetails = (
                 "vehicleNotes",
                 "vehicle_notes"
             ],
-            "-"
+            firstValue(
+                vehicle,
+                [
+                    "vehicleNote",
+                    "vehicle_note",
+                    "note",
+                    "vehicleNotes",
+                    "vehicle_notes"
+                ],
+                "-"
+            )
         );
 
     doc
@@ -1339,17 +1143,128 @@ const drawOwnerDetails = (
 ) => {
     y = drawSectionHeader(
         doc,
-        "Owner Details",
+        "Customer / Owner Details",
         y
     );
 
     y += 5;
 
     const owner =
-        report.owner &&
-        typeof report.owner === "object"
-            ? report.owner
-            : report;
+        getOwnerObject(report);
+
+    const ownerName =
+        firstValue(
+            owner,
+            [
+                "ownerName",
+                "owner_name",
+                "customer_name",
+                "customerName",
+                "name",
+                "fullName",
+                "full_name"
+            ],
+            firstValue(
+                report,
+                [
+                    "ownerName",
+                    "owner_name",
+                    "customer_name",
+                    "customerName",
+                    "name",
+                    "fullName",
+                    "full_name"
+                ],
+                "-"
+            )
+        );
+
+    const mobile =
+        firstValue(
+            owner,
+            [
+                "mobile",
+                "ownerMobile",
+                "owner_mobile",
+                "customerMobile",
+                "customer_mobile",
+                "phone",
+                "phoneNumber",
+                "phone_number",
+                "mobileNumber",
+                "mobile_number"
+            ],
+            firstValue(
+                report,
+                [
+                    "mobile",
+                    "ownerMobile",
+                    "owner_mobile",
+                    "customerMobile",
+                    "customer_mobile",
+                    "phone",
+                    "phoneNumber",
+                    "phone_number",
+                    "mobileNumber",
+                    "mobile_number"
+                ],
+                "-"
+            )
+        );
+
+    const email =
+        firstValue(
+            owner,
+            [
+                "email",
+                "ownerEmail",
+                "owner_email",
+                "customerEmail",
+                "customer_email"
+            ],
+            firstValue(
+                report,
+                [
+                    "email",
+                    "ownerEmail",
+                    "owner_email",
+                    "customerEmail",
+                    "customer_email"
+                ],
+                "-"
+            )
+        );
+
+    const address =
+        firstValue(
+            owner,
+            [
+                "address",
+                "ownerAddress",
+                "owner_address",
+                "customerAddress",
+                "customer_address",
+                "fullAddress",
+                "full_address",
+                "location",
+                "city"
+            ],
+            firstValue(
+                report,
+                [
+                    "address",
+                    "ownerAddress",
+                    "owner_address",
+                    "customerAddress",
+                    "customer_address",
+                    "fullAddress",
+                    "full_address",
+                    "location",
+                    "city"
+                ],
+                "-"
+            )
+        );
 
     const rowHeight = 43;
 
@@ -1374,15 +1289,12 @@ const drawOwnerDetails = (
 
     doc
         .moveTo(
-            MARGIN_LEFT +
-                columnWidth,
+            MARGIN_LEFT + columnWidth,
             y
         )
         .lineTo(
-            MARGIN_LEFT +
-                columnWidth,
-            y +
-                rowHeight
+            MARGIN_LEFT + columnWidth,
+            y + rowHeight
         )
         .stroke();
 
@@ -1395,8 +1307,7 @@ const drawOwnerDetails = (
         .lineTo(
             MARGIN_LEFT +
                 columnWidth * 2,
-            y +
-                rowHeight
+            y + rowHeight
         )
         .stroke();
 
@@ -1406,17 +1317,7 @@ const drawOwnerDetails = (
         y + 8,
         columnWidth,
         "Owner Name",
-        firstValue(
-            owner,
-            [
-                "ownerName",
-                "owner_name",
-                "name",
-                "fullName",
-                "full_name"
-            ],
-            "-"
-        )
+        ownerName
     );
 
     drawField(
@@ -1427,20 +1328,7 @@ const drawOwnerDetails = (
         y + 8,
         columnWidth,
         "Mobile",
-        firstValue(
-            owner,
-            [
-                "mobile",
-                "ownerMobile",
-                "owner_mobile",
-                "phone",
-                "phoneNumber",
-                "phone_number",
-                "mobileNumber",
-                "mobile_number"
-            ],
-            "-"
-        )
+        mobile
     );
 
     drawField(
@@ -1451,41 +1339,10 @@ const drawOwnerDetails = (
         y + 8,
         columnWidth,
         "Email",
-        firstValue(
-            owner,
-            [
-                "email",
-                "ownerEmail",
-                "owner_email"
-            ],
-            "-"
-        )
+        email
     );
 
     y += rowHeight;
-
-    const address =
-        firstValue(
-            report,
-            [
-                "address",
-                "vehicleAddress",
-                "vehicle_address",
-                "fullAddress",
-                "full_address"
-            ],
-            firstValue(
-                owner,
-                [
-                    "address",
-                    "ownerAddress",
-                    "owner_address",
-                    "fullAddress",
-                    "full_address"
-                ],
-                "-"
-            )
-        );
 
     doc
         .rect(
@@ -1619,6 +1476,7 @@ const drawInspectionSummary = (
         );
 
     const boxGap = 8;
+
     const scoreWidth = 100;
 
     const remainingWidth =
@@ -1629,16 +1487,14 @@ const drawInspectionSummary = (
     const remarkWidth =
         remainingWidth / 2;
 
-    const boxHeight = 72;
+    const boxHeight = 90;
 
-    // SCORE
     doc
-        .roundedRect(
+        .rect(
             MARGIN_LEFT,
             y,
             scoreWidth,
-            boxHeight,
-            6
+            boxHeight
         )
         .fillAndStroke(
             COLORS.lightBlue,
@@ -1647,61 +1503,71 @@ const drawInspectionSummary = (
 
     doc
         .font("Helvetica-Bold")
-        .fontSize(6.5)
+        .fontSize(8)
         .fillColor(COLORS.gray)
         .text(
             "OVERALL SCORE",
-            MARGIN_LEFT + 9,
-            y + 10
+            MARGIN_LEFT + 8,
+            y + 10,
+            {
+                width: scoreWidth - 16,
+                align: "center"
+            }
         );
 
     doc
         .font("Helvetica-Bold")
         .fontSize(24)
-        .fillColor(COLORS.dark)
+        .fillColor(COLORS.blue)
         .text(
-            formatScore(score),
-            MARGIN_LEFT + 9,
-            y + 27
+            safeValue(score),
+            MARGIN_LEFT + 8,
+            y + 32,
+            {
+                width: scoreWidth - 16,
+                align: "center"
+            }
         );
 
     doc
-        .font("Helvetica-Bold")
-        .fontSize(9)
-        .fillColor(COLORS.dark)
+        .font("Helvetica")
+        .fontSize(7)
+        .fillColor(COLORS.gray)
         .text(
-            "/ 10",
-            MARGIN_LEFT + 62,
-            y + 39
+            "out of 10",
+            MARGIN_LEFT + 8,
+            y + 65,
+            {
+                width: scoreWidth - 16,
+                align: "center"
+            }
         );
 
-    // ENGINE REMARK
     const engineX =
         MARGIN_LEFT +
         scoreWidth +
         boxGap;
 
     doc
-        .roundedRect(
+        .rect(
             engineX,
             y,
             remarkWidth,
-            boxHeight,
-            6
+            boxHeight
         )
         .fillAndStroke(
-            COLORS.lightBlue,
+            COLORS.white,
             COLORS.border
         );
 
     doc
         .font("Helvetica-Bold")
-        .fontSize(6.5)
+        .fontSize(7)
         .fillColor(COLORS.gray)
         .text(
             "ENGINE REMARK",
-            engineX + 9,
-            y + 10
+            engineX + 8,
+            y + 9
         );
 
     doc
@@ -1710,42 +1576,40 @@ const drawInspectionSummary = (
         .fillColor(COLORS.dark)
         .text(
             safeValue(engineRemark),
-            engineX + 9,
-            y + 27,
+            engineX + 8,
+            y + 25,
             {
                 width:
-                    remarkWidth - 18,
-                height: 35
+                    remarkWidth - 16,
+                height: 55
             }
         );
 
-    // OVERALL REMARK
     const overallX =
         engineX +
         remarkWidth +
         boxGap;
 
     doc
-        .roundedRect(
+        .rect(
             overallX,
             y,
             remarkWidth,
-            boxHeight,
-            6
+            boxHeight
         )
         .fillAndStroke(
-            COLORS.lightBlue,
+            COLORS.white,
             COLORS.border
         );
 
     doc
         .font("Helvetica-Bold")
-        .fontSize(6.5)
+        .fontSize(7)
         .fillColor(COLORS.gray)
         .text(
             "OVERALL REMARK",
-            overallX + 9,
-            y + 10
+            overallX + 8,
+            y + 9
         );
 
     doc
@@ -1754,88 +1618,591 @@ const drawInspectionSummary = (
         .fillColor(COLORS.dark)
         .text(
             safeValue(overallRemark),
-            overallX + 9,
-            y + 27,
+            overallX + 8,
+            y + 25,
             {
                 width:
-                    remarkWidth - 18,
-                height: 35
+                    remarkWidth - 16,
+                height: 55
             }
         );
 
-    y += boxHeight + 10;
+    y += boxHeight + 12;
 
     return y;
 };
 
 // ======================================================
-// ADDITIONAL VEHICLE DATA
+// CHECKLIST VALUE HELPER
 // ======================================================
 
-const drawAdditionalVehicleData = (
+const getChecklistValue = (
+    item,
+    keys,
+    fallback = "-"
+) => {
+    if (
+        !item ||
+        typeof item !== "object"
+    ) {
+        return fallback;
+    }
+
+    return firstValue(
+        item,
+        keys,
+        fallback
+    );
+};
+
+// ======================================================
+// NORMALIZE CHECKLIST ITEM
+// ======================================================
+
+const normalizeChecklistItem = (
+    item,
+    index
+) => {
+    if (
+        typeof item === "string"
+    ) {
+        return {
+            category: `Inspection ${index + 1}`,
+            item: item,
+            status: "-",
+            remark: "-"
+        };
+    }
+
+    if (
+        !item ||
+        typeof item !== "object"
+    ) {
+        return {
+            category: `Inspection ${index + 1}`,
+            item: "-",
+            status: "-",
+            remark: "-"
+        };
+    }
+
+    const category =
+        getChecklistValue(
+            item,
+            [
+                "category",
+                "section",
+                "group",
+                "title",
+                "heading",
+                "type",
+                "name"
+            ],
+            `Inspection ${index + 1}`
+        );
+
+    const name =
+        getChecklistValue(
+            item,
+            [
+                "item",
+                "label",
+                "question",
+                "inspectionItem",
+                "inspection_item",
+                "check",
+                "description",
+                "name"
+            ],
+            "-"
+        );
+
+    const status =
+        getChecklistValue(
+            item,
+            [
+                "status",
+                "result",
+                "condition",
+                "rating",
+                "value",
+                "answer",
+                "inspectionStatus",
+                "inspection_status"
+            ],
+            "-"
+        );
+
+    const remark =
+        getChecklistValue(
+            item,
+            [
+                "remark",
+                "remarks",
+                "note",
+                "notes",
+                "comment",
+                "comments",
+                "observation",
+                "observations",
+                "description"
+            ],
+            "-"
+        );
+
+    return {
+        category,
+        item: name,
+        status,
+        remark
+    };
+};
+
+// ======================================================
+// DRAW CHECKLIST
+// ======================================================
+
+const drawChecklist = (
     doc,
     report,
-    y
+    y,
+    pageNumberRef
+) => {
+    let checklist =
+        report.checklist ||
+        report.inspection_checklist ||
+        report.inspectionChecklist ||
+        report.detailedInspection ||
+        [];
+
+    if (
+        !Array.isArray(checklist)
+    ) {
+        checklist = [];
+    }
+
+    y = drawSectionHeader(
+        doc,
+        "Detailed Inspection",
+        y
+    );
+
+    y += 5;
+
+    const normalized =
+        checklist.map(
+            normalizeChecklistItem
+        );
+
+    if (
+        normalized.length === 0
+    ) {
+        doc
+            .rect(
+                MARGIN_LEFT,
+                y,
+                CONTENT_WIDTH,
+                45
+            )
+            .fillAndStroke(
+                COLORS.white,
+                COLORS.border
+            );
+
+        doc
+            .font("Helvetica")
+            .fontSize(8)
+            .fillColor(COLORS.gray)
+            .text(
+                "No detailed inspection checklist data provided.",
+                MARGIN_LEFT + 8,
+                y + 16,
+                {
+                    width:
+                        CONTENT_WIDTH - 16
+                }
+            );
+
+        return y + 55;
+    }
+
+    const col1 =
+        CONTENT_WIDTH * 0.25;
+
+    const col2 =
+        CONTENT_WIDTH * 0.30;
+
+    const col3 =
+        CONTENT_WIDTH * 0.15;
+
+    const col4 =
+        CONTENT_WIDTH -
+        col1 -
+        col2 -
+        col3;
+
+    const headerHeight = 27;
+
+    doc
+        .rect(
+            MARGIN_LEFT,
+            y,
+            CONTENT_WIDTH,
+            headerHeight
+        )
+        .fillAndStroke(
+            COLORS.headerGray,
+            COLORS.border
+        );
+
+    const headerX = [
+        MARGIN_LEFT,
+        MARGIN_LEFT + col1,
+        MARGIN_LEFT + col1 + col2,
+        MARGIN_LEFT + col1 + col2 + col3
+    ];
+
+    const widths = [
+        col1,
+        col2,
+        col3,
+        col4
+    ];
+
+    const headers = [
+        "SECTION",
+        "INSPECTION ITEM",
+        "STATUS",
+        "REMARK"
+    ];
+
+    headers.forEach(
+        (header, index) => {
+            doc
+                .font("Helvetica-Bold")
+                .fontSize(6.5)
+                .fillColor(COLORS.gray)
+                .text(
+                    header,
+                    headerX[index] + 6,
+                    y + 9,
+                    {
+                        width:
+                            widths[index] - 12,
+                        ellipsis: true
+                    }
+                );
+        }
+    );
+
+    y += headerHeight;
+
+    normalized.forEach(
+        (item) => {
+            const sectionText =
+                safeValue(
+                    item.category
+                );
+
+            const itemText =
+                safeValue(
+                    item.item
+                );
+
+            const statusText =
+                safeValue(
+                    item.status
+                );
+
+            const remarkText =
+                safeValue(
+                    item.remark
+                );
+
+            const textWidths = [
+                col1 - 12,
+                col2 - 12,
+                col3 - 12,
+                col4 - 12
+            ];
+
+            const heights = [
+                doc.heightOfString(
+                    sectionText,
+                    {
+                        width:
+                            textWidths[0],
+                        font:
+                            "Helvetica",
+                        fontSize: 7
+                    }
+                ),
+                doc.heightOfString(
+                    itemText,
+                    {
+                        width:
+                            textWidths[1],
+                        font:
+                            "Helvetica",
+                        fontSize: 7
+                    }
+                ),
+                doc.heightOfString(
+                    statusText,
+                    {
+                        width:
+                            textWidths[2],
+                        font:
+                            "Helvetica",
+                        fontSize: 7
+                    }
+                ),
+                doc.heightOfString(
+                    remarkText,
+                    {
+                        width:
+                            textWidths[3],
+                        font:
+                            "Helvetica",
+                        fontSize: 7
+                    }
+                )
+            ];
+
+            const rowHeight =
+                Math.max(
+                    32,
+                    Math.min(
+                        70,
+                        Math.max(...heights) + 16
+                    )
+                );
+
+            if (
+                y + rowHeight >
+                PAGE_BOTTOM
+            ) {
+                pageNumberRef.value += 1;
+
+                y = addPageWithFooter(
+                    doc,
+                    getReportId(report),
+                    pageNumberRef.value
+                );
+
+                y = drawSectionHeader(
+                    doc,
+                    "Detailed Inspection - Continued",
+                    y
+                );
+
+                y += 5;
+
+                doc
+                    .rect(
+                        MARGIN_LEFT,
+                        y,
+                        CONTENT_WIDTH,
+                        headerHeight
+                    )
+                    .fillAndStroke(
+                        COLORS.headerGray,
+                        COLORS.border
+                    );
+
+                headers.forEach(
+                    (header, index) => {
+                        doc
+                            .font("Helvetica-Bold")
+                            .fontSize(6.5)
+                            .fillColor(COLORS.gray)
+                            .text(
+                                header,
+                                headerX[index] + 6,
+                                y + 9,
+                                {
+                                    width:
+                                        widths[index] - 12,
+                                    ellipsis: true
+                                }
+                            );
+                    }
+                );
+
+                y += headerHeight;
+            }
+
+            doc
+                .rect(
+                    MARGIN_LEFT,
+                    y,
+                    CONTENT_WIDTH,
+                    rowHeight
+                )
+                .fillAndStroke(
+                    COLORS.white,
+                    COLORS.border
+                );
+
+            doc
+                .strokeColor(COLORS.border)
+                .lineWidth(0.5);
+
+            for (
+                let i = 1;
+                i < 4;
+                i++
+            ) {
+                doc
+                    .moveTo(
+                        MARGIN_LEFT +
+                            widths
+                                .slice(0, i)
+                                .reduce(
+                                    (a, b) => a + b,
+                                    0
+                                ),
+                        y
+                    )
+                    .lineTo(
+                        MARGIN_LEFT +
+                            widths
+                                .slice(0, i)
+                                .reduce(
+                                    (a, b) => a + b,
+                                    0
+                                ),
+                        y + rowHeight
+                    )
+                    .stroke();
+            }
+
+            const values = [
+                sectionText,
+                itemText,
+                statusText,
+                remarkText
+            ];
+
+            values.forEach(
+                (value, index) => {
+                    doc
+                        .font(
+                            index === 2
+                                ? "Helvetica-Bold"
+                                : "Helvetica"
+                        )
+                        .fontSize(7)
+                        .fillColor(
+                            index === 2
+                                ? COLORS.dark
+                                : COLORS.dark
+                        )
+                        .text(
+                            value,
+                            headerX[index] + 6,
+                            y + 8,
+                            {
+                                width:
+                                    widths[index] - 12,
+                                height:
+                                    rowHeight - 12
+                            }
+                        );
+                }
+            );
+
+            y += rowHeight;
+        }
+    );
+
+    y += 10;
+
+    return y;
+};
+
+// ======================================================
+// ADDITIONAL VEHICLE INFORMATION
+// ======================================================
+
+const drawAdditionalVehicleInformation = (
+    doc,
+    report,
+    y,
+    pageNumberRef
 ) => {
     const excludedKeys =
         new Set([
-            "id",
-            "reportId",
-            "report_id",
-
-            // CAR ID NEVER DISPLAYED
-            "carId",
-            "car_id",
-            "vehicleId",
-            "vehicle_id",
-
-            "brand",
-            "model",
-            "variant",
-            "manufacturingYear",
-            "manufacturing_year",
-            "price",
-            "odometer",
-            "fuelType",
-            "fuel_type",
-            "transmission",
-            "ownerClassification",
-            "owner_classification",
-            "registrationNumber",
-            "registration_number",
-            "chassisNumber",
-            "chassis_number",
-            "engineNumber",
-            "engine_number",
-            "city",
-            "inspectionDate",
-            "inspection_date",
-            "rto",
-            "spareKey",
-            "spare_key",
-            "insuranceType",
-            "insurance_type",
-            "insuranceValidity",
-            "insurance_validity",
-            "status",
-            "publishStatus",
-            "createdAt",
             "created_at",
+            "updated_at",
+            "createdAt",
+            "updatedAt",
+
             "vehicleNote",
             "vehicle_note",
+            "note",
+            "vehicleNotes",
+            "vehicle_notes",
+
             "owner",
             "vehicle",
             "inspection",
+
             "checklist",
+            "inspection_checklist",
             "inspectionChecklist",
             "checklists",
+            "detailedInspection",
+
             "overallScore",
             "overall_score",
             "score",
+
             "engineRemark",
             "engine_remark",
+            "engineNotes",
+            "engine_notes",
+
             "overallRemark",
-            "overall_remark"
+            "overall_remark",
+            "remarks",
+            "remark",
+            "comments",
+            "comment",
+
+            "ownerName",
+            "owner_name",
+            "customerName",
+            "customer_name",
+            "fullName",
+            "full_name",
+            "name",
+
+            "mobile",
+            "ownerMobile",
+            "owner_mobile",
+            "customerMobile",
+            "customer_mobile",
+            "phone",
+            "phoneNumber",
+            "phone_number",
+            "mobileNumber",
+            "mobile_number",
+
+            "email",
+            "ownerEmail",
+            "owner_email",
+            "customerEmail",
+            "customer_email",
+
+            "address",
+            "ownerAddress",
+            "owner_address",
+            "customerAddress",
+            "customer_address",
+            "fullAddress",
+            "full_address",
+            "location"
         ]);
 
     const values = [];
@@ -1852,7 +2219,9 @@ const drawAdditionalVehicleData = (
             return;
         }
 
-        Object.entries(object).forEach(
+        Object.entries(
+            object
+        ).forEach(
             ([key, value]) => {
                 const fullKey =
                     prefix
@@ -1885,16 +2254,27 @@ const drawAdditionalVehicleData = (
                     return;
                 }
 
-                if (Array.isArray(value)) {
-                    if (value.length > 0) {
+                if (
+                    Array.isArray(value)
+                ) {
+                    if (
+                        value.length > 0
+                    ) {
                         values.push([
-                            titleCase(fullKey),
+                            titleCase(
+                                fullKey
+                            ),
                             value
                                 .map(
                                     (item) =>
-                                        typeof item === "object"
-                                            ? JSON.stringify(item)
-                                            : String(item)
+                                        typeof item ===
+                                        "object"
+                                            ? JSON.stringify(
+                                                  item
+                                              )
+                                            : String(
+                                                  item
+                                              )
                                 )
                                 .join(", ")
                         ]);
@@ -1913,7 +2293,9 @@ const drawAdditionalVehicleData = (
 
     collect(report);
 
-    if (values.length === 0) {
+    if (
+        values.length === 0
+    ) {
         return y;
     }
 
@@ -1939,9 +2321,12 @@ const drawAdditionalVehicleData = (
             y + rowHeight >
             PAGE_BOTTOM
         ) {
+            pageNumberRef.value += 1;
+
             y = addPageWithFooter(
                 doc,
-                getReportId(report)
+                getReportId(report),
+                pageNumberRef.value
             );
 
             y = drawSectionHeader(
@@ -1984,15 +2369,14 @@ const drawAdditionalVehicleData = (
                 .moveTo(
                     MARGIN_LEFT +
                         columnWidth *
-                            column,
+                        column,
                     y
                 )
                 .lineTo(
                     MARGIN_LEFT +
                         columnWidth *
-                            column,
-                    y +
-                        rowHeight
+                        column,
+                    y + rowHeight
                 )
                 .stroke();
         }
@@ -2016,660 +2400,90 @@ const drawAdditionalVehicleData = (
         y += rowHeight;
     }
 
-    return y;
+    return y + 8;
 };
 
 // ======================================================
-// CHECKLIST ROW HEIGHT
+// IMAGE HELPERS
 // ======================================================
 
-const getChecklistRowHeight = (
-    doc,
-    area,
-    status,
-    remark,
-    widths
+const normalizeImages = (
+    images
 ) => {
-    doc
-        .font("Helvetica")
-        .fontSize(8);
+    if (!images) {
+        return [];
+    }
 
-    const areaHeight =
-        doc.heightOfString(
-            safeValue(area),
-            {
-                width:
-                    widths[0] - 14
-            }
+    if (
+        Array.isArray(images)
+    ) {
+        return images;
+    }
+
+    if (
+        typeof images === "object"
+    ) {
+        return Object.values(
+            images
         );
+    }
 
-    const statusHeight =
-        doc.heightOfString(
-            safeValue(status),
-            {
-                width:
-                    widths[1] - 14
-            }
-        );
-
-    const remarkHeight =
-        doc.heightOfString(
-            safeValue(remark),
-            {
-                width:
-                    widths[2] - 14
-            }
-        );
-
-    return Math.max(
-        34,
-        Math.max(
-            areaHeight,
-            statusHeight,
-            remarkHeight
-        ) + 20
-    );
+    return [images];
 };
 
-// ======================================================
-// DRAW CHECKLIST HEADER
-// ======================================================
-
-const drawChecklistHeader = (
-    doc,
-    x,
-    y,
-    widths
+const getImagePathFromItem = (
+    item
 ) => {
-    const height = 28;
+    if (
+        typeof item === "string"
+    ) {
+        return item;
+    }
 
-    const headers = [
-        "INSPECTION AREA",
-        "STATUS",
-        "REMARK"
-    ];
-
-    let currentX = x;
-
-    headers.forEach(
-        (header, index) => {
-            doc
-                .rect(
-                    currentX,
-                    y,
-                    widths[index],
-                    height
-                )
-                .fillAndStroke(
-                    COLORS.headerGray,
-                    COLORS.border
-                );
-
-            doc
-                .font("Helvetica-Bold")
-                .fontSize(7)
-                .fillColor(COLORS.gray)
-                .text(
-                    header,
-                    currentX + 7,
-                    y + 10,
-                    {
-                        width:
-                            widths[index] - 14,
-                        ellipsis: true
-                    }
-                );
-
-            currentX += widths[index];
-        }
-    );
-
-    return y + height;
-};
-
-// ======================================================
-// DRAW CHECKLIST ROW
-// ======================================================
-
-const drawChecklistRow = (
-    doc,
-    x,
-    y,
-    widths,
-    area,
-    status,
-    remark
-) => {
-    const height =
-        getChecklistRowHeight(
-            doc,
-            area,
-            status,
-            remark,
-            widths
-        );
-
-    const x1 = x;
-
-    const x2 =
-        x +
-        widths[0];
-
-    const x3 =
-        x +
-        widths[0] +
-        widths[1];
-
-    doc
-        .rect(
-            x1,
-            y,
-            widths[0],
-            height
-        )
-        .fillAndStroke(
-            COLORS.white,
-            COLORS.border
-        );
-
-    doc
-        .rect(
-            x2,
-            y,
-            widths[1],
-            height
-        )
-        .fillAndStroke(
-            COLORS.white,
-            COLORS.border
-        );
-
-    doc
-        .rect(
-            x3,
-            y,
-            widths[2],
-            height
-        )
-        .fillAndStroke(
-            COLORS.white,
-            COLORS.border
-        );
-
-    doc
-        .font("Helvetica-Bold")
-        .fontSize(8)
-        .fillColor(COLORS.dark)
-        .text(
-            safeValue(area),
-            x1 + 7,
-            y + 10,
-            {
-                width:
-                    widths[0] - 14,
-                height:
-                    height - 16
-            }
-        );
-
-    const statusText =
-        safeValue(status);
-
-    doc
-        .font("Helvetica-Bold")
-        .fontSize(7);
-
-    const measuredStatusWidth =
-        doc.widthOfString(
-            statusText
-        );
-
-    const statusWidth =
-        Math.min(
-            widths[1] - 14,
-            Math.max(
-                42,
-                measuredStatusWidth + 16
-            )
-        );
-
-    const statusHeight = 16;
-
-    const statusX =
-        x2 + 7;
-
-    const statusY =
-        y + 8;
-
-    doc
-        .roundedRect(
-            statusX,
-            statusY,
-            statusWidth,
-            statusHeight,
-            8
-        )
-        .fill(
-            COLORS.greenLight
-        );
-
-    doc
-        .font("Helvetica-Bold")
-        .fontSize(7)
-        .fillColor(COLORS.green)
-        .text(
-            statusText,
-            statusX + 4,
-            statusY + 4,
-            {
-                width:
-                    statusWidth - 8,
-                height: 9,
-                align: "center",
-                ellipsis: true
-            }
-        );
-
-    doc
-        .font("Helvetica")
-        .fontSize(8)
-        .fillColor(COLORS.dark)
-        .text(
-            safeValue(remark),
-            x3 + 7,
-            y + 10,
-            {
-                width:
-                    widths[2] - 14,
-                height:
-                    height - 16
-            }
-        );
-
-    return y + height;
-};
-
-// ======================================================
-// NORMALIZE IMAGE PATH
-// ======================================================
-
-const normalizeImagePath = (
-    image
-) => {
-    if (!image) {
+    if (
+        !item ||
+        typeof item !== "object"
+    ) {
         return null;
     }
 
-    if (typeof image === "string") {
-        return image;
-    }
-
-    return firstValue(
-        image,
-        [
-            "image_path",
-            "imagePath",
-            "file_path",
-            "filePath",
-            "path",
-            "url",
-            "image_url",
-            "imageUrl",
-            "filename",
-            "fileName",
-            "file_name"
-        ],
+    return (
+        item.path ||
+        item.filePath ||
+        item.file_path ||
+        item.url ||
+        item.imageUrl ||
+        item.image_url ||
+        item.src ||
+        item.image ||
         null
     );
 };
 
 // ======================================================
-// RESOLVE VEHICLE IMAGE PATH
+// DRAW PHOTOS
 // ======================================================
 
-const resolveVehicleImagePath = (
-    imagePath
-) => {
-    if (!imagePath) {
-        return null;
-    }
-
-    let value =
-        String(imagePath).trim();
-
-    if (!value) {
-        return null;
-    }
-
-    value =
-        value.replace(
-            /\\/g,
-            "/"
-        );
-
-    value =
-        value.replace(
-            /^https?:\/\/[^/]+/i,
-            ""
-        );
-
-    try {
-        value =
-            decodeURIComponent(
-                value
-            );
-    } catch (error) {
-        // Ignore
-    }
-
-    value =
-        value
-            .split("?")[0]
-            .split("#")[0];
-
-    if (
-        path.isAbsolute(value)
-    ) {
-        try {
-            if (
-                fs.existsSync(value)
-            ) {
-                return value;
-            }
-        } catch (error) {
-            // Continue
-        }
-    }
-
-    value =
-        value.replace(
-            /^\/+/,
-            ""
-        );
-
-    const withoutUploads =
-        value.replace(
-            /^uploads\//i,
-            ""
-        );
-
-    const withoutPublic =
-        value.replace(
-            /^public\//i,
-            ""
-        );
-
-    const candidates = [
-        path.join(
-            process.cwd(),
-            value
-        ),
-
-        path.join(
-            process.cwd(),
-            "uploads",
-            withoutUploads
-        ),
-
-        path.join(
-            process.cwd(),
-            "public",
-            value
-        ),
-
-        path.join(
-            process.cwd(),
-            "public",
-            withoutPublic
-        ),
-
-        path.join(
-            __dirname,
-            value
-        ),
-
-        path.join(
-            __dirname,
-            "uploads",
-            withoutUploads
-        ),
-
-        path.join(
-            __dirname,
-            "..",
-            value
-        ),
-
-        path.join(
-            __dirname,
-            "..",
-            "uploads",
-            withoutUploads
-        )
-    ];
-
-    for (
-        const candidate of candidates
-    ) {
-        try {
-            if (
-                fs.existsSync(
-                    candidate
-                )
-            ) {
-                return candidate;
-            }
-        } catch (error) {
-            // Continue
-        }
-    }
-
-    return null;
-};
-
-// ======================================================
-// GET VEHICLE IMAGES
-// ======================================================
-
-const getVehicleImagesForPdf = async (
-    carId
-) => {
-    try {
-        const images =
-            await vehicleImageService.getVehicleImages(
-                Number(carId)
-            );
-
-        if (
-            !Array.isArray(images)
-        ) {
-            return [];
-        }
-
-        return images
-            .map(
-                (
-                    image,
-                    index
-                ) => {
-                    const imagePath =
-                        normalizeImagePath(
-                            image
-                        );
-
-                    const filePath =
-                        resolveVehicleImagePath(
-                            imagePath
-                        );
-
-                    return {
-                        ...(
-                            image &&
-                            typeof image === "object"
-                                ? image
-                                : {}
-                        ),
-                        imagePath,
-                        filePath,
-                        index:
-                            index + 1
-                    };
-                }
-            )
-            .filter(
-                (image) => {
-                    if (
-                        !image.filePath
-                    ) {
-                        return false;
-                    }
-
-                    try {
-                        return fs.existsSync(
-                            image.filePath
-                        );
-                    } catch (error) {
-                        return false;
-                    }
-                }
-            );
-    } catch (error) {
-        console.error(
-            "Vehicle images could not be loaded for PDF:",
-            error
-        );
-
-        return [];
-    }
-};
-
-// ======================================================
-// DRAW SINGLE VEHICLE PHOTO CARD
-//
-// IMPORTANT CHANGES:
-// - Large portrait image
-// - No image label
-// - No image path
-// - No Photo 1 / Photo 2 text
-// - Image centered
-// ======================================================
-
-const drawVehiclePhotoCard = (
+const drawVehiclePhotos = async (
     doc,
-    image,
-    x,
+    report,
     y,
-    cardWidth,
-    cardHeight
+    pageNumberRef
 ) => {
-    const padding = 7;
+    let images =
+        report.images ||
+        report.vehicleImages ||
+        report.vehicle_images ||
+        [];
 
-    const imageBoxWidth =
-        cardWidth -
-        padding * 2;
+    images =
+        normalizeImages(images);
 
-    const imageBoxHeight =
-        cardHeight -
-        padding * 2;
-
-    // Card
-    doc
-        .roundedRect(
-            x,
-            y,
-            cardWidth,
-            cardHeight,
-            6
-        )
-        .fillAndStroke(
-            COLORS.white,
-            COLORS.border
-        );
-
-    // Image background
-    doc
-        .rect(
-            x + padding,
-            y + padding,
-            imageBoxWidth,
-            imageBoxHeight
-        )
-        .fill(
-            COLORS.white
-        );
-
-    try {
-        // ==================================================
-        // IMPORTANT:
-        // fit keeps original image ratio.
-        // This makes portrait images look like screenshot.
-        // ==================================================
-
-        doc.image(
-            image.filePath,
-            x + padding,
-            y + padding,
-            {
-                fit: [
-                    imageBoxWidth,
-                    imageBoxHeight
-                ],
-                align: "center",
-                valign: "center"
-            }
-        );
-    } catch (error) {
-        console.error(
-            "Unable to add vehicle image:",
-            image.filePath,
-            error
-        );
-
-        doc
-            .font("Helvetica")
-            .fontSize(8)
-            .fillColor(COLORS.gray)
-            .text(
-                "Image could not be loaded",
-                x + padding,
-                y +
-                    cardHeight / 2 -
-                    5,
-                {
-                    width:
-                        imageBoxWidth,
-                    align: "center"
-                }
-            );
-    }
-};
-
-// ======================================================
-// DRAW VEHICLE PHOTOS
-//
-// Layout:
-// 2 columns
-// Large portrait photos
-// No labels
-// No paths
-// ======================================================
-
-const drawVehiclePhotos = (
-    doc,
-    images,
-    reportId
-) => {
     if (
-        !Array.isArray(images) ||
         images.length === 0
     ) {
-        return;
+        return y;
     }
-
-    // Start photos on fresh page
-    doc.addPage();
-
-    let y = MARGIN_TOP;
 
     y = drawSectionHeader(
         doc,
@@ -2677,74 +2491,110 @@ const drawVehiclePhotos = (
         y
     );
 
-    doc
-        .font("Helvetica")
-        .fontSize(8)
-        .fillColor(COLORS.gray)
-        .text(
-            `Total uploaded photos: ${images.length}`,
-            MARGIN_LEFT,
-            y + 5,
-            {
-                width:
-                    CONTENT_WIDTH
-            }
-        );
+    y += 8;
 
-    y += 25;
+    const imageGap = 10;
 
-    // ==================================================
-    // PHOTO GRID
-    // ==================================================
+    const imageWidth =
+        (CONTENT_WIDTH -
+            imageGap) /
+        2;
 
-    const gap = 10;
-    const columns = 2;
-
-    const cardWidth =
-        (
-            CONTENT_WIDTH -
-            gap
-        ) / columns;
-
-    // Bigger than old 210
-    // This gives screenshot-like portrait cards.
-    const cardHeight = 235;
+    const imageHeight = 210;
 
     for (
-        let index = 0;
-        index < images.length;
-        index++
+        let i = 0;
+        i < images.length;
+        i++
     ) {
-        const column =
-            index % columns;
+        const rawImage =
+            images[i];
 
-        // New row
-        if (
-            column === 0 &&
-            index !== 0
-        ) {
-            y +=
-                cardHeight +
-                gap;
-        }
-
-        // ==================================================
-        // NEW PAGE
-        // ==================================================
-
-        if (
-            y + cardHeight >
-            PAGE_BOTTOM
-        ) {
-            drawFooter(
-                doc,
-                doc.page.number,
-                reportId
+        let imagePath =
+            getImagePathFromItem(
+                rawImage
             );
 
-            doc.addPage();
+        if (
+            !imagePath &&
+            vehicleImageService &&
+            typeof vehicleImageService
+                .getImagePath ===
+                "function"
+        ) {
+            try {
+                imagePath =
+                    await vehicleImageService
+                        .getImagePath(
+                            rawImage
+                        );
+            } catch (error) {
+                console.error(
+                    "Vehicle image path error:",
+                    error
+                );
+            }
+        }
 
-            y = MARGIN_TOP;
+        if (
+            !imagePath
+        ) {
+            continue;
+        }
+
+        if (
+            typeof imagePath === "string" &&
+            imagePath.startsWith("/")
+        ) {
+            imagePath =
+                path.resolve(
+                    process.cwd(),
+                    imagePath.replace(
+                        /^[/\\]+/,
+                        ""
+                    )
+                );
+        }
+
+        if (
+            typeof imagePath === "string" &&
+            imagePath.startsWith("file://")
+        ) {
+            imagePath =
+                imagePath.replace(
+                    "file://",
+                    ""
+                );
+        }
+
+        if (
+            !fs.existsSync(
+                imagePath
+            )
+        ) {
+            console.warn(
+                "Vehicle image not found:",
+                imagePath
+            );
+
+            continue;
+        }
+
+        const column =
+            i % 2;
+
+        if (
+            column === 0 &&
+            y + imageHeight >
+                PAGE_BOTTOM
+        ) {
+            pageNumberRef.value += 1;
+
+            y = addPageWithFooter(
+                doc,
+                getReportId(report),
+                pageNumberRef.value
+            );
 
             y = drawSectionHeader(
                 doc,
@@ -2752,160 +2602,135 @@ const drawVehiclePhotos = (
                 y
             );
 
-            y += 25;
+            y += 8;
         }
 
         const x =
             MARGIN_LEFT +
             column *
-                (
-                    cardWidth +
-                    gap
-                );
+                (imageWidth +
+                    imageGap);
 
-        drawVehiclePhotoCard(
-            doc,
-            images[index],
-            x,
-            y,
-            cardWidth,
-            cardHeight
-        );
+        if (
+            column === 0
+        ) {
+            doc
+                .rect(
+                    MARGIN_LEFT,
+                    y,
+                    CONTENT_WIDTH,
+                    imageHeight
+                )
+                .fillAndStroke(
+                    COLORS.white,
+                    COLORS.border
+                );
+        }
+
+        try {
+            doc.image(
+                imagePath,
+                x + 5,
+                y + 5,
+                {
+                    fit: [
+                        imageWidth - 10,
+                        imageHeight - 10
+                    ],
+                    align: "center",
+                    valign: "center"
+                }
+            );
+        } catch (error) {
+            console.error(
+                "Error adding vehicle image:",
+                error
+            );
+
+            doc
+                .font("Helvetica")
+                .fontSize(8)
+                .fillColor(COLORS.gray)
+                .text(
+                    "Image could not be loaded.",
+                    x + 10,
+                    y + 20,
+                    {
+                        width:
+                            imageWidth - 20,
+                        align: "center"
+                    }
+                );
+        }
+
+        if (
+            column === 1 ||
+            i === images.length - 1
+        ) {
+            y +=
+                imageHeight +
+                imageGap;
+        }
     }
 
-    // Footer final photo page
-    drawFooter(
-        doc,
-        doc.page.number,
-        reportId
-    );
+    return y;
 };
 
 // ======================================================
-// BUILD NORMALIZED REPORT
+// HEADER
 // ======================================================
 
-const buildNormalizedReport = (
+const drawHeader = (
+    doc,
     report
 ) => {
-    const vehicleData =
-        report.vehicle &&
-        typeof report.vehicle === "object"
-            ? report.vehicle
-            : {};
+    const reportId =
+        getReportId(report);
 
-    const ownerData =
-        report.owner &&
-        typeof report.owner === "object"
-            ? report.owner
-            : {};
+    doc
+        .rect(
+            0,
+            0,
+            PAGE_WIDTH,
+            72
+        )
+        .fill(COLORS.navy);
 
-    const inspectionData =
-        report.inspection &&
-        typeof report.inspection === "object"
-            ? report.inspection
-            : {};
+    doc
+        .font("Helvetica-Bold")
+        .fontSize(18)
+        .fillColor(COLORS.white)
+        .text(
+            "CARSEY.IN",
+            MARGIN_LEFT,
+            18
+        );
 
-    return {
-        ...vehicleData,
-        ...ownerData,
-        ...inspectionData,
-        ...report,
+    doc
+        .font("Helvetica")
+        .fontSize(8)
+        .fillColor("#CBD5E1")
+        .text(
+            "VEHICLE INSPECTION REPORT",
+            MARGIN_LEFT,
+            43
+        );
 
-        vehicle: vehicleData,
-        owner: ownerData,
-        inspection: inspectionData,
-
-        overallScore:
-            normalizeScore(
-                firstValue(
-                    report,
-                    [
-                        "overallScore",
-                        "overall_score",
-                        "score"
-                    ],
-                    firstValue(
-                        inspectionData,
-                        [
-                            "overallScore",
-                            "overall_score",
-                            "score"
-                        ],
-                        null
-                    )
-                )
-            ),
-
-        engineRemark:
-            firstValue(
-                report,
-                [
-                    "engineRemark",
-                    "engine_remark",
-                    "engineNotes",
-                    "engine_notes"
-                ],
-                firstValue(
-                    inspectionData,
-                    [
-                        "engineRemark",
-                        "engine_remark",
-                        "engineNotes",
-                        "engine_notes"
-                    ],
-                    "Not provided."
-                )
-            ),
-
-        overallRemark:
-            firstValue(
-                report,
-                [
-                    "overallRemark",
-                    "overall_remark",
-                    "remarks",
-                    "remark",
-                    "comments",
-                    "comment"
-                ],
-                firstValue(
-                    inspectionData,
-                    [
-                        "overallRemark",
-                        "overall_remark",
-                        "remarks",
-                        "remark",
-                        "comments",
-                        "comment"
-                    ],
-                    "Vehicle inspection completed."
-                )
-            ),
-
-        vehicleNote:
-            firstValue(
-                report,
-                [
-                    "vehicleNote",
-                    "vehicle_note",
-                    "note",
-                    "vehicleNotes",
-                    "vehicle_notes"
-                ],
-                firstValue(
-                    vehicleData,
-                    [
-                        "vehicleNote",
-                        "vehicle_note",
-                        "note",
-                        "vehicleNotes",
-                        "vehicle_notes"
-                    ],
-                    "-"
-                )
-            )
-    };
+    doc
+        .font("Helvetica-Bold")
+        .fontSize(9)
+        .fillColor(COLORS.white)
+        .text(
+            `REPORT #${safeValue(reportId)}`,
+            PAGE_WIDTH -
+                MARGIN_RIGHT -
+                130,
+            27,
+            {
+                width: 130,
+                align: "right"
+            }
+        );
 };
 
 // ======================================================
@@ -2916,10 +2741,7 @@ const generateInspectionReportPdf = (
     report
 ) => {
     return new Promise(
-        (
-            resolve,
-            reject
-        ) => {
+        (resolve, reject) => {
             (async () => {
                 let settled = false;
 
@@ -2931,6 +2753,7 @@ const generateInspectionReportPdf = (
                     }
 
                     settled = true;
+
                     resolve(value);
                 };
 
@@ -2942,211 +2765,142 @@ const generateInspectionReportPdf = (
                     }
 
                     settled = true;
+
                     reject(error);
                 };
 
                 try {
-                    // ==================================================
-                    // VALIDATE REPORT
-                    // ==================================================
+                    const normalizedReport =
+                        normalizeReport(
+                            report
+                        );
 
-                    if (!report) {
-                        return rejectOnce(
-                            new Error(
-                                "Inspection report data is missing."
-                            )
+                    /*
+                     * IMPORTANT:
+                     * PDF generation itself is allowed only when
+                     * the report is published.
+                     */
+                    const publishStatus =
+                        firstValue(
+                            normalizedReport,
+                            [
+                                "publishStatus",
+                                "publish_status",
+                                "status"
+                            ],
+                            "No"
+                        );
+
+                    if (
+                        String(
+                            publishStatus
+                        ).toLowerCase() !==
+                            "yes" &&
+                        String(
+                            publishStatus
+                        ).toLowerCase() !==
+                            "published"
+                    ) {
+                        throw new Error(
+                            "Inspection PDF can only be generated after vehicle/report is published."
                         );
                     }
 
                     const reportId =
                         getReportId(
-                            report
+                            normalizedReport
                         );
 
-                    if (
-                        reportId === "-" ||
-                        reportId === null ||
-                        reportId === undefined
-                    ) {
-                        return rejectOnce(
-                            new Error(
-                                "Report ID is missing."
-                            )
-                        );
-                    }
-
-                    // ==================================================
-                    // CAR ID
-                    //
-                    // Required internally for fetching images.
-                    // NOT SHOWN ANYWHERE IN PDF.
-                    // ==================================================
-
-                    const carId =
-                        getCarId(
-                            report
-                        );
-
-                    if (
-                        carId === "-" ||
-                        carId === null ||
-                        carId === undefined
-                    ) {
-                        return rejectOnce(
-                            new Error(
-                                "Car ID is missing."
-                            )
-                        );
-                    }
-
-                    // ==================================================
-                    // LOAD VEHICLE IMAGES
-                    // ==================================================
-
-                    const vehicleImages =
-                        await getVehicleImagesForPdf(
-                            carId
-                        );
-
-                    console.log(
-                        "Vehicle images loaded for PDF:",
-                        vehicleImages.length
-                    );
-
-                    // ==================================================
-                    // REPORT DIRECTORY
-                    // ==================================================
-
-                    const reportsDirectory =
+                    const uploadsDir =
                         path.join(
                             process.cwd(),
-                            "uploads",
-                            "reports"
+                            "uploads"
+                        );
+
+                    const reportsDir =
+                        path.join(
+                            uploadsDir,
+                            "inspection-reports"
                         );
 
                     if (
                         !fs.existsSync(
-                            reportsDirectory
+                            uploadsDir
                         )
                     ) {
                         fs.mkdirSync(
-                            reportsDirectory,
+                            uploadsDir,
                             {
                                 recursive: true
                             }
                         );
                     }
 
-                    // ==================================================
-                    // FILE NAME
-                    //
-                    // Car ID can remain in filename.
-                    // It is NOT visible inside PDF.
-                    // ==================================================
+                    if (
+                        !fs.existsSync(
+                            reportsDir
+                        )
+                    ) {
+                        fs.mkdirSync(
+                            reportsDir,
+                            {
+                                recursive: true
+                            }
+                        );
+                    }
+
+                    const safeReportId =
+                        String(
+                            reportId
+                        ).replace(
+                            /[^a-zA-Z0-9_-]/g,
+                            "_"
+                        );
 
                     const fileName =
-                        `car-${carId}-inspection-report-${reportId}.pdf`;
+                        `inspection-report-${safeReportId}.pdf`;
 
                     const filePath =
                         path.join(
-                            reportsDirectory,
+                            reportsDir,
                             fileName
                         );
 
-                    // ==================================================
-                    // CREATE PDF
-                    // ==================================================
+                    const pdfPath =
+                        `/uploads/inspection-reports/${fileName}`;
 
                     const doc =
                         new PDFDocument({
                             size: "A4",
                             margin: 0,
-                            autoFirstPage: true,
-                            bufferPages: false
+                            autoFirstPage: true
                         });
 
-                    const stream =
+                    const writeStream =
                         fs.createWriteStream(
                             filePath
                         );
 
-                    // ==================================================
-                    // STREAM ERROR
-                    // ==================================================
+                    let pageNumber = 1;
 
-                    stream.on(
-                        "error",
-                        (error) => {
-                            console.error(
-                                "PDF Stream Error:",
-                                error
-                            );
+                    const pageNumberRef = {
+                        value: pageNumber
+                    };
 
-                            rejectOnce(error);
-                        }
+                    doc.pipe(
+                        writeStream
                     );
 
-                    // ==================================================
-                    // PDF ERROR
-                    // ==================================================
-
-                    doc.on(
-                        "error",
-                        (error) => {
-                            console.error(
-                                "PDF Document Error:",
-                                error
-                            );
-
-                            rejectOnce(error);
-                        }
+                    drawHeader(
+                        doc,
+                        normalizedReport
                     );
 
-                    // ==================================================
-                    // FINISH
-                    // ==================================================
+                    let y = 92;
 
-                    stream.on(
-                        "finish",
-                        () => {
-                            console.log(
-                                "Inspection Report PDF Generated:",
-                                filePath
-                            );
-
-                            resolveOnce({
-                                fileName,
-                                filePath,
-                                pdfPath:
-                                    `uploads/reports/${fileName}`
-                            });
-                        }
-                    );
-
-                    doc.pipe(stream);
-
-                    // ==================================================
-                    // NORMALIZE DATA
-                    // ==================================================
-
-                    const normalizedReport =
-                        buildNormalizedReport(
-                            report
-                        );
-
-                    // ==================================================
-                    // PAGE 1
-                    // ==================================================
-
-                    let y =
-                        drawReportHeader(
-                            doc,
-                            normalizedReport
-                        );
-
-                    // ==================================================
+                    // --------------------------------------------------
                     // VEHICLE DETAILS
-                    // ==================================================
+                    // --------------------------------------------------
 
                     y =
                         drawVehicleDetails(
@@ -3155,19 +2909,31 @@ const generateInspectionReportPdf = (
                             y
                         );
 
-                    // ==================================================
+                    y += 12;
+
+                    // --------------------------------------------------
                     // OWNER DETAILS
-                    // ==================================================
+                    // --------------------------------------------------
 
                     if (
-                        y + 110 >
+                        y + 150 >
                         PAGE_BOTTOM
                     ) {
+                        pageNumberRef.value += 1;
+
                         y =
                             addPageWithFooter(
                                 doc,
-                                reportId
+                                reportId,
+                                pageNumberRef.value
                             );
+
+                        drawHeader(
+                            doc,
+                            normalizedReport
+                        );
+
+                        y = 92;
                     }
 
                     y =
@@ -3177,19 +2943,26 @@ const generateInspectionReportPdf = (
                             y
                         );
 
-                    // ==================================================
+                    y += 12;
+
+                    // --------------------------------------------------
                     // INSPECTION SUMMARY
-                    // ==================================================
+                    // --------------------------------------------------
 
                     if (
-                        y + 100 >
+                        y + 130 >
                         PAGE_BOTTOM
                     ) {
+                        pageNumberRef.value += 1;
+
                         y =
                             addPageWithFooter(
                                 doc,
-                                reportId
+                                reportId,
+                                pageNumberRef.value
                             );
+
+                        y = 50;
                     }
 
                     y =
@@ -3199,179 +2972,177 @@ const generateInspectionReportPdf = (
                             y
                         );
 
-                    // ==================================================
-                    // OPTIONAL ADDITIONAL DATA
-                    // ==================================================
-                    //
-                    // This keeps working if required.
-                    // CAR ID is excluded internally.
-                    //
-                    // ==================================================
+                    y += 5;
 
-                    /*
+                    // --------------------------------------------------
+                    // CHECKLIST
+                    // --------------------------------------------------
+
                     if (
-                        y + 80 >
+                        y + 150 >
                         PAGE_BOTTOM
                     ) {
+                        pageNumberRef.value += 1;
+
                         y =
                             addPageWithFooter(
                                 doc,
-                                reportId
+                                reportId,
+                                pageNumberRef.value
                             );
+
+                        y = 50;
                     }
 
                     y =
-                        drawAdditionalVehicleData(
+                        drawChecklist(
                             doc,
                             normalizedReport,
-                            y
-                        );
-                    */
-
-                    // ==================================================
-                    // FOOTER CURRENT PAGE
-                    // ==================================================
-
-                    drawFooter(
-                        doc,
-                        doc.page.number,
-                        reportId
-                    );
-
-                    // ==================================================
-                    // CHECKLIST PAGE
-                    // ==================================================
-
-                    doc.addPage();
-
-                    y =
-                        MARGIN_TOP;
-
-                    y =
-                        drawSectionHeader(
-                            doc,
-                            "Inspection Checklist",
-                            y
-                        );
-
-                    y += 8;
-
-                    const checklist =
-                        normalizeChecklist(
-                            normalizedReport
-                        );
-
-                    const areaWidth = 190;
-                    const statusWidth = 90;
-
-                    const remarkWidth =
-                        CONTENT_WIDTH -
-                        areaWidth -
-                        statusWidth;
-
-                    const checklistWidths = [
-                        areaWidth,
-                        statusWidth,
-                        remarkWidth
-                    ];
-
-                    y =
-                        drawChecklistHeader(
-                            doc,
-                            MARGIN_LEFT,
                             y,
-                            checklistWidths
+                            pageNumberRef
                         );
 
-                    // ==================================================
-                    // CHECKLIST ROWS
-                    // ==================================================
+                    // --------------------------------------------------
+                    // ADDITIONAL VEHICLE DATA
+                    // --------------------------------------------------
 
-                    checklist.forEach(
-                        (item) => {
-                            const rowHeight =
-                                getChecklistRowHeight(
-                                    doc,
-                                    item.area,
-                                    item.status,
-                                    item.remark,
-                                    checklistWidths
-                                );
+                    if (
+                        y + 100 >
+                        PAGE_BOTTOM
+                    ) {
+                        pageNumberRef.value += 1;
 
-                            if (
-                                y + rowHeight >
-                                PAGE_BOTTOM
-                            ) {
-                                y =
-                                    addPageWithFooter(
-                                        doc,
-                                        reportId
-                                    );
+                        y =
+                            addPageWithFooter(
+                                doc,
+                                reportId,
+                                pageNumberRef.value
+                            );
 
-                                y =
-                                    drawSectionHeader(
-                                        doc,
-                                        "Inspection Checklist - Continued",
-                                        y
-                                    );
+                        y = 50;
+                    }
 
-                                y += 8;
+                    y =
+                        drawAdditionalVehicleInformation(
+                            doc,
+                            normalizedReport,
+                            y,
+                            pageNumberRef
+                        );
 
-                                y =
-                                    drawChecklistHeader(
-                                        doc,
-                                        MARGIN_LEFT,
-                                        y,
-                                        checklistWidths
-                                    );
-                            }
+                    // --------------------------------------------------
+                    // PHOTOS
+                    // --------------------------------------------------
 
-                            y =
-                                drawChecklistRow(
-                                    doc,
-                                    MARGIN_LEFT,
-                                    y,
-                                    checklistWidths,
-                                    item.area,
-                                    item.status,
-                                    item.remark
-                                );
-                        }
-                    );
+                    if (
+                        y + 150 >
+                        PAGE_BOTTOM
+                    ) {
+                        pageNumberRef.value += 1;
 
-                    // ==================================================
-                    // CHECKLIST FOOTER
-                    // ==================================================
+                        y =
+                            addPageWithFooter(
+                                doc,
+                                reportId,
+                                pageNumberRef.value
+                            );
+
+                        y = 50;
+                    }
+
+                    y =
+                        await drawVehiclePhotos(
+                            doc,
+                            normalizedReport,
+                            y,
+                            pageNumberRef
+                        );
+
+                    // --------------------------------------------------
+                    // FINAL FOOTER
+                    // --------------------------------------------------
 
                     drawFooter(
                         doc,
-                        doc.page.number,
-                        reportId
+                        reportId,
+                        pageNumberRef.value
                     );
 
-                    // ==================================================
-                    // VEHICLE PHOTOS
-                    // ==================================================
-
-                    drawVehiclePhotos(
-                        doc,
-                        vehicleImages,
-                        reportId
-                    );
-
-                    // ==================================================
-                    // FINISH PDF
-                    // ==================================================
+                    // --------------------------------------------------
+                    // PDF FINALIZE
+                    // --------------------------------------------------
 
                     doc.end();
 
+                    writeStream.on(
+                        "finish",
+                        () => {
+                            try {
+                                if (
+                                    !fs.existsSync(
+                                        filePath
+                                    )
+                                ) {
+                                    throw new Error(
+                                        "Generated PDF file was not found."
+                                    );
+                                }
+
+                                const stats =
+                                    fs.statSync(
+                                        filePath
+                                    );
+
+                                if (
+                                    !stats.size
+                                ) {
+                                    throw new Error(
+                                        "Generated PDF file is empty."
+                                    );
+                                }
+
+                                resolveOnce({
+                                    filePath,
+                                    pdfPath,
+                                    fileName,
+                                    reportId,
+                                    pageCount:
+                                        pageNumberRef.value
+                                });
+                            } catch (error) {
+                                rejectOnce(
+                                    error
+                                );
+                            }
+                        }
+                    );
+
+                    writeStream.on(
+                        "error",
+                        (error) => {
+                            rejectOnce(
+                                error
+                            );
+                        }
+                    );
+
+                    doc.on(
+                        "error",
+                        (error) => {
+                            rejectOnce(
+                                error
+                            );
+                        }
+                    );
                 } catch (error) {
                     console.error(
-                        "Generate Inspection PDF Error:",
+                        "Inspection PDF generation error:",
                         error
                     );
 
-                    rejectOnce(error);
+                    rejectOnce(
+                        error
+                    );
                 }
             })();
         }
@@ -3379,7 +3150,7 @@ const generateInspectionReportPdf = (
 };
 
 // ======================================================
-// EXPORT
+// EXPORTS
 // ======================================================
 
 module.exports = {

@@ -56,6 +56,10 @@ const addVehicle = async (
                     result.pdfGenerated ||
                     false,
 
+                pdfPending:
+                    result.pdfPending ||
+                    false,
+
                 pdfPath:
                     result.pdfPath ||
                     null,
@@ -72,8 +76,17 @@ const addVehicle = async (
                     result.adminEmail ||
                     null,
 
+                adminEmailSent:
+                    result.adminEmailSent ||
+                    false,
+
+                customerEmailSent:
+                    result.customerEmailSent ||
+                    false,
+
                 message:
-                    "Vehicle, inspection report, checklist and PDF processing completed successfully."
+                    result.message ||
+                    "Vehicle saved successfully. Publish the vehicle to generate and send the final inspection PDF."
 
             }
 
@@ -367,6 +380,263 @@ const getCompleteVehicleData = async (
 
 
 // ======================================================
+// PUBLISH VEHICLE
+// ADMIN
+// ======================================================
+//
+// Supports:
+//
+// PATCH /api/admin/vehicles/:carId/publish
+//
+// POST
+// /api/admin/vehicles/:carId/publish
+//
+// PDF is generated only after the vehicle is successfully
+// published.
+//
+// If images are not uploaded yet, the vehicle remains
+// published and PDF generation stays pending.
+//
+// ======================================================
+
+const getVehicleIdFromRequest = (req) => {
+
+    const rawCarId =
+        req.params?.carId ??
+        req.params?.vehicleId ??
+        req.params?.id ??
+        req.body?.carId ??
+        req.body?.vehicleId ??
+        req.body?.id;
+
+    return Number(rawCarId);
+
+};
+
+
+const publishVehicle = async (
+    req,
+    res
+) => {
+
+    try {
+
+        // ==================================================
+        // GET VEHICLE ID
+        // ==================================================
+
+        const carId =
+            getVehicleIdFromRequest(
+                req
+            );
+
+
+        // ==================================================
+        // VALIDATE VEHICLE ID
+        // ==================================================
+
+        if (
+            !Number.isInteger(carId) ||
+            carId <= 0
+        ) {
+
+            return res.status(400).json({
+
+                success:
+                    false,
+
+                message:
+                    "Valid vehicle ID is required."
+
+            });
+
+        }
+
+
+        // ==================================================
+        // PUBLISH VEHICLE
+        // ==================================================
+
+        const result =
+            await vehicleService
+                .publishVehicle(
+                    carId
+                );
+
+
+        // ==================================================
+        // VEHICLE NOT FOUND
+        // ==================================================
+
+        if (
+            !result
+        ) {
+
+            return res.status(404).json({
+
+                success:
+                    false,
+
+                message:
+                    "Vehicle not found."
+
+            });
+
+        }
+
+
+        // ==================================================
+        // SUCCESS RESPONSE
+        // ==================================================
+
+        return res.status(200).json({
+
+            success:
+                true,
+
+            message:
+                result.message ||
+                (
+                    result.pdfGenerated
+                        ? "Vehicle published and inspection PDF generated successfully."
+                        : "Vehicle published successfully. PDF generation is pending."
+                ),
+
+            data: {
+
+                vehicleId:
+                    result.vehicleId ??
+                    carId,
+
+                carId:
+                    result.carId ??
+                    carId,
+
+                published:
+                    result.published ??
+                    true,
+
+                status:
+                    result.status ??
+                    null,
+
+                imageCount:
+                    result.imageCount ??
+                    0,
+
+                pdfGenerated:
+                    result.pdfGenerated ??
+                    false,
+
+                pdfPending:
+                    result.pdfPending ??
+                    false,
+
+                pdfPath:
+                    result.pdfPath ??
+                    null,
+
+                pdfUrl:
+                    result.pdfUrl ??
+                    null,
+
+                fileName:
+                    result.fileName ??
+                    null,
+
+                adminEmail:
+                    result.adminEmail ??
+                    null,
+
+                adminEmailSent:
+                    result.adminEmailSent ??
+                    false,
+
+                customerEmailSent:
+                    result.customerEmailSent ??
+                    false
+
+            }
+
+        });
+
+    }
+
+    catch (error) {
+
+        console.error(
+            "Publish Vehicle Error:",
+            error
+        );
+
+
+        // ==================================================
+        // ERROR STATUS
+        // ==================================================
+
+        const errorMessage =
+            error?.message ||
+            "Unable to publish vehicle.";
+
+        const normalizedMessage =
+            String(errorMessage)
+                .toLowerCase();
+
+
+        let statusCode =
+            500;
+
+
+        if (
+            normalizedMessage.includes(
+                "not found"
+            )
+        ) {
+
+            statusCode =
+                404;
+
+        }
+
+        else if (
+            normalizedMessage.includes(
+                "valid vehicle id"
+            ) ||
+            normalizedMessage.includes(
+                "invalid vehicle id"
+            )
+        ) {
+
+            statusCode =
+                400;
+
+        }
+
+
+        return res.status(statusCode).json({
+
+            success:
+                false,
+
+            message:
+                errorMessage,
+
+            error:
+                process.env.NODE_ENV === "development"
+                    ? error.stack
+                    : undefined
+
+        });
+
+    }
+
+};
+
+
+
+
+
+// ======================================================
 // DELETE VEHICLE
 // ADMIN
 // ======================================================
@@ -523,6 +793,8 @@ module.exports = {
     getPublishedVehicles,
 
     getCompleteVehicleData,
+
+    publishVehicle,
 
     deleteVehicle
 

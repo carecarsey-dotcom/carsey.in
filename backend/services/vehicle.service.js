@@ -80,91 +80,21 @@ const addVehicle = async (vehicle) => {
 
 
     // ==================================================
-    // STEP 2
-    // ONLY PUBLISHED VEHICLE
-    // ==================================================
-
-    const normalizedVehicleStatus =
-        String(
-            vehicle.status ??
-            vehicle.publishStatus ??
-            ""
-        )
-            .trim()
-            .toLowerCase();
-
-    const isPublished =
-        normalizedVehicleStatus === "published" ||
-        normalizedVehicleStatus === "yes" ||
-        normalizedVehicleStatus === "publish";
-
-
-    // ==================================================
-    // DRAFT / OTHER STATUS
-    // ==================================================
-
-    if (!isPublished) {
-
-        return {
-
-            ...result,
-
-            pdfGenerated: false,
-
-            adminEmailSent: false,
-
-            message:
-                "Vehicle added successfully."
-
-        };
-
-    }
-
-
-    // ==================================================
-    // STEP 3
-    // GET COMPLETE SAVED VEHICLE DATA
-    // ==================================================
-
-    const vehicleData =
-        await vehicleRepository.getVehicleById(
-            vehicleId
-        );
-
-
-    if (!vehicleData) {
-
-        throw new Error(
-            "Saved vehicle data could not be loaded."
-        );
-
-    }
-
-
-    // ==================================================
-    // STEP 4
-    // FINAL PDF IS GENERATED AFTER VEHICLE IMAGES
-    // ARE UPLOADED
+    // IMPORTANT PUBLISH FLOW FIX
     // ==================================================
     //
-    // IMPORTANT:
+    // Creating a vehicle must NEVER generate the final
+    // inspection PDF or send the inspection email.
     //
-    // Vehicle creation and vehicle image upload are
-    // separate requests.
-    //
-    // Therefore PDF must NOT be generated here when
-    // car_images can still be empty.
-    //
-    // The image upload controller should call:
-    //
-    // generateFinalVehicleInspectionReport(vehicleId)
-    //
-    // AFTER all images have been saved in car_images.
+    // Publishing is a separate admin action handled by
+    // publishVehicle(). The final PDF is generated only
+    // after the vehicle has actually been marked Published
+    // in the database and vehicle images are available.
     //
     // ==================================================
 
     console.log(
-        "Vehicle published successfully. Final inspection PDF will be generated after images are uploaded."
+        "Vehicle added successfully. PDF/email generation is pending until the vehicle is actually published and images are available."
     );
 
 
@@ -172,14 +102,20 @@ const addVehicle = async (vehicle) => {
 
         ...result,
 
-        pdfGenerated: false,
+        pdfGenerated:
+            false,
 
-        pdfPending: true,
+        pdfPending:
+            true,
 
-        adminEmailSent: false,
+        adminEmailSent:
+            false,
+
+        customerEmailSent:
+            false,
 
         message:
-            "Vehicle published successfully. Upload vehicle images to generate the final inspection PDF."
+            "Vehicle added successfully. Publish the vehicle to generate and send the final inspection PDF."
 
     };
 
@@ -235,14 +171,116 @@ const generateFinalVehicleInspectionReport = async (
 
 
     // ==================================================
-    // GET INSPECTION REPORT
+    // IMPORTANT - VERIFY ACTUAL VEHICLE PUBLISH STATUS
+    // ==================================================
+    //
+    // Never trust an incoming request value or a hardcoded
+    // publishStatus value for PDF generation. The vehicle
+    // must already be Published in the database.
+    //
     // ==================================================
 
-    const report =
-        await inspectionReportRepository
-            .getInspectionReportByCarId(
-                numericVehicleId
-            );
+    const savedVehicleObject =
+        vehicleData.vehicle ||
+        vehicleData ||
+        {};
+
+
+    const savedPublishStatus =
+        String(
+            savedVehicleObject.status ??
+            savedVehicleObject.publish_status ??
+            savedVehicleObject.publishStatus ??
+            vehicleData.status ??
+            vehicleData.publish_status ??
+            vehicleData.publishStatus ??
+            ""
+        )
+            .trim()
+            .toLowerCase();
+
+
+    const vehicleIsPublished =
+        [
+            "yes",
+            "published",
+            "publish",
+            "active",
+            "available"
+        ].includes(
+            savedPublishStatus
+        );
+
+
+    console.log(
+        "Vehicle publish status before PDF generation:",
+        savedPublishStatus || "empty"
+    );
+
+
+    if (!vehicleIsPublished) {
+
+        throw new Error(
+            `Vehicle ${numericVehicleId} is not published yet. Final inspection PDF and email were not generated.`
+        );
+
+    }
+
+
+    // ==================================================
+    // GET LATEST INSPECTION REPORT
+    // ==================================================
+    //
+    // PDF generation must use the latest report.
+    //
+    // First try the new repository method.
+    // If it is not available or returns nothing,
+    // fall back to the existing method.
+    //
+    // ==================================================
+
+    let report = null;
+
+
+    try {
+
+        if (
+            typeof inspectionReportRepository
+                .getLatestInspectionReportByCarId ===
+            "function"
+        ) {
+
+            report =
+                await inspectionReportRepository
+                    .getLatestInspectionReportByCarId(
+                        numericVehicleId
+                    );
+
+        }
+
+    } catch (reportError) {
+
+        console.error(
+            "Latest Inspection Report Fetch Error:",
+            reportError.message
+        );
+
+    }
+
+
+    // ==================================================
+    // FALLBACK REPORT FETCH
+    // ==================================================
+
+    if (!report) {
+
+        report =
+            await inspectionReportRepository
+                .getInspectionReportByCarId(
+                    numericVehicleId
+                );
+
+    }
 
 
     if (!report) {
@@ -253,6 +291,10 @@ const generateFinalVehicleInspectionReport = async (
 
     }
 
+
+    // ==================================================
+    // REPORT ID
+    // ==================================================
 
     const reportId =
         Number(
@@ -370,45 +412,254 @@ const generateFinalVehicleInspectionReport = async (
 
 
     // ==================================================
+    // NORMALIZED VEHICLE DATA
+    // ==================================================
+
+    const vehicleObject =
+        vehicleData.vehicle ||
+        vehicleData ||
+        {};
+
+
+    // ==================================================
+    // NORMALIZED OWNER DATA
+    // ==================================================
+
+    const ownerObject =
+        vehicleData.owner ||
+        {
+
+            ownerName:
+                vehicleData.customer_name ||
+                vehicleData.owner_name ||
+                vehicleData.ownerName ||
+                vehicleObject.customer_name ||
+                vehicleObject.owner_name ||
+                vehicleObject.ownerName ||
+                "-",
+
+            mobile:
+                vehicleData.owner_mobile ||
+                vehicleData.ownerMobile ||
+                vehicleData.mobile ||
+                vehicleData.phone ||
+                vehicleObject.owner_mobile ||
+                vehicleObject.ownerMobile ||
+                vehicleObject.mobile ||
+                vehicleObject.phone ||
+                "-",
+
+            email:
+                vehicleData.owner_email ||
+                vehicleData.ownerEmail ||
+                vehicleData.email ||
+                vehicleObject.owner_email ||
+                vehicleObject.ownerEmail ||
+                vehicleObject.email ||
+                "-",
+
+            address:
+                vehicleData.owner_address ||
+                vehicleData.ownerAddress ||
+                vehicleData.address ||
+                vehicleObject.owner_address ||
+                vehicleObject.ownerAddress ||
+                vehicleObject.address ||
+                "-"
+        };
+
+
+    // ==================================================
+    // NORMALIZED INSPECTION DATA
+    // ==================================================
+
+    const inspectionObject =
+        vehicleData.inspection ||
+        report.inspection ||
+        report ||
+        {};
+
+
+    // ==================================================
+    // NORMALIZED CHECKLIST DATA
+    // ==================================================
+    //
+    // Support all checklist field names used by the
+    // frontend/repository.
+    //
+    // ==================================================
+
+    const checklistData =
+        vehicleData.checklist ||
+        vehicleData.inspection_checklist ||
+        vehicleData.inspectionChecklist ||
+        vehicleData.detailedInspection ||
+        vehicleData.inspection?.checklist ||
+        report.checklist ||
+        report.inspection_checklist ||
+        report.inspectionChecklist ||
+        report.detailedInspection ||
+        report.inspection?.checklist ||
+        {};
+
+
+    // ==================================================
     // COMPLETE REPORT DATA
     // ==================================================
 
     const completeReport = {
 
+        // ----------------------------------------------
+        // REPORT IDENTIFIERS
+        // ----------------------------------------------
+
         reportId,
+
+        report_id:
+            report.report_id ??
+            report.reportId ??
+            reportId,
 
         carId:
             numericVehicleId,
 
+        car_id:
+            numericVehicleId,
+
+
+        // ----------------------------------------------
+        // SCORE
+        // ----------------------------------------------
+
         overallScore:
             vehicleData.inspection?.overall_score ??
+            vehicleData.inspection?.overallScore ??
+            inspectionObject.overall_score ??
+            inspectionObject.overallScore ??
             report.overall_score ??
+            report.overallScore ??
             0,
+
+
+        overall_score:
+            vehicleData.inspection?.overall_score ??
+            vehicleData.inspection?.overallScore ??
+            inspectionObject.overall_score ??
+            inspectionObject.overallScore ??
+            report.overall_score ??
+            report.overallScore ??
+            0,
+
+
+        // ----------------------------------------------
+        // ENGINE REMARK
+        // ----------------------------------------------
 
         engineRemark:
             vehicleData.inspection?.engine_remark ??
+            vehicleData.inspection?.engineRemark ??
+            inspectionObject.engine_remark ??
+            inspectionObject.engineRemark ??
             report.engine_remark ??
+            report.engineRemark ??
             "Not provided.",
+
+
+        engine_remark:
+            vehicleData.inspection?.engine_remark ??
+            vehicleData.inspection?.engineRemark ??
+            inspectionObject.engine_remark ??
+            inspectionObject.engineRemark ??
+            report.engine_remark ??
+            report.engineRemark ??
+            "Not provided.",
+
+
+        // ----------------------------------------------
+        // OVERALL REMARK
+        // ----------------------------------------------
 
         overallRemark:
             vehicleData.inspection?.overall_remark ??
+            vehicleData.inspection?.overallRemark ??
+            inspectionObject.overall_remark ??
+            inspectionObject.overallRemark ??
             report.overall_remark ??
+            report.overallRemark ??
             "Vehicle inspection completed.",
 
+
+        overall_remark:
+            vehicleData.inspection?.overall_remark ??
+            vehicleData.inspection?.overallRemark ??
+            inspectionObject.overall_remark ??
+            inspectionObject.overallRemark ??
+            report.overall_remark ??
+            report.overallRemark ??
+            "Vehicle inspection completed.",
+
+
+        // ----------------------------------------------
+        // PUBLISH STATUS
+        // ----------------------------------------------
+
         publishStatus:
-            "Yes",
+            savedVehicleObject.status ||
+            savedVehicleObject.publish_status ||
+            savedVehicleObject.publishStatus ||
+            "Published",
+
+        publish_status:
+            savedVehicleObject.status ||
+            savedVehicleObject.publish_status ||
+            savedVehicleObject.publishStatus ||
+            "Published",
+
+
+        // ----------------------------------------------
+        // VEHICLE
+        // ----------------------------------------------
 
         vehicle:
-            vehicleData.vehicle || {},
+            vehicleObject,
+
+
+        // ----------------------------------------------
+        // OWNER
+        // ----------------------------------------------
 
         owner:
-            vehicleData.owner || {},
+            ownerObject,
+
+
+        // ----------------------------------------------
+        // INSPECTION
+        // ----------------------------------------------
 
         inspection:
-            vehicleData.inspection || {},
+            inspectionObject,
+
+
+        // ----------------------------------------------
+        // CHECKLIST
+        // ----------------------------------------------
 
         checklist:
-            vehicleData.checklist || {},
+            checklistData,
+
+        inspection_checklist:
+            checklistData,
+
+        inspectionChecklist:
+            checklistData,
+
+        detailedInspection:
+            checklistData,
+
+
+        // ----------------------------------------------
+        // IMAGES
+        // ----------------------------------------------
 
         images:
             vehicleImages,
@@ -417,6 +668,66 @@ const generateFinalVehicleInspectionReport = async (
             vehicleImages
 
     };
+
+
+    // ==================================================
+    // PDF DEBUG - CUSTOMER / OWNER DATA
+    // ==================================================
+
+    console.log(
+        "========================================"
+    );
+
+    console.log(
+        "FINAL PDF CUSTOMER DATA"
+    );
+
+    console.log(
+        "Customer Name:",
+        ownerObject.ownerName ||
+        ownerObject.name ||
+        "-"
+    );
+
+    console.log(
+        "Customer Mobile:",
+        ownerObject.mobile ||
+        ownerObject.phone ||
+        "-"
+    );
+
+    console.log(
+        "Customer Email:",
+        ownerObject.email ||
+        "-"
+    );
+
+    console.log(
+        "Customer Address:",
+        ownerObject.address ||
+        "-"
+    );
+
+    console.log(
+        "========================================"
+    );
+
+
+    // ==================================================
+    // PDF DEBUG - CHECKLIST
+    // ==================================================
+
+    console.log(
+        "FINAL PDF CHECKLIST DATA:"
+    );
+
+    console.log(
+        JSON.stringify(
+            checklistData,
+            null,
+            2
+        )
+    );
 
 
     // ==================================================
@@ -511,17 +822,51 @@ const generateFinalVehicleInspectionReport = async (
             adminEmailResult =
                 await emailService
                     .sendInspectionReportToAdmin({
+
+                        // ----------------------------------
+                        // VEHICLE
+                        // ----------------------------------
+
                         vehicle:
-                            vehicleData.vehicle || {},
+                            vehicleObject,
+
+
+                        // ----------------------------------
+                        // OWNER
+                        // ----------------------------------
 
                         owner:
-                            vehicleData.owner || {},
+                            ownerObject,
+
+
+                        // ----------------------------------
+                        // INSPECTION
+                        // ----------------------------------
 
                         inspection:
-                            vehicleData.inspection || {},
+                            inspectionObject,
+
+
+                        // ----------------------------------
+                        // CHECKLIST
+                        // ----------------------------------
 
                         checklist:
-                            vehicleData.checklist || {},
+                            checklistData,
+
+                        inspection_checklist:
+                            checklistData,
+
+                        inspectionChecklist:
+                            checklistData,
+
+                        detailedInspection:
+                            checklistData,
+
+
+                        // ----------------------------------
+                        // PDF
+                        // ----------------------------------
 
                         pdfPath:
                             pdf.filePath,
@@ -604,7 +949,279 @@ const generateFinalVehicleInspectionReport = async (
     };
 
 };
+// ======================================================
+// PUBLISH VEHICLE
+// ADMIN PUBLISH ACTION
+// ======================================================
+//
+// IMPORTANT FLOW:
+//
+// 1. Vehicle must already exist.
+// 2. Mark the vehicle Published in the database.
+// 3. Re-fetch and verify the real database status.
+// 4. If images are already available, generate the final PDF.
+// 5. If images are not available yet, leave PDF pending.
+//
+// The image upload controller can call
+// generateFinalVehicleInspectionReport(vehicleId) AFTER
+// confirming that the vehicle is already Published.
+//
+// ======================================================
 
+const publishVehicle = async (
+    vehicleId
+) => {
+
+    const numericVehicleId =
+        Number(vehicleId);
+
+
+    // ==================================================
+    // VALIDATE VEHICLE ID
+    // ==================================================
+
+    if (
+        !Number.isInteger(numericVehicleId) ||
+        numericVehicleId <= 0
+    ) {
+
+        throw new Error(
+            "Valid vehicle ID is required for publishing."
+        );
+
+    }
+
+
+    // ==================================================
+    // CHECK VEHICLE EXISTS BEFORE PUBLISHING
+    // ==================================================
+
+    const beforePublish =
+        await vehicleRepository.getVehicleById(
+            numericVehicleId
+        );
+
+
+    if (!beforePublish) {
+
+        throw new Error(
+            "Vehicle not found."
+        );
+
+    }
+
+
+    // ==================================================
+    // PUBLISH IN DATABASE
+    // ==================================================
+
+    if (
+        typeof vehicleRepository.publishVehicle !==
+        "function"
+    ) {
+
+        throw new Error(
+            "vehicleRepository.publishVehicle() is not available. Please use the fixed vehicle.repository.js."
+        );
+
+    }
+
+
+    const publishResult =
+        await vehicleRepository.publishVehicle(
+            numericVehicleId
+        );
+
+
+    if (
+        !publishResult ||
+        publishResult.published === false
+    ) {
+
+        throw new Error(
+            publishResult?.message ||
+            "Vehicle could not be published."
+        );
+
+    }
+
+
+    // ==================================================
+    // RE-FETCH AFTER PUBLISH
+    // ==================================================
+
+    const publishedVehicleData =
+        await vehicleRepository.getVehicleById(
+            numericVehicleId
+        );
+
+
+    if (!publishedVehicleData) {
+
+        throw new Error(
+            "Vehicle was published but could not be loaded again."
+        );
+
+    }
+
+
+    const publishedVehicleObject =
+        publishedVehicleData.vehicle ||
+        publishedVehicleData ||
+        {};
+
+
+    const verifiedStatus =
+        String(
+            publishedVehicleObject.status ??
+            publishedVehicleObject.publish_status ??
+            publishedVehicleObject.publishStatus ??
+            ""
+        )
+            .trim()
+            .toLowerCase();
+
+
+    const verifiedPublished =
+        [
+            "yes",
+            "published",
+            "publish",
+            "active",
+            "available"
+        ].includes(
+            verifiedStatus
+        );
+
+
+    if (!verifiedPublished) {
+
+        throw new Error(
+            `Vehicle publish verification failed. Current status: ${publishedVehicleObject.status || "empty"}`
+        );
+
+    }
+
+
+    // ==================================================
+    // CHECK IMAGES
+    // ==================================================
+
+    let vehicleImages = [];
+
+
+    try {
+
+        vehicleImages =
+            await vehicleImageRepository
+                .getVehicleImages(
+                    numericVehicleId
+                );
+
+    } catch (imageError) {
+
+        console.error(
+            "Publish Vehicle Image Fetch Error:",
+            imageError.message
+        );
+
+        vehicleImages = [];
+
+    }
+
+
+    if (!Array.isArray(vehicleImages)) {
+
+        vehicleImages = [];
+
+    }
+
+
+    // ==================================================
+    // NO IMAGES YET
+    // ==================================================
+
+    if (
+        vehicleImages.length === 0
+    ) {
+
+        console.log(
+            `Vehicle ${numericVehicleId} is published, but images are not uploaded yet. PDF remains pending.`
+        );
+
+        return {
+
+            ...publishResult,
+
+            vehicleId:
+                numericVehicleId,
+
+            carId:
+                numericVehicleId,
+
+            published:
+                true,
+
+            pdfGenerated:
+                false,
+
+            pdfPending:
+                true,
+
+            imageCount:
+                0,
+
+            adminEmailSent:
+                false,
+
+            customerEmailSent:
+                false,
+
+            message:
+                "Vehicle published successfully. Upload vehicle images to generate and send the final inspection PDF."
+
+        };
+
+    }
+
+
+    // ==================================================
+    // IMAGES EXIST - GENERATE FINAL PDF
+    // ==================================================
+
+    const pdfResult =
+        await generateFinalVehicleInspectionReport(
+            numericVehicleId
+        );
+
+
+    return {
+
+        ...publishResult,
+
+        ...pdfResult,
+
+        vehicleId:
+            numericVehicleId,
+
+        carId:
+            numericVehicleId,
+
+        published:
+            true,
+
+        pdfGenerated:
+            true,
+
+        pdfPending:
+            false,
+
+        message:
+            "Vehicle published and final inspection PDF generated successfully."
+
+    };
+
+};
 
 
 // ======================================================
@@ -627,6 +1244,7 @@ const getCompleteVehicleData = async (
     const numericVehicleId =
         Number(vehicleId);
 
+
     if (
         !Number.isInteger(numericVehicleId) ||
         numericVehicleId <= 0
@@ -638,6 +1256,7 @@ const getCompleteVehicleData = async (
 
     }
 
+
     // ==================================================
     // GET COMPLETE VEHICLE DATA FROM REPOSITORY
     // ==================================================
@@ -646,6 +1265,7 @@ const getCompleteVehicleData = async (
         await vehicleRepository.getVehicleById(
             numericVehicleId
         );
+
 
     // ==================================================
     // VEHICLE NOT FOUND
@@ -659,11 +1279,13 @@ const getCompleteVehicleData = async (
 
     }
 
+
     // ==================================================
     // GET VEHICLE IMAGES
     // ==================================================
 
     let vehicleImages = [];
+
 
     try {
 
@@ -684,11 +1306,13 @@ const getCompleteVehicleData = async (
 
     }
 
+
     if (!Array.isArray(vehicleImages)) {
 
         vehicleImages = [];
 
     }
+
 
     // ==================================================
     // RETURN COMPLETE VEHICLE DATA
@@ -1021,7 +1645,6 @@ const deleteVehicle = async (
 };
 
 
-
 // ======================================================
 // EXPORT
 // ======================================================
@@ -1031,6 +1654,8 @@ module.exports = {
     addVehicle,
 
     generateFinalVehicleInspectionReport,
+
+    publishVehicle,
 
     getCompleteVehicleData,
 

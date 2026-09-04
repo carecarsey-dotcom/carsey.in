@@ -3,6 +3,10 @@ const express = require("express");
 const router = express.Router();
 
 
+// ======================================================
+// CONTROLLER
+// ======================================================
+
 const vehicleController =
     require("../controllers/vehicle.controller");
 
@@ -495,6 +499,52 @@ router.post(
 
         return vehicleController
             .addVehicle(
+                req,
+                res,
+                next
+            );
+
+    }
+);
+
+
+
+// ======================================================
+// ADMIN - PUBLISH VEHICLE
+// ======================================================
+//
+// PATCH
+// /api/admin/vehicles/:carId/publish
+//
+// Vehicle publish hone ke baad hi final inspection PDF
+// generate hoga.
+//
+// ======================================================
+
+router.patch(
+    "/:carId/publish",
+    (req, res, next) => {
+
+        if (
+            !checkController(
+                "publishVehicle"
+            )
+        ) {
+
+            return res.status(500).json({
+
+                success: false,
+
+                message:
+                    "publishVehicle controller function is missing."
+
+            });
+
+        }
+
+
+        return vehicleController
+            .publishVehicle(
                 req,
                 res,
                 next

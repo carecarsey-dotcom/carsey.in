@@ -4,6 +4,10 @@ import {
 } from '@angular/core';
 
 import {
+  HttpClient
+} from '@angular/common/http';
+
+import {
   CommonModule
 } from '@angular/common';
 
@@ -57,6 +61,9 @@ export class AddVehicleComponent {
 
   private vehicleService =
     inject(VehicleService);
+
+  private http =
+    inject(HttpClient);
 
 
   private router =
@@ -315,7 +322,6 @@ export class AddVehicleComponent {
   };
 
 
-
   // ==========================================
   // DETAILED INSPECTION OPTIONS
   // Backend remains unchanged.
@@ -516,6 +522,7 @@ export class AddVehicleComponent {
     });
   }
 
+
   // ==========================================
   // ENGINE / OVERALL REMARKS
   // ==========================================
@@ -538,221 +545,561 @@ export class AddVehicleComponent {
   // ==========================================
   // STANDARD PHOTO OPTIONS
   // ==========================================
-// ==========================================
-// STANDARD PHOTO OPTIONS
-// ==========================================
 
-standardPhotoRows: string[] = [
-  'Exterior Front Photo',
-  'Engien Photo',
-  'Exterio LHS Photo',
-  'Dicky Boot',
-  'Open Dicky',
-  'Exterio RHS Photo',
-  'Interior Photo',
-  'Intero RHS',
-  'Interior LHS',
-  'Rear right',
-  'Rear Left'
-];
+  standardPhotoRows: string[] = [
+    'Exterior Front Photo',
+    'Engine Photo',
+    'Exterior LHS Photo',
+    'Dicky Boot',
+    'Open Dickey',
+    'Exterior RHS Photo',
+    'Interior Photo',
+    'Interior RHS',
+    'Interior LHS',
+    'Rear Right',
+    'Rear Left'
+  ];
 
-standardPhotoColumns: number[] = [
-  1,
-  2,
-  3,
-  4,
-  5,
-  6
-];
+  standardPhotoColumns: number[] = [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6
+  ];
 
-// ==========================================
-// IMAGE FILES
-// ==========================================
-//
-// 11 rows x 6 columns = 66 image slots
-//
-// ==========================================
 
-imageFiles: {
-  type: string;
-  row: string;
-  column: number;
-  file: File | null;
-  preview: string;
-}[] = this.standardPhotoRows.flatMap(
-  (row: string) =>
-    this.standardPhotoColumns.map(
-      (column: number) => ({
-        type:
-          `${row} - Image ${column}`,
+  // ==========================================
+  // IMAGE FILES
+  // ==========================================
+  //
+  // 11 rows x 6 columns = 66 image slots
+  //
+  // ==========================================
 
-        row,
+  imageFiles: {
+    type: string;
+    row: string;
+    column: number;
+    file: File | null;
+    preview: string;
+  }[] = this.standardPhotoRows.flatMap(
+    (row: string) =>
+      this.standardPhotoColumns.map(
+        (column: number) => ({
+          type:
+            `${row} - Image ${column}`,
 
-        column,
+          row,
 
-        file:
-          null,
+          column,
 
-        preview:
-          ''
-      })
-    )
-);
+          file:
+            null,
 
-// ==========================================
-// VEHICLE IMAGES COMPATIBILITY
-// ==========================================
-//
-// IMPORTANT:
-// Existing system ke liye rakha gaya hai.
-// Isko remove mat karna.
-//
-// ==========================================
-
-vehicleImages: {
-  type: string;
-  row: string;
-  column: number;
-  file: File | null;
-  preview: string;
-}[] = this.imageFiles;
-
-// ==========================================
-// IMAGE LABELS
-// ==========================================
-
-imageLabels =
-  this.standardPhotoRows;
-
-// ==========================================
-// SELECT IMAGE
-// ==========================================
-
-onImageSelected(
-  event: Event,
-  index: number
-): void {
-
-  const input =
-    event.target as HTMLInputElement;
-
-  if (
-    !input.files ||
-    input.files.length === 0
-  ) {
-    return;
-  }
-
-  const file =
-    input.files[0];
-
-  if (
-    !file.type.startsWith('image/')
-  ) {
-    this.errorMessage =
-      'Please select a valid image file.';
-
-    return;
-  }
-
-  // Maximum 10 MB
-  if (
-    file.size > 10 * 1024 * 1024
-  ) {
-
-    this.errorMessage =
-      'Image size must be less than 10 MB.';
-
-    return;
-  }
-
-  // Old preview remove
-  if (
-    this.imageFiles[index]?.preview
-  ) {
-
-    URL.revokeObjectURL(
-      this.imageFiles[index].preview
-    );
-  }
-
-  // Save file
-  this.imageFiles[index].file =
-    file;
-
-  // Create preview
-  this.imageFiles[index].preview =
-    URL.createObjectURL(file);
-
-  // Keep compatibility reference
-  this.vehicleImages =
-    this.imageFiles;
-
-  // Clear old error
-  this.errorMessage =
-    '';
-
-  console.log(
-    'Image selected:',
-    {
-      index,
-      name: file.name,
-      type: file.type,
-      size: file.size
-    }
+          preview:
+            ''
+        })
+      )
   );
+
+
+  // ==========================================
+  // VEHICLE IMAGES COMPATIBILITY
+  // ==========================================
+  //
+  // IMPORTANT:
+  // Existing system ke liye rakha gaya hai.
+  // Isko remove mat karna.
+  //
+  // ==========================================
+
+  vehicleImages: {
+    type: string;
+    row: string;
+    column: number;
+    file: File | null;
+    preview: string;
+  }[] = this.imageFiles;
+
+
+  // ==========================================
+  // IMAGE LABELS
+  // ==========================================
+
+  imageLabels =
+    this.standardPhotoRows;
+
+
+  // ==========================================
+  // SELECT IMAGE
+  // ==========================================
+
+  onImageSelected(
+    event: Event,
+    index: number
+  ): void {
+
+    const input =
+      event.target as HTMLInputElement;
+
+    if (
+      !input.files ||
+      input.files.length === 0
+    ) {
+      return;
+    }
+
+    const file =
+      input.files[0];
+
+    if (
+      !file.type.startsWith('image/')
+    ) {
+
+      this.errorMessage =
+        'Please select a valid image file.';
+
+      return;
+    }
+
+    // Maximum 10 MB
+    if (
+      file.size > 10 * 1024 * 1024
+    ) {
+
+      this.errorMessage =
+        'Image size must be less than 10 MB.';
+
+      return;
+    }
+
+    // Old preview remove
+    if (
+      this.imageFiles[index]?.preview
+    ) {
+
+      URL.revokeObjectURL(
+        this.imageFiles[index].preview
+      );
+
+    }
+
+    // Save file
+    this.imageFiles[index].file =
+      file;
+
+    // Create preview
+    this.imageFiles[index].preview =
+      URL.createObjectURL(file);
+
+    // Keep compatibility reference
+    this.vehicleImages =
+      this.imageFiles;
+
+    // Clear old error
+    this.errorMessage =
+      '';
+
+    console.log(
+      'Image selected:',
+      {
+        index,
+        name: file.name,
+        type: file.type,
+        size: file.size
+      }
+    );
+
+  }
+
+
+  // ==========================================
+  // REMOVE IMAGE
+  // ==========================================
+
+  removeImage(
+    index: number
+  ): void {
+
+    if (
+      this.imageFiles[index]?.preview
+    ) {
+
+      URL.revokeObjectURL(
+        this.imageFiles[index].preview
+      );
+
+    }
+
+    this.imageFiles[index].file =
+      null;
+
+    this.imageFiles[index].preview =
+      '';
+
+    // Keep compatibility reference
+    this.vehicleImages =
+      this.imageFiles;
+
+  }
+
+
+  // ==========================================
+  // UPLOADED IMAGE COUNT
+  // ==========================================
+
+  get uploadedImageCount(): number {
+
+    return this.imageFiles.filter(
+      image =>
+        !!image.file
+    ).length;
+
+  }
+
+
+  // ==========================================
+  // SCORE DISPLAY
+  // ==========================================
+
+  get scoreDisplay(): string {
+
+    return Number(
+      this.overall_score
+    )
+      .toFixed(1);
+
+  }
+
+
+  // ==========================================
+  // COMPLETE FORM VALIDATION
+  // ==========================================
+// ==========================================
+// COMPLETE FORM VALIDATION
+// ==========================================
+
+isPublishReady(): boolean {
+  return this.validateCompleteForm(false);
 }
 
-// ==========================================
-// REMOVE IMAGE
-// ==========================================
+private validateCompleteForm(showMessage = true): boolean {
 
-removeImage(
-  index: number
-): void {
+  const missingFields: string[] = [];
+
+  // =====================================================
+  // 1. VEHICLE BASIC PARAMETERS
+  // =====================================================
+
+  if (!this.vehicle.brand?.trim()) {
+    missingFields.push('Brand');
+  }
+
+  if (!this.vehicle.model?.trim()) {
+    missingFields.push('Model');
+  }
+
+  if (!this.vehicle.variant?.trim()) {
+    missingFields.push('Variant');
+  }
 
   if (
-    this.imageFiles[index]?.preview
+    this.vehicle.manufacturing_year === null ||
+    this.vehicle.manufacturing_year === undefined ||
+    Number(this.vehicle.manufacturing_year) <= 0
   ) {
+    missingFields.push('Manufacturing Year');
+  }
 
-    URL.revokeObjectURL(
-      this.imageFiles[index].preview
+  if (
+    this.vehicle.price === null ||
+    this.vehicle.price === undefined ||
+    Number(this.vehicle.price) <= 0
+  ) {
+    missingFields.push('Price');
+  }
+
+  if (
+    this.vehicle.odometer === null ||
+    this.vehicle.odometer === undefined ||
+    Number(this.vehicle.odometer) < 0
+  ) {
+    missingFields.push('Odometer');
+  }
+
+  if (!this.vehicle.city?.trim()) {
+    missingFields.push('City');
+  }
+
+  if (!this.vehicle.transmission?.trim()) {
+    missingFields.push('Transmission');
+  }
+
+  if (!this.vehicle.fuel_type?.trim()) {
+    missingFields.push('Fuel Type');
+  }
+
+
+  // =====================================================
+  // 2. CUSTOMER & INSPECTION FORM POINT DETAILS
+  // =====================================================
+
+  if (!this.customer_name?.trim()) {
+    missingFields.push('Customer Name');
+  }
+
+  // Owner Mobile
+  if (!this.owner_mobile?.trim()) {
+
+    missingFields.push('Owner Mobile');
+
+  } else {
+
+    const mobileDigits =
+      this.owner_mobile
+        .replace(/\D/g, '');
+
+    if (mobileDigits.length !== 10) {
+      missingFields.push('Valid Owner Mobile');
+    }
+  }
+
+
+  // Customer Email
+  if (!this.owner_email?.trim()) {
+
+    missingFields.push('Customer Email');
+
+  } else {
+
+    const emailPattern =
+      /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if (
+      !emailPattern.test(
+        this.owner_email.trim()
+      )
+    ) {
+      missingFields.push(
+        'Valid Customer Email'
+      );
+    }
+  }
+
+
+  // Customer Address
+  if (!this.owner_address?.trim()) {
+    missingFields.push('Customer Address');
+  }
+
+
+  // Owner Classification
+  if (
+    !this.vehicle.owner_classification?.trim()
+  ) {
+    missingFields.push(
+      'Owner Classification'
     );
   }
 
-  this.imageFiles[index].file =
-    null;
 
-  this.imageFiles[index].preview =
-    '';
+  // Variant Name
+  if (!this.vehicle.variant?.trim()) {
+    missingFields.push('Variant Name');
+  }
 
-  // Keep compatibility reference
-  this.vehicleImages =
-    this.imageFiles;
-}
 
-// ==========================================
-// UPLOADED IMAGE COUNT
-// ==========================================
+  // Chassis Number
+  if (!this.vehicle.chassis_number?.trim()) {
+    missingFields.push('Chassis Number');
+  }
 
-get uploadedImageCount(): number {
 
-  return this.imageFiles.filter(
-    image =>
-      !!image.file
-  ).length;
-}
+  // Engine Number
+  if (!this.vehicle.engine_number?.trim()) {
+    missingFields.push('Engine Number');
+  }
 
-// ==========================================
-// SCORE DISPLAY
-// ==========================================
 
-get scoreDisplay(): string {
+  // Registration Number
+  if (
+    !this.vehicle.registration_number?.trim()
+  ) {
+    missingFields.push(
+      'Registration Number'
+    );
+  }
 
-  return Number(
-    this.overall_score
-  )
-    .toFixed(1);
+
+  // Inspection Date
+  if (!this.vehicle.inspection_date?.trim()) {
+    missingFields.push(
+      'Inspection Date'
+    );
+  }
+
+
+  // RTO
+  if (!this.vehicle.rto?.trim()) {
+    missingFields.push('RTO');
+  }
+
+
+  // =====================================================
+  // IMPORTANT:
+  //
+  // These fields are NOT validated:
+  //
+  // owner_city
+  // owner_state
+  // owner_pincode
+  // aadhar_number
+  // pan_number
+  // alternate_mobile
+  //
+  // =====================================================
+
+
+  // =====================================================
+  // 3. VEHICLE BASIC INFO - SHORT REMARKS
+  // =====================================================
+
+  if (!this.variant_short_note?.trim()) {
+    missingFields.push(
+      'Variant Short Note'
+    );
+  }
+
+
+  if (
+    !this.registration_rto_short_note?.trim()
+  ) {
+    missingFields.push(
+      'Registration RTO Short Note'
+    );
+  }
+
+
+  if (!this.vehicle.spare_key?.trim()) {
+    missingFields.push(
+      'Spare Key Availability'
+    );
+  }
+
+
+  if (!this.vehicle.insurance_type?.trim()) {
+    missingFields.push(
+      'Insurance Type'
+    );
+  }
+
+
+  if (
+    !this.vehicle.insurance_validity?.trim()
+  ) {
+    missingFields.push(
+      'Insurance Validity'
+    );
+  }
+
+
+  if (!this.price_short_note?.trim()) {
+    missingFields.push(
+      'Price Short Note'
+    );
+  }
+
+
+  // =====================================================
+  // 4. VEHICLE REMARKS
+  // =====================================================
+
+  if (!this.vehicle.vehicle_note?.trim()) {
+    missingFields.push(
+      'Vehicle Note'
+    );
+  }
+
+
+  if (!this.engine_remark?.trim()) {
+    missingFields.push(
+      'Engine Remark'
+    );
+  }
+
+
+  if (!this.overall_remark?.trim()) {
+    missingFields.push(
+      'Overall Remark'
+    );
+  }
+
+
+  // Overall Score
+  const score =
+    Number(this.overall_score);
+
+  if (
+    !Number.isFinite(score) ||
+    score < 1 ||
+    score > 10
+  ) {
+    missingFields.push(
+      'Overall Score'
+    );
+  }
+
+
+  // =====================================================
+  // 5. STANDARD PHOTO
+  // =====================================================
+  //
+  // NO VALIDATION
+  //
+  // imageFiles is intentionally NOT checked.
+  //
+  // =====================================================
+
+
+  // =====================================================
+  // 6. DETAILED VEHICLE INSPECTION CHECKLIST
+  // =====================================================
+  //
+  // NO VALIDATION
+  //
+  // detailedInspection is intentionally NOT checked.
+  //
+  // checklist is intentionally NOT checked.
+  //
+  // =====================================================
+
+
+  // =====================================================
+  // FINAL RESULT
+  // =====================================================
+
+  if (missingFields.length === 0) {
+    return true;
+  }
+
+
+  // =====================================================
+  // USER MESSAGE
+  // =====================================================
+  //
+  // User ko missing field names nahi dikhane hain.
+  //
+  // =====================================================
+
+  if (showMessage) {
+
+    this.errorMessage =
+      'Please complete all required fields.';
+  }
+
+  return false;
 }
 
 
@@ -762,393 +1109,921 @@ get scoreDisplay(): string {
 
   submitVehicle(): void {
 
-    this.syncDetailedInspectionToChecklist();
-
     this.successMessage = '';
     this.errorMessage = '';
     this.customerEmailSuccess = '';
     this.customerEmailError = '';
     this.showCustomerCommunication = false;
 
-    if (
-      !this.vehicle.brand.trim() ||
-      !this.vehicle.model.trim() ||
-      !this.vehicle.manufacturing_year ||
-      !this.vehicle.price ||
-      !this.vehicle.city.trim()
-    ) {
-      this.errorMessage =
-        'Please fill all required vehicle fields.';
-
-      window.scrollTo({
-        top: 0,
-        behavior: 'smooth'
-      });
-
+    // COMPLETE FORM VALIDATION
+    // IMPORTANT: 66 vehicle photos are optional.
+    // Owner City, Owner State, Owner Pincode, Aadhar Number
+    // and PAN Number are NOT part of the validation.
+    if (!this.validateCompleteForm()) {
       return;
     }
+
+    this.syncDetailedInspectionToChecklist();
 
     this.loading = true;
 
     const payload = {
+
       ...this.vehicle,
-      customer_name: this.customer_name,
-      owner_mobile: this.owner_mobile,
-      alternate_mobile: this.alternate_mobile,
-      owner_email: this.owner_email,
-      owner_address: this.owner_address,
-      owner_city: this.owner_city,
-      owner_state: this.owner_state,
-      owner_pincode: this.owner_pincode,
-      aadhar_number: this.aadhar_number,
-      pan_number: this.pan_number,
-      variant_short_note: this.variant_short_note,
-      registration_rto_short_note: this.registration_rto_short_note,
-      price_short_note: this.price_short_note,
+
+      customer_name:
+        this.customer_name,
+
+      owner_mobile:
+        this.owner_mobile,
+
+      alternate_mobile:
+        this.alternate_mobile,
+
+      owner_email:
+        this.owner_email,
+
+      owner_address:
+        this.owner_address,
+
+      owner_city:
+        this.owner_city,
+
+      owner_state:
+        this.owner_state,
+
+      owner_pincode:
+        this.owner_pincode,
+
+      aadhar_number:
+        this.aadhar_number,
+
+      pan_number:
+        this.pan_number,
+
+      variant_short_note:
+        this.variant_short_note,
+
+      registration_rto_short_note:
+        this.registration_rto_short_note,
+
+      price_short_note:
+        this.price_short_note,
+
       engine_remark:
         this.engine_remark.trim() ||
         'Vehicle engine inspection completed.',
+
       overall_remark:
         this.overall_remark.trim() ||
         'Vehicle inspection completed.',
-      overall_score: Number(this.overall_score),
-      inspection_checklist: this.checklist,
-      detailedInspection: this.detailedInspection
+
+      overall_score:
+        Number(
+          this.overall_score
+        ),
+
+      inspection_checklist:
+        this.checklist,
+
+      detailedInspection:
+        this.detailedInspection
+
     };
 
-    console.log('ADD VEHICLE PAYLOAD:', payload);
+
+    console.log(
+      'ADD VEHICLE PAYLOAD:',
+      payload
+    );
+
 
     // =====================================================
     // STEP 1: CREATE VEHICLE + INSPECTION REPORT RECORD
     // =====================================================
-    this.vehicleService.addVehicle(payload).subscribe({
 
-      next: (response: any) => {
+    this.vehicleService
+      .addVehicle(payload)
+      .subscribe({
 
-        console.log('Add Vehicle Response:', response);
+        next:
+          (response: any) => {
 
-        if (!response?.success) {
-          this.errorMessage =
-            response?.message ||
-            'Unable to add vehicle.';
-          this.loading = false;
-          return;
-        }
+            console.log(
+              'Add Vehicle Response:',
+              response
+            );
 
-        const vehicleId = Number(
-          response?.data?.vehicleId
-        );
 
-        const reportId = Number(
-          response?.data?.reportId
-        );
-
-        if (!vehicleId) {
-          this.errorMessage =
-            'Vehicle was created but vehicle ID was not returned by the server.';
-          this.loading = false;
-          return;
-        }
-
-        if (!reportId) {
-          this.errorMessage =
-            'Vehicle was created but inspection report ID was not returned by the server.';
-          this.loading = false;
-          return;
-        }
-
-        this.publishedVehicleId = vehicleId;
-        this.publishedReportId = reportId;
-
-        this.customerEmail =
-          (this.owner_email || '')
-            .trim()
-            .toLowerCase();
-
-        this.customerWhatsApp =
-          (this.owner_mobile || '').trim();
-
-        console.log('Vehicle ID:', vehicleId);
-        console.log('Inspection Report ID:', reportId);
-
-        // =====================================================
-        // STEP 2: UPLOAD IMAGES FIRST
-        // =====================================================
-        // IMPORTANT:
-        // PDF must be generated AFTER images are stored in DB.
-        // The previous code generated the PDF before uploading
-        // images. That was the wrong order.
-        // =====================================================
-
-        const selectedImages =
-          this.imageFiles.filter(
-            image => !!image.file
-          );
-
-        const generateFinalPdf = () => {
-
-          console.log(
-            'Generating FINAL Vehicle Inspection PDF...'
-          );
-
-          this.vehicleService
-            .generateInspectionReportPdf(vehicleId)
-            .subscribe({
-
-              next: (pdfResponse: any) => {
-
-                console.log(
-                  'Final Vehicle Inspection PDF Response:',
-                  pdfResponse
-                );
-
-                if (!pdfResponse?.success) {
-                  this.errorMessage =
-                    pdfResponse?.message ||
-                    'Vehicle was created, but the final inspection PDF could not be generated.';
-                  this.loading = false;
-                  this.showCustomerCommunication = true;
-                  return;
-                }
-
-                const pdfData =
-                  pdfResponse?.data || {};
-
-                if (
-                  !pdfData.pdfPath &&
-                  !pdfData.pdfUrl &&
-                  !pdfData.fileName
-                ) {
-                  this.errorMessage =
-                    'Vehicle was created, but the server did not return a valid inspection PDF path.';
-                  this.loading = false;
-                  this.showCustomerCommunication = true;
-                  return;
-                }
-
-                console.log(
-                  'FINAL Inspection PDF Generated Successfully:',
-                  pdfData
-                );
-
-                // =====================================================
-                // STEP 4: SEND THE SAME GENERATED PDF TO CUSTOMER
-                // =====================================================
-                // Admin email is handled by the backend PDF-generation
-                // endpoint. Customer email is sent through the dedicated
-                // inspection-report email endpoint using the SAME reportId.
-                // This avoids generating a second PDF.
-                // =====================================================
-                const customerEmail =
-                  (this.customerEmail || this.owner_email || '')
-                    .trim()
-                    .toLowerCase();
-
-                const emailPattern =
-                  /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-                const finishPublishFlow = (
-                  customerEmailSent: boolean,
-                  customerEmailError = ''
-                ) => {
-                  this.loading = false;
-                  this.showCustomerCommunication = true;
-
-                  if (customerEmailSent) {
-                    this.customerEmailSuccess =
-                      'Inspection PDF sent successfully to customer email.';
-                    this.customerEmailError = '';
-                    this.successMessage =
-                      selectedImages.length > 0
-                        ? 'Vehicle, inspection report, images and final PDF generated successfully. Admin and customer email processing completed.'
-                        : 'Vehicle, inspection report and final PDF generated successfully. Admin and customer email processing completed.';
-                  } else if (customerEmailError) {
-                    this.customerEmailSuccess = '';
-                    this.customerEmailError = customerEmailError;
-                    this.successMessage =
-                      selectedImages.length > 0
-                        ? 'Vehicle, inspection report, images and final PDF generated successfully. Customer email could not be sent.'
-                        : 'Vehicle, inspection report and final PDF generated successfully. Customer email could not be sent.';
-                  } else {
-                    this.successMessage =
-                      selectedImages.length > 0
-                        ? 'Vehicle, inspection report, images and final PDF generated successfully.'
-                        : 'Vehicle, inspection report and final PDF generated successfully.';
-                  }
-
-                  setTimeout(() => {
-                    window.scrollTo({
-                      top: document.body.scrollHeight,
-                      behavior: 'smooth'
-                    });
-                  }, 100);
-                };
-
-                if (
-                  this.publishedReportId &&
-                  emailPattern.test(customerEmail)
-                ) {
-                  this.vehicleService
-                    .sendInspectionReportEmail(
-                      this.publishedReportId,
-                      customerEmail
-                    )
-                    .subscribe({
-                      next: (emailResponse: any) => {
-                        console.log(
-                          'Automatic Customer PDF Email Response:',
-                          emailResponse
-                        );
-
-                        if (emailResponse?.success) {
-                          finishPublishFlow(true);
-                        } else {
-                          finishPublishFlow(
-                            false,
-                            emailResponse?.message ||
-                              'Unable to send PDF to customer email.'
-                          );
-                        }
-                      },
-                      error: (emailError: any) => {
-                        console.error(
-                          'Automatic Customer PDF Email Error:',
-                          emailError
-                        );
-
-                        finishPublishFlow(
-                          false,
-                          emailError?.error?.message ||
-                            emailError?.message ||
-                            'Unable to send PDF to customer email.'
-                        );
-                      }
-                    });
-                } else {
-                  finishPublishFlow(
-                    false,
-                    customerEmail
-                      ? 'Customer email is invalid. PDF was generated successfully; use the customer email box below to send it manually.'
-                      : 'Customer email was not provided. PDF was generated successfully; use the customer email box below to send it manually.'
-                  );
-                }
-              },
-
-              error: (pdfError: any) => {
-
-                console.error(
-                  'Final Vehicle Inspection PDF Error:',
-                  pdfError
-                );
-
-                this.errorMessage =
-                  pdfError?.error?.message ||
-                  pdfError?.message ||
-                  'Vehicle was created, but the final inspection PDF could not be generated.';
-
-                this.loading = false;
-                this.showCustomerCommunication = true;
-
-                window.scrollTo({
-                  top: 0,
-                  behavior: 'smooth'
-                });
-              }
-            });
-        };
-
-        // =====================================================
-        // NO IMAGES SELECTED
-        // =====================================================
-        if (selectedImages.length === 0) {
-          generateFinalPdf();
-          return;
-        }
-
-        // =====================================================
-        // IMAGES SELECTED -> UPLOAD THEM FIRST
-        // =====================================================
-        console.log(
-          `Uploading ${selectedImages.length} vehicle image(s)...`
-        );
-
-        this.vehicleService
-          .uploadVehicleImages(
-            vehicleId,
-            selectedImages
-          )
-          .subscribe({
-
-            next: (imageResponse: any) => {
-
-              console.log(
-                'Vehicle Images Response:',
-                imageResponse
-              );
-
-              if (!imageResponse?.success) {
-                this.errorMessage =
-                  imageResponse?.message ||
-                  'Vehicle and inspection report were created, but vehicle images could not be uploaded. PDF was not generated.';
-                this.loading = false;
-                this.showCustomerCommunication = true;
-                return;
-              }
-
-              console.log(
-                'Vehicle images uploaded successfully. Now generating final PDF...'
-              );
-
-              // =================================================
-              // STEP 3: GENERATE FINAL PDF AFTER IMAGE UPLOAD
-              // =================================================
-              generateFinalPdf();
-            },
-
-            error: (imageError: any) => {
-
-              console.error(
-                'Vehicle Image Upload Error:',
-                imageError
-              );
+            if (
+              !response?.success
+            ) {
 
               this.errorMessage =
-                imageError?.error?.message ||
-                imageError?.message ||
-                'Vehicle and inspection report were created, but vehicle images could not be uploaded. PDF was not generated.';
+                response?.message ||
+                'Unable to add vehicle.';
 
               this.loading = false;
-              this.showCustomerCommunication = true;
 
-              window.scrollTo({
-                top: 0,
-                behavior: 'smooth'
-              });
+              return;
+
             }
-          });
-      },
 
-      error: (error: any) => {
 
-        console.error(
-          'Add Vehicle Error:',
-          error
-        );
+            const vehicleId =
+              Number(
+                response?.data?.vehicleId
+              );
 
-        this.errorMessage =
-          error?.error?.message ||
-          error?.message ||
-          'Unable to add vehicle.';
 
-        this.loading = false;
+            const reportId =
+              Number(
+                response?.data?.reportId
+              );
 
-        window.scrollTo({
-          top: 0,
-          behavior: 'smooth'
-        });
-      }
-    });
+
+            if (!vehicleId) {
+
+              this.errorMessage =
+                'Vehicle was created but vehicle ID was not returned by the server.';
+
+              this.loading = false;
+
+              return;
+
+            }
+
+
+            if (!reportId) {
+
+              this.errorMessage =
+                'Vehicle was created but inspection report ID was not returned by the server.';
+
+              this.loading = false;
+
+              return;
+
+            }
+
+
+            this.publishedVehicleId =
+              vehicleId;
+
+
+            this.publishedReportId =
+              reportId;
+
+
+            this.customerEmail =
+              (
+                this.owner_email ||
+                ''
+              )
+                .trim()
+                .toLowerCase();
+
+
+            this.customerWhatsApp =
+              (
+                this.owner_mobile ||
+                ''
+              )
+                .trim();
+
+
+            console.log(
+              'Vehicle ID:',
+              vehicleId
+            );
+
+
+            console.log(
+              'Inspection Report ID:',
+              reportId
+            );
+
+
+            // =====================================================
+            // STEP 2: UPLOAD IMAGES FIRST
+            // =====================================================
+            //
+            // IMPORTANT:
+            //
+            // PDF MUST NOT be generated here.
+            //
+            // Images are uploaded first.
+            // After image upload, vehicle will be published.
+            // Backend publish flow will then generate the PDF.
+            //
+            // =====================================================
+
+            const selectedImages =
+              this.imageFiles
+
+                .filter(
+                  image =>
+                    !!image.file
+                )
+
+                .map(
+                  image => ({
+
+                    ...image,
+
+                    // IMPORTANT:
+                    //
+                    // image.type contains:
+                    // "Exterior Front Photo - Image 1"
+                    //
+                    // Backend expects only:
+                    // "Exterior Front Photo"
+                    //
+                    // Therefore send image.row.
+                    //
+                    type:
+                      image.row
+
+                  })
+                );
+
+
+            // =====================================================
+            // STEP 3: PUBLISH VEHICLE
+            // =====================================================
+            //
+            // IMPORTANT:
+            //
+            // NEVER call generateInspectionReportPdf() directly
+            // from this component.
+            //
+            // Publish endpoint first changes vehicle status to
+            // Published.
+            //
+            // Backend then verifies the published status and
+            // generates the final PDF.
+            //
+            // =====================================================
+
+            const publishVehicle =
+              () => {
+
+                console.log(
+                  '========================================'
+                );
+
+                console.log(
+                  'PUBLISHING VEHICLE'
+                );
+
+                console.log(
+                  'Vehicle ID:',
+                  vehicleId
+                );
+
+                console.log(
+                  'Images:',
+                  selectedImages.length
+                );
+
+                console.log(
+                  '========================================'
+                );
+
+
+                this.http
+
+                  .patch(
+
+                    `http://localhost:5000/api/admin/vehicles/${vehicleId}/publish`,
+
+                    {}
+
+                  )
+
+                  .subscribe({
+
+                    next:
+                      (publishResponse: any) => {
+
+                        console.log(
+                          'Vehicle Publish Response:',
+                          publishResponse
+                        );
+
+
+                        if (
+                          !publishResponse?.success
+                        ) {
+
+                          this.errorMessage =
+                            publishResponse?.message ||
+                            'Vehicle was created, but could not be published. PDF was not generated.';
+
+                          this.loading = false;
+
+                          this.showCustomerCommunication =
+                            true;
+
+                          return;
+
+                        }
+
+
+                        const publishData =
+                          publishResponse?.data ||
+                          {};
+
+
+                        // =================================================
+                        // CONFIRMED PUBLISHED IDs
+                        // =================================================
+
+                        this.publishedVehicleId =
+                          Number(
+                            publishData.vehicleId ||
+                            publishData.carId ||
+                            vehicleId
+                          );
+
+
+                        this.publishedReportId =
+                          Number(
+                            publishData.reportId ||
+                            reportId
+                          );
+
+
+                        console.log(
+                          'Confirmed Published Vehicle ID:',
+                          this.publishedVehicleId
+                        );
+
+
+                        console.log(
+                          'Confirmed Published Report ID:',
+                          this.publishedReportId
+                        );
+
+
+                        // =================================================
+                        // PDF RESULT
+                        // =================================================
+
+                        const pdfGenerated =
+                          publishData.pdfGenerated === true;
+
+
+                        const pdfPending =
+                          publishData.pdfPending === true;
+
+
+                        // =================================================
+                        // PUBLISHED BUT PDF PENDING
+                        // =================================================
+
+                        if (
+                          !pdfGenerated
+                        ) {
+
+                          if (
+                            pdfPending
+                          ) {
+
+                            this.successMessage =
+                              'Vehicle published successfully. Final inspection PDF is pending because vehicle images are not available yet.';
+
+                            this.errorMessage =
+                              '';
+
+                          } else {
+
+                            this.errorMessage =
+                              publishData.message ||
+                              'Vehicle was published, but the final inspection PDF was not generated.';
+
+                          }
+
+
+                          this.loading =
+                            false;
+
+
+                          this.showCustomerCommunication =
+                            true;
+
+
+                          return;
+
+                        }
+
+
+                        // =================================================
+                        // PDF GENERATED AFTER PUBLISH
+                        // =================================================
+
+                        console.log(
+                          '========================================'
+                        );
+
+                        console.log(
+                          'FINAL PDF GENERATED AFTER VEHICLE PUBLISH'
+                        );
+
+                        console.log(
+                          publishData
+                        );
+
+                        console.log(
+                          '========================================'
+                        );
+
+
+                        // =================================================
+                        // CUSTOMER EMAIL
+                        // =================================================
+
+                        const customerEmail =
+                          (
+                            this.customerEmail ||
+                            this.owner_email ||
+                            ''
+                          )
+                            .trim()
+                            .toLowerCase();
+
+
+                        const emailPattern =
+                          /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+
+                        const finishPublishFlow = (
+
+                          customerEmailSent:
+                            boolean,
+
+                          customerEmailError:
+                            string = ''
+
+                        ) => {
+
+                          this.loading =
+                            false;
+
+
+                          this.showCustomerCommunication =
+                            true;
+
+
+                          if (
+                            customerEmailSent
+                          ) {
+
+                            this.customerEmailSuccess =
+                              'Inspection PDF sent successfully to customer email.';
+
+
+                            this.customerEmailError =
+                              '';
+
+
+                            this.successMessage =
+                              selectedImages.length > 0
+
+                                ? 'Vehicle, inspection report, images, publication and final PDF completed successfully. Admin and customer email processing completed.'
+
+                                : 'Vehicle, inspection report, publication and final PDF completed successfully. Admin and customer email processing completed.';
+
+                          }
+
+                          else if (
+                            customerEmailError
+                          ) {
+
+                            this.customerEmailSuccess =
+                              '';
+
+
+                            this.customerEmailError =
+                              customerEmailError;
+
+
+                            this.successMessage =
+                              selectedImages.length > 0
+
+                                ? 'Vehicle, inspection report, images and final PDF were generated after publication. Customer email could not be sent.'
+
+                                : 'Vehicle, inspection report and final PDF were generated after publication. Customer email could not be sent.';
+
+                          }
+
+                          else {
+
+                            this.successMessage =
+                              selectedImages.length > 0
+
+                                ? 'Vehicle, inspection report, images, publication and final PDF completed successfully.'
+
+                                : 'Vehicle, inspection report, publication and final PDF completed successfully.';
+
+                          }
+
+
+                          setTimeout(
+                            () => {
+
+                              window.scrollTo({
+
+                                top:
+                                  document.body.scrollHeight,
+
+                                behavior:
+                                  'smooth'
+
+                              });
+
+                            },
+
+                            100
+
+                          );
+
+                        };
+
+
+                        // =================================================
+                        // AUTOMATIC CUSTOMER EMAIL
+                        // =================================================
+
+                        if (
+
+                          this.publishedReportId &&
+
+                          emailPattern.test(
+                            customerEmail
+                          )
+
+                        ) {
+
+                          this.vehicleService
+
+                            .sendInspectionReportEmail(
+
+                              this.publishedReportId,
+
+                              customerEmail
+
+                            )
+
+                            .subscribe({
+
+                              next:
+                                (
+                                  emailResponse:
+                                    any
+                                ) => {
+
+                                  console.log(
+
+                                    'Automatic Customer PDF Email Response:',
+
+                                    emailResponse
+
+                                  );
+
+
+                                  if (
+                                    emailResponse?.success
+                                  ) {
+
+                                    finishPublishFlow(
+                                      true
+                                    );
+
+                                  }
+
+                                  else {
+
+                                    finishPublishFlow(
+
+                                      false,
+
+                                      emailResponse?.message ||
+
+                                      'Unable to send PDF to customer email.'
+
+                                    );
+
+                                  }
+
+                                },
+
+
+                              error:
+                                (
+                                  emailError:
+                                    any
+                                ) => {
+
+                                  console.error(
+
+                                    'Automatic Customer PDF Email Error:',
+
+                                    emailError
+
+                                  );
+
+
+                                  finishPublishFlow(
+
+                                    false,
+
+                                    emailError?.error?.message ||
+
+                                    emailError?.message ||
+
+                                    'Unable to send PDF to customer email.'
+
+                                  );
+
+                                }
+
+                            });
+
+                        }
+
+                        else {
+
+                          finishPublishFlow(
+
+                            false,
+
+                            customerEmail
+
+                              ? 'Customer email is invalid. PDF was generated successfully after publication; use the customer email box below to send it manually.'
+
+                              : 'Customer email was not provided. PDF was generated successfully after publication; use the customer email box below to send it manually.'
+
+                          );
+
+                        }
+
+                      },
+
+
+                    error:
+                      (
+                        publishError:
+                          any
+                      ) => {
+
+                        console.error(
+
+                          'Vehicle Publish Error:',
+
+                          publishError
+
+                        );
+
+
+                        this.errorMessage =
+
+                          publishError?.error?.message ||
+
+                          publishError?.message ||
+
+                          'Vehicle was created, but could not be published. PDF was not generated.';
+
+
+                        this.loading =
+                          false;
+
+
+                        this.showCustomerCommunication =
+                          true;
+
+
+                        window.scrollTo({
+
+                          top:
+                            0,
+
+                          behavior:
+                            'smooth'
+
+                        });
+
+                      }
+
+                  });
+
+              };
+
+
+            // =====================================================
+            // NO IMAGES SELECTED
+            // =====================================================
+            //
+            // Vehicle can still be published.
+            // Backend will return pdfPending=true if images
+            // are unavailable.
+            //
+            // =====================================================
+
+            if (
+              selectedImages.length === 0
+            ) {
+
+              console.log(
+                'No vehicle images selected. Publishing vehicle without images.'
+              );
+
+
+              publishVehicle();
+
+              return;
+
+            }
+
+
+            // =====================================================
+            // IMAGES SELECTED -> UPLOAD FIRST
+            // =====================================================
+
+            console.log(
+
+              `Uploading ${selectedImages.length} vehicle image(s) before publishing...`
+
+            );
+
+
+            this.vehicleService
+
+              .uploadVehicleImages(
+
+                vehicleId,
+
+                selectedImages
+
+              )
+
+              .subscribe({
+
+                next:
+                  (
+                    imageResponse:
+                      any
+                  ) => {
+
+                    console.log(
+
+                      'Vehicle Images Response:',
+
+                      imageResponse
+
+                    );
+
+
+                    if (
+                      !imageResponse?.success
+                    ) {
+
+                      this.errorMessage =
+
+                        imageResponse?.message ||
+
+                        'Vehicle and inspection report were created, but vehicle images could not be uploaded. Vehicle was not published and PDF was not generated.';
+
+
+                      this.loading =
+                        false;
+
+
+                      this.showCustomerCommunication =
+                        true;
+
+
+                      return;
+
+                    }
+
+
+                    console.log(
+
+                      'Vehicle images uploaded successfully.'
+
+                    );
+
+
+                    console.log(
+
+                      'Now publishing vehicle.'
+
+                    );
+
+
+                    // =================================================
+                    // STEP 3:
+                    // PUBLISH AFTER IMAGE UPLOAD
+                    // =================================================
+
+                    publishVehicle();
+
+                  },
+
+
+                error:
+                  (
+                    imageError:
+                      any
+                  ) => {
+
+                    console.error(
+
+                      'Vehicle Image Upload Error:',
+
+                      imageError
+
+                    );
+
+
+                    this.errorMessage =
+
+                      imageError?.error?.message ||
+
+                      imageError?.message ||
+
+                      'Vehicle and inspection report were created, but vehicle images could not be uploaded. Vehicle was not published and PDF was not generated.';
+
+
+                    this.loading =
+                      false;
+
+
+                    this.showCustomerCommunication =
+                      true;
+
+
+                    window.scrollTo({
+
+                      top:
+                        0,
+
+                      behavior:
+                        'smooth'
+
+                    });
+
+                  }
+
+              });
+
+          },
+
+
+        error:
+          (
+            error:
+              any
+          ) => {
+
+            console.error(
+
+              'Add Vehicle Error:',
+
+              error
+
+            );
+
+
+            this.errorMessage =
+
+              error?.error?.message ||
+
+              error?.message ||
+
+              'Unable to add vehicle.';
+
+
+            this.loading =
+              false;
+
+
+            window.scrollTo({
+
+              top:
+                0,
+
+              behavior:
+                'smooth'
+
+            });
+
+          }
+
+      });
+
   }
+
 
   // ==========================================
   // SEND PDF TO CUSTOMER EMAIL
@@ -1603,6 +2478,7 @@ get scoreDisplay(): string {
 
     this.initializeDetailedInspection();
 
+
     this.imageFiles.forEach(
 
       image => {
@@ -1616,9 +2492,12 @@ get scoreDisplay(): string {
       }
 
     );
+
+
     // Keep compatibility reference synced
-this.vehicleImages =
-  this.imageFiles;
+
+    this.vehicleImages =
+      this.imageFiles;
 
 
     this.successMessage =

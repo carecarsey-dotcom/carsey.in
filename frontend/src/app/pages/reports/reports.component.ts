@@ -1857,7 +1857,16 @@ export class ReportsComponent
 
     const customerEmail =
       String(
-        this.selectedReport.owner?.email || ''
+        this.selectedReport.owner?.email ||
+        (this.selectedReport as any)?.owner?.owner_email ||
+        (this.selectedReport as any)?.owner?.ownerEmail ||
+        (this.selectedReport as any)?.owner?.customer_email ||
+        (this.selectedReport as any)?.owner?.customerEmail ||
+        (this.selectedReport as any)?.vehicle?.owner_email ||
+        (this.selectedReport as any)?.vehicle?.ownerEmail ||
+        (this.selectedReport as any)?.vehicle?.customer_email ||
+        (this.selectedReport as any)?.vehicle?.customerEmail ||
+        ''
       )
         .trim()
         .toLowerCase();
@@ -1912,6 +1921,14 @@ export class ReportsComponent
     this.sendEmailLoading = true;
     this.errorMessage = '';
 
+
+    console.log(
+      'Sending Inspection Report Email:',
+      {
+        reportId,
+        customerEmail
+      }
+    );
 
     this.vehicleService
       .sendInspectionReportEmail(

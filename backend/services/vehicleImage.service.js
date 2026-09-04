@@ -29,7 +29,28 @@ const ALLOWED_IMAGE_TYPES = [
     "Rear Right",
 
     "Rear Left"
+
 ];
+
+
+// ======================================================
+// STRICT ID VALIDATION
+// ======================================================
+// Vehicle/Image IDs must always be valid positive integers.
+// This prevents NaN, 0, negative and decimal IDs from
+// reaching the repository/database layer.
+// ======================================================
+
+const isValidPositiveInteger = (value) => {
+
+    const numberValue = Number(value);
+
+    return (
+        Number.isInteger(numberValue) &&
+        numberValue > 0
+    );
+
+};
 
 
 // ======================================================
@@ -43,41 +64,54 @@ const addVehicleImage = async (
     isPrimary
 ) => {
 
-    if (!carId) {
+    if (!isValidPositiveInteger(carId)) {
+
         throw new Error(
             "Valid vehicle ID is required."
         );
+
     }
 
+
     if (!imageType) {
+
         throw new Error(
             "Image type is required."
         );
+
     }
+
 
     if (
         !ALLOWED_IMAGE_TYPES.includes(
             imageType
         )
     ) {
+
         throw new Error(
             `Invalid image type. Allowed types: ${ALLOWED_IMAGE_TYPES.join(", ")}`
         );
+
     }
 
+
     if (!imagePath) {
+
         throw new Error(
             "Image path is required."
         );
+
     }
+
 
     return await vehicleImageRepository
         .addVehicleImage(
-            carId,
+            Number(carId),
             imageType,
             imagePath,
             Boolean(isPrimary)
         );
+
 };
 
 
@@ -89,21 +123,26 @@ const getVehicleImages = async (
     carId
 ) => {
 
-    if (!carId) {
+    if (!isValidPositiveInteger(carId)) {
+
         throw new Error(
             "Valid vehicle ID is required."
         );
+
     }
+
 
     const images =
         await vehicleImageRepository
             .getVehicleImages(
-                carId
+                Number(carId)
             );
+
 
     return Array.isArray(images)
         ? images
         : [];
+
 };
 
 
@@ -116,23 +155,30 @@ const getVehicleImageById = async (
     carId
 ) => {
 
-    if (!imageId) {
+    if (!isValidPositiveInteger(imageId)) {
+
         throw new Error(
             "Valid image ID is required."
         );
+
     }
 
-    if (!carId) {
+
+    if (!isValidPositiveInteger(carId)) {
+
         throw new Error(
             "Valid vehicle ID is required."
         );
+
     }
+
 
     return await vehicleImageRepository
         .getVehicleImageById(
-            imageId,
-            carId
+            Number(imageId),
+            Number(carId)
         );
+
 };
 
 
@@ -148,42 +194,55 @@ const updateVehicleImage = async (
     isPrimary
 ) => {
 
-    if (!imageId) {
+    if (!isValidPositiveInteger(imageId)) {
+
         throw new Error(
             "Valid image ID is required."
         );
+
     }
 
-    if (!carId) {
+
+    if (!isValidPositiveInteger(carId)) {
+
         throw new Error(
             "Valid vehicle ID is required."
         );
+
     }
 
+
     if (!imageType) {
+
         throw new Error(
             "Image type is required."
         );
+
     }
+
 
     if (
         !ALLOWED_IMAGE_TYPES.includes(
             imageType
         )
     ) {
+
         throw new Error(
             `Invalid image type. Allowed types: ${ALLOWED_IMAGE_TYPES.join(", ")}`
         );
+
     }
+
 
     return await vehicleImageRepository
         .updateVehicleImage(
-            imageId,
-            carId,
+            Number(imageId),
+            Number(carId),
             imageType,
             imagePath || null,
             Boolean(isPrimary)
         );
+
 };
 
 
@@ -196,23 +255,30 @@ const deleteVehicleImage = async (
     carId
 ) => {
 
-    if (!imageId) {
+    if (!isValidPositiveInteger(imageId)) {
+
         throw new Error(
             "Valid image ID is required."
         );
+
     }
 
-    if (!carId) {
+
+    if (!isValidPositiveInteger(carId)) {
+
         throw new Error(
             "Valid vehicle ID is required."
         );
+
     }
+
 
     return await vehicleImageRepository
         .deleteVehicleImage(
-            imageId,
-            carId
+            Number(imageId),
+            Number(carId)
         );
+
 };
 
 
@@ -224,16 +290,20 @@ const deleteVehicleImages = async (
     carId
 ) => {
 
-    if (!carId) {
+    if (!isValidPositiveInteger(carId)) {
+
         throw new Error(
             "Valid vehicle ID is required."
         );
+
     }
+
 
     return await vehicleImageRepository
         .deleteVehicleImages(
-            carId
+            Number(carId)
         );
+
 };
 
 
@@ -246,23 +316,30 @@ const setPrimaryImage = async (
     carId
 ) => {
 
-    if (!imageId) {
+    if (!isValidPositiveInteger(imageId)) {
+
         throw new Error(
             "Valid image ID is required."
         );
+
     }
 
-    if (!carId) {
+
+    if (!isValidPositiveInteger(carId)) {
+
         throw new Error(
             "Valid vehicle ID is required."
         );
+
     }
+
 
     return await vehicleImageRepository
         .setPrimaryImage(
-            imageId,
-            carId
+            Number(imageId),
+            Number(carId)
         );
+
 };
 
 
@@ -287,4 +364,5 @@ module.exports = {
     setPrimaryImage,
 
     ALLOWED_IMAGE_TYPES
+
 };

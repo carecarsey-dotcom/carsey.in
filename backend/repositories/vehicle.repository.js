@@ -174,6 +174,18 @@ const getCarsColumns = async () => {
 
 };
 
+// ======================================================
+// GET OWNERS TABLE COLUMNS
+// ======================================================
+
+const getOwnersColumns = async () => {
+
+    return await getTableColumns(
+        "owners"
+    );
+
+};
+
 
 // ======================================================
 // GET INSPECTION REPORT COLUMNS
@@ -367,6 +379,17 @@ const buildCarsData = async (
             "insuranceValidity"
         ],
 
+        variant_short_note: [
+            "variant_short_note",
+            "variantShortNote"
+        ],
+
+        registration_rto_short_note: [
+            "registration_rto_short_note",
+            "registrationRtoShortNote",
+            "registration_rto_note"
+        ],
+
         vehicle_note: [
             "vehicle_note",
             "vehicleNote",
@@ -386,13 +409,66 @@ const buildCarsData = async (
         owner_id: [
             "owner_id",
             "ownerId"
+        ],
+
+        // ==================================================
+        // OWNER / CUSTOMER DETAILS - FIX
+        // ==================================================
+
+        customer_name: [
+            "customer_name",
+            "customerName",
+            "owner_name",
+            "ownerName",
+            "name",
+            "full_name",
+            "fullName"
+        ],
+
+        owner_name: [
+            "owner_name",
+            "ownerName",
+            "customer_name",
+            "customerName",
+            "name",
+            "full_name",
+            "fullName"
+        ],
+
+        owner_mobile: [
+            "owner_mobile",
+            "ownerMobile",
+            "customer_mobile",
+            "customerMobile",
+            "mobile",
+            "phone",
+            "phone_number",
+            "phoneNumber"
+        ],
+
+        owner_email: [
+            "owner_email",
+            "ownerEmail",
+            "customer_email",
+            "customerEmail",
+            "email"
+        ],
+
+        owner_address: [
+            "owner_address",
+            "ownerAddress",
+            "customer_address",
+            "customerAddress",
+            "address",
+            "full_address",
+            "fullAddress"
         ]
 
     };
 
 
     // ==================================================
-    // SOURCE
+    // SOURCE - FIX
     // ==================================================
 
     const source =
@@ -402,12 +478,22 @@ const buildCarsData = async (
 
             ? {
                 ...vehicle,
-                ...vehicle.vehicle
+                ...vehicle.vehicle,
+
+                ...(vehicle.owner &&
+                typeof vehicle.owner === "object"
+                    ? vehicle.owner
+                    : {})
             }
 
-            : (
-                vehicle || {}
-            );
+            : {
+                ...(vehicle || {}),
+
+                ...(vehicle?.owner &&
+                typeof vehicle.owner === "object"
+                    ? vehicle.owner
+                    : {})
+            };
 
 
     // ==================================================
@@ -576,21 +662,288 @@ const addVehicle = async (
 
 
     // ==================================================
+    // SAVE OWNER / CUSTOMER DATA
+    // ==================================================
+    //
+    // The Add Vehicle form sends customer/owner fields along
+    // with the vehicle payload. Some installations keep those
+    // fields in the owners table and only store owner_id in cars.
+    // Save them here and link the new owner back to the car.
+    // Nothing is removed from the existing cars insert flow.
+    //
+
+    try {
+
+        const ownerColumns =
+            await getOwnersColumns();
+
+        if (ownerColumns.length > 0) {
+
+            const ownerSource =
+                vehicle.owner &&
+                typeof vehicle.owner === "object"
+                    ? {
+                        ...vehicle,
+                        ...vehicle.owner
+                    }
+                    : {
+                        ...vehicle
+                    };
+
+            const ownerFieldMap = {
+
+                name: [
+                    "customer_name",
+                    "customerName",
+                    "owner_name",
+                    "ownerName",
+                    "name",
+                    "full_name",
+                    "fullName"
+                ],
+
+                owner_name: [
+                    "owner_name",
+                    "ownerName",
+                    "customer_name",
+                    "customerName",
+                    "name",
+                    "full_name",
+                    "fullName"
+                ],
+
+                customer_name: [
+                    "customer_name",
+                    "customerName",
+                    "owner_name",
+                    "ownerName",
+                    "name",
+                    "full_name",
+                    "fullName"
+                ],
+
+                mobile: [
+                    "owner_mobile",
+                    "ownerMobile",
+                    "customer_mobile",
+                    "customerMobile",
+                    "mobile",
+                    "phone",
+                    "phone_number",
+                    "phoneNumber"
+                ],
+
+                owner_mobile: [
+                    "owner_mobile",
+                    "ownerMobile",
+                    "customer_mobile",
+                    "customerMobile",
+                    "mobile",
+                    "phone",
+                    "phone_number",
+                    "phoneNumber"
+                ],
+
+                customer_mobile: [
+                    "customer_mobile",
+                    "customerMobile",
+                    "owner_mobile",
+                    "ownerMobile",
+                    "mobile",
+                    "phone",
+                    "phone_number",
+                    "phoneNumber"
+                ],
+
+                email: [
+                    "owner_email",
+                    "ownerEmail",
+                    "customer_email",
+                    "customerEmail",
+                    "email"
+                ],
+
+                owner_email: [
+                    "owner_email",
+                    "ownerEmail",
+                    "customer_email",
+                    "customerEmail",
+                    "email"
+                ],
+
+                customer_email: [
+                    "customer_email",
+                    "customerEmail",
+                    "owner_email",
+                    "ownerEmail",
+                    "email"
+                ],
+
+                address: [
+                    "owner_address",
+                    "ownerAddress",
+                    "customer_address",
+                    "customerAddress",
+                    "address",
+                    "full_address",
+                    "fullAddress"
+                ],
+
+                owner_address: [
+                    "owner_address",
+                    "ownerAddress",
+                    "customer_address",
+                    "customerAddress",
+                    "address",
+                    "full_address",
+                    "fullAddress"
+                ],
+
+                customer_address: [
+                    "customer_address",
+                    "customerAddress",
+                    "owner_address",
+                    "ownerAddress",
+                    "address",
+                    "full_address",
+                    "fullAddress"
+                ],
+
+                alternate_mobile: [
+                    "alternate_mobile",
+                    "alternateMobile"
+                ],
+
+                owner_city: [
+                    "owner_city",
+                    "ownerCity"
+                ],
+
+                owner_state: [
+                    "owner_state",
+                    "ownerState"
+                ],
+
+                owner_pincode: [
+                    "owner_pincode",
+                    "ownerPincode",
+                    "pincode",
+                    "pin_code"
+                ],
+
+                aadhar_number: [
+                    "aadhar_number",
+                    "aadharNumber",
+                    "aadhaar_number",
+                    "aadhaarNumber"
+                ],
+
+                pan_number: [
+                    "pan_number",
+                    "panNumber"
+                ]
+
+            };
+
+            const ownerData = {};
+
+            for (const [column, keys] of Object.entries(ownerFieldMap)) {
+
+                if (!ownerColumns.includes(column)) {
+                    continue;
+                }
+
+                const value =
+                    pickValue(ownerSource, keys);
+
+                if (value !== undefined) {
+                    ownerData[column] = value;
+                }
+
+            }
+
+            if (Object.keys(ownerData).length > 0) {
+
+                const ownerKeys =
+                    Object.keys(ownerData);
+
+                const ownerPlaceholders =
+                    ownerKeys.map(() => "?").join(", ");
+
+                const ownerResult =
+                    await executeQuery(
+                        `
+                        INSERT INTO owners
+                        (
+                            ${ownerKeys.join(", ")}
+                        )
+                        VALUES
+                        (
+                            ${ownerPlaceholders}
+                        )
+                        `,
+                        ownerKeys.map(
+                            key => ownerData[key]
+                        )
+                    );
+
+                const ownerId =
+                    ownerResult && ownerResult.insertId;
+
+                if (ownerId &&
+                    (await getCarsColumns()).includes("owner_id")) {
+
+                    await executeQuery(
+                        `
+                        UPDATE cars
+                        SET owner_id = ?
+                        WHERE car_id = ?
+                        LIMIT 1
+                        `,
+                        [
+                            ownerId,
+                            vehicleId
+                        ]
+                    );
+
+                }
+
+            }
+
+        }
+
+    } catch (ownerSaveError) {
+
+        // Owner persistence must not destroy the existing vehicle
+        // creation flow. Customer fields are also copied to any
+        // compatible cars/report columns below.
+        console.error(
+            "Owner Save Warning:",
+            ownerSaveError.message
+        );
+
+    }
+
+
+    // ==================================================
     // INSPECTION DATA
     // ==================================================
 
-    const inspection =
+    const inspectionSource =
         vehicle.inspection &&
         typeof vehicle.inspection === "object"
 
-            ? vehicle.inspection
+            ? {
+                ...vehicle,
+                ...vehicle.inspection
+            }
 
             : vehicle;
 
 
     const overallScore =
         pickValue(
-            inspection,
+            inspectionSource,
             [
                 "overall_score",
                 "overallScore"
@@ -600,7 +953,7 @@ const addVehicle = async (
 
     const engineRemark =
         pickValue(
-            inspection,
+            inspectionSource,
             [
                 "engine_remark",
                 "engineRemark"
@@ -610,7 +963,7 @@ const addVehicle = async (
 
     const overallRemark =
         pickValue(
-            inspection,
+            inspectionSource,
             [
                 "overall_remark",
                 "overallRemark"
@@ -634,7 +987,53 @@ const addVehicle = async (
         reportColumns.length > 0
     ) {
 
-        const reportData = {};
+        const reportData =
+            {};
+
+
+        // ==================================================
+        // COPY COMPLETE ADD-VEHICLE DATA TO REPORT TABLE
+        // ==================================================
+        // Only columns that actually exist in the database are
+        // written, so this remains compatible with old schemas.
+
+        const reportFieldMap = {
+
+            customer_name: ["customer_name", "customerName"],
+            owner_name: ["owner_name", "ownerName", "customer_name", "customerName"],
+            owner_mobile: ["owner_mobile", "ownerMobile", "customer_mobile", "customerMobile"],
+            customer_mobile: ["customer_mobile", "customerMobile", "owner_mobile", "ownerMobile"],
+            alternate_mobile: ["alternate_mobile", "alternateMobile"],
+            owner_email: ["owner_email", "ownerEmail", "customer_email", "customerEmail"],
+            customer_email: ["customer_email", "customerEmail", "owner_email", "ownerEmail"],
+            owner_address: ["owner_address", "ownerAddress", "customer_address", "customerAddress"],
+            customer_address: ["customer_address", "customerAddress", "owner_address", "ownerAddress"],
+            owner_city: ["owner_city", "ownerCity"],
+            owner_state: ["owner_state", "ownerState"],
+            owner_pincode: ["owner_pincode", "ownerPincode"],
+            aadhar_number: ["aadhar_number", "aadharNumber", "aadhaar_number", "aadhaarNumber"],
+            pan_number: ["pan_number", "panNumber"],
+            variant_short_note: ["variant_short_note", "variantShortNote"],
+            registration_rto_short_note: ["registration_rto_short_note", "registrationRtoShortNote", "registration_rto_note"],
+            price_short_note: ["price_short_note", "priceShortNote"],
+            vehicle_note: ["vehicle_note", "vehicleNote", "notes", "note"]
+
+        };
+
+        for (const [column, keys] of Object.entries(reportFieldMap)) {
+
+            if (!reportColumns.includes(column)) {
+                continue;
+            }
+
+            const value =
+                pickValue(vehicle, keys);
+
+            if (value !== undefined) {
+                reportData[column] = value;
+            }
+
+        }
 
 
         if (
@@ -765,16 +1164,48 @@ const addVehicle = async (
 
 
     // ==================================================
-    // SAVE CHECKLIST
+    // SAVE CHECKLIST - FIX
     // ==================================================
 
-    const checklist =
+    let checklist = null;
+
+
+    if (
         vehicle.checklist &&
         typeof vehicle.checklist === "object"
+    ) {
 
-            ? vehicle.checklist
+        checklist =
+            vehicle.checklist;
 
-            : null;
+    }
+    else if (
+        vehicle.inspection_checklist &&
+        typeof vehicle.inspection_checklist === "object"
+    ) {
+
+        checklist =
+            vehicle.inspection_checklist;
+
+    }
+    else if (
+        vehicle.inspectionChecklist &&
+        typeof vehicle.inspectionChecklist === "object"
+    ) {
+
+        checklist =
+            vehicle.inspectionChecklist;
+
+    }
+    else if (
+        vehicle.detailedInspection &&
+        typeof vehicle.detailedInspection === "object"
+    ) {
+
+        checklist =
+            vehicle.detailedInspection;
+
+    }
 
 
     if (
@@ -795,10 +1226,9 @@ const addVehicle = async (
                     {};
 
 
-                // IMPORTANT:
-                // Only use columns that REALLY exist.
-                // This prevents:
-                // Unknown column 'car_id'
+                // ==================================================
+                // REPORT ID
+                // ==================================================
 
                 if (
                     checklistColumns.includes(
@@ -813,6 +1243,10 @@ const addVehicle = async (
                 }
 
 
+                // ==================================================
+                // CAR ID
+                // ==================================================
+
                 if (
                     checklistColumns.includes(
                         "car_id"
@@ -824,6 +1258,10 @@ const addVehicle = async (
 
                 }
 
+
+                // ==================================================
+                // CHECKLIST JSON
+                // ==================================================
 
                 if (
                     checklistColumns.includes(
@@ -947,8 +1385,6 @@ const addVehicle = async (
     };
 
 };
-
-
 // ======================================================
 // GET ALL ADMIN VEHICLES
 // ======================================================
@@ -1412,8 +1848,6 @@ const getPublishedVehicles =
     };
 
 
-
-
 // ======================================================
 // DELETE VEHICLE
 // ADMIN
@@ -1729,7 +2163,7 @@ const deleteVehicle = async (
 
 
     // ==================================================
-    // DELETE VEHICLE IMAGES FROM DATABASE
+    // DELETE CAR IMAGES
     // ==================================================
 
     try {
@@ -1780,58 +2214,27 @@ const deleteVehicle = async (
 
 
     // ==================================================
-    // DELETE VEHICLE FROM CARS TABLE
+    // DELETE VEHICLE
     // ==================================================
 
-    const deleteResult =
-        await executeQuery(
+    await executeQuery(
 
-            `
-            DELETE FROM
-                cars
-            WHERE
-                car_id = ?
-            `,
+        `
+        DELETE FROM
+            cars
+        WHERE
+            car_id = ?
+        `,
 
-            [
-                numericVehicleId
-            ]
+        [
+            numericVehicleId
+        ]
 
-        );
-
-
-    // ==================================================
-    // CHECK DELETE RESULT
-    // ==================================================
-
-    const affectedRows =
-        Number(
-            deleteResult?.affectedRows || 0
-        );
-
-
-    if (
-        affectedRows === 0
-    ) {
-
-        return {
-
-            deleted:
-                false,
-
-            vehicleId:
-                numericVehicleId,
-
-            message:
-                "Vehicle was not deleted."
-
-        };
-
-    }
+    );
 
 
     // ==================================================
-    // SUCCESS
+    // FINAL RESPONSE
     // ==================================================
 
     return {
@@ -1843,36 +2246,47 @@ const deleteVehicle = async (
             numericVehicleId,
 
         message:
-            "Vehicle deleted successfully."
+            "Vehicle and all related records deleted successfully."
 
     };
 
 };
 
+
 // ======================================================
 // GET VEHICLE IMAGES
 // ======================================================
-// IMPORTANT FIX
-// Images are actually stored in car_images.
-// For car_id = 40 DB currently contains images.
-// ======================================================
 
-const getVehicleImages =
-    async (
-        carId
-    ) => {
+const getVehicleImages = async (
+    carId
+) => {
 
-        const numericId =
-            Number(
-                carId
-            );
+    const numericId =
+        Number(carId);
+
+
+    if (
+        !Number.isInteger(
+            numericId
+        ) ||
+        numericId <= 0
+    ) {
+
+        return [];
+
+    }
+
+
+    try {
+
+        const columns =
+            await getCarImagesColumns();
 
 
         if (
-            !Number.isInteger(
-                numericId
-            ) ||
-            numericId <= 0
+            !columns.includes(
+                "car_id"
+            )
         ) {
 
             return [];
@@ -1880,126 +2294,18 @@ const getVehicleImages =
         }
 
 
-        try {
-
-            const columns =
-                await getCarImagesColumns();
-
-
-            if (
-                !columns.includes(
-                    "car_id"
-                )
-            ) {
-
-                console.error(
-                    "car_images table does not contain car_id."
-                );
-
-                return [];
-
-            }
-
-
-            const rows =
-                await executeQuery(
-
-                    `
-                    SELECT
-                        *
-
-                    FROM
-                        car_images
-
-                    WHERE
-                        car_id = ?
-
-                    ORDER BY
-                        is_primary DESC,
-                        image_id ASC
-                    `,
-
-                    [
-                        numericId
-                    ]
-
-                );
-
-
-            console.log(
-                "Vehicle Images Found:",
-                numericId,
-                Array.isArray(rows)
-                    ? rows.length
-                    : 0
-            );
-
-
-            return Array.isArray(rows)
-                ? rows
-                : [];
-
-        } catch (
-            imageError
-        ) {
-
-            console.error(
-                "Vehicle Images Fetch Error:",
-                imageError.message
-            );
-
-            return [];
-
-        }
-
-    };
-
-
-// ======================================================
-// GET VEHICLE BY ID
-// ======================================================
-
-const getVehicleById =
-    async (
-        carId
-    ) => {
-
-        const numericId =
-            Number(
-                carId
-            );
-
-
-        if (
-            !Number.isInteger(
-                numericId
-            ) ||
-            numericId <= 0
-        ) {
-
-            return null;
-
-        }
-
-
-        // ==================================================
-        // VEHICLE
-        // ==================================================
-
-        const vehicles =
+        const rows =
             await executeQuery(
 
                 `
                 SELECT
-                    c.*
-
+                    *
                 FROM
-                    cars c
-
+                    car_images
                 WHERE
-                    c.car_id = ?
-
-                LIMIT 1
+                    car_id = ?
+                ORDER BY
+                    image_id ASC
                 `,
 
                 [
@@ -2011,112 +2317,197 @@ const getVehicleById =
 
         if (
             !Array.isArray(
-                vehicles
-            ) ||
-            vehicles.length === 0
+                rows
+            )
         ) {
 
-            return null;
+            return [];
 
         }
 
 
-        const vehicle =
-            vehicles[0];
+        return rows.map(
+            row => {
 
+                return {
 
-        // ==================================================
-        // OWNER
-        // ==================================================
+                    ...row,
 
-        let owner = {};
+                    url:
+                        row.url ||
+                        row.image_url ||
+                        row.path ||
+                        row.file_path ||
+                        row.image_path ||
+                        null,
 
+                    image_url:
+                        row.image_url ||
+                        row.url ||
+                        row.path ||
+                        row.file_path ||
+                        row.image_path ||
+                        null
 
-        if (
-            vehicle.owner_id
-        ) {
-
-            try {
-
-                const owners =
-                    await executeQuery(
-
-                        `
-                        SELECT
-                            *
-
-                        FROM
-                            owners
-
-                        WHERE
-                            owner_id = ?
-
-                        LIMIT 1
-                        `,
-
-                        [
-                            vehicle.owner_id
-                        ]
-
-                    );
-
-
-                if (
-                    Array.isArray(
-                        owners
-                    ) &&
-                    owners.length > 0
-                ) {
-
-                    owner =
-                        owners[0];
-
-                }
-
-            } catch (
-                ownerError
-            ) {
-
-                console.log(
-                    "Owner table lookup skipped:",
-                    ownerError.message
-                );
+                };
 
             }
+        );
 
-        }
+    }
+    catch (
+        error
+    ) {
+
+        console.error(
+            "Get Vehicle Images Error:",
+            error.message
+        );
+
+        return [];
+
+    }
+
+};
+// ======================================================
+// GET VEHICLE BY ID
+// ======================================================
+
+const getVehicleById = async (
+    carId
+) => {
+
+    const numericId =
+        Number(carId);
 
 
-        // ==================================================
-        // INSPECTION REPORT
-        // ==================================================
+    if (
+        !Number.isInteger(
+            numericId
+        ) ||
+        numericId <= 0
+    ) {
 
-        let inspection = {};
+        return null;
 
+    }
+
+
+    // ==================================================
+    // 1. GET VEHICLE
+    // ==================================================
+
+    const vehicles =
+        await executeQuery(
+
+            `
+            SELECT
+                c.*
+            FROM
+                cars c
+            WHERE
+                c.car_id = ?
+            LIMIT 1
+            `,
+
+            [
+                numericId
+            ]
+
+        );
+
+
+    if (
+        !Array.isArray(
+            vehicles
+        ) ||
+        vehicles.length === 0
+    ) {
+
+        return null;
+
+    }
+
+
+    const vehicle =
+        vehicles[0];
+
+
+    // ==================================================
+    // 2. GET OWNER
+    // WITH FALLBACK TO CARS TABLE
+    // ==================================================
+
+    let owner = {
+
+        ownerName:
+            vehicle.owner_name ||
+            vehicle.ownerName ||
+            vehicle.customer_name ||
+            vehicle.customerName ||
+            vehicle.name ||
+            vehicle.full_name ||
+            vehicle.fullName ||
+            "-",
+
+        mobile:
+            vehicle.owner_mobile ||
+            vehicle.ownerMobile ||
+            vehicle.customer_mobile ||
+            vehicle.customerMobile ||
+            vehicle.mobile ||
+            vehicle.phone ||
+            vehicle.phone_number ||
+            vehicle.phoneNumber ||
+            "-",
+
+        email:
+            vehicle.owner_email ||
+            vehicle.ownerEmail ||
+            vehicle.customer_email ||
+            vehicle.customerEmail ||
+            vehicle.email ||
+            "-",
+
+        address:
+            vehicle.owner_address ||
+            vehicle.ownerAddress ||
+            vehicle.customer_address ||
+            vehicle.customerAddress ||
+            vehicle.address ||
+            vehicle.full_address ||
+            vehicle.fullAddress ||
+            vehicle.city ||
+            "-"
+
+    };
+
+
+    // ==================================================
+    // OWNER TABLE
+    // ==================================================
+
+    if (
+        vehicle.owner_id
+    ) {
 
         try {
 
-            const reports =
+            const owners =
                 await executeQuery(
 
                     `
                     SELECT
                         *
-
                     FROM
-                        inspection_reports
-
+                        owners
                     WHERE
-                        car_id = ?
-
-                    ORDER BY
-                        report_id DESC
-
+                        owner_id = ?
                     LIMIT 1
                     `,
 
                     [
-                        numericId
+                        vehicle.owner_id
                     ]
 
                 );
@@ -2124,203 +2515,321 @@ const getVehicleById =
 
             if (
                 Array.isArray(
-                    reports
+                    owners
                 ) &&
-                reports.length > 0
+                owners.length > 0
             ) {
 
-                inspection =
-                    reports[0];
+                owner = {
+
+                    ...owner,
+
+                    ...owners[0],
+
+                    ownerName:
+                        owners[0].name ||
+                        owners[0].owner_name ||
+                        owners[0].ownerName ||
+                        owners[0].customer_name ||
+                        owners[0].customerName ||
+                        owner.ownerName,
+
+                    mobile:
+                        owners[0].mobile ||
+                        owners[0].phone ||
+                        owners[0].phone_number ||
+                        owners[0].phoneNumber ||
+                        owners[0].owner_mobile ||
+                        owners[0].ownerMobile ||
+                        owners[0].customer_mobile ||
+                        owners[0].customerMobile ||
+                        owner.mobile,
+
+                    email:
+                        owners[0].email ||
+                        owners[0].owner_email ||
+                        owners[0].ownerEmail ||
+                        owners[0].customer_email ||
+                        owners[0].customerEmail ||
+                        owner.email,
+
+                    address:
+                        owners[0].address ||
+                        owners[0].owner_address ||
+                        owners[0].ownerAddress ||
+                        owners[0].customer_address ||
+                        owners[0].customerAddress ||
+                        owners[0].full_address ||
+                        owners[0].fullAddress ||
+                        owner.address
+
+                };
 
             }
 
-        } catch (
-            reportError
+        }
+        catch (
+            ownerError
         ) {
 
-            console.error(
-                "Inspection Report Fetch Error:",
-                reportError.message
+            console.log(
+                "Owner table query skipped:",
+                ownerError.message
             );
 
         }
 
-
-        // ==================================================
-        // CHECKLIST
-        // ==================================================
-        // IMPORTANT FIX:
-        //
-        // inspection_checklist may NOT have car_id.
-        // So never blindly execute:
-        //
-        // WHERE car_id = ?
-        //
-        // First check actual table columns.
-        // ==================================================
-
-        let checklist = {};
+    }
 
 
-        try {
+    // ==================================================
+    // 3. GET INSPECTION REPORT
+    // ==================================================
 
-            const checklistColumns =
-                await getChecklistColumns();
+    let inspection = {};
 
+
+    try {
+
+        const reports =
+            await executeQuery(
+
+                `
+                SELECT
+                    *
+                FROM
+                    inspection_reports
+                WHERE
+                    car_id = ?
+                ORDER BY
+                    report_id DESC
+                LIMIT 1
+                `,
+
+                [
+                    numericId
+                ]
+
+            );
+
+
+        if (
+            Array.isArray(
+                reports
+            ) &&
+            reports.length > 0
+        ) {
+
+            inspection =
+                reports[0];
+
+            // Report-level owner/customer fields are another
+            // fallback for installations that store customer data
+            // in inspection_reports instead of owners/cars.
+            owner = {
+                ...owner,
+                ...inspection,
+                ownerName:
+                    inspection.owner_name ||
+                    inspection.ownerName ||
+                    inspection.customer_name ||
+                    inspection.customerName ||
+                    owner.ownerName,
+                mobile:
+                    inspection.owner_mobile ||
+                    inspection.ownerMobile ||
+                    inspection.customer_mobile ||
+                    inspection.customerMobile ||
+                    owner.mobile,
+                email:
+                    inspection.owner_email ||
+                    inspection.ownerEmail ||
+                    inspection.customer_email ||
+                    inspection.customerEmail ||
+                    owner.email,
+                address:
+                    inspection.owner_address ||
+                    inspection.ownerAddress ||
+                    inspection.customer_address ||
+                    inspection.customerAddress ||
+                    owner.address
+            };
+
+        }
+
+    }
+    catch (
+        reportError
+    ) {
+
+        console.error(
+
+            "Inspection Report Fetch Error:",
+
+            reportError.message
+
+        );
+
+    }
+
+
+    // ==================================================
+    // 4. GET CHECKLIST
+    // EXTRACT CLEAN JSON DATA
+    // ==================================================
+
+    let checklist = {};
+
+
+    try {
+
+        const checklistColumns =
+            await getChecklistColumns();
+
+
+        if (
+            checklistColumns.length > 0
+        ) {
+
+            let checklistRows = [];
+
+
+            // ------------------------------------------------
+            // FIRST TRY REPORT ID
+            // ------------------------------------------------
 
             if (
-                checklistColumns.length > 0
+                checklistColumns.includes(
+                    "report_id"
+                ) &&
+                inspection?.report_id
             ) {
 
-                let checklistRows = [];
+                checklistRows =
+                    await executeQuery(
+
+                        `
+                        SELECT
+                            *
+                        FROM
+                            inspection_checklist
+                        WHERE
+                            report_id = ?
+                        ORDER BY
+                            checklist_id DESC
+                        LIMIT 1
+                        `,
+
+                        [
+                            inspection.report_id
+                        ]
+
+                    );
+
+            }
 
 
-                // ==================================================
-                // PREFERRED: REPORT ID
-                // ==================================================
+            // ------------------------------------------------
+            // FALLBACK CAR ID
+            // ------------------------------------------------
 
-                if (
-                    checklistColumns.includes(
-                        "report_id"
-                    ) &&
-                    inspection &&
-                    inspection.report_id
+            else if (
+                checklistColumns.includes(
+                    "car_id"
+                )
+            ) {
+
+                checklistRows =
+                    await executeQuery(
+
+                        `
+                        SELECT
+                            *
+                        FROM
+                            inspection_checklist
+                        WHERE
+                            car_id = ?
+                        ORDER BY
+                            checklist_id DESC
+                        LIMIT 1
+                        `,
+
+                        [
+                            numericId
+                        ]
+
+                    );
+
+            }
+
+
+            // ------------------------------------------------
+            // PARSE CHECKLIST
+            // ------------------------------------------------
+
+            if (
+                Array.isArray(
+                    checklistRows
+                ) &&
+                checklistRows.length > 0
+            ) {
+
+                const rawRow =
+                    checklistRows[0];
+
+
+                const jsonFields = [
+
+                    "checklist_data",
+
+                    "data",
+
+                    "inspection_data"
+
+                ];
+
+
+                for (
+                    const field
+                    of jsonFields
                 ) {
 
-                    checklistRows =
-                        await executeQuery(
-
-                            `
-                            SELECT
-                                *
-
-                            FROM
-                                inspection_checklist
-
-                            WHERE
-                                report_id = ?
-
-                            ORDER BY
-                                checklist_id DESC
-
-                            LIMIT 1
-                            `,
-
-                            [
-                                inspection.report_id
-                            ]
-
-                        );
-
-                }
-
-
-                // ==================================================
-                // FALLBACK: CAR ID
-                // ==================================================
-
-                else if (
-                    checklistColumns.includes(
-                        "car_id"
-                    )
-                ) {
-
-                    checklistRows =
-                        await executeQuery(
-
-                            `
-                            SELECT
-                                *
-
-                            FROM
-                                inspection_checklist
-
-                            WHERE
-                                car_id = ?
-
-                            ORDER BY
-                                checklist_id DESC
-
-                            LIMIT 1
-                            `,
-
-                            [
-                                numericId
-                            ]
-
-                        );
-
-                }
-
-
-                if (
-                    Array.isArray(
-                        checklistRows
-                    ) &&
-                    checklistRows.length > 0
-                ) {
-
-                    checklist =
-                        checklistRows[0];
-
-
-                    // ==================================================
-                    // PARSE JSON CHECKLIST FIELDS
-                    // ==================================================
-
-                    const jsonFields = [
-
-                        "checklist_data",
-
-                        "data",
-
-                        "inspection_data"
-
-                    ];
-
-
-                    for (
-                        const field
-                        of jsonFields
+                    if (
+                        rawRow[field]
                     ) {
 
-                        if (
-                            checklist[field] &&
-                            typeof checklist[field] ===
-                                "string"
-                        ) {
+                        try {
 
-                            try {
+                            const parsed =
+                                typeof rawRow[field] === "string"
 
-                                const parsed =
-                                    JSON.parse(
-                                        checklist[field]
-                                    );
+                                    ? JSON.parse(
+                                        rawRow[field]
+                                    )
+
+                                    : rawRow[field];
 
 
-                                if (
-                                    parsed &&
-                                    typeof parsed ===
-                                        "object"
-                                ) {
-
-                                    checklist = {
-
-                                        ...checklist,
-
-                                        ...parsed
-
-                                    };
-
-                                }
-
-                            } catch (
-                                parseError
+                            if (
+                                parsed &&
+                                typeof parsed === "object"
                             ) {
 
-                                // Keep original value.
+                                checklist =
+                                    parsed;
+
+                                break;
 
                             }
+
+                        }
+                        catch (
+                            parseError
+                        ) {
+
+                            // Ignore invalid JSON
+                            // and continue checking
+                            // the next possible field.
 
                         }
 
@@ -2328,92 +2837,459 @@ const getVehicleById =
 
                 }
 
+
+                // ------------------------------------------------
+                // FALLBACK RAW ROW
+                // ------------------------------------------------
+
+                if (
+                    Object.keys(
+                        checklist
+                    ).length === 0
+                ) {
+
+                    checklist =
+                        rawRow;
+
+                }
+
             }
 
-
-        } catch (
-            checklistError
-        ) {
-
-            console.error(
-                "Checklist Fetch Error:",
-                checklistError.message
-            );
-
         }
 
+    }
+    catch (
+        checklistError
+    ) {
 
-        // ==================================================
-        // VEHICLE IMAGES
-        // ==================================================
-        // THIS IS THE MAIN FIX.
-        //
-        // DB example for car_id 40:
-        //
-        // image_id 99
-        // image_path /uploads/vehicles/....jpg
-        //
-        // image_id 100
-        // image_path /uploads/vehicles/....jpg
-        //
-        // image_id 101
-        // image_path /uploads/vehicles/....jpg
-        // ==================================================
+        console.error(
 
-        let images = [];
+            "Checklist Fetch Error:",
+
+            checklistError.message
+
+        );
+
+    }
 
 
-        try {
+    // ==================================================
+    // 5. GET IMAGES
+    // ==================================================
 
-            images =
-                await getVehicleImages(
-                    numericId
-                );
+    let images = [];
 
-        } catch (
-            imageError
-        ) {
 
-            console.error(
-                "Vehicle Images Fetch Error:",
-                imageError.message
+    try {
+
+        images =
+            await getVehicleImages(
+                numericId
             );
 
-            images = [];
+    }
+    catch (
+        imageError
+    ) {
 
-        }
+        images = [];
+
+    }
 
 
-        // ==================================================
-        // FINAL COMPLETE DATA
-        // ==================================================
+    // ==================================================
+    // FINAL RESPONSE
+    // ==================================================
 
-        return {
+    return {
 
-            vehicle,
+        vehicle,
 
-            owner,
+        owner,
 
-            inspection,
+        inspection,
 
-            checklist,
+        checklist,
 
-            // IMPORTANT:
-            // Frontend can now read:
-            // response.data.images
-
-            images
-
-        };
+        images
 
     };
 
+};
+
 
 // ======================================================
-// EXPORT
+// GET COMPLETE VEHICLE DATA
+// PDF / INSPECTION REPORT COMPATIBILITY
+// ======================================================
+//
+// This function intentionally keeps getVehicleById() as
+// the single source of truth and returns the complete object
+// expected by inspectionReport.service.js.
+//
+// Nothing is removed from getVehicleById(). This is an
+// additional compatibility method.
+//
+
+const getCompleteVehicleData = async (
+    carId
+) => {
+
+    const numericId =
+        Number(carId);
+
+    if (
+        !Number.isInteger(
+            numericId
+        ) ||
+        numericId <= 0
+    ) {
+
+        return null;
+
+    }
+
+    const result =
+        await getVehicleById(
+            numericId
+        );
+
+    if (
+        !result
+    ) {
+
+        return null;
+
+    }
+
+    // Keep every existing property and also expose common
+    // aliases so the PDF service can read the same data
+    // regardless of whether it expects vehicle/customer
+    // nested objects or flat properties.
+
+    return {
+
+        ...result,
+
+        vehicle:
+            result.vehicle || {},
+
+        owner:
+            result.owner || {},
+
+        customer:
+            result.owner || {},
+
+        customerDetails:
+            result.owner || {},
+
+        customer_details:
+            result.owner || {},
+
+        inspection:
+            result.inspection || {},
+
+        checklist:
+            result.checklist || {},
+
+        inspection_checklist:
+            result.checklist || {},
+
+        inspectionChecklist:
+            result.checklist || {},
+
+        detailedInspection:
+            result.checklist || {},
+
+        images:
+            Array.isArray(result.images)
+                ? result.images
+                : [],
+
+        vehicleImages:
+            Array.isArray(result.images)
+                ? result.images
+                : []
+
+    };
+
+};
+
+
+// ======================================================
+// PUBLISH VEHICLE
+// ADMIN / PUBLISH FLOW
+// ======================================================
+//
+// This method only changes the vehicle publication state.
+// PDF generation and email sending must happen AFTER this
+// method succeeds, from the vehicle service/controller.
+//
+// Nothing from the existing repository functions is removed.
+//
+
+const publishVehicle = async (
+    vehicleId
+) => {
+
+    const numericVehicleId =
+        Number(vehicleId);
+
+    if (
+        !Number.isInteger(
+            numericVehicleId
+        ) ||
+        numericVehicleId <= 0
+    ) {
+
+        throw new Error(
+            "Valid vehicle ID is required."
+        );
+
+    }
+
+
+    // ==================================================
+    // CHECK VEHICLE EXISTS
+    // ==================================================
+
+    const vehicleRows =
+        await executeQuery(
+
+            `
+            SELECT
+                *
+            FROM
+                cars
+            WHERE
+                car_id = ?
+            LIMIT 1
+            `,
+
+            [
+                numericVehicleId
+            ]
+
+        );
+
+
+    if (
+        !Array.isArray(
+            vehicleRows
+        ) ||
+        vehicleRows.length === 0
+    ) {
+
+        return {
+
+            published:
+                false,
+
+            vehicleId:
+                numericVehicleId,
+
+            message:
+                "Vehicle not found."
+
+        };
+
+    }
+
+
+    // ==================================================
+    // GET CURRENT CARS TABLE COLUMNS
+    // ==================================================
+
+    const columns =
+        await getCarsColumns();
+
+
+    if (
+        !Array.isArray(
+            columns
+        ) ||
+        !columns.includes(
+            "status"
+        )
+    ) {
+
+        throw new Error(
+            "The cars table does not contain a status column. Vehicle cannot be published."
+        );
+
+    }
+
+
+    // ==================================================
+    // UPDATE VEHICLE STATUS
+    // ==================================================
+
+    const updateParts = [
+
+        "status = ?"
+
+    ];
+
+
+    const params = [
+
+        "Published"
+
+    ];
+
+
+    // ==================================================
+    // SAVE PUBLISHED DATE IF COLUMN EXISTS
+    // ==================================================
+
+    if (
+        columns.includes(
+            "published_at"
+        )
+    ) {
+
+        updateParts.push(
+            "published_at = NOW()"
+        );
+
+    }
+
+
+    await executeQuery(
+
+        `
+        UPDATE
+            cars
+
+        SET
+            ${updateParts.join(", ")}
+
+        WHERE
+            car_id = ?
+        `,
+
+        [
+            ...params,
+            numericVehicleId
+        ]
+
+    );
+
+
+    // ==================================================
+    // RE-FETCH AFTER UPDATE
+    // IMPORTANT:
+    // DO NOT TRUST ONLY THE UPDATE QUERY.
+    // VERIFY ACTUAL DATABASE STATE.
+    // ==================================================
+
+    const publishedVehicle =
+        await getVehicleById(
+            numericVehicleId
+        );
+
+
+    if (
+        !publishedVehicle ||
+        !publishedVehicle.vehicle
+    ) {
+
+        throw new Error(
+            "Vehicle was updated but could not be fetched again."
+        );
+
+    }
+
+
+    const savedStatus =
+        String(
+            publishedVehicle.vehicle.status ||
+            ""
+        )
+            .trim()
+            .toLowerCase();
+
+
+    const isPublished =
+        [
+            "yes",
+            "published",
+            "publish",
+            "active",
+            "available"
+        ].includes(
+            savedStatus
+        );
+
+
+    if (
+        !isPublished
+    ) {
+
+        throw new Error(
+            `Vehicle publish verification failed. Current status: ${publishedVehicle.vehicle.status || "empty"}`
+        );
+
+    }
+
+
+    // ==================================================
+    // FINAL RESULT
+    // ==================================================
+
+    return {
+
+        published:
+            true,
+
+        vehicleId:
+            numericVehicleId,
+
+        carId:
+            numericVehicleId,
+
+        status:
+            publishedVehicle.vehicle.status,
+
+        vehicle:
+            publishedVehicle.vehicle,
+
+        owner:
+            publishedVehicle.owner ||
+            null,
+
+        inspection:
+            publishedVehicle.inspection ||
+            null,
+
+        checklist:
+            publishedVehicle.checklist ||
+            null,
+
+        images:
+            Array.isArray(
+                publishedVehicle.images
+            )
+                ? publishedVehicle.images
+                : [],
+
+        message:
+            "Vehicle published successfully."
+
+    };
+
+};
+
+
+// ======================================================
+// MODULE EXPORTS
 // ======================================================
 
 module.exports = {
+
+    // --------------------------------------------------
+    // VEHICLE
+    // --------------------------------------------------
 
     addVehicle,
 
@@ -2423,7 +3299,21 @@ module.exports = {
 
     getVehicleById,
 
+    getCompleteVehicleData,
+
+    publishVehicle,
+
+
+    // --------------------------------------------------
+    // IMAGES
+    // --------------------------------------------------
+
     getVehicleImages,
+
+
+    // --------------------------------------------------
+    // DELETE
+    // --------------------------------------------------
 
     deleteVehicle
 
