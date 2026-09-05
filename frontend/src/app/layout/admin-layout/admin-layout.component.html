@@ -1,4 +1,4 @@
-<div class="min-h-screen w-full min-w-0 overflow-x-hidden bg-slate-100">
+<div class="min-h-screen w-full min-w-0 max-w-full overflow-x-hidden bg-slate-100">
 
   <!-- ========================================= -->
   <!-- SIDEBAR -->
@@ -33,7 +33,7 @@
     <!-- ========================================= -->
 
     <nav
-      class="min-h-0 flex-1 overflow-y-auto space-y-1 p-4"
+      class="min-h-0 flex-1 space-y-1 overflow-y-auto p-4"
     >
 
       <!-- DASHBOARD -->
@@ -265,8 +265,9 @@
   <!-- ========================================= -->
 
   <div
-    class="min-h-screen w-full min-w-0 transition-all"
-    [class.ml-64]="sidebarOpen"
+    class="main-area min-h-screen min-w-0 max-w-full"
+    [class.sidebar-open]="sidebarOpen"
+    [class.sidebar-closed]="!sidebarOpen"
   >
 
     <!-- ======================================= -->
@@ -293,6 +294,7 @@
 
 
         <div class="min-w-0">
+
           <h2
             class="truncate text-lg font-bold text-slate-800"
           >
@@ -304,6 +306,7 @@
           >
             Carsey.in Management System
           </p>
+
         </div>
 
       </div>
@@ -318,6 +321,7 @@
         <div
           class="hidden text-right sm:block"
         >
+
           <p
             class="text-sm font-semibold text-slate-800"
           >
@@ -329,6 +333,7 @@
           >
             Administrator
           </p>
+
         </div>
 
 
@@ -350,7 +355,9 @@
     <main
       class="w-full min-w-0 max-w-full overflow-x-hidden p-4 sm:p-6"
     >
+
       <router-outlet></router-outlet>
+
     </main>
 
   </div>
