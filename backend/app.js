@@ -14,6 +14,16 @@ require("./config/db");
 const vehicleController =
     require("./controllers/vehicle.controller");
 
+// ======================================================
+// VEHICLE REPOSITORY
+// ======================================================
+// Used by the dynamic sitemap to load currently published
+// vehicles directly from the database.
+// ======================================================
+
+const vehicleRepository =
+    require("./repositories/vehicle.repository");
+
 
 // ======================================================
 // MIDDLEWARES
@@ -632,6 +642,95 @@ app.get(
 
         });
 
+    }
+);
+
+
+// ======================================================
+// DYNAMIC XML SITEMAP
+// ======================================================
+//
+// Automatically includes all currently published vehicles.
+// New published car IDs are added automatically.
+//
+// Browser URL:
+//
+// /sitemap.xml
+//
+// ======================================================
+
+app.get(
+    "/sitemap.xml",
+    async (req, res) => {
+
+        try {
+
+            const publishedVehicles =
+                await vehicleRepository.getPublishedVehicles({});
+
+            const staticUrls = [
+                "https://carsey.in/",
+                "https://carsey.in/sell-car",
+                "https://carsey.in/exchange",
+                "https://carsey.in/book-inspection",
+                "https://carsey.in/about"
+            ];
+
+            const vehicleUrls =
+                Array.isArray(publishedVehicles)
+                    ? publishedVehicles
+                        .filter((vehicle) => vehicle && vehicle.car_id)
+                        .map(
+                            (vehicle) =>
+                                `https://carsey.in/car/${encodeURIComponent(
+                                    vehicle.car_id
+                                )}`
+                        )
+                    : [];
+
+            const urls = [
+                ...staticUrls,
+                ...vehicleUrls
+            ];
+
+            const uniqueUrls = [
+                ...new Set(urls)
+            ];
+
+            const xmlUrls =
+                uniqueUrls
+                    .map(
+                        (url) =>
+                            `    <url>\n        <loc>${url}</loc>\n    </url>`
+                    )
+                    .join("\n");
+
+            const sitemapXml =
+                `<?xml version="1.0" encoding="UTF-8"?>\n` +
+                `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n` +
+                `${xmlUrls}\n` +
+                `</urlset>`;
+
+            res
+                .status(200)
+                .type("application/xml")
+                .send(sitemapXml);
+
+        } catch (error) {
+
+            console.error(
+                "Dynamic sitemap generation failed:",
+                error
+            );
+
+            return res
+                .status(500)
+                .type("application/xml")
+                .send(
+                    `<?xml version="1.0" encoding="UTF-8"?>\n` +
+                    `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"></urlset>`
+                );
+        }
     }
 );
 
