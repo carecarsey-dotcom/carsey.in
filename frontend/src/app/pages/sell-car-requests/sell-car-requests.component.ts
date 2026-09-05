@@ -222,33 +222,22 @@ export class SellCarRequestsComponent
   // IMAGE URL
   // ====================================================
 
-  getImageUrl(
-    image?: string
-  ): string {
-
-    if (!image) {
-      return '';
-    }
-
-    // Already a complete URL
-    if (
-      image.startsWith('http://') ||
-      image.startsWith('https://')
-    ) {
-
-      return image;
-    }
-
-    // Production backend
-    const apiUrl =
-      'https://api.carsey.in';
-
-    // Make sure there is exactly one /
-    const imagePath =
-      image.startsWith('/')
-        ? image
-        : `/${image}`;
-
-    return `${apiUrl}${imagePath}`;
+  // ====================================================
+// IMAGE URL
+// ====================================================
+getImageUrl(image?: string): string {
+  if (!image) {
+    return '';
   }
+
+  if (image.startsWith('http')) {
+    return image;
+  }
+
+  const cleanPath = image.startsWith('/')
+    ? image
+    : `/${image}`;
+
+  return `https://api.carsey.in${cleanPath}`;
+}
 }
