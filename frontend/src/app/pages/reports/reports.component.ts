@@ -18,6 +18,10 @@ import {
 } from '@angular/forms';
 
 import {
+  HttpClient
+} from '@angular/common/http';
+
+import {
   VehicleService
 } from '../../services/vehicle.service';
 
@@ -266,6 +270,21 @@ export class ReportsComponent
 
   private sanitizer =
     inject(DomSanitizer);
+
+
+  // =====================================================
+  // HTTP CLIENT
+  // =====================================================
+
+  private http =
+    inject(HttpClient);
+
+
+  // =====================================================
+  // PDF BLOB URL
+  // =====================================================
+
+  private pdfObjectUrl = '';
 
 
   // =====================================================
@@ -1289,7 +1308,6 @@ export class ReportsComponent
     if (!cleanUrl) {
 
       this.pdfViewerUrl = null;
-
       this.pdfUrl = '';
 
       return;
@@ -1297,24 +1315,123 @@ export class ReportsComponent
     }
 
 
-    this.pdfUrl =
-      cleanUrl;
+    // ===================================================
+    // CLEAR PREVIOUS BLOB URL
+    // ===================================================
+
+    if (
+      this.pdfObjectUrl
+    ) {
+
+      URL.revokeObjectURL(
+        this.pdfObjectUrl
+      );
+
+      this.pdfObjectUrl = '';
+
+    }
 
 
-    this.pdfViewerUrl =
-      this.sanitizer
-        .bypassSecurityTrustResourceUrl(
-          cleanUrl
-        );
-
+    // ===================================================
+    // FETCH PDF THROUGH ANGULAR HTTPCLIENT
+    // ===================================================
+    // IMPORTANT:
+    // Do NOT put the protected PDF URL directly into an
+    // iframe/window.open(). HttpClient goes through the
+    // existing authInterceptor and sends the JWT.
+    // ===================================================
 
     console.log(
-      'PDF VIEWER URL:',
+      'FETCHING AUTHENTICATED PDF:',
       cleanUrl
     );
 
-  }
+    this.detailsLoading = true;
 
+    this.http
+      .get(
+        cleanUrl,
+        {
+          responseType: 'blob'
+        }
+      )
+      .subscribe({
+
+        // =================================================
+        // SUCCESS
+        // =================================================
+
+        next: (blob: Blob) => {
+
+          if (
+            !blob ||
+            blob.size === 0
+          ) {
+
+            console.error(
+              'PDF response is empty.'
+            );
+
+            this.pdfViewerUrl = null;
+            this.pdfUrl = '';
+            this.detailsLoading = false;
+
+            this.errorMessage =
+              'PDF file is empty or unavailable.';
+
+            return;
+
+          }
+
+
+          this.pdfObjectUrl =
+            URL.createObjectURL(
+              blob
+            );
+
+          this.pdfUrl =
+            this.pdfObjectUrl;
+
+          this.pdfViewerUrl =
+            this.sanitizer
+              .bypassSecurityTrustResourceUrl(
+                this.pdfObjectUrl
+              );
+
+          console.log(
+            'PDF BLOB URL:',
+            this.pdfObjectUrl
+          );
+
+          this.detailsLoading = false;
+
+        },
+
+        // =================================================
+        // ERROR
+        // =================================================
+
+        error: (error: any) => {
+
+          console.error(
+            'AUTHENTICATED PDF FETCH ERROR:',
+            error
+          );
+
+          this.pdfViewerUrl = null;
+          this.pdfUrl = '';
+          this.detailsLoading = false;
+
+          this.errorMessage =
+            error?.error?.message ||
+            error?.message ||
+            'Unable to load inspection report PDF.';
+
+        }
+
+      });
+
+  }
 
   // =====================================================
   // BUILD BACKEND PDF URL
@@ -1569,7 +1686,7 @@ export class ReportsComponent
 
 
     console.log(
-      'OPENING BACKEND GENERATED PDF'
+      'OPENING AUTHENTICATED BACKEND GENERATED PDF'
     );
 
     console.log(
@@ -1583,24 +1700,98 @@ export class ReportsComponent
     );
 
 
-    const pdfWindow =
-      window.open(
+    // ===================================================
+    // FETCH THROUGH ANGULAR HTTPCLIENT
+    // ===================================================
+    // This request passes through authInterceptor and
+    // therefore includes Authorization: Bearer <token>.
+    // ===================================================
+
+    this.http
+      .get(
         pdfUrl,
-        '_blank',
-        'noopener,noreferrer'
-      );
+        {
+          responseType: 'blob'
+        }
+      )
+      .subscribe({
+
+        next: (blob: Blob) => {
+
+          if (
+            !blob ||
+            blob.size === 0
+          ) {
+
+            alert(
+              'PDF file is empty or unavailable.'
+            );
+
+            return;
+
+          }
 
 
-    if (!pdfWindow) {
+          const blobUrl =
+            URL.createObjectURL(
+              blob
+            );
 
-      alert(
-        'Please allow pop-ups to open the inspection PDF.'
-      );
 
-    }
+          const pdfWindow =
+            window.open(
+              blobUrl,
+              '_blank',
+              'noopener,noreferrer'
+            );
+
+
+          if (!pdfWindow) {
+
+            URL.revokeObjectURL(
+              blobUrl
+            );
+
+            alert(
+              'Please allow pop-ups to open the inspection PDF.'
+            );
+
+            return;
+
+          }
+
+
+          setTimeout(
+            () => {
+
+              URL.revokeObjectURL(
+                blobUrl
+              );
+
+            },
+            60000
+          );
+
+        },
+
+        error: (error: any) => {
+
+          console.error(
+            'OPEN GENERATED PDF ERROR:',
+            error
+          );
+
+          alert(
+            error?.error?.message ||
+            error?.message ||
+            'Unable to open inspection PDF.'
+          );
+
+        }
+
+      });
 
   }
-
 
   // =====================================================
   // DOWNLOAD SAME BACKEND PDF
@@ -1652,46 +1843,128 @@ export class ReportsComponent
       );
 
 
-    const link =
-      document.createElement(
-        'a'
+    if (!pdfUrl) {
+
+      alert(
+        'Unable to build PDF URL.'
       );
 
+      return;
 
-    link.href =
-      pdfUrl;
-
-
-    link.target =
-      '_blank';
+    }
 
 
-    link.rel =
-      'noopener noreferrer';
+    console.log(
+      'DOWNLOADING AUTHENTICATED PDF'
+    );
 
+    console.log(
+      'PDF PATH:',
+      pdfPath
+    );
 
-    link.download =
-      this.getPdfFileName(
-        String(
-          pdfPath
-        )
-      );
-
-
-    document.body.appendChild(
-      link
+    console.log(
+      'PDF URL:',
+      pdfUrl
     );
 
 
-    link.click();
+    this.http
+      .get(
+        pdfUrl,
+        {
+          responseType: 'blob'
+        }
+      )
+      .subscribe({
+
+        next: (blob: Blob) => {
+
+          if (
+            !blob ||
+            blob.size === 0
+          ) {
+
+            alert(
+              'PDF file is empty or unavailable.'
+            );
+
+            return;
+
+          }
 
 
-    document.body.removeChild(
-      link
-    );
+          const blobUrl =
+            URL.createObjectURL(
+              blob
+            );
+
+
+          const link =
+            document.createElement(
+              'a'
+            );
+
+
+          link.href =
+            blobUrl;
+
+          link.target =
+            '_blank';
+
+          link.rel =
+            'noopener noreferrer';
+
+          link.download =
+            this.getPdfFileName(
+              String(
+                pdfPath
+              )
+            );
+
+
+          document.body.appendChild(
+            link
+          );
+
+          link.click();
+
+          document.body.removeChild(
+            link
+          );
+
+
+          setTimeout(
+            () => {
+
+              URL.revokeObjectURL(
+                blobUrl
+              );
+
+            },
+            1000
+          );
+
+        },
+
+        error: (error: any) => {
+
+          console.error(
+            'DOWNLOAD PDF ERROR:',
+            error
+          );
+
+          alert(
+            error?.error?.message ||
+            error?.message ||
+            'Unable to download inspection report PDF.'
+          );
+
+        }
+
+      });
 
   }
-
 
   // =====================================================
   // PDF FILE NAME
@@ -1805,8 +2078,19 @@ export class ReportsComponent
       );
 
 
+    if (!pdfUrl) {
+
+      alert(
+        'Unable to build PDF URL.'
+      );
+
+      return;
+
+    }
+
+
     console.log(
-      'OPENING BACKEND GENERATED PDF'
+      'OPENING AUTHENTICATED PDF FOR PRINT / SAVE'
     );
 
     console.log(
@@ -1820,24 +2104,96 @@ export class ReportsComponent
     );
 
 
-    const pdfWindow =
-      window.open(
+    this.http
+      .get(
         pdfUrl,
-        '_blank',
-        'noopener,noreferrer'
-      );
+        {
+          responseType: 'blob'
+        }
+      )
+      .subscribe({
+
+        next: (blob: Blob) => {
+
+          if (
+            !blob ||
+            blob.size === 0
+          ) {
+
+            alert(
+              'PDF file is empty or unavailable.'
+            );
+
+            return;
+
+          }
 
 
-    if (!pdfWindow) {
+          const blobUrl =
+            URL.createObjectURL(
+              blob
+            );
 
-      alert(
-        'Please allow pop-ups to open the inspection PDF.'
-      );
 
-    }
+          const pdfWindow =
+            window.open(
+              blobUrl,
+              '_blank',
+              'noopener,noreferrer'
+            );
+
+
+          if (!pdfWindow) {
+
+            URL.revokeObjectURL(
+              blobUrl
+            );
+
+            alert(
+              'Please allow pop-ups to open the inspection PDF.'
+            );
+
+            return;
+
+          }
+
+
+          // The browser PDF viewer will provide its own
+          // Print / Save controls. We intentionally do not
+          // call print() automatically so existing behavior
+          // remains unchanged.
+
+          setTimeout(
+            () => {
+
+              URL.revokeObjectURL(
+                blobUrl
+              );
+
+            },
+            60000
+          );
+
+        },
+
+        error: (error: any) => {
+
+          console.error(
+            'PRINT / SAVE PDF ERROR:',
+            error
+          );
+
+          alert(
+            error?.error?.message ||
+            error?.message ||
+            'Unable to load inspection report PDF.'
+          );
+
+        }
+
+      });
 
   }
-
 
   // =====================================================
   // SEND REPORT TO CUSTOMER EMAIL
