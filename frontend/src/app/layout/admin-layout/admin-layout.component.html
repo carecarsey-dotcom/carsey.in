@@ -4,8 +4,8 @@
   <!-- SIDEBAR -->
   <!-- ========================================= -->
 
-  <aside
-  class="admin-sidebar fixed left-0 top-0 z-40 flex h-screen flex-col bg-slate-900 text-white shadow-xl"
+ <aside
+  class="admin-sidebar fixed left-0 top-0 z-40 flex h-screen w-64 flex-col bg-slate-900 text-white shadow-xl"
   [class.hidden]="!sidebarOpen"
 >
 
@@ -265,9 +265,8 @@
   <!-- ========================================= -->
 
 <div
-  class="main-area min-h-screen min-w-0 max-w-full"
+  class="main-area min-h-screen w-full min-w-0 transition-all"
   [class.sidebar-open]="sidebarOpen"
-  [class.sidebar-closed]="!sidebarOpen"
 >
     <!-- ======================================= -->
     <!-- NAVBAR -->

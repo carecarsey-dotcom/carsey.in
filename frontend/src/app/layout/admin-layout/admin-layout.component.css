@@ -3,101 +3,52 @@
   width: 100%;
   min-width: 0;
   max-width: 100%;
-  zoom: 0.8;
 }
 
-/* =========================================
-   MAIN AREA
-   ========================================= */
-
-.main-area {
+/* Main admin wrapper */
+:host > div {
   width: 100%;
   min-width: 0;
   max-width: 100%;
-  transition: margin-left 0.2s ease, width 0.2s ease;
 }
 
-.main-area.sidebar-open {
-  margin-left: 16rem;
-  width: calc(100% - 16rem);
-}
-
-.main-area.sidebar-closed {
-  margin-left: 0;
-  width: 100%;
-}
-
-/* =========================================
-   SIDEBAR
-   ========================================= */
-
+/* Sidebar */
 .admin-sidebar {
-  width: 256px;
+  width: 256px !important;
+  min-width: 256px !important;
+  max-width: 256px !important;
 }
 
-/* =========================================
-   LOGO
-   ========================================= */
-
-.admin-logo {
-  height: 72px;
+/* Main content area */
+.main-area {
+  width: calc(100% - 256px);
+  min-width: 0;
+  max-width: calc(100% - 256px);
 }
 
-/* =========================================
-   NAVIGATION
-   ========================================= */
-
-.admin-nav {
-  padding: 12px;
+/* When sidebar is open */
+.main-area.sidebar-open {
+  margin-left: 256px;
 }
 
-.admin-nav a {
-  min-height: 44px;
-  padding-top: 10px;
-  padding-bottom: 10px;
+/* Header */
+.main-area header {
+  width: 100%;
+  min-width: 0;
 }
 
-/* =========================================
-   SECTION TITLES
-   ========================================= */
-
-.admin-section-title {
-  margin-top: 14px;
-  padding-bottom: 6px;
+/* Page content */
+.main-area main {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
-/* =========================================
-   LOGOUT
-   ========================================= */
-
-.admin-logout {
-  padding: 12px;
-}
-
-.admin-logout button {
-  min-height: 44px;
-}
-
-/* =========================================
-   MOBILE
-   ========================================= */
-
-@media (max-width: 767px) {
-  :host {
-    zoom: 1;
-  }
-
-  .main-area.sidebar-open {
-    margin-left: 0;
-    width: 100%;
-  }
-
-  .main-area.sidebar-closed {
-    margin-left: 0;
-    width: 100%;
-  }
-
-  .admin-sidebar {
-    width: 256px;
-  }
+/* Prevent accidental horizontal page overflow */
+html,
+body {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
 }
