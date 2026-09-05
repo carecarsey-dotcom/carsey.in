@@ -1092,12 +1092,10 @@ private validateCompleteForm(showMessage = true): boolean {
   // User ko missing field names nahi dikhane hain.
   //
   // =====================================================
-
-  if (showMessage) {
-
-    this.errorMessage =
-      'Please complete all required fields.';
-  }
+if (showMessage) {
+  this.errorMessage =
+    `Please complete all required fields: ${missingFields.join(', ')}`;
+}
 
   return false;
 }
