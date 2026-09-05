@@ -85,6 +85,8 @@ interface Vehicle {
 
   odometer?: number;
 
+  mileage?: number | string;
+
   fuel_type?: string;
 
   transmission?: string;

@@ -121,6 +121,18 @@
         itemprop="sku"
         [content]="'' + vehicle()!.car_id"
       />
+      <meta
+        itemprop="model"
+        [content]="vehicle()!.model || ''"
+      />
+      <meta
+        itemprop="color"
+        [content]="vehicle()!.exterior_color || ''"
+      />
+      <meta
+        itemprop="category"
+        content="Used Cars"
+      />
 
       <div
         itemprop="brand"
@@ -129,35 +141,10 @@
         class="hidden"
         aria-hidden="true"
       >
-        <meta itemprop="name" [content]="vehicle()!.brand || 'Carsey.in'" />
-      </div>
-
-      <div
-        itemprop="offers"
-        itemscope
-        itemtype="https://schema.org/Offer"
-        class="hidden"
-        aria-hidden="true"
-      >
-        <meta itemprop="priceCurrency" content="INR" />
-        <meta itemprop="price" [content]="'' + vehicle()!.price" />
         <meta
-          itemprop="url"
-          [content]="'https://carsey.in/car/' + vehicle()!.car_id"
+          itemprop="name"
+          [content]="vehicle()!.brand || 'Carsey.in'"
         />
-        <meta
-          itemprop="availability"
-          [content]="isPublished(vehicle()!) ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock'"
-        />
-        <meta itemprop="itemCondition" content="https://schema.org/UsedCondition" />
-        <div
-          itemprop="seller"
-          itemscope
-          itemtype="https://schema.org/Organization"
-        >
-          <meta itemprop="name" content="Carsey.in" />
-          <meta itemprop="url" content="https://carsey.in/" />
-        </div>
       </div>
 
       <meta
@@ -165,6 +152,150 @@
         [content]="getMainImage()"
       />
 
+      <!-- Vehicle-specific structured properties -->
+      <div
+        itemprop="additionalProperty"
+        itemscope
+        itemtype="https://schema.org/PropertyValue"
+        class="hidden"
+        aria-hidden="true"
+      >
+        <meta itemprop="name" content="Manufacturing Year" />
+        <meta
+          itemprop="value"
+          [content]="'' + (vehicle()!.manufacturing_year ?? '')"
+        />
+      </div>
+
+      <div
+        itemprop="additionalProperty"
+        itemscope
+        itemtype="https://schema.org/PropertyValue"
+        class="hidden"
+        aria-hidden="true"
+      >
+        <meta itemprop="name" content="Fuel Type" />
+        <meta
+          itemprop="value"
+          [content]="vehicle()!.fuel_type || ''"
+        />
+      </div>
+
+      <div
+        itemprop="additionalProperty"
+        itemscope
+        itemtype="https://schema.org/PropertyValue"
+        class="hidden"
+        aria-hidden="true"
+      >
+        <meta itemprop="name" content="Transmission" />
+        <meta
+          itemprop="value"
+          [content]="vehicle()!.transmission || ''"
+        />
+      </div>
+
+      <div
+        itemprop="additionalProperty"
+        itemscope
+        itemtype="https://schema.org/PropertyValue"
+        class="hidden"
+        aria-hidden="true"
+      >
+        <meta itemprop="name" content="Mileage" />
+        <meta
+          itemprop="value"
+          [content]="'' + (vehicle()!.mileage ?? '')"
+        />
+        <meta itemprop="unitText" content="KM/L" />
+      </div>
+
+      <div
+        itemprop="additionalProperty"
+        itemscope
+        itemtype="https://schema.org/PropertyValue"
+        class="hidden"
+        aria-hidden="true"
+      >
+        <meta itemprop="name" content="Odometer" />
+        <meta
+          itemprop="value"
+          [content]="'' + (vehicle()!.odometer ?? '')"
+        />
+        <meta itemprop="unitText" content="KM" />
+      </div>
+
+      <div
+        itemprop="additionalProperty"
+        itemscope
+        itemtype="https://schema.org/PropertyValue"
+        class="hidden"
+        aria-hidden="true"
+      >
+        <meta itemprop="name" content="Body Style" />
+        <meta
+          itemprop="value"
+          [content]="vehicle()!.body_style || ''"
+        />
+      </div>
+
+      <div
+        itemprop="additionalProperty"
+        itemscope
+        itemtype="https://schema.org/PropertyValue"
+        class="hidden"
+        aria-hidden="true"
+      >
+        <meta itemprop="name" content="Drive Type" />
+        <meta
+          itemprop="value"
+          [content]="vehicle()!.drive_type || ''"
+        />
+      </div>
+
+      <div
+        itemprop="additionalProperty"
+        itemscope
+        itemtype="https://schema.org/PropertyValue"
+        class="hidden"
+        aria-hidden="true"
+      >
+        <meta itemprop="name" content="Engine" />
+        <meta
+          itemprop="value"
+          [content]="vehicle()!.engine || ''"
+        />
+      </div>
+
+      <div
+        itemprop="additionalProperty"
+        itemscope
+        itemtype="https://schema.org/PropertyValue"
+        class="hidden"
+        aria-hidden="true"
+      >
+        <meta itemprop="name" content="Seats" />
+        <meta
+          itemprop="value"
+          [content]="'' + (vehicle()!.seats ?? '')"
+        />
+      </div>
+
+      <div
+        itemprop="additionalProperty"
+        itemscope
+        itemtype="https://schema.org/PropertyValue"
+        class="hidden"
+        aria-hidden="true"
+      >
+        <meta itemprop="name" content="Location" />
+        <meta
+          itemprop="value"
+          [content]="vehicle()!.location || vehicle()!.city || ''"
+        />
+      </div>
+
+      <!-- Offer / pricing structured data -->
       <div
         itemprop="offers"
         itemscope
@@ -173,7 +304,10 @@
         aria-hidden="true"
       >
         <meta itemprop="priceCurrency" content="INR" />
-        <meta itemprop="price" [content]="'' + (vehicle()!.price ?? '')" />
+        <meta
+          itemprop="price"
+          [content]="'' + (vehicle()!.price ?? '')"
+        />
         <meta
           itemprop="url"
           [content]="'https://carsey.in/car/' + vehicle()!.car_id"
