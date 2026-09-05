@@ -98,7 +98,103 @@
 
     <main
       class="mx-auto w-full max-w-[1400px] px-4 py-8 sm:px-6 lg:px-10"
+      itemscope
+      itemtype="https://schema.org/Product"
     >
+
+      <!-- ================================================= -->
+      <!-- PRODUCT / CAR STRUCTURED DATA -->
+      <!-- ================================================= -->
+      <meta
+        itemprop="name"
+        [content]="(vehicle()!.manufacturing_year ? vehicle()!.manufacturing_year + ' ' : '') + vehicle()!.brand + ' ' + vehicle()!.model + (vehicle()!.variant ? ' ' + vehicle()!.variant : '')"
+      />
+      <meta
+        itemprop="description"
+        [content]="'Explore ' + (vehicle()!.brand || '') + ' ' + (vehicle()!.model || '') + ' for sale on Carsey.in. View price, images, specifications, inspection details and request a test drive.'"
+      />
+      <meta
+        itemprop="url"
+        [content]="'https://carsey.in/car/' + vehicle()!.car_id"
+      />
+      <meta
+        itemprop="sku"
+        [content]="'' + vehicle()!.car_id"
+      />
+
+      <div
+        itemprop="brand"
+        itemscope
+        itemtype="https://schema.org/Brand"
+        class="hidden"
+        aria-hidden="true"
+      >
+        <meta itemprop="name" [content]="vehicle()!.brand || 'Carsey.in'" />
+      </div>
+
+      <div
+        itemprop="offers"
+        itemscope
+        itemtype="https://schema.org/Offer"
+        class="hidden"
+        aria-hidden="true"
+      >
+        <meta itemprop="priceCurrency" content="INR" />
+        <meta itemprop="price" [content]="'' + vehicle()!.price" />
+        <meta
+          itemprop="url"
+          [content]="'https://carsey.in/car/' + vehicle()!.car_id"
+        />
+        <meta
+          itemprop="availability"
+          [content]="isPublished(vehicle()!) ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock'"
+        />
+        <meta itemprop="itemCondition" content="https://schema.org/UsedCondition" />
+        <div
+          itemprop="seller"
+          itemscope
+          itemtype="https://schema.org/Organization"
+        >
+          <meta itemprop="name" content="Carsey.in" />
+          <meta itemprop="url" content="https://carsey.in/" />
+        </div>
+      </div>
+
+      <meta
+        itemprop="image"
+        [content]="getMainImage()"
+      />
+
+      <div
+        itemprop="offers"
+        itemscope
+        itemtype="https://schema.org/Offer"
+        class="hidden"
+        aria-hidden="true"
+      >
+        <meta itemprop="priceCurrency" content="INR" />
+        <meta itemprop="price" [content]="'' + (vehicle()!.price ?? '')" />
+        <meta
+          itemprop="url"
+          [content]="'https://carsey.in/car/' + vehicle()!.car_id"
+        />
+        <meta
+          itemprop="availability"
+          [content]="isPublished(vehicle()!) ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock'"
+        />
+        <meta
+          itemprop="itemCondition"
+          content="https://schema.org/UsedCondition"
+        />
+        <div
+          itemprop="seller"
+          itemscope
+          itemtype="https://schema.org/Organization"
+        >
+          <meta itemprop="name" content="Carsey.in" />
+          <meta itemprop="url" content="https://carsey.in/" />
+        </div>
+      </div>
 
       <!-- BACK -->
 
@@ -136,6 +232,7 @@
 
               <img
                 [src]="getMainImage()"
+                itemprop="image"
                 [alt]="vehicle()!.brand + ' ' + vehicle()!.model"
                 class="h-full w-full object-cover transition-all duration-500 ease-in-out"
               />
@@ -766,6 +863,7 @@
 
             <h1
               class="mt-2 text-3xl font-black leading-tight"
+              itemprop="name"
             >
 
               {{ vehicle()!.manufacturing_year || '' }}
