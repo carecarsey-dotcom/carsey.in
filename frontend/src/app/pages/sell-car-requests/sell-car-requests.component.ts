@@ -13,9 +13,7 @@ import {
   SellCarService
 } from '../../services/sell-car.service';
 
-
 @Component({
-
   selector:
     'app-sell-car-requests',
 
@@ -30,19 +28,15 @@ import {
 
   styleUrl:
     './sell-car-requests.component.css'
-
 })
 export class SellCarRequestsComponent
   implements OnInit {
 
-
   private sellCarService =
     inject(SellCarService);
 
-
   requests:
     SellCarRequest[] = [];
-
 
   loading = false;
 
@@ -51,17 +45,13 @@ export class SellCarRequestsComponent
   updatingSellId:
     number | null = null;
 
-
   // ====================================================
   // INIT
   // ====================================================
 
   ngOnInit(): void {
-
     this.loadRequests();
-
   }
-
 
   // ====================================================
   // LOAD REQUESTS
@@ -72,7 +62,6 @@ export class SellCarRequestsComponent
     this.loading = true;
 
     this.errorMessage = '';
-
 
     this.sellCarService
       .getRequests()
@@ -85,7 +74,6 @@ export class SellCarRequestsComponent
             response
           );
 
-
           if (response.success) {
 
             this.requests =
@@ -96,14 +84,10 @@ export class SellCarRequestsComponent
             this.errorMessage =
               response.message ||
               'Unable to load sell car requests.';
-
           }
 
-
           this.loading = false;
-
         },
-
 
         error: (error) => {
 
@@ -112,20 +96,15 @@ export class SellCarRequestsComponent
             error
           );
 
-
           this.errorMessage =
             error?.error?.message ||
             'Unable to load sell car requests.';
 
-
           this.loading = false;
-
         }
 
       });
-
   }
-
 
   // ====================================================
   // APPROVE
@@ -139,9 +118,7 @@ export class SellCarRequestsComponent
       request,
       'Approved'
     );
-
   }
-
 
   // ====================================================
   // REJECT
@@ -155,27 +132,21 @@ export class SellCarRequestsComponent
       request,
       'Rejected'
     );
-
   }
-
 
   // ====================================================
   // UPDATE STATUS
   // ====================================================
 
   private updateStatus(
-
     request: SellCarRequest,
-
     status:
       'Approved' |
       'Rejected'
-
   ): void {
 
     this.updatingSellId =
       request.sell_id;
-
 
     this.sellCarService
       .updateStatus(
@@ -197,15 +168,11 @@ export class SellCarRequestsComponent
               response.message ||
               'Unable to update sell car status.'
             );
-
           }
-
 
           this.updatingSellId =
             null;
-
         },
-
 
         error: (error) => {
 
@@ -214,22 +181,17 @@ export class SellCarRequestsComponent
             error
           );
 
-
           alert(
             error?.error?.message ||
             'Unable to update sell car status.'
           );
 
-
           this.updatingSellId =
             null;
-
         }
 
       });
-
   }
-
 
   // ====================================================
   // STATUS CLASS
@@ -244,23 +206,17 @@ export class SellCarRequestsComponent
     ) {
 
       return 'bg-green-100 text-green-700';
-
     }
-
 
     if (
       status === 'Rejected'
     ) {
 
       return 'bg-red-100 text-red-700';
-
     }
 
-
     return 'bg-yellow-100 text-yellow-700';
-
   }
-
 
   // ====================================================
   // IMAGE URL
@@ -271,23 +227,28 @@ export class SellCarRequestsComponent
   ): string {
 
     if (!image) {
-
       return '';
-
     }
 
-
+    // Already a complete URL
     if (
-      image.startsWith('http')
+      image.startsWith('http://') ||
+      image.startsWith('https://')
     ) {
 
       return image;
-
     }
 
+    // Production backend
+    const apiUrl =
+      'https://api.carsey.in';
 
-    return `http://localhost:5000${image}`;
+    // Make sure there is exactly one /
+    const imagePath =
+      image.startsWith('/')
+        ? image
+        : `/${image}`;
 
+    return `${apiUrl}${imagePath}`;
   }
-
 }

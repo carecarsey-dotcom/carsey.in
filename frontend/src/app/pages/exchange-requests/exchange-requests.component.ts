@@ -13,9 +13,7 @@ import {
   ExchangeService
 } from '../../services/exchange.service';
 
-
 @Component({
-
   selector:
     'app-exchange-requests',
 
@@ -30,19 +28,15 @@ import {
 
   styleUrl:
     './exchange-requests.component.css'
-
 })
 export class ExchangeRequestsComponent
   implements OnInit {
 
-
   private exchangeService =
     inject(ExchangeService);
 
-
   requests:
     ExchangeRequest[] = [];
-
 
   loading = false;
 
@@ -51,17 +45,13 @@ export class ExchangeRequestsComponent
   updatingExchangeId:
     number | null = null;
 
-
   // ==========================================
   // INIT
   // ==========================================
 
   ngOnInit(): void {
-
     this.loadRequests();
-
   }
-
 
   // ==========================================
   // LOAD
@@ -72,7 +62,6 @@ export class ExchangeRequestsComponent
     this.loading = true;
 
     this.errorMessage = '';
-
 
     this.exchangeService
       .getRequests()
@@ -85,7 +74,6 @@ export class ExchangeRequestsComponent
             response
           );
 
-
           if (response.success) {
 
             this.requests =
@@ -96,14 +84,10 @@ export class ExchangeRequestsComponent
             this.errorMessage =
               response.message ||
               'Unable to load exchange requests.';
-
           }
 
-
           this.loading = false;
-
         },
-
 
         error: (error) => {
 
@@ -112,20 +96,15 @@ export class ExchangeRequestsComponent
             error
           );
 
-
           this.errorMessage =
             error?.error?.message ||
             'Unable to load exchange requests.';
 
-
           this.loading = false;
-
         }
 
       });
-
   }
-
 
   // ==========================================
   // APPROVE
@@ -139,9 +118,7 @@ export class ExchangeRequestsComponent
       request,
       'Approved'
     );
-
   }
-
 
   // ==========================================
   // REJECT
@@ -155,27 +132,21 @@ export class ExchangeRequestsComponent
       request,
       'Rejected'
     );
-
   }
-
 
   // ==========================================
   // UPDATE STATUS
   // ==========================================
 
   private updateStatus(
-
     request: ExchangeRequest,
-
     status:
       'Approved' |
       'Rejected'
-
   ): void {
 
     this.updatingExchangeId =
       request.exchange_id;
-
 
     this.exchangeService
       .updateStatus(
@@ -197,15 +168,11 @@ export class ExchangeRequestsComponent
               response.message ||
               'Unable to update exchange status.'
             );
-
           }
-
 
           this.updatingExchangeId =
             null;
-
         },
-
 
         error: (error) => {
 
@@ -214,22 +181,17 @@ export class ExchangeRequestsComponent
             error
           );
 
-
           alert(
             error?.error?.message ||
             'Unable to update exchange status.'
           );
 
-
           this.updatingExchangeId =
             null;
-
         }
 
       });
-
   }
-
 
   // ==========================================
   // STATUS CLASS
@@ -244,23 +206,17 @@ export class ExchangeRequestsComponent
     ) {
 
       return 'bg-green-100 text-green-700';
-
     }
-
 
     if (
       status === 'Rejected'
     ) {
 
       return 'bg-red-100 text-red-700';
-
     }
 
-
     return 'bg-yellow-100 text-yellow-700';
-
   }
-
 
   // ==========================================
   // IMAGE URL
@@ -271,23 +227,28 @@ export class ExchangeRequestsComponent
   ): string {
 
     if (!image) {
-
       return '';
-
     }
 
-
+    // Already a complete URL
     if (
-      image.startsWith('http')
+      image.startsWith('http://') ||
+      image.startsWith('https://')
     ) {
 
       return image;
-
     }
 
+    // Production backend
+    const apiUrl =
+      'https://api.carsey.in';
 
-    return `http://localhost:5000/${image}`;
+    // Make sure there is exactly one /
+    const imagePath =
+      image.startsWith('/')
+        ? image
+        : `/${image}`;
 
+    return `${apiUrl}${imagePath}`;
   }
-
 }
