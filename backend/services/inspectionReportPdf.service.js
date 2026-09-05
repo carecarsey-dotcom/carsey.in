@@ -2811,11 +2811,17 @@ const generateInspectionReportPdf = (
                             normalizedReport
                         );
 
-                    const uploadsDir =
-                        path.join(
-                            process.cwd(),
-                            "uploads"
-                        );
+                    const railwayUploads = "/app/uploads";
+const localUploads = path.join(
+    process.cwd(),
+    "uploads"
+);
+
+const uploadsDir =
+    process.env.RAILWAY_ENVIRONMENT ||
+    process.env.RAILWAY_SERVICE_ID
+        ? railwayUploads
+        : localUploads;
 
                     const reportsDir =
                         path.join(
