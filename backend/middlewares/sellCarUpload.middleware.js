@@ -2,33 +2,102 @@ const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
 
+// ======================================================
+// RAILWAY VOLUME
+// ======================================================
+//
+// Railway Volume mount path:
+// /app/uploads
+//
+// Local development:
+// backend/uploads
+//
+// ======================================================
+
+const railwayUploadRoot = "/app/uploads";
+
+const localUploadRoot = path.join(
+    __dirname,
+    "..",
+    "uploads"
+);
 
 // ======================================================
-// UPLOAD DIRECTORY
+// SELECT UPLOAD ROOT
+// ======================================================
+
+const uploadRootDirectory = fs.existsSync(
+    railwayUploadRoot
+)
+    ? railwayUploadRoot
+    : localUploadRoot;
+
+// ======================================================
+// SELL CAR UPLOAD DIRECTORY
 // ======================================================
 
 const uploadDirectory = path.join(
-    process.cwd(),
-    "uploads",
+    uploadRootDirectory,
     "sell-cars"
 );
-
 
 // ======================================================
 // CREATE DIRECTORY IF NOT EXISTS
 // ======================================================
 
-if (!fs.existsSync(uploadDirectory)) {
+if (!fs.existsSync(uploadRootDirectory)) {
+    fs.mkdirSync(
+        uploadRootDirectory,
+        {
+            recursive: true
+        }
+    );
+}
 
+if (!fs.existsSync(uploadDirectory)) {
     fs.mkdirSync(
         uploadDirectory,
         {
             recursive: true
         }
     );
-
 }
 
+// ======================================================
+// DEBUG
+// ======================================================
+
+console.log(
+    "=========================================="
+);
+
+console.log(
+    "SELL CAR UPLOAD ROOT:"
+);
+
+console.log(
+    uploadRootDirectory
+);
+
+console.log(
+    "SELL CAR UPLOAD DIRECTORY:"
+);
+
+console.log(
+    uploadDirectory
+);
+
+console.log(
+    "RAILWAY VOLUME EXISTS:"
+);
+
+console.log(
+    fs.existsSync(railwayUploadRoot)
+);
+
+console.log(
+    "=========================================="
+);
 
 // ======================================================
 // STORAGE CONFIGURATION
@@ -36,9 +105,9 @@ if (!fs.existsSync(uploadDirectory)) {
 
 const storage = multer.diskStorage({
 
-    // --------------------------------------------------
+    // ==================================================
     // DESTINATION
-    // --------------------------------------------------
+    // ==================================================
 
     destination: (
         req,
@@ -46,17 +115,24 @@ const storage = multer.diskStorage({
         cb
     ) => {
 
+        if (!fs.existsSync(uploadDirectory)) {
+            fs.mkdirSync(
+                uploadDirectory,
+                {
+                    recursive: true
+                }
+            );
+        }
+
         cb(
             null,
             uploadDirectory
         );
-
     },
 
-
-    // --------------------------------------------------
+    // ==================================================
     // FILE NAME
-    // --------------------------------------------------
+    // ==================================================
 
     filename: (
         req,
@@ -69,22 +145,17 @@ const storage = multer.diskStorage({
                 file.originalname
             ).toLowerCase();
 
-
         const uniqueName =
             `${Date.now()}-${Math.round(
                 Math.random() * 1E9
             )}${extension}`;
 
-
         cb(
             null,
             uniqueName
         );
-
     }
-
 });
-
 
 // ======================================================
 // FILE FILTER
@@ -96,44 +167,23 @@ const fileFilter = (
     cb
 ) => {
 
-    // --------------------------------------------------
-    // ALLOWED MIME TYPES
-    // --------------------------------------------------
-
     const allowedMimeTypes = [
-
         "image/jpeg",
-
         "image/jpg",
-
         "image/png",
-
         "image/webp"
-
     ];
-
-
-    // --------------------------------------------------
-    // CHECK FILE TYPE
-    // --------------------------------------------------
 
     if (
         allowedMimeTypes.includes(
             file.mimetype
         )
     ) {
-
         return cb(
             null,
             true
         );
-
     }
-
-
-    // --------------------------------------------------
-    // INVALID FILE
-    // --------------------------------------------------
 
     return cb(
         new Error(
@@ -141,9 +191,7 @@ const fileFilter = (
         ),
         false
     );
-
 };
-
 
 // ======================================================
 // MULTER CONFIGURATION
@@ -158,21 +206,15 @@ const uploadSellCarImages = multer({
     limits: {
 
         // Maximum 5 MB per image
-
         fileSize:
             5 * 1024 * 1024
-
     }
-
 });
-
 
 // ======================================================
 // EXPORT
 // ======================================================
 
 module.exports = {
-
     uploadSellCarImages
-
 };

@@ -42,7 +42,7 @@ const uploadDirectory = path.join(
 );
 
 // ======================================================
-// CREATE UPLOAD DIRECTORY
+// CREATE UPLOAD DIRECTORIES
 // ======================================================
 
 if (!fs.existsSync(uploadRootDirectory)) {
@@ -115,9 +115,7 @@ const storage = multer.diskStorage({
         cb
     ) => {
 
-        // Make absolutely sure folder exists
         if (!fs.existsSync(uploadDirectory)) {
-
             fs.mkdirSync(
                 uploadDirectory,
                 {
@@ -160,7 +158,6 @@ const storage = multer.diskStorage({
             uniqueName
         );
     }
-
 });
 
 // ======================================================
@@ -193,7 +190,6 @@ const fileFilter = (
         extensionValid &&
         mimeTypeValid
     ) {
-
         return cb(
             null,
             true
@@ -222,12 +218,11 @@ const upload = multer({
         fileSize:
             5 * 1024 * 1024,
 
-        // Maximum 10 images
+        // Maximum 66 images
         files: 66
     },
 
     fileFilter
-
 });
 
 // ======================================================
