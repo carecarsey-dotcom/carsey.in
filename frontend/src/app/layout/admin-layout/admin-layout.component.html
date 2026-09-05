@@ -1,42 +1,31 @@
-<div class="min-h-screen bg-slate-100">
-
+<div class="min-h-screen w-full min-w-0 overflow-x-hidden bg-slate-100">
 
   <!-- ========================================= -->
   <!-- SIDEBAR -->
   <!-- ========================================= -->
 
   <aside
-    class="fixed left-0 top-0 z-40 h-screen w-64 bg-slate-900 text-white shadow-xl"
+    class="fixed left-0 top-0 z-40 flex h-screen w-64 flex-col bg-slate-900 text-white shadow-xl"
     [class.hidden]="!sidebarOpen"
   >
-
 
     <!-- ========================================= -->
     <!-- LOGO -->
     <!-- ========================================= -->
 
     <div
-      class="flex h-20 items-center border-b border-slate-700 px-6"
+      class="flex h-20 shrink-0 items-center border-b border-slate-700 px-6"
     >
-
       <div>
-
-        <h1
-          class="text-2xl font-bold"
-        >
+        <h1 class="text-2xl font-bold">
           Carsey.in
         </h1>
 
-        <p
-          class="text-xs text-slate-400"
-        >
+        <p class="text-xs text-slate-400">
           Admin Panel
         </p>
-
       </div>
-
     </div>
-
 
 
     <!-- ========================================= -->
@@ -44,31 +33,23 @@
     <!-- ========================================= -->
 
     <nav
-      class="space-y-1 p-4"
+      class="min-h-0 flex-1 overflow-y-auto space-y-1 p-4"
     >
 
-
-      <!-- ========================================= -->
       <!-- DASHBOARD -->
-      <!-- ========================================= -->
 
       <a
         routerLink="/admin/dashboard"
         routerLinkActive="bg-slate-700 text-white"
         [routerLinkActiveOptions]="{ exact: true }"
-        class="flex items-center rounded-lg px-4 py-3 text-slate-300 transition hover:bg-slate-800 hover:text-white"
+        class="flex w-full items-center rounded-lg px-4 py-3 text-slate-300 transition hover:bg-slate-800 hover:text-white"
       >
-
-        <span>
-          📊
-        </span>
+        <span>📊</span>
 
         <span class="ml-3">
           Dashboard
         </span>
-
       </a>
-
 
 
       <!-- ========================================= -->
@@ -87,17 +68,13 @@
       <a
         routerLink="/admin/vehicles"
         routerLinkActive="bg-slate-700 text-white"
-        class="flex items-center rounded-lg px-4 py-3 text-slate-300 transition hover:bg-slate-800 hover:text-white"
+        class="flex w-full items-center rounded-lg px-4 py-3 text-slate-300 transition hover:bg-slate-800 hover:text-white"
       >
-
-        <span>
-          🚗
-        </span>
+        <span>🚗</span>
 
         <span class="ml-3">
           All Vehicles
         </span>
-
       </a>
 
 
@@ -106,19 +83,14 @@
       <a
         routerLink="/admin/vehicles/add"
         routerLinkActive="bg-slate-700 text-white"
-        class="flex items-center rounded-lg px-4 py-3 text-slate-300 transition hover:bg-slate-800 hover:text-white"
+        class="flex w-full items-center rounded-lg px-4 py-3 text-slate-300 transition hover:bg-slate-800 hover:text-white"
       >
-
-        <span>
-          ➕
-        </span>
+        <span>➕</span>
 
         <span class="ml-3">
           Add Vehicle
         </span>
-
       </a>
-
 
 
       <!-- ========================================= -->
@@ -137,17 +109,13 @@
       <a
         routerLink="/admin/report-unlock-requests"
         routerLinkActive="bg-slate-700 text-white"
-        class="flex items-center rounded-lg px-4 py-3 text-slate-300 transition hover:bg-slate-800 hover:text-white"
+        class="flex w-full items-center rounded-lg px-4 py-3 text-slate-300 transition hover:bg-slate-800 hover:text-white"
       >
-
-        <span>
-          🔓
-        </span>
+        <span>🔓</span>
 
         <span class="ml-3">
           Report Unlock
         </span>
-
       </a>
 
 
@@ -156,17 +124,13 @@
       <a
         routerLink="/admin/test-drive-requests"
         routerLinkActive="bg-slate-700 text-white"
-        class="flex items-center rounded-lg px-4 py-3 text-slate-300 transition hover:bg-slate-800 hover:text-white"
+        class="flex w-full items-center rounded-lg px-4 py-3 text-slate-300 transition hover:bg-slate-800 hover:text-white"
       >
-
-        <span>
-          🚘
-        </span>
+        <span>🚘</span>
 
         <span class="ml-3">
           Test Drive
         </span>
-
       </a>
 
 
@@ -175,17 +139,13 @@
       <a
         routerLink="/admin/finance-requests"
         routerLinkActive="bg-slate-700 text-white"
-        class="flex items-center rounded-lg px-4 py-3 text-slate-300 transition hover:bg-slate-800 hover:text-white"
+        class="flex w-full items-center rounded-lg px-4 py-3 text-slate-300 transition hover:bg-slate-800 hover:text-white"
       >
-
-        <span>
-          💰
-        </span>
+        <span>💰</span>
 
         <span class="ml-3">
           Finance
         </span>
-
       </a>
 
 
@@ -194,17 +154,13 @@
       <a
         routerLink="/admin/sell-car-requests"
         routerLinkActive="bg-slate-700 text-white"
-        class="flex items-center rounded-lg px-4 py-3 text-slate-300 transition hover:bg-slate-800 hover:text-white"
+        class="flex w-full items-center rounded-lg px-4 py-3 text-slate-300 transition hover:bg-slate-800 hover:text-white"
       >
-
-        <span>
-          🚙
-        </span>
+        <span>🚙</span>
 
         <span class="ml-3">
           Sell Car
         </span>
-
       </a>
 
 
@@ -213,17 +169,13 @@
       <a
         routerLink="/admin/exchange-requests"
         routerLinkActive="bg-slate-700 text-white"
-        class="flex items-center rounded-lg px-4 py-3 text-slate-300 transition hover:bg-slate-800 hover:text-white"
+        class="flex w-full items-center rounded-lg px-4 py-3 text-slate-300 transition hover:bg-slate-800 hover:text-white"
       >
-
-        <span>
-          🔄
-        </span>
+        <span>🔄</span>
 
         <span class="ml-3">
           Exchange
         </span>
-
       </a>
 
 
@@ -232,19 +184,14 @@
       <a
         routerLink="/admin/loan-requests"
         routerLinkActive="bg-slate-700 text-white"
-        class="flex items-center rounded-lg px-4 py-3 text-slate-300 transition hover:bg-slate-800 hover:text-white"
+        class="flex w-full items-center rounded-lg px-4 py-3 text-slate-300 transition hover:bg-slate-800 hover:text-white"
       >
-
-        <span>
-          🏦
-        </span>
+        <span>🏦</span>
 
         <span class="ml-3">
           Loan
         </span>
-
       </a>
-
 
 
       <!-- ========================================= -->
@@ -263,17 +210,13 @@
       <a
         routerLink="/admin/inspection-bookings"
         routerLinkActive="bg-slate-700 text-white"
-        class="flex items-center rounded-lg px-4 py-3 text-slate-300 transition hover:bg-slate-800 hover:text-white"
+        class="flex w-full items-center rounded-lg px-4 py-3 text-slate-300 transition hover:bg-slate-800 hover:text-white"
       >
-
-        <span>
-          📅
-        </span>
+        <span>📅</span>
 
         <span class="ml-3">
           Bookings
         </span>
-
       </a>
 
 
@@ -282,21 +225,16 @@
       <a
         routerLink="/admin/inspection-reports"
         routerLinkActive="bg-slate-700 text-white"
-        class="flex items-center rounded-lg px-4 py-3 text-slate-300 transition hover:bg-slate-800 hover:text-white"
+        class="flex w-full items-center rounded-lg px-4 py-3 text-slate-300 transition hover:bg-slate-800 hover:text-white"
       >
-
-        <span>
-          📄
-        </span>
+        <span>📄</span>
 
         <span class="ml-3">
           Reports
         </span>
-
       </a>
 
     </nav>
-
 
 
     <!-- ========================================= -->
@@ -304,29 +242,22 @@
     <!-- ========================================= -->
 
     <div
-      class="absolute bottom-0 w-full border-t border-slate-700 p-4 bg-slate-900"
+      class="shrink-0 border-t border-slate-700 bg-slate-900 p-4"
     >
-
       <button
         type="button"
         (click)="logout()"
         class="flex w-full items-center rounded-lg px-4 py-3 text-slate-300 transition hover:bg-red-600 hover:text-white"
       >
-
-        <span>
-          🚪
-        </span>
+        <span>🚪</span>
 
         <span class="ml-3">
           Logout
         </span>
-
       </button>
-
     </div>
 
   </aside>
-
 
 
   <!-- ========================================= -->
@@ -334,65 +265,59 @@
   <!-- ========================================= -->
 
   <div
+    class="min-h-screen w-full min-w-0 transition-all"
     [class.ml-64]="sidebarOpen"
-    class="min-h-screen transition-all"
   >
-
 
     <!-- ======================================= -->
     <!-- NAVBAR -->
     <!-- ======================================= -->
 
     <header
-      class="sticky top-0 z-30 flex h-20 items-center justify-between border-b border-slate-200 bg-white px-6 shadow-sm"
+      class="sticky top-0 z-30 flex h-20 w-full min-w-0 items-center justify-between border-b border-slate-200 bg-white px-4 shadow-sm sm:px-6"
     >
-
 
       <!-- LEFT -->
 
       <div
-        class="flex items-center gap-4"
+        class="flex min-w-0 items-center gap-4"
       >
 
         <button
           type="button"
           (click)="toggleSidebar()"
-          class="rounded-lg border border-slate-200 px-3 py-2 text-xl hover:bg-slate-100"
+          class="shrink-0 rounded-lg border border-slate-200 px-3 py-2 text-xl hover:bg-slate-100"
         >
           ☰
         </button>
 
 
-        <div>
-
+        <div class="min-w-0">
           <h2
-            class="text-lg font-bold text-slate-800"
+            class="truncate text-lg font-bold text-slate-800"
           >
             Admin Dashboard
           </h2>
 
           <p
-            class="text-xs text-slate-500"
+            class="truncate text-xs text-slate-500"
           >
             Carsey.in Management System
           </p>
-
         </div>
 
       </div>
 
 
-
       <!-- RIGHT -->
 
       <div
-        class="flex items-center gap-4"
+        class="flex shrink-0 items-center gap-3 sm:gap-4"
       >
 
         <div
           class="hidden text-right sm:block"
         >
-
           <p
             class="text-sm font-semibold text-slate-800"
           >
@@ -404,12 +329,11 @@
           >
             Administrator
           </p>
-
         </div>
 
 
         <div
-          class="flex h-10 w-10 items-center justify-center rounded-full bg-slate-900 font-bold text-white"
+          class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-900 font-bold text-white"
         >
           A
         </div>
@@ -419,22 +343,15 @@
     </header>
 
 
-
     <!-- ======================================= -->
     <!-- PAGE CONTENT -->
     <!-- ======================================= -->
 
     <main
-      class="p-6"
+      class="w-full min-w-0 max-w-full overflow-x-hidden p-4 sm:p-6"
     >
-
-      <!-- IMPORTANT -->
-      <!-- Child admin pages yahan render honge -->
-
       <router-outlet></router-outlet>
-
     </main>
-
 
   </div>
 
