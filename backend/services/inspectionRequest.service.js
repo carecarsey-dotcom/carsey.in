@@ -409,6 +409,77 @@ const startInspection = async (
 // Employee price is NEVER trusted/saved here.
 // ======================================================
 
+const DETAILED_SECTION_TITLES = {
+    exterior: "EXTERIOR + TYRE",
+    engine_bay: "ENGINE + TRANSMISSION",
+    suspension_steering: "STEERING + SUSPENSION + BRAKE",
+    interior_electricals: "ELECTRICAL + INTERIOR + FEATURES",
+    electricals_ac: "AC + LIGHT",
+    transmission_system: "TRANSMISSION",
+    braking_system: "BRAKING",
+    tires_wheels: "TYRES + WHEELS",
+    documents_title: "DOCUMENTS + TITLE"
+};
+
+const buildDetailedChecklistRows = (
+    detailedInspection,
+    detailedRemarks = {}
+) => {
+    const rows = [];
+
+    if (!detailedInspection || typeof detailedInspection !== "object") {
+        return rows;
+    }
+
+    for (const [sectionKey, sectionRows] of Object.entries(detailedInspection)) {
+        if (!sectionRows || typeof sectionRows !== "object" || Array.isArray(sectionRows)) {
+            continue;
+        }
+
+        const sectionTitle =
+            DETAILED_SECTION_TITLES[sectionKey] ||
+            String(sectionKey).replace(/_/g, " ").toUpperCase();
+
+        for (const [rowName, rawSelected] of Object.entries(sectionRows)) {
+            const selectedOptions = Array.isArray(rawSelected)
+                ? rawSelected.filter(Boolean).map(value => String(value))
+                : [];
+
+            const remarkKey = `${sectionKey}__${rowName}`;
+            const remark =
+                detailedRemarks &&
+                detailedRemarks[remarkKey] !== undefined &&
+                detailedRemarks[remarkKey] !== null
+                    ? String(detailedRemarks[remarkKey]).trim()
+                    : "";
+
+            if (selectedOptions.length === 0 && !remark) {
+                continue;
+            }
+
+            const hasIssue = selectedOptions.some(
+                option => option !== "Ok/No imperfection"
+            );
+
+            rows.push({
+                category: sectionKey,
+                section: sectionKey,
+                section_title: sectionTitle,
+                item_name: rowName,
+                status: hasIssue ? "Need Attention" : "Good",
+                selected_options: selectedOptions,
+                remark: remark || null
+            });
+        }
+    }
+
+    return rows;
+};
+
+// ======================================================
+// SUBMIT INSPECTION
+// ======================================================
+
 const submitInspection = async (
     requestId,
     employeeId,
@@ -461,7 +532,23 @@ const submitInspection = async (
     if (!vehicleData.model && request.booking_model) vehicleData.model = request.booking_model;
     if (!vehicleData.registration_number && request.vehicle_number) vehicleData.registration_number = request.vehicle_number;
 
-    if (!vehicleData.checklist && vehicleData.inspection_checklist) {
+    // ==================================================
+    // DETAILED CHECKLIST IS THE REAL EMPLOYEE CHECKLIST
+    // ==================================================
+    // The Employee Inspection UI stores every row as:
+    // section -> row -> selected checkbox options, plus a row remark.
+    // Convert that exact structure into database rows so the same
+    // selections can be rendered later in the PDF.
+    // ==================================================
+    const detailedChecklistRows = buildDetailedChecklistRows(
+        vehicleData.detailedInspection,
+        vehicleData.detailedInspectionRemarks
+    );
+
+    if (detailedChecklistRows.length > 0) {
+        vehicleData.checklist = detailedChecklistRows;
+        vehicleData.inspection_checklist = detailedChecklistRows;
+    } else if (!vehicleData.checklist && vehicleData.inspection_checklist) {
         vehicleData.checklist = vehicleData.inspection_checklist;
     }
 
@@ -498,11 +585,11 @@ const submitInspection = async (
         ? uploadedFiles
         : [];
 
-    const expectedImageCount = 10;
+    const minimumVehiclePhotoCount = 10;
 
-    if (imageFiles.length !== expectedImageCount) {
+    if (imageFiles.length < minimumVehiclePhotoCount) {
         throw new Error(
-            `Exactly ${expectedImageCount} vehicle photos are required before submission. Received ${imageFiles.length}.`
+            `Exactly ${minimumVehiclePhotoCount} vehicle photos are required before submission. Received ${imageFiles.length}.`
         );
     }
 
@@ -521,7 +608,10 @@ const submitInspection = async (
 
     const savedVehicleImages = [];
 
-    for (let index = 0; index < imageFiles.length; index++) {
+    // --------------------------------------------------
+    // FIRST 10 FILES = VEHICLE PHOTOS
+    // --------------------------------------------------
+    for (let index = 0; index < minimumVehiclePhotoCount; index++) {
         const file = imageFiles[index];
 
         if (!file || !file.filename) {
@@ -547,6 +637,69 @@ const submitInspection = async (
         });
     }
 
+    // --------------------------------------------------
+    // REMAINING FILES = DETAILED ROW IMAGES
+    // --------------------------------------------------
+    // Frontend encodes these filenames as:
+    // __detailed__sectionKey__encodedRowName.ext
+    // They are stored in the same car_images table so that
+    // the PDF can load them again on later regeneration.
+    // --------------------------------------------------
+    for (let index = minimumVehiclePhotoCount; index < imageFiles.length; index++) {
+        const file = imageFiles[index];
+
+        if (!file || !file.filename) {
+            continue;
+        }
+
+        const originalName = String(file.originalname || "");
+        const marker = "__detailed__";
+        const markerIndex = originalName.indexOf(marker);
+
+        if (markerIndex < 0) {
+            // Unknown extra image: keep it safely as a generic image.
+            const imagePath = `/uploads/vehicles/${file.filename}`;
+            await vehicleImageRepository.addVehicleImage(
+                vehicleId,
+                "Detailed Inspection Image",
+                imagePath,
+                false
+            );
+            continue;
+        }
+
+        const metadata = originalName.slice(markerIndex + marker.length);
+        const separatorIndex = metadata.indexOf("__");
+
+        let sectionKey = "unknown";
+        let rowName = "Inspection Item";
+
+        if (separatorIndex >= 0) {
+            sectionKey = metadata.slice(0, separatorIndex) || "unknown";
+            rowName = metadata.slice(separatorIndex + 2);
+        } else if (metadata) {
+            sectionKey = metadata;
+        }
+
+        rowName = rowName.replace(/\.[^.]+$/, "");
+
+        try {
+            rowName = decodeURIComponent(rowName);
+        } catch (decodeError) {
+            // Keep original encoded value when decoding fails.
+        }
+
+        const imageType = `Detailed|${sectionKey}|${rowName}`;
+        const imagePath = `/uploads/vehicles/${file.filename}`;
+
+        await vehicleImageRepository.addVehicleImage(
+            vehicleId,
+            imageType,
+            imagePath,
+            false
+        );
+    }
+
     let employeeRemark =
         inspectionData.employeeRemark ??
         inspectionData.remark ??
@@ -557,7 +710,6 @@ const submitInspection = async (
         if (typeof employeeRemark !== "string") {
             throw new Error("Employee remark must be text");
         }
-
         employeeRemark = employeeRemark.trim() || null;
     }
 
@@ -614,7 +766,6 @@ const submitInspection = async (
 
         try {
             const dbImages = await vehicleImageRepository.getVehicleImages(vehicleId);
-
             if (Array.isArray(dbImages) && dbImages.length > 0) {
                 vehicleImages = dbImages;
             }
@@ -634,7 +785,18 @@ const submitInspection = async (
             checklist,
             inspection_checklist: checklist,
             inspectionChecklist: checklist,
-            detailedInspection: checklist,
+            detailedInspection:
+                completeReportData.detailedInspection ||
+                completeReportData.detailed_inspection ||
+                vehicleData.detailedInspection ||
+                checklist,
+            detailedInspectionRemarks:
+                completeReportData.detailedInspectionRemarks ||
+                completeReportData.detailed_inspection_remarks ||
+                vehicleData.detailedInspectionRemarks ||
+                {},
+            employeeRemark,
+            employee_remark: employeeRemark,
             images: vehicleImages,
             vehicleImages,
             publishStatus: "No",
@@ -695,7 +857,6 @@ const submitInspection = async (
         }
     } catch (error) {
         console.error("EMPLOYEE SUBMIT ADMIN EMAIL ERROR:", error);
-
         adminEmailResult = {
             success: false,
             message: error.message || "Unable to send inspection PDF to Admin."
@@ -735,7 +896,6 @@ const submitInspection = async (
         }
     } catch (error) {
         console.error("EMPLOYEE SUBMIT CUSTOMER EMAIL ERROR:", error);
-
         customerEmailResult = {
             success: false,
             message: error.message || "Unable to send inspection PDF to customer."
@@ -777,7 +937,6 @@ const submitInspection = async (
             "Inspection submitted successfully. PDF generated and email delivery processed. Report sent for Admin review."
     };
 };
-
 
 // ======================================================
 // ADMIN APPROVE

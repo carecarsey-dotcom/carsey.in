@@ -13,7 +13,10 @@ const {
 
 const upload = require("../middlewares/upload.middleware");
 
+// ======================================================
 // EMPLOYEE
+// ======================================================
+
 router.get(
     "/inspection-requests/employee/my-requests",
     verifyToken,
@@ -49,15 +52,22 @@ router.patch(
     inspectionRequestController.startInspection
 );
 
+// Employee submit contains:
+// - 10 vehicle photos
+// - optional detailed inspection row images
+// Therefore this endpoint allows more than 10 files.
 router.patch(
     "/inspection-requests/request/:requestId/submit",
     verifyToken,
     requireEmployee,
-    upload.array("vehicleImages", 10),
+    upload.array("vehicleImages", 100),
     inspectionRequestController.submitInspection
 );
 
+// ======================================================
 // ADMIN
+// ======================================================
+
 router.get(
     "/inspection-requests",
     verifyToken,
@@ -86,7 +96,10 @@ router.patch(
     inspectionRequestController.markRequestPublished
 );
 
+// ======================================================
 // REPORT
+// ======================================================
+
 router.get(
     "/inspection-requests/request/:requestId/report",
     verifyToken,

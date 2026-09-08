@@ -1,5 +1,7 @@
 const multer = require("multer");
+
 const path = require("path");
+
 const fs = require("fs");
 
 // ======================================================
@@ -46,21 +48,25 @@ const uploadDirectory = path.join(
 // ======================================================
 
 if (!fs.existsSync(uploadRootDirectory)) {
+
     fs.mkdirSync(
         uploadRootDirectory,
         {
             recursive: true
         }
     );
+
 }
 
 if (!fs.existsSync(uploadDirectory)) {
+
     fs.mkdirSync(
         uploadDirectory,
         {
             recursive: true
         }
     );
+
 }
 
 // ======================================================
@@ -116,18 +122,21 @@ const storage = multer.diskStorage({
     ) => {
 
         if (!fs.existsSync(uploadDirectory)) {
+
             fs.mkdirSync(
                 uploadDirectory,
                 {
                     recursive: true
                 }
             );
+
         }
 
         cb(
             null,
             uploadDirectory
         );
+
     },
 
     // ==================================================
@@ -157,7 +166,9 @@ const storage = multer.diskStorage({
             null,
             uniqueName
         );
+
     }
+
 });
 
 // ======================================================
@@ -190,10 +201,12 @@ const fileFilter = (
         extensionValid &&
         mimeTypeValid
     ) {
+
         return cb(
             null,
             true
         );
+
     }
 
     return cb(
@@ -202,10 +215,22 @@ const fileFilter = (
         ),
         false
     );
+
 };
 
 // ======================================================
 // MULTER
+// ======================================================
+//
+// Employee inspection:
+//
+// 10 Vehicle Photos
+// +
+// Detailed Vehicle Inspection Checklist row images
+//
+// Routes can still apply their own upload.array()
+// limits.
+//
 // ======================================================
 
 const upload = multer({
@@ -218,11 +243,19 @@ const upload = multer({
         fileSize:
             5 * 1024 * 1024,
 
-        // Maximum 66 images
-        files: 66
+        // Maximum 100 images in one request
+        //
+        // Existing routes can still use:
+        // upload.array("vehicleImages", 10)
+        //
+        // so changing this global limit does NOT
+        // force every route to accept 100 files.
+        files: 100
+
     },
 
     fileFilter
+
 });
 
 // ======================================================

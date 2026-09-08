@@ -2107,7 +2107,7 @@ export class EmployeeInspectionComponent
         ) {
 
           this.errorMessage =
-            `${section.title} ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢ ${row[0]}: Please select at least one inspection option.`;
+            `${section.title} ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ ${row[0]}: Please select at least one inspection option.`;
 
           return false;
         }
@@ -2195,6 +2195,46 @@ export class EmployeeInspectionComponent
 
 
     return true;
+  }
+
+
+  // ======================================================
+  // PREPARE DETAILED CHECKLIST PAYLOAD FOR DATABASE + PDF
+  // EXACT SAME ORDER AS THE EMPLOYEE FORM
+  // ======================================================
+
+  private buildDetailedChecklistPayload(): any[] {
+    const result: any[] = [];
+
+    for (const section of this.inspectionSections) {
+      for (const row of section.rows) {
+        const rowName = row[0];
+        const selectedOptions = [
+          ...(this.detailedInspection[section.key]?.[rowName] || [])
+        ];
+
+        const remark = this.getDetailedRowRemark(
+          section.key,
+          rowName
+        ).trim();
+
+        const hasIssue = selectedOptions.some(
+          option => option !== 'Ok/No imperfection'
+        );
+
+        result.push({
+          category: section.key,
+          section: section.key,
+          section_title: section.title,
+          item_name: rowName,
+          status: hasIssue ? 'Need Attention' : 'Good',
+          selected_options: selectedOptions,
+          remark
+        });
+      }
+    }
+
+    return result;
   }
 
 
@@ -2307,6 +2347,9 @@ export class EmployeeInspectionComponent
     const checklist =
       this.buildChecklistPayload();
 
+    const detailedChecklist =
+      this.buildDetailedChecklistPayload();
+
 
     // ----------------------------------------------------
     // PAYLOAD
@@ -2354,12 +2397,14 @@ export class EmployeeInspectionComponent
         this.overall_score,
 
 
+      // The Detailed Vehicle Inspection Checklist is the
+      // actual inspection checklist shown to the employee.
       checklist:
-        checklist,
+        detailedChecklist,
 
 
       inspection_checklist:
-        checklist,
+        detailedChecklist,
 
 
       employeeRemark:
@@ -2379,11 +2424,59 @@ export class EmployeeInspectionComponent
     };
 
 
+    // ----------------------------------------------------
+    // UPLOAD FILES
+    // First 10 = Vehicle Photos.
+    // Remaining = Detailed Vehicle Inspection row images.
+    // The filename carries the exact section + row so the
+    // backend can store and later place the image under the
+    // correct checklist row in the PDF.
+    // ----------------------------------------------------
+
     const vehicleImages = this.vehiclePhotos.map(photo => ({
       type: photo.title,
       row: photo.key,
       file: photo.file
     }));
+
+    for (const section of this.inspectionSections) {
+      for (const row of section.rows) {
+        const rowName = row[0];
+        const key = this.getDetailedRowKey(
+          section.key,
+          rowName
+        );
+        const detailedImage =
+          this.detailedRowImages[key];
+
+        if (!detailedImage?.file) {
+          continue;
+        }
+
+        const sourceFile = detailedImage.file;
+        const extension =
+          sourceFile.name.includes('.')
+            ? sourceFile.name.slice(
+                sourceFile.name.lastIndexOf('.')
+              )
+            : '.jpg';
+
+        const safeFileName =
+          `__detailed__${section.key}__${encodeURIComponent(rowName)}${extension}`;
+
+        const uploadFile = new File(
+          [sourceFile],
+          safeFileName,
+          { type: sourceFile.type || 'image/jpeg' }
+        );
+
+        vehicleImages.push({
+          type: `Detailed|${section.key}|${rowName}`,
+          row: key,
+          file: uploadFile
+        });
+      }
+    }
 
     this.employeeService
       .submitInspection(
