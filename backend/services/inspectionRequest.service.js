@@ -557,6 +557,7 @@ const submitInspection = async (
         if (typeof employeeRemark !== "string") {
             throw new Error("Employee remark must be text");
         }
+
         employeeRemark = employeeRemark.trim() || null;
     }
 
@@ -613,6 +614,7 @@ const submitInspection = async (
 
         try {
             const dbImages = await vehicleImageRepository.getVehicleImages(vehicleId);
+
             if (Array.isArray(dbImages) && dbImages.length > 0) {
                 vehicleImages = dbImages;
             }
@@ -693,6 +695,7 @@ const submitInspection = async (
         }
     } catch (error) {
         console.error("EMPLOYEE SUBMIT ADMIN EMAIL ERROR:", error);
+
         adminEmailResult = {
             success: false,
             message: error.message || "Unable to send inspection PDF to Admin."
@@ -732,6 +735,7 @@ const submitInspection = async (
         }
     } catch (error) {
         console.error("EMPLOYEE SUBMIT CUSTOMER EMAIL ERROR:", error);
+
         customerEmailResult = {
             success: false,
             message: error.message || "Unable to send inspection PDF to customer."
@@ -773,6 +777,7 @@ const submitInspection = async (
             "Inspection submitted successfully. PDF generated and email delivery processed. Report sent for Admin review."
     };
 };
+
 
 // ======================================================
 // ADMIN APPROVE
@@ -935,7 +940,8 @@ const adminRejectRequest = async (
 // ======================================================
 
 const markRequestPublished = async (
-    requestId
+    requestId,
+    price
 ) => {
 
     const requestIdValue =
@@ -980,7 +986,8 @@ const markRequestPublished = async (
     const result =
         await inspectionRequestRepository
             .markRequestPublished(
-                requestIdValue
+                requestIdValue,
+                price
             );
 
     if (

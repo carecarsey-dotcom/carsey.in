@@ -607,9 +607,12 @@ const markRequestPublished = async (
             Number(price);
 
 
+        // PRICE MUST BE GREATER THAN ZERO
+        // 0 IS NOT ALLOWED
+
         if (
             !Number.isFinite(numericPrice) ||
-            numericPrice < 0
+            numericPrice <= 0
         ) {
             throw new Error(
                 "Vehicle price must be a valid positive number"
