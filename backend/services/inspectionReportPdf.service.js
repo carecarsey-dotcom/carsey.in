@@ -44,6 +44,108 @@ const DETAILED_SECTION_TITLES = {
     documents_title: "DOCUMENTS + TITLE"
 };
 
+// ======================================================
+// EMPLOYEE DETAILED INSPECTION MASTER OPTIONS
+// These are the exact checkbox options used by Employee Inspection.
+// The database stores selected options, while the PDF needs to show
+// every available option with the selected option(s) ticked.
+// ======================================================
+const DETAILED_CHECKLIST_OPTIONS = {
+    exterior: {
+        "Door Front RHS": ["Ok/No imperfection", "Broking/Crack", "Dented", "Rusted", "Scratch", "Paint Mismatch", "Repair + Repaint"],
+        "Door Rear RHS": ["Ok/No imperfection", "Broking/Crack", "Dented", "Rusted", "Scratch", "Paint Mismatch", "Repair + Repaint"],
+        "Door Front LHS": ["Ok/No imperfection", "Broking/Crack", "Dented", "Rusted", "Scratch", "Paint Mismatch", "Repair + Repaint"],
+        "Door Rear LHS": ["Ok/No imperfection", "Broking/Crack", "Dented", "Rusted", "Scratch", "Paint Mismatch", "Repair + Repaint"],
+        "ORVM RHS": ["Ok/No imperfection", "Scratch + Faded", "Mirror Crack", "Folding Motor Not Working", "Light Not Working"],
+        "ORVM LHS": ["Ok/No imperfection", "Scratch + Faded", "Mirror Crack", "Folding Motor Not Working", "Light Not Working"],
+        "Pillar A - RHS": ["Ok/No imperfection", "Paint Faded / Mismatch", "Scratches", "Dent", "Rusting", "Repaired + Welded"],
+        "Pillar B - RHS": ["Ok/No imperfection", "Paint Faded / Mismatch", "Scratches", "Dent", "Rusting", "Repaired + Welded"],
+        "Pillar C - RHS": ["Ok/No imperfection", "Paint Faded / Mismatch", "Scratches", "Dent", "Rusting", "Repaired + Welded"],
+        "Pillar A - LHS": ["Ok/No imperfection", "Paint Faded / Mismatch", "Scratches", "Dent", "Rusting", "Repaired + Welded"],
+        "Pillar B - LHS": ["Ok/No imperfection", "Paint Faded / Mismatch", "Scratches", "Dent", "Rusting", "Repaired + Welded"],
+        "Pillar C - LHS": ["Ok/No imperfection", "Paint Faded / Mismatch", "Scratches", "Dent", "Rusting", "Repaired + Welded"],
+        "Quarter Panel RHS": ["Ok/No imperfection", "Fuel Lid Lock Not Working", "Paint Issue + Mismatch + Faded", "Dent", "Rusting", "Scratches", "Repair + Repaint + Welded"],
+        "Quarter Panel LHS": ["Ok/No imperfection", "Fuel Lid Lock Not Working", "Paint Issue + Mismatch + Faded", "Dent", "Rusting", "Scratches", "Repair + Repaint + Welded"],
+        "Running Board RHS": ["Ok/No imperfection", "Scratches", "Dent", "Rusted", "Cladding Broken / Not Fixed Properly", "Paint Mismatch / Hole / Crack"],
+        "Running Board LHS": ["Ok/No imperfection", "Scratches", "Dent", "Rusted", "Cladding Broken / Not Fixed Properly", "Paint Mismatch / Hole / Crack"],
+        "Dicky / Boot Door": ["Ok/No imperfection", "Scratches", "Dent", "Rusted", "Boot Partial Missing", "Jack & Tools Missing", "Shocker Not Working", "Dicky Lock Not Working", "Spoiler Broken / Damage"],
+        "Tyre Front RHS": ["Ok/No imperfection", "Tyre Crack", "Rim Rusting", "Wheel Cap Missing", "Lug Nut Missing"],
+        "Tyre Rear RHS": ["Ok/No imperfection", "Tyre Crack", "Rim Rusting", "Wheel Cap Missing", "Lug Nut Missing"],
+        "Tyre Front LHS": ["Ok/No imperfection", "Tyre Crack", "Rim Rusting", "Wheel Cap Missing", "Lug Nut Missing"],
+        "Tyre Rear LHS": ["Ok/No imperfection", "Tyre Crack", "Rim Rusting", "Wheel Cap Missing", "Lug Nut Missing"],
+        "Spare Tyre": ["Ok/No imperfection", "Tyre Crack", "Rim Rusting", "Wheel Cap Missing", "Lug Nut Missing"],
+        "Boot Floor": ["Ok/No imperfection", "Water Logging", "Welded / Repaired", "Rusting", "Dent", "Hole & Crack"],
+        "Fender RHS": ["Ok/No imperfection", "Dent", "Scratch", "Rusting", "Lug Missing"],
+        "Fender LHS": ["Ok/No imperfection", "Dent", "Scratch", "Rusting", "Lug Missing"],
+        "Bonnet / Hood": ["Ok/No imperfection", "Dent", "Scratch", "Rusting", "Scooper Not Working", "Crack / Hole"],
+        "Upper Cross Member": ["Ok/No imperfection", "Rusting", "Damage", "Repaired / Welded"],
+        "Roof": ["Ok/No imperfection", "Paint Mismatch + Faded", "Dent", "Crack / Hole", "Scratches", "Roof Rail Broken", "Sun Roof Not Working"],
+        "Apron Both RHS": ["Ok/No imperfection", "Repaired / Welded", "Repainted", "Rusting", "Dent", "Crack / Hole"],
+        "Apron Both LHS": ["Ok/No imperfection", "Repaired / Welded", "Repainted", "Rusting", "Dent", "Crack / Hole"],
+        "Firewall": ["Ok/No imperfection", "Rusted", "Cover Damage", "Carpet Damage", "Crack & Hole", "Repaired / Welded"]
+    },
+    engine_bay: {
+        "Engine Oil": ["Ok/No imperfection", "Level Low", "Dirty", "Replace Oil"],
+        "Cooling System": ["Ok/No imperfection", "Mixed With Oil", "Bottle Broken + Leakage", "Coolant Dirty"],
+        "Engine": ["Ok/No imperfection", "Leakage From Seal", "Tappet Cover Loose", "Engine Misfiring", "Dipstick Missing / Broken", "Exhaust Smoke", "Air Filter Box Damage", "RPM Fluctuate", "Fuse Box Cover Missing"],
+        "UnderBody": ["Ok/No imperfection", "Rusted", "Repaired + Welded"],
+        "Engine Blow By": ["Ok/No imperfection", "Engine Permissible Low Blow By", "Engine Blow By / Back Compressor"],
+        "Transmission": ["Ok/No imperfection", "Low Pickup", "Clutch Noise", "Bearing Damage", "Spongy Clutch"],
+        "Gear Shifting / Gear Box Mount": ["Ok/No imperfection", "Hard", "Bearing Damage", "Broken", "Gear Box Mount Damage"],
+        "Turbocharger": ["Ok/No imperfection", "Not Applicable", "Housing Worn Out", "Not Working", "Oil Leakage", "Bearing Damage"],
+        "Battery": ["Ok/No imperfection", "Battery Terminal Broken", "Acid Leakage", "Dead / Not Restart"],
+        "Alternator": ["Ok/No imperfection", "Not Charging", "Bearing Damage", "Belt Damage"],
+        "Engine Assembly": ["Ok/No imperfection", "Engine Mount Broken", "Leakage From Exhaust Pipe", "Starter Motor Noise"],
+        "Radiator Support": ["Ok/No imperfection", "Leakage", "Support Broken", "Radiator Cap Missing", "Support Welding", "Support Rusted", "Damage / Breakage"],
+        "Axle": ["Ok/No imperfection", "Boot Damage", "Boot Leakage", "Broken"],
+        "4WD / AWD": ["Ok/No imperfection", "Not Applicable", "Leakage", "Switch Not Working"]
+    },
+    suspension_steering: {
+        "Suspension": ["Ok/No imperfection", "Lower + Upper Arm Noise", "Major Leakage Noise", "Boot Damage", "Strut Noise", "Shocker Mount Noise"],
+        "Brakes Front RHS": ["Ok/No imperfection", "Brake Oil Cap Missing", "Brake Oil Level Low", "Brake Pad Worn Out", "Brake Disk Worn Out"],
+        "Brakes Rear RHS": ["Ok/No imperfection", "Brake Oil Cap Missing", "Brake Oil Level Low", "Brake Pad Worn Out", "Brake Disk Worn Out"],
+        "Brakes Front LHS": ["Ok/No imperfection", "Brake Oil Cap Missing", "Brake Oil Level Low", "Brake Pad Worn Out", "Brake Disk Worn Out"],
+        "Brakes Rear LHS": ["Ok/No imperfection", "Brake Oil Cap Missing", "Brake Oil Level Low", "Brake Pad Worn Out", "Brake Disk Worn Out"],
+        "Jumping Rod Bush Front RHS": ["Ok/No imperfection", "Rusting", "Assembly Noise"],
+        "Jumping Rod Bush Rear RHS": ["Ok/No imperfection", "Rusting", "Assembly Noise"],
+        "Jumping Rod Bush Rear LHS": ["Ok/No imperfection", "Rusting", "Assembly Noise"],
+        "Jumping Rod Bush Front LHS": ["Ok/No imperfection", "Rusting", "Assembly Noise"],
+        "Steering": ["Ok/No imperfection", "Rack Boot Damage", "Steering Pump Hard", "Power Steering Oil Dirty", "Steering Rack Noise"],
+        "Brake Master Cylinder": ["Ok/No imperfection", "Leakage", "Hard Brake", "Spongy Brake"]
+    },
+    interior_electricals: {
+        "Cabinette Switch": ["Ok/No imperfection", "Switch Broken", "Not Working"],
+        "All Window Switch": ["Ok/No imperfection", "Not Working", "Power Window Noise", "Switch Damage", "Broken"],
+        "Dashboard": ["Ok/No imperfection", "Faded", "Glove Box Cover Damage", "Broken", "Bonnet Lever Not Working", "Scratches"],
+        "Flooring": ["Ok/No imperfection", "Water On Floor", "Floor Rusting", "Mat Missing", "Crack & Hole"],
+        "Ceiling": ["Ok/No imperfection", "Sun Visor Missing + Damage", "Roof Handle Missing + Broken", "Rear View Mirror Broken"],
+        "Lock System": ["Ok/No imperfection", "Remote Key Not Working + Broken", "Door Lock Knob Broken / Missing", "Keyless Sensor Not Working", "Mechanical Key Damage", "Push Start Not Working"],
+        "Seat All": ["Ok/No imperfection", "Seat Belt Damage", "Dirty", "Cover Torn", "Seat Adjuster Not Working"],
+        "Steering Handle": ["Ok/No imperfection", "Horn Not Working", "Steering Handle Faded", "Steering System Control Not Working"],
+        "Gear Lever": ["Ok/No imperfection", "Boot Cover Torn", "Knob Torn", "Knob Broken"],
+        "Infotainment System": ["Ok/No imperfection", "Not Applicable", "Music System Crack", "Speaker Not Working / Broken"],
+        "Instrument Cluster": ["Ok/No imperfection", "Odometer Not Working", "Glass Scratch / Minor / Major Deep", "Speedometer Not Working", "Tachometer Not Working", "Air Bag Deployed", "Air Bag Warning Light Glowing", "Fuel Low", "EPS", "Air Suspension", "Alternator + Battery", "Air Bag", "ABS", "Transmission Warning", "Oil Pressure Low", "Engine Warning", "Cruise Control", "Non-Critical Warning Light", "Trip Meter", "Idle Start / Stop Not Working"]
+    },
+    electricals_ac: {
+        "AC Unit": ["Ok/No imperfection", "AC Cooling Not Working", "AC Vent Not Fixed / Broken", "Blower Motor Not Working", "Noise", "Heater Ineffective", "AC Not Cooling", "Cooling Fan Noise"],
+        "Head Light Both": ["Ok/No imperfection", "Fading", "Broken", "Crack", "Moisture", "Scratch", "Light Not Working"],
+        "Fog Light Both": ["Ok/No imperfection", "Not Applicable", "Fading", "Broken", "Crack", "Moisture", "Scratch", "Light Not Working"],
+        "Tail Light": ["Ok/No imperfection", "Fading", "Broken", "Crack", "Moisture", "Scratch", "Light Not Working"]
+    },
+    transmission_system: {
+        "Transmission Overall": ["Ok/No imperfection", "Low Pickup", "Clutch Noise", "Bearing Damage", "Spongy Clutch", "Gear Shifting Hard"]
+    },
+    braking_system: {
+        "Brake Overall": ["Ok/No imperfection", "Brake Oil Cap Missing", "Brake Oil Level Low", "Brake Pad Worn Out", "Brake Disk Worn Out", "Hard Brake", "Spongy Brake"]
+    },
+    tires_wheels: {
+        "Tyres / Wheels Overall": ["Ok/No imperfection", "Tyre Crack", "Rim Rusting", "Wheel Cap Missing", "Lug Nut Missing"]
+    },
+    documents_title: {
+        "Documents / Title": ["Ok/No imperfection", "RC Available", "Insurance Available", "PUC Available", "Service History Available", "Duplicate Key Available", "Chassis / VIN Match", "Registration Details Match"]
+    }
+};
+
 const safeString = (value, fallback = "-") => {
     if (value === undefined || value === null || value === "") {
         return fallback;
@@ -371,7 +473,7 @@ const getRawChecklist = (report) => {
         }
     }
 
-    return checklist;
+    return Array.isArray(checklist) ? expandChecklistArray(checklist) : checklist;
 };
 
 const normalizeDetailedChecklist = (report) => {
@@ -379,11 +481,14 @@ const normalizeDetailedChecklist = (report) => {
     const result = [];
 
     // --------------------------------------------------
-    // ARRAY FORMAT - preferred database format
+    // ARRAY FORMAT - database / employee payload
     // --------------------------------------------------
     if (Array.isArray(raw)) {
-        raw.forEach((item, index) => {
-            if (!item || typeof item !== "object") return;
+        raw.forEach((rawItem, index) => {
+            if (!rawItem || typeof rawItem !== "object") return;
+
+            const item = unwrapChecklistPayload(rawItem);
+            if (!item || typeof item !== "object" || Array.isArray(item)) return;
 
             const sectionKey = firstValue(
                 item,
@@ -417,6 +522,12 @@ const normalizeDetailedChecklist = (report) => {
                 );
             }
 
+            const availableOptions = getAvailableOptions(
+                sectionKey,
+                rowName,
+                selectedOptions
+            );
+
             const remark = safeString(
                 firstValue(item, ["remark", "remarks", "note", "comment"], ""),
                 ""
@@ -424,13 +535,16 @@ const normalizeDetailedChecklist = (report) => {
 
             const status = safeString(
                 firstValue(item, ["status", "condition", "result"], ""),
-                ""
+                selectedOptions.some((option) => option !== "Ok/No imperfection")
+                    ? "Need Attention"
+                    : "Good"
             );
 
             result.push({
                 sectionKey: String(sectionKey),
                 sectionTitle: String(sectionTitle),
                 rowName: String(rowName),
+                availableOptions,
                 selectedOptions,
                 remark,
                 status
@@ -456,11 +570,13 @@ const normalizeDetailedChecklist = (report) => {
 
             for (const [rowName, rawSelected] of Object.entries(sectionRowsValue)) {
                 const selectedOptions = normalizeSelectedOptions(rawSelected);
+                const availableOptions = getAvailableOptions(sectionKey, rowName, selectedOptions);
 
                 result.push({
                     sectionKey,
                     sectionTitle,
                     rowName,
+                    availableOptions,
                     selectedOptions,
                     remark: "",
                     status: selectedOptions.some((option) => option !== "Ok/No imperfection")
@@ -655,41 +771,72 @@ const drawVehicleDetails = (doc, report, y, reportId) => {
 // DETAILED CHECKLIST
 // ======================================================
 
-const drawSelectedOptions = (doc, options, x, y, width) => {
-    const text = options.length > 0 ? options.join(", ") : "No option selected";
+const drawAllOptions = (doc, availableOptions, selectedOptions, x, y, width) => {
+    const options = Array.isArray(availableOptions) && availableOptions.length
+        ? availableOptions
+        : (selectedOptions || []);
+
+    const selectedSet = new Set(
+        (selectedOptions || []).map((option) => String(option).trim().toLowerCase())
+    );
 
     doc.font("Helvetica-Bold").fontSize(7).fillColor(COLORS.gray)
-        .text("SELECTED OPTION(S)", x, y, { width });
+        .text("INSPECTION OPTIONS", x, y, { width });
 
-    doc.font("Helvetica").fontSize(8.5).fillColor(COLORS.dark)
-        .text(text, x, y + 11, { width, lineGap: 1.5 });
+    y += 13;
 
-    return y + 11 + doc.heightOfString(text, {
-        width,
-        lineGap: 1.5
-    });
+    if (!options.length) {
+        doc.font("Helvetica").fontSize(8.5).fillColor(COLORS.gray)
+            .text("No option selected", x, y, { width });
+        return y + 12;
+    }
+
+    for (const option of options) {
+        const label = String(option);
+        const selected = selectedSet.has(label.trim().toLowerCase());
+
+        doc.roundedRect(x, y + 1, 9, 9, 1)
+            .fillAndStroke(COLORS.white, COLORS.border);
+
+        if (selected) {
+            // Draw the tick with PDF lines instead of a Unicode glyph so it
+            // renders correctly with PDFKit's built-in fonts.
+            doc.save();
+            doc.strokeColor(COLORS.blue).lineWidth(1.4);
+            doc.moveTo(x + 2, y + 6)
+                .lineTo(x + 4, y + 8)
+                .lineTo(x + 8, y + 3)
+                .stroke();
+            doc.restore();
+        }
+
+        doc.font("Helvetica").fontSize(8.2).fillColor(COLORS.dark)
+            .text(label, x + 15, y, {
+                width: width - 15,
+                lineGap: 1
+            });
+
+        const height = doc.heightOfString(label, {
+            width: width - 15,
+            lineGap: 1
+        });
+
+        y += Math.max(13, height + 3);
+    }
+
+    return y;
 };
 
 const drawDetailedRow = (doc, row, detailedImage, y, reportId) => {
     const textWidth = CONTENT_WIDTH - 20;
     const title = safeString(row.rowName, "Inspection Item");
-    const options = row.selectedOptions || [];
+    const availableOptions = row.availableOptions || [];
+    const selectedOptions = row.selectedOptions || [];
     const remark = row.remark || "";
 
-    const imageHeight = detailedImage ? 145 : 0;
-    const optionText = options.length ? options.join(", ") : "No option selected";
-
-    const optionHeight = doc.heightOfString(optionText, {
-        width: textWidth,
-        lineGap: 1.5
-    });
-
-    const remarkHeight = remark
-        ? doc.heightOfString(remark, { width: textWidth, lineGap: 1.5 })
-        : 0;
-
-    const required = 40 + optionHeight + remarkHeight + (remark ? 30 : 0) + (detailedImage ? imageHeight + 18 : 0);
-    y = ensureSpace(doc, y, Math.min(required, 220), reportId);
+    // Keep the complete row together when possible. If the row is larger than
+    // one page, ensureSpace() below will create continuation pages naturally.
+    y = ensureSpace(doc, y, 55, reportId);
 
     // Row card header.
     doc.roundedRect(MARGIN_LEFT, y, CONTENT_WIDTH, 28, 4)
@@ -704,9 +851,17 @@ const drawDetailedRow = (doc, row, detailedImage, y, reportId) => {
 
     y += 35;
 
-    y = drawSelectedOptions(doc, options, MARGIN_LEFT + 10, y, textWidth) + 7;
+    y = drawAllOptions(
+        doc,
+        availableOptions,
+        selectedOptions,
+        MARGIN_LEFT + 10,
+        y,
+        textWidth
+    ) + 7;
 
     if (detailedImage) {
+        const imageHeight = 145;
         y = ensureSpace(doc, y, imageHeight + 25, reportId);
 
         doc.font("Helvetica-Bold").fontSize(7).fillColor(COLORS.gray)
@@ -737,6 +892,11 @@ const drawDetailedRow = (doc, row, detailedImage, y, reportId) => {
     }
 
     if (remark) {
+        const remarkHeight = doc.heightOfString(remark, {
+            width: textWidth,
+            lineGap: 1.5
+        });
+
         y = ensureSpace(doc, y, remarkHeight + 28, reportId);
 
         doc.font("Helvetica-Bold").fontSize(7).fillColor(COLORS.gray)

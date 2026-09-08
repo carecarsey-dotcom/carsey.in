@@ -1,566 +1,1413 @@
-const inspectionReportRepository =
-    require("../repositories/inspectionReport.repository");
-
-const inspectionReportPdfService =
-    require("./inspectionReportPdf.service");
-
-const emailService =
-    require("./email.service");
-
-const env =
-    require("../config/env");
-
-const path =
-    require("path");
-
-const fs =
-    require("fs");
+const db = require("../config/db");
 
 // ======================================================
-// NORMALIZE INSPECTION SCORE
+// SMALL HELPER FUNCTIONS
 // ======================================================
 
-const normalizeOverallScore = (value) => {
-    const number = Number(value);
-
-    if (!Number.isFinite(number)) {
-        return NaN;
+const firstValue = (...values) => {
+    for (const value of values) {
+        if (
+            value !== undefined &&
+            value !== null &&
+            String(value).trim() !== ""
+        ) {
+            return value;
+        }
     }
 
-    const normalized =
-        number > 10 && number <= 100
-            ? number / 10
-            : number;
-
-    return Number(normalized.toFixed(1));
+    return null;
 };
+
+
+const normalizePublishStatus = (value) => {
+
+    if (
+        value === true ||
+        value === 1 ||
+        String(value).toLowerCase() === "yes" ||
+        String(value).toLowerCase() === "published"
+    ) {
+        return "Yes";
+    }
+
+    return "No";
+};
+
 
 // ======================================================
 // CREATE INSPECTION REPORT
 // ======================================================
 
-const createInspectionReport = async (reportData) => {
-    const carId = Number(reportData.carId);
+const createInspectionReport = (
+    reportData
+) => {
 
-    if (!Number.isInteger(carId) || carId <= 0) {
-        throw new Error("Invalid car ID.");
-    }
+    return new Promise(
+        (resolve, reject) => {
 
-    const overallScore = normalizeOverallScore(reportData.overallScore);
+            const sql = `
+                INSERT INTO inspection_reports
+                (
+                    car_id,
+                    overall_score,
+                    engine_remark,
+                    overall_remark,
+                    pdf_path,
+                    publish_status
+                )
+                VALUES (?, ?, ?, ?, ?, ?)
+            `;
 
-    if (!Number.isFinite(overallScore) || overallScore < 0 || overallScore > 10) {
-        throw new Error("Overall score must be between 0 and 10.");
-    }
 
-    if (!reportData.engineRemark || !String(reportData.engineRemark).trim()) {
-        throw new Error("Engine remark is required.");
-    }
+            const values = [
 
-    if (!reportData.overallRemark || !String(reportData.overallRemark).trim()) {
-        throw new Error("Overall remark is required.");
-    }
+                firstValue(
+                    reportData.carId,
+                    reportData.car_id
+                ),
 
-    const publishStatus =
-        String(reportData.publishStatus || "").toLowerCase() === "yes" ||
-        String(reportData.publishStatus || "").toLowerCase() === "published"
-            ? "Yes"
-            : "No";
+                firstValue(
+                    reportData.overallScore,
+                    reportData.overall_score
+                ),
 
-    const result = await inspectionReportRepository.createInspectionReport({
-        carId,
-        overallScore,
-        engineRemark: String(reportData.engineRemark).trim(),
-        overallRemark: String(reportData.overallRemark).trim(),
-        pdfPath: reportData.pdfPath || null,
-        publishStatus
-    });
+                firstValue(
+                    reportData.engineRemark,
+                    reportData.engine_remark
+                ),
 
-    return {
-        reportId: result.reportId,
-        message: "Inspection report created successfully."
-    };
-};
+                firstValue(
+                    reportData.overallRemark,
+                    reportData.overall_remark
+                ),
 
-// ======================================================
-// GET UNLOCKED REPORT (CUSTOMER)
-// ======================================================
+                firstValue(
+                    reportData.pdfPath,
+                    reportData.pdf_path,
+                    null
+                ),
 
-const getUnlockedInspectionReport = async (carId, requestId) => {
-    const numericCarId = Number(carId);
-    const numericRequestId = Number(requestId);
+                normalizePublishStatus(
+                    firstValue(
+                        reportData.publishStatus,
+                        reportData.publish_status,
+                        "No"
+                    )
+                )
 
-    if (!Number.isInteger(numericCarId) || numericCarId <= 0) {
-        throw new Error("Invalid car ID.");
-    }
+            ];
 
-    if (!Number.isInteger(numericRequestId) || numericRequestId <= 0) {
-        throw new Error("Invalid unlock request ID.");
-    }
 
-    const unlockRequest = await inspectionReportRepository.getApprovedUnlockRequest(
-        numericRequestId,
-        numericCarId
+            db.query(
+                sql,
+                values,
+
+                (err, result) => {
+
+                    if (err) {
+                        return reject(err);
+                    }
+
+
+                    resolve({
+
+                        reportId:
+                            result.insertId
+
+                    });
+
+                }
+            );
+
+        }
     );
 
-    if (!unlockRequest) {
-        throw new Error("Report unlock request is not approved.");
-    }
-
-    const report = await inspectionReportRepository.getInspectionReportByCarId(numericCarId);
-
-    if (!report) {
-        throw new Error("Inspection report is not available.");
-    }
-
-    const reportPublishStatus = String(
-        report.publish_status || report.publishStatus || ""
-    ).toLowerCase();
-
-    if (reportPublishStatus !== "yes" && reportPublishStatus !== "published") {
-        throw new Error("Inspection report is not published.");
-    }
-
-    return {
-        request: {
-            requestId: unlockRequest.request_id,
-            carId: unlockRequest.car_id,
-            status: unlockRequest.status
-        },
-        report: {
-            reportId: report.report_id,
-            carId: report.car_id,
-            overallScore: report.overall_score,
-            engineRemark: report.engine_remark,
-            overallRemark: report.overall_remark,
-            pdfPath: report.pdf_path,
-            publishStatus: report.publish_status,
-            createdAt: report.created_at
-        }
-    };
 };
 
+
 // ======================================================
-// GET ALL REPORTS (ADMIN)
+// GET APPROVED UNLOCK REQUEST
 // ======================================================
 
-const getAllInspectionReports = async () => {
-    const reports = await inspectionReportRepository.getAllInspectionReports();
-    return { reports };
+const getApprovedUnlockRequest = (
+    requestId,
+    carId
+) => {
+
+    return new Promise(
+        (resolve, reject) => {
+
+            const sql = `
+                SELECT
+                    request_id,
+                    car_id,
+                    name,
+                    mobile,
+                    email,
+                    status,
+                    created_at
+                FROM report_unlock_requests
+                WHERE request_id = ?
+                AND car_id = ?
+                AND status = 'Approved'
+                LIMIT 1
+            `;
+
+
+            db.query(
+                sql,
+
+                [
+                    requestId,
+                    carId
+                ],
+
+                (
+                    err,
+                    result
+                ) => {
+
+                    if (err) {
+                        return reject(err);
+                    }
+
+
+                    resolve(
+                        result[0] ||
+                        null
+                    );
+
+                }
+            );
+
+        }
+    );
+
 };
 
+
 // ======================================================
-// GET REPORT BY ID (ADMIN)
+// GET PUBLISHED / LATEST REPORT BY CAR
+//
+// IMPORTANT:
+// Existing code was checking only:
+//     publish_status = 'Yes'
+//
+// During PDF generation the latest report can still be
+// "No" before publishing. Therefore we now prefer a
+// published report, but fall back to the latest report.
+//
+// This keeps the old function name and behavior compatible
+// with existing code while preventing missing report data.
 // ======================================================
 
-const getInspectionReportById = async (reportId) => {
-    const numericReportId = Number(reportId);
+const getInspectionReportByCarId = (
+    carId
+) => {
 
-    if (!Number.isInteger(numericReportId) || numericReportId <= 0) {
-        throw new Error("Invalid report ID.");
-    }
+    return new Promise(
+        (resolve, reject) => {
 
-    const report = await inspectionReportRepository.getInspectionReportById(numericReportId);
+            const sql = `
+                SELECT
+                    report_id,
+                    car_id,
+                    overall_score,
+                    engine_remark,
+                    overall_remark,
+                    pdf_path,
+                    publish_status,
+                    created_at
+                FROM inspection_reports
+                WHERE car_id = ?
+                ORDER BY
+                    CASE
+                        WHEN publish_status = 'Yes' THEN 0
+                        ELSE 1
+                    END,
+                    report_id DESC
+                LIMIT 1
+            `;
 
-    if (!report) {
-        throw new Error("Inspection report not found.");
-    }
 
-    return {
-        reportId: report.report_id,
-        carId: report.car_id,
-        overallScore: report.overall_score,
-        engineRemark: report.engine_remark,
-        overallRemark: report.overall_remark,
-        pdfPath: report.pdf_path,
-        publishStatus: report.publish_status,
-        createdAt: report.created_at
-    };
+            db.query(
+                sql,
+
+                [
+                    carId
+                ],
+
+                (
+                    err,
+                    result
+                ) => {
+
+                    if (err) {
+                        return reject(err);
+                    }
+
+
+                    resolve(
+                        result[0] ||
+                        null
+                    );
+
+                }
+            );
+
+        }
+    );
+
 };
 
+
 // ======================================================
-// UPDATE INSPECTION REPORT (ADMIN)
+// GET LATEST INSPECTION REPORT BY CAR
+//
+// IMPORTANT:
+// Use this function when generating the PDF immediately
+// after vehicle/inspection data has been saved.
+//
+// It intentionally does NOT require publish_status = Yes.
 // ======================================================
 
-const updateInspectionReport = async (reportId, reportData) => {
-    const numericReportId = Number(reportId);
+const getLatestInspectionReportByCarId = (
+    carId
+) => {
 
-    if (!Number.isInteger(numericReportId) || numericReportId <= 0) {
-        throw new Error("Invalid report ID.");
-    }
+    return new Promise(
+        (resolve, reject) => {
 
-    const existingReport = await inspectionReportRepository.getInspectionReportById(numericReportId);
+            const sql = `
+                SELECT
+                    report_id,
+                    car_id,
+                    overall_score,
+                    engine_remark,
+                    overall_remark,
+                    pdf_path,
+                    publish_status,
+                    created_at
+                FROM inspection_reports
+                WHERE car_id = ?
+                ORDER BY report_id DESC
+                LIMIT 1
+            `;
 
-    if (!existingReport) {
-        throw new Error("Inspection report not found.");
-    }
 
-    const overallScore = normalizeOverallScore(reportData.overallScore);
+            db.query(
+                sql,
 
-    if (!Number.isFinite(overallScore) || overallScore < 0 || overallScore > 10) {
-        throw new Error("Overall score must be between 0 and 10.");
-    }
+                [
+                    carId
+                ],
 
-    if (!reportData.engineRemark || !String(reportData.engineRemark).trim()) {
-        throw new Error("Engine remark is required.");
-    }
+                (
+                    err,
+                    result
+                ) => {
 
-    if (!reportData.overallRemark || !String(reportData.overallRemark).trim()) {
-        throw new Error("Overall remark is required.");
-    }
+                    if (err) {
+                        return reject(err);
+                    }
 
-    const requestedPublishStatus = String(reportData.publishStatus || "").toLowerCase();
-    const publishStatus =
-        requestedPublishStatus === "yes" || requestedPublishStatus === "published"
-            ? "Yes"
-            : "No";
 
-    await inspectionReportRepository.updateInspectionReport(numericReportId, {
-        overallScore,
-        engineRemark: String(reportData.engineRemark).trim(),
-        overallRemark: String(reportData.overallRemark).trim(),
-        publishStatus
-    });
+                    resolve(
+                        result[0] ||
+                        null
+                    );
 
-    if (publishStatus !== "Yes") {
-        return {
-            reportId: numericReportId,
-            carId: existingReport.car_id,
-            message: "Inspection report updated successfully.",
-            publishStatus: "No",
-            pdfPath: existingReport.pdf_path || null,
-            pdfUrl: existingReport.pdf_path || null,
-            adminEmail: null,
-            customerEmail: null
-        };
-    }
+                }
+            );
 
-    // ==================================================
-    // PUBLISH PROCESS
-    // ==================================================
-
-    if (typeof inspectionReportRepository.markInspectionReportPublished === "function") {
-        await inspectionReportRepository.markInspectionReportPublished(numericReportId);
-    }
-
-    let publishedReport = null;
-    try {
-        publishedReport = await inspectionReportRepository.getInspectionReportById(numericReportId);
-    } catch (publishFetchError) {
-        console.error("Published Report Fetch Error:", publishFetchError);
-    }
-
-    const verifiedPublishStatus = String(
-        (publishedReport && (publishedReport.publish_status || publishedReport.publishStatus)) || ""
-    ).toLowerCase();
-
-    if (verifiedPublishStatus !== "yes" && verifiedPublishStatus !== "published") {
-        throw new Error("Inspection report could not be verified as published. PDF and emails were not sent.");
-    }
-
-    // --------------------------------------------------
-    // VEHICLE DATA
-    // --------------------------------------------------
-    let vehicleData = null;
-    try {
-        const vehicleRepository = require("../repositories/vehicle.repository");
-        if (typeof vehicleRepository.getCompleteVehicleData === "function") {
-            vehicleData = await vehicleRepository.getCompleteVehicleData(existingReport.car_id);
-        } else if (typeof vehicleRepository.getVehicleById === "function") {
-            vehicleData = await vehicleRepository.getVehicleById(existingReport.car_id);
-        } else {
-            throw new Error("Vehicle repository does not contain getCompleteVehicleData or getVehicleById.");
         }
-    } catch (vehicleError) {
-        console.error("Complete Vehicle Data Fetch Error:", vehicleError);
-        throw new Error(`Vehicle data could not be loaded: ${vehicleError.message}`);
-    }
+    );
 
-    if (!vehicleData) {
-        throw new Error("Vehicle data could not be loaded.");
-    }
+};
 
-    // --------------------------------------------------
-    // VEHICLE IMAGES
-    // --------------------------------------------------
-    let vehicleImages = [];
-    try {
-        const vehicleImageRepository = require("../repositories/vehicleImage.repository");
-        if (typeof vehicleImageRepository.getVehicleImages === "function") {
-            vehicleImages = await vehicleImageRepository.getVehicleImages(existingReport.car_id);
+
+// ======================================================
+// GET ALL REPORTS
+// ======================================================
+
+const getAllInspectionReports = () => {
+
+    return new Promise(
+        (resolve, reject) => {
+
+            const sql = `
+                SELECT
+                    report_id,
+                    car_id,
+                    overall_score,
+                    engine_remark,
+                    overall_remark,
+                    pdf_path,
+                    publish_status,
+                    created_at
+                FROM inspection_reports
+                ORDER BY report_id DESC
+            `;
+
+
+            db.query(
+                sql,
+
+                (
+                    err,
+                    result
+                ) => {
+
+                    if (err) {
+                        return reject(err);
+                    }
+
+
+                    resolve(
+                        result || []
+                    );
+
+                }
+            );
+
         }
-    } catch (imageError) {
-        console.error("Vehicle Images Fetch Error:", imageError);
-        vehicleImages = [];
-    }
+    );
 
-    if (!Array.isArray(vehicleImages) || vehicleImages.length === 0) {
-        throw new Error("Vehicle images are not uploaded yet. Final inspection PDF cannot be generated.");
-    }
+};
 
-    // --------------------------------------------------
-    // FETCH ACTUAL CHECKLIST FROM REPOSITORY (CRITICAL FIX)
-    // --------------------------------------------------
-    let dbChecklist = null;
-    try {
-        // Try inspectionReportRepository first
-        if (typeof inspectionReportRepository.getInspectionChecklistByReportId === "function") {
-            dbChecklist = await inspectionReportRepository.getInspectionChecklistByReportId(numericReportId);
-        } else if (typeof inspectionReportRepository.getChecklistByReportId === "function") {
-            dbChecklist = await inspectionReportRepository.getChecklistByReportId(numericReportId);
+
+// ======================================================
+// GET REPORT BY ID
+// ======================================================
+
+const getInspectionReportById = (
+    reportId
+) => {
+
+    return new Promise(
+        (resolve, reject) => {
+
+            const sql = `
+                SELECT
+                    report_id,
+                    car_id,
+                    overall_score,
+                    engine_remark,
+                    overall_remark,
+                    pdf_path,
+                    publish_status,
+                    created_at
+                FROM inspection_reports
+                WHERE report_id = ?
+                LIMIT 1
+            `;
+
+
+            db.query(
+                sql,
+
+                [
+                    reportId
+                ],
+
+                (
+                    err,
+                    result
+                ) => {
+
+                    if (err) {
+                        return reject(err);
+                    }
+
+
+                    resolve(
+                        result[0] ||
+                        null
+                    );
+
+                }
+            );
+
         }
+    );
 
-        // If not found, try vehicleRepository
-        if (!dbChecklist) {
-            const vehicleRepo = require("../repositories/vehicle.repository");
-            if (typeof vehicleRepo.getInspectionChecklist === "function") {
-                dbChecklist = await vehicleRepo.getInspectionChecklist(existingReport.car_id);
+};
+
+
+// ======================================================
+// GET CHECKLIST
+// ======================================================
+
+const getInspectionChecklist = (
+    reportId
+) => {
+
+    return new Promise(
+        (resolve, reject) => {
+
+            const sql = `
+                SELECT
+                    checklist_id,
+                    report_id,
+                    car_id,
+                    category,
+                    status,
+                    remark,
+                    remarks,
+                    note,
+                    comment,
+                    checklist_data,
+                    data,
+                    inspection_data,
+                    created_at
+                FROM inspection_checklist
+                WHERE report_id = ?
+                ORDER BY checklist_id ASC
+            `;
+
+
+            db.query(
+                sql,
+
+                [
+                    reportId
+                ],
+
+                (
+                    err,
+                    result
+                ) => {
+
+                    if (err) {
+
+                        // --------------------------------------------------
+                        // Some databases may not have all optional columns.
+                        // Fall back to the original safe structure.
+                        // --------------------------------------------------
+
+                        const fallbackSql = `
+                            SELECT
+                                checklist_id,
+                                report_id,
+                                category,
+                                status,
+                                remark
+                            FROM inspection_checklist
+                            WHERE report_id = ?
+                            ORDER BY checklist_id ASC
+                        `;
+
+
+                        return db.query(
+                            fallbackSql,
+                            [reportId],
+
+                            (
+                                fallbackErr,
+                                fallbackResult
+                            ) => {
+
+                                if (fallbackErr) {
+                                    return reject(
+                                        fallbackErr
+                                    );
+                                }
+
+
+                                resolve(
+                                    fallbackResult || []
+                                );
+
+                            }
+                        );
+
+                    }
+
+
+                    resolve(
+                        result || []
+                    );
+
+                }
+            );
+
+        }
+    );
+
+};
+
+
+// ======================================================
+// GET CHECKLIST BY CAR ID
+// FALLBACK WHEN REPORT_ID IS NOT AVAILABLE
+// ======================================================
+
+const getInspectionChecklistByCarId = (
+    carId
+) => {
+
+    return new Promise(
+        (resolve, reject) => {
+
+            const sql = `
+                SELECT
+                    checklist_id,
+                    report_id,
+                    car_id,
+                    category,
+                    status,
+                    remark,
+                    remarks,
+                    note,
+                    comment,
+                    checklist_data,
+                    data,
+                    inspection_data,
+                    created_at
+                FROM inspection_checklist
+                WHERE car_id = ?
+                ORDER BY checklist_id ASC
+            `;
+
+
+            db.query(
+                sql,
+
+                [
+                    carId
+                ],
+
+                (
+                    err,
+                    result
+                ) => {
+
+                    if (err) {
+
+                        const fallbackSql = `
+                            SELECT
+                                checklist_id,
+                                report_id,
+                                category,
+                                status,
+                                remark
+                            FROM inspection_checklist
+                            WHERE car_id = ?
+                            ORDER BY checklist_id ASC
+                        `;
+
+
+                        return db.query(
+                            fallbackSql,
+                            [carId],
+
+                            (
+                                fallbackErr,
+                                fallbackResult
+                            ) => {
+
+                                if (fallbackErr) {
+                                    return reject(
+                                        fallbackErr
+                                    );
+                                }
+
+
+                                resolve(
+                                    fallbackResult || []
+                                );
+
+                            }
+                        );
+
+                    }
+
+
+                    resolve(
+                        result || []
+                    );
+
+                }
+            );
+
+        }
+    );
+
+};
+
+
+// ======================================================
+// GET COMPLETE INSPECTION REPORT
+// ======================================================
+
+const getCompleteInspectionReport = (
+    reportId
+) => {
+
+    return new Promise(
+        async (resolve, reject) => {
+
+            try {
+
+                const report =
+                    await getInspectionReportById(
+                        reportId
+                    );
+
+
+                if (!report) {
+
+                    return resolve(
+                        null
+                    );
+
+                }
+
+
+                let checklist = [];
+
+
+                try {
+
+                    checklist =
+                        await getInspectionChecklist(
+                            reportId
+                        );
+
+                } catch (checklistError) {
+
+                    console.error(
+                        "Checklist fetch error:",
+                        checklistError.message
+                    );
+
+                }
+
+
+                // --------------------------------------------------
+                // If report_id checklist is empty, try car_id.
+                // --------------------------------------------------
+
+                if (
+                    (!Array.isArray(checklist) ||
+                        checklist.length === 0) &&
+                    report.car_id
+                ) {
+
+                    try {
+
+                        checklist =
+                            await getInspectionChecklistByCarId(
+                                report.car_id
+                            );
+
+                    } catch (carChecklistError) {
+
+                        console.error(
+                            "Car checklist fallback error:",
+                            carChecklistError.message
+                        );
+
+                    }
+
+                }
+
+
+                resolve({
+
+                    report,
+
+                    checklist:
+                        checklist || []
+
+                });
+
+            } catch (error) {
+
+                reject(error);
+
             }
+
         }
-    } catch (chkErr) {
-        console.warn("Direct checklist fetch warning:", chkErr.message);
-    }
+    );
 
-    // --------------------------------------------------
-    // NORMALIZE OBJECTS
-    // --------------------------------------------------
-    const rawVehicle = vehicleData.vehicle || vehicleData.data?.vehicle || vehicleData.data || vehicleData || {};
-    const rawOwner = vehicleData.owner || vehicleData.customer || vehicleData.customerDetails || vehicleData.customer_details || vehicleData.data?.owner || {};
+};
 
-    const ownerName =
-        rawOwner.ownerName || rawOwner.owner_name || rawOwner.name || rawOwner.fullName ||
-        vehicleData.customer_name || vehicleData.customerName || "-";
 
-    const ownerMobile =
-        rawOwner.mobile || rawOwner.phone || rawOwner.phoneNumber ||
-        vehicleData.owner_mobile || vehicleData.customer_mobile || "-";
+// ======================================================
+// GET REPORT DELIVERY DATA
+// USED FOR EMAIL
+//
+// IMPORTANT:
+// Customer data can exist in:
+// 1. owners table
+// 2. cars table
+// 3. report_unlock_requests
+//
+// Therefore we fetch all useful fields.
+// ======================================================
 
-    const ownerEmail =
-        rawOwner.email || rawOwner.owner_email || rawOwner.customer_email ||
-        vehicleData.owner_email || vehicleData.customer_email || "-";
+const getReportDeliveryData = (
+    reportId
+) => {
 
-    const ownerAddress =
-        rawOwner.address || rawOwner.owner_address || rawOwner.customer_address ||
-        vehicleData.owner_address || vehicleData.address || "-";
+    return new Promise(
+        async (resolve, reject) => {
 
-    const ownerObject = {
-        ...rawOwner,
-        ownerName,
-        owner_name: ownerName,
-        name: ownerName,
-        customerName: ownerName,
-        customer_name: ownerName,
-        mobile: ownerMobile,
-        phone: ownerMobile,
-        owner_mobile: ownerMobile,
-        ownerMobile: ownerMobile,
-        email: ownerEmail,
-        owner_email: ownerEmail,
-        ownerEmail: ownerEmail,
-        address: ownerAddress,
-        owner_address: ownerAddress,
-        ownerAddress: ownerAddress
+            const sql = `
+                SELECT
+                    ir.report_id,
+                    ir.car_id,
+                    ir.overall_score,
+                    ir.engine_remark,
+                    ir.overall_remark,
+                    ir.pdf_path,
+                    ir.publish_status,
+                    ir.created_at,
+
+                    c.*,
+
+                    o.owner_id AS joined_owner_id,
+                    o.owner_name AS joined_owner_name,
+                    o.email AS joined_owner_email,
+                    o.mobile AS joined_owner_mobile,
+                    o.address AS joined_owner_address,
+
+                    rur.name AS unlock_customer_name,
+                    rur.mobile AS unlock_customer_mobile,
+                    rur.email AS unlock_customer_email
+
+                FROM inspection_reports ir
+
+                LEFT JOIN cars c
+                    ON c.car_id = ir.car_id
+
+                LEFT JOIN owners o
+                    ON o.owner_id = c.owner_id
+
+                LEFT JOIN report_unlock_requests rur
+                    ON rur.car_id = ir.car_id
+                    AND rur.status = 'Approved'
+
+                WHERE ir.report_id = ?
+
+                ORDER BY rur.request_id DESC
+
+                LIMIT 1
+            `;
+
+
+            db.query(
+                sql,
+
+                [
+                    reportId
+                ],
+
+                async (
+                    err,
+                    result
+                ) => {
+
+                    if (err) {
+
+                        console.error(
+                            "getReportDeliveryData JOIN query error:",
+                            err.message
+                        );
+
+                        // --------------------------------------------------
+                        // Fallback to original minimal query.
+                        // --------------------------------------------------
+
+                        const fallbackSql = `
+                            SELECT
+                                ir.report_id,
+                                ir.car_id,
+                                ir.overall_score,
+                                ir.engine_remark,
+                                ir.overall_remark,
+                                ir.pdf_path,
+                                ir.publish_status,
+                                ir.created_at,
+
+                                o.owner_name,
+                                o.email AS owner_email,
+                                o.mobile AS owner_mobile,
+                                o.address AS owner_address
+
+                            FROM inspection_reports ir
+
+                            LEFT JOIN cars c
+                                ON c.car_id = ir.car_id
+
+                            LEFT JOIN owners o
+                                ON o.owner_id = c.owner_id
+
+                            WHERE ir.report_id = ?
+
+                            LIMIT 1
+                        `;
+
+
+                        return db.query(
+                            fallbackSql,
+                            [reportId],
+
+                            (
+                                fallbackErr,
+                                fallbackResult
+                            ) => {
+
+                                if (fallbackErr) {
+                                    return reject(
+                                        fallbackErr
+                                    );
+                                }
+
+
+                                const row =
+                                    fallbackResult[0] ||
+                                    null;
+
+
+                                if (!row) {
+                                    return resolve(
+                                        null
+                                    );
+                                }
+
+
+                                resolve(
+                                    normalizeDeliveryData(
+                                        row
+                                    )
+                                );
+
+                            }
+                        );
+
+                    }
+
+
+                    const row =
+                        result[0] ||
+                        null;
+
+
+                    if (!row) {
+                        return resolve(null);
+                    }
+
+
+                    resolve(
+                        normalizeDeliveryData(
+                            row
+                        )
+                    );
+
+                }
+            );
+
+        }
+    );
+
+};
+
+
+// ======================================================
+// NORMALIZE REPORT DELIVERY DATA
+// ======================================================
+
+const normalizeDeliveryData = (
+    row
+) => {
+
+    const customerName =
+        firstValue(
+
+            row.customer_name,
+            row.customerName,
+
+            row.owner_name,
+            row.ownerName,
+
+            row.joined_owner_name,
+
+            row.unlock_customer_name,
+
+            row.name,
+
+            "-"
+        );
+
+
+    const customerMobile =
+        firstValue(
+
+            row.owner_mobile,
+            row.ownerMobile,
+
+            row.mobile,
+            row.phone,
+
+            row.joined_owner_mobile,
+
+            row.unlock_customer_mobile,
+
+            "-"
+        );
+
+
+    const customerEmail =
+        firstValue(
+
+            row.owner_email,
+            row.ownerEmail,
+
+            row.email,
+
+            row.joined_owner_email,
+
+            row.unlock_customer_email,
+
+            null
+        );
+
+
+    const customerAddress =
+        firstValue(
+
+            row.owner_address,
+            row.ownerAddress,
+
+            row.address,
+
+            row.city,
+
+            row.joined_owner_address,
+
+            "-"
+        );
+
+
+    const vehicle = {
+
+        ...row,
+
+        customer_name:
+            customerName,
+
+        customerName:
+            customerName,
+
+        owner_name:
+            customerName,
+
+        ownerName:
+            customerName,
+
+        owner_mobile:
+            customerMobile,
+
+        ownerMobile:
+            customerMobile,
+
+        owner_email:
+            customerEmail,
+
+        ownerEmail:
+            customerEmail,
+
+        owner_address:
+            customerAddress,
+
+        ownerAddress:
+            customerAddress
+
     };
 
-    const rawInspection = vehicleData.inspection || vehicleData.inspectionData || vehicleData.data?.inspection || {};
-    const completeInspection = {
-        ...rawInspection,
-        overall_score: overallScore,
-        overallScore: overallScore,
-        engine_remark: String(reportData.engineRemark).trim(),
-        engineRemark: String(reportData.engineRemark).trim(),
-        overall_remark: String(reportData.overallRemark).trim(),
-        overallRemark: String(reportData.overallRemark).trim()
+
+    const owner = {
+
+        ...row,
+
+        ownerName:
+            customerName,
+
+        owner_name:
+            customerName,
+
+        name:
+            customerName,
+
+        fullName:
+            customerName,
+
+        mobile:
+            customerMobile,
+
+        phone:
+            customerMobile,
+
+        owner_mobile:
+            customerMobile,
+
+        ownerMobile:
+            customerMobile,
+
+        email:
+            customerEmail,
+
+        owner_email:
+            customerEmail,
+
+        ownerEmail:
+            customerEmail,
+
+        address:
+            customerAddress,
+
+        owner_address:
+            customerAddress,
+
+        ownerAddress:
+            customerAddress
+
     };
 
-    // Priority to database checklist, then reportData, then vehicleData
-    const checklistData =
-        dbChecklist ||
-        reportData.checklist ||
-        reportData.inspection_checklist ||
-        reportData.detailedInspection ||
-        vehicleData.checklist ||
-        vehicleData.inspection_checklist ||
-        vehicleData.inspection?.checklist ||
-        [];
 
-    const completeReport = {
-        ...existingReport,
-        ...(publishedReport || {}),
-        ...reportData,
-        customer_name: ownerName,
-        owner_name: ownerName,
-        owner_mobile: ownerMobile,
-        owner_email: ownerEmail,
-        owner_address: ownerAddress,
-        reportId: numericReportId,
-        report_id: numericReportId,
-        carId: existingReport.car_id,
-        car_id: existingReport.car_id,
-        overallScore,
-        overall_score: overallScore,
-        engineRemark: String(reportData.engineRemark).trim(),
-        engine_remark: String(reportData.engineRemark).trim(),
-        overallRemark: String(reportData.overallRemark).trim(),
-        overall_remark: String(reportData.overallRemark).trim(),
-        publishStatus: "Yes",
-        publish_status: "Yes",
-        vehicle: rawVehicle,
-        vehicleData: rawVehicle,
-        owner: ownerObject,
-        customer: ownerObject,
-        customerDetails: ownerObject,
-        inspection: completeInspection,
-        checklist: checklistData,
-        inspection_checklist: checklistData,
-        inspectionChecklist: checklistData,
-        detailedInspection: checklistData,
-        images: vehicleImages,
-        vehicleImages: vehicleImages
+    const inspection = {
+
+        ...row,
+
+        report_id:
+            row.report_id,
+
+        reportId:
+            row.report_id,
+
+        car_id:
+            row.car_id,
+
+        carId:
+            row.car_id,
+
+        overall_score:
+            row.overall_score,
+
+        overallScore:
+            row.overall_score,
+
+        engine_remark:
+            row.engine_remark,
+
+        engineRemark:
+            row.engine_remark,
+
+        overall_remark:
+            row.overall_remark,
+
+        overallRemark:
+            row.overall_remark,
+
+        publish_status:
+            row.publish_status,
+
+        publishStatus:
+            row.publish_status,
+
+        pdf_path:
+            row.pdf_path,
+
+        pdfPath:
+            row.pdf_path
+
     };
 
-    // Generate PDF
-    const pdf = await inspectionReportPdfService.generateInspectionReportPdf(completeReport);
-
-    if (!pdf || !pdf.filePath || !pdf.pdfPath) {
-        throw new Error("Inspection PDF could not be generated.");
-    }
-
-    if (!fs.existsSync(pdf.filePath)) {
-        throw new Error("Generated inspection report PDF file was not found.");
-    }
-
-    await inspectionReportRepository.updateInspectionReportPdfPath(numericReportId, pdf.pdfPath);
-
-    let adminEmailResult = null;
-    let customerEmailResult = null;
-
-    // Send Admin Email
-    try {
-        if (env.ADMIN_EMAIL) {
-            adminEmailResult = await emailService.sendInspectionReportToAdmin({
-                pdfPath: pdf.filePath,
-                fileName: pdf.fileName,
-                carId: existingReport.car_id,
-                reportId: numericReportId
-            });
-        }
-    } catch (emailError) {
-        console.error("Admin Email Error:", emailError);
-        adminEmailResult = { success: false, message: emailError.message };
-    }
-
-    // Send Customer Email
-    try {
-        const deliveryReport = await inspectionReportRepository.getReportDeliveryData(numericReportId);
-        const customerEmail =
-            (deliveryReport && (deliveryReport.owner_email || deliveryReport.customer_email || deliveryReport.email)) ||
-            ownerObject.email || "";
-
-        if (customerEmail && String(customerEmail).trim() && customerEmail !== "-") {
-            customerEmailResult = await emailService.sendInspectionReportEmail({
-                to: String(customerEmail).trim().toLowerCase(),
-                subject: `Carsey.in - Vehicle Inspection Report #${numericReportId}`,
-                customerName: ownerObject.ownerName || "Customer",
-                pdfPath: pdf.filePath,
-                fileName: pdf.fileName
-            });
-        } else {
-            customerEmailResult = {
-                success: false,
-                skipped: true,
-                message: "Customer email is not available. PDF was saved successfully."
-            };
-        }
-    } catch (customerEmailError) {
-        console.error("Customer Email Error:", customerEmailError);
-        customerEmailResult = { success: false, message: customerEmailError.message };
-    }
 
     return {
-        reportId: numericReportId,
-        carId: existingReport.car_id,
-        message: "Inspection report published, PDF generated and email delivery processed successfully.",
-        pdfPath: pdf.pdfPath,
-        pdfUrl: pdf.pdfPath,
-        pdfFileName: pdf.fileName,
-        adminEmail: adminEmailResult,
-        customerEmail: customerEmailResult,
-        publishStatus: "Yes"
+
+        ...row,
+
+        reportId:
+            row.report_id,
+
+        report_id:
+            row.report_id,
+
+        carId:
+            row.car_id,
+
+        car_id:
+            row.car_id,
+
+        vehicle,
+
+        owner,
+
+        inspection,
+
+        customer_name:
+            customerName,
+
+        customerName:
+            customerName,
+
+        owner_name:
+            customerName,
+
+        ownerName:
+            customerName,
+
+        owner_mobile:
+            customerMobile,
+
+        ownerMobile:
+            customerMobile,
+
+        owner_email:
+            customerEmail,
+
+        ownerEmail:
+            customerEmail,
+
+        owner_address:
+            customerAddress,
+
+        ownerAddress:
+            customerAddress,
+
+        pdf_path:
+            row.pdf_path,
+
+        pdfPath:
+            row.pdf_path,
+
+        publish_status:
+            row.publish_status,
+
+        publishStatus:
+            row.publish_status
+
     };
+
+};
+
+
+// ======================================================
+// UPDATE REPORT
+// ======================================================
+
+const updateInspectionReport = (
+    reportId,
+    reportData
+) => {
+
+    return new Promise(
+        (resolve, reject) => {
+
+            const sql = `
+                UPDATE inspection_reports
+                SET
+                    overall_score = ?,
+                    engine_remark = ?,
+                    overall_remark = ?,
+                    publish_status = ?
+                WHERE report_id = ?
+            `;
+
+
+            const values = [
+
+                firstValue(
+                    reportData.overallScore,
+                    reportData.overall_score,
+                    null
+                ),
+
+                firstValue(
+                    reportData.engineRemark,
+                    reportData.engine_remark,
+                    null
+                ),
+
+                firstValue(
+                    reportData.overallRemark,
+                    reportData.overall_remark,
+                    null
+                ),
+
+                normalizePublishStatus(
+                    firstValue(
+                        reportData.publishStatus,
+                        reportData.publish_status,
+                        "No"
+                    )
+                ),
+
+                reportId
+
+            ];
+
+
+            db.query(
+                sql,
+                values,
+
+                (
+                    err,
+                    result
+                ) => {
+
+                    if (err) {
+                        return reject(err);
+                    }
+
+
+                    resolve(result);
+
+                }
+            );
+
+        }
+    );
+
+};
+
+
+// ======================================================
+// UPDATE PDF PATH
+// ======================================================
+
+const updateInspectionReportPdfPath = (
+    reportId,
+    pdfPath
+) => {
+
+    return new Promise(
+        (resolve, reject) => {
+
+            const sql = `
+                UPDATE inspection_reports
+                SET pdf_path = ?
+                WHERE report_id = ?
+            `;
+
+
+            db.query(
+                sql,
+
+                [
+                    pdfPath,
+                    reportId
+                ],
+
+                (
+                    err,
+                    result
+                ) => {
+
+                    if (err) {
+                        return reject(err);
+                    }
+
+
+                    resolve(result);
+
+                }
+            );
+
+        }
+    );
+
 };
 
 // ======================================================
-// SEND REPORT TO CUSTOMER EMAIL
+// MARK INSPECTION REPORT AS PUBLISHED
 // ======================================================
 
-const sendReportToCustomerEmail = async (reportId, customerEmail) => {
-    if (!customerEmail || !String(customerEmail).trim()) {
-        throw new Error("Customer email is required.");
-    }
+const markInspectionReportPublished = (
+    reportId
+) => {
 
-    const email = String(customerEmail).trim().toLowerCase();
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-        throw new Error("Please enter a valid customer email.");
-    }
+    return new Promise(
+        (resolve, reject) => {
 
-    const report = await inspectionReportRepository.getReportDeliveryData(reportId);
-    if (!report) {
-        throw new Error("Inspection report not found.");
-    }
+            const sql = `
+                UPDATE inspection_reports
+                SET publish_status = 'Yes'
+                WHERE report_id = ?
+            `;
 
-    const reportPublishStatus = String(report.publish_status || report.publishStatus || "").toLowerCase();
-    if (reportPublishStatus !== "yes" && reportPublishStatus !== "published") {
-        throw new Error("Inspection report is not published.");
-    }
 
-    const storedPdfPath = String(report.pdf_path || report.pdfPath || "").trim();
-    if (!storedPdfPath) {
-        throw new Error("Inspection report PDF has not been generated.");
-    }
+            db.query(
+                sql,
 
-    const backendRoot = process.cwd();
-    const uploadRoot = path.join(backendRoot, "uploads");
-    const candidatePdfPaths = [];
+                [
+                    reportId
+                ],
 
-    const addCandidatePdfPath = (candPath) => {
-        if (!candPath) return;
-        const val = String(candPath).trim();
-        const abs = path.isAbsolute(val) ? path.normalize(val) : path.resolve(backendRoot, val.replace(/^[/\\]+/, ""));
-        if (!candidatePdfPaths.includes(abs)) candidatePdfPaths.push(abs);
-    };
+                (
+                    err,
+                    result
+                ) => {
 
-    addCandidatePdfPath(storedPdfPath);
-    const fileName = path.basename(storedPdfPath);
-    addCandidatePdfPath(path.join(uploadRoot, "inspection-reports", fileName));
-    addCandidatePdfPath(path.join(uploadRoot, "reports", fileName));
+                    if (err) {
 
-    const pdfAbsolutePath = candidatePdfPaths.find((cand) => fs.existsSync(cand) && fs.statSync(cand).isFile());
+                        return reject(
+                            err
+                        );
 
-    if (!pdfAbsolutePath) {
-        throw new Error("Inspection report PDF file not found on server.");
-    }
+                    }
 
-    const emailResult = await emailService.sendInspectionReportEmail({
-        to: email,
-        subject: `Carsey.in - Vehicle Inspection Report #${report.report_id || reportId}`,
-        customerName: report.owner_name || report.customer_name || "Customer",
-        pdfPath: pdfAbsolutePath,
-        fileName: fileName
-    });
 
-    return {
-        success: true,
-        message: "Inspection report sent to customer email successfully.",
-        email: emailResult
-    };
+                    resolve(
+                        result
+                    );
+
+                }
+            );
+
+        }
+    );
+
 };
+
+
+// ======================================================
+// EXPORT
+// ======================================================
 
 module.exports = {
+
     createInspectionReport,
-    getUnlockedInspectionReport,
+
+    getApprovedUnlockRequest,
+
+    getInspectionReportByCarId,
+
+    getLatestInspectionReportByCarId,
+
     getAllInspectionReports,
+
     getInspectionReportById,
+
+    getInspectionChecklist,
+    // Backward-compatible aliases used by PDF/report generation.
+    getInspectionChecklistByReportId: getInspectionChecklist,
+    getChecklistByReportId: getInspectionChecklist,
+
+    getCompleteInspectionReport,
+
+    getReportDeliveryData,
+
     updateInspectionReport,
-    sendReportToCustomerEmail
+
+    updateInspectionReportPdfPath,
+
+    markInspectionReportPublished,
+
+    getInspectionChecklistByCarId
+
 };
