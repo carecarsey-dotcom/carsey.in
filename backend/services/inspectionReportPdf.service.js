@@ -415,6 +415,128 @@ const parseJsonIfNeeded = (value) => {
     }
 };
 
+const unwrapChecklistPayload = (payload) => {
+    let value = parseJsonIfNeeded(payload);
+
+    for (let i = 0; i < 10; i++) {
+        if (!value || typeof value !== "object" || Array.isArray(value)) {
+            break;
+        }
+
+        const nested = firstValue(
+            value,
+            [
+                "item",
+                "data",
+                "value",
+                "checklist_item",
+                "checklistItem",
+                "inspection_data",
+                "inspectionData"
+            ],
+            undefined
+        );
+
+        if (nested === undefined || nested === null || nested === value) {
+            break;
+        }
+
+        const parsedNested = parseJsonIfNeeded(nested);
+
+        if (!parsedNested || typeof parsedNested !== "object") {
+            break;
+        }
+
+        value = parsedNested;
+    }
+
+    return value;
+};
+
+const expandChecklistArray = (checklist) => {
+    if (!Array.isArray(checklist)) {
+        return checklist;
+    }
+
+    const result = [];
+
+    const walk = (value) => {
+        value = parseJsonIfNeeded(value);
+
+        if (Array.isArray(value)) {
+            for (const item of value) {
+                walk(item);
+            }
+            return;
+        }
+
+        if (!value || typeof value !== "object") {
+            return;
+        }
+
+        const nested = firstValue(
+            value,
+            [
+                "items",
+                "data",
+                "checklist",
+                "inspection_data",
+                "inspectionData"
+            ],
+            undefined
+        );
+
+        const parsedNested = parseJsonIfNeeded(nested);
+
+        if (Array.isArray(parsedNested)) {
+            walk(parsedNested);
+            return;
+        }
+
+        result.push(value);
+    };
+
+    walk(checklist);
+
+    return result;
+};
+
+const getAvailableOptions = (
+    sectionKey,
+    rowName,
+    selectedOptions = []
+) => {
+    const section =
+        DETAILED_CHECKLIST_OPTIONS[String(sectionKey)] ||
+        DETAILED_CHECKLIST_OPTIONS[sectionKey];
+
+    if (section && typeof section === "object") {
+        if (Array.isArray(section[String(rowName)])) {
+            return [...section[String(rowName)]];
+        }
+
+        const normalizedRowName = String(rowName || "")
+            .trim()
+            .toLowerCase();
+
+        const matchedKey = Object.keys(section).find(
+            (key) => key.trim().toLowerCase() === normalizedRowName
+        );
+
+        if (matchedKey && Array.isArray(section[matchedKey])) {
+            return [...section[matchedKey]];
+        }
+    }
+
+    return [
+        ...new Set(
+            (Array.isArray(selectedOptions) ? selectedOptions : [])
+                .map((option) => String(option).trim())
+                .filter(Boolean)
+        )
+    ];
+};
+
 const normalizeSelectedOptions = (value) => {
     value = parseJsonIfNeeded(value);
 
