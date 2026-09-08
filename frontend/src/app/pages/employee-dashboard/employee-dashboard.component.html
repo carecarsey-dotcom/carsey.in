@@ -1,0 +1,574 @@
+<div class="min-h-full w-full">
+
+  <!-- ================================================= -->
+  <!-- HEADER -->
+  <!-- ================================================= -->
+
+  <div
+    class="mb-7 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
+  >
+    <div>
+      <h1
+        class="m-0 text-2xl font-bold tracking-tight text-gray-900 sm:text-3xl"
+      >
+        Employee Dashboard
+      </h1>
+
+      <p class="mt-1.5 text-sm text-gray-500 sm:text-base">
+        Manage your assigned vehicle inspections
+      </p>
+    </div>
+
+    <button
+      type="button"
+      (click)="loadRequests()"
+      [disabled]="loading"
+      class="inline-flex min-h-[42px] items-center justify-center rounded-lg border border-gray-200 bg-white px-5 text-sm font-semibold text-gray-700 shadow-sm transition hover:bg-gray-50 hover:text-gray-900 disabled:cursor-not-allowed disabled:opacity-60"
+    >
+      {{ loading ? 'Refreshing...' : 'Refresh' }}
+    </button>
+  </div>
+
+
+  <!-- ================================================= -->
+  <!-- SUCCESS -->
+  <!-- ================================================= -->
+
+  <div
+    *ngIf="successMessage"
+    class="mb-5 flex items-start rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700"
+  >
+    <span class="mr-2 mt-0.5 font-bold">
+      ✓
+    </span>
+
+    <span>
+      {{ successMessage }}
+    </span>
+  </div>
+
+
+  <!-- ================================================= -->
+  <!-- ERROR -->
+  <!-- ================================================= -->
+
+  <div
+    *ngIf="errorMessage"
+    class="mb-5 flex items-start rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
+  >
+    <span class="mr-2 mt-0.5 font-bold">
+      !
+    </span>
+
+    <span>
+      {{ errorMessage }}
+    </span>
+  </div>
+
+
+  <!-- ================================================= -->
+  <!-- SUMMARY CARDS -->
+  <!-- ================================================= -->
+
+  <div
+    class="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4"
+  >
+
+    <!-- NEW REQUESTS -->
+
+    <div
+      class="rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition hover:shadow-md"
+    >
+      <div
+        class="text-3xl font-bold leading-none text-gray-900"
+      >
+        {{ assignedCount }}
+      </div>
+
+      <div
+        class="mt-2 text-sm font-medium text-gray-500"
+      >
+        New Requests
+      </div>
+    </div>
+
+
+    <!-- ACCEPTED -->
+
+    <div
+      class="rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition hover:shadow-md"
+    >
+      <div
+        class="text-3xl font-bold leading-none text-gray-900"
+      >
+        {{ acceptedCount }}
+      </div>
+
+      <div
+        class="mt-2 text-sm font-medium text-gray-500"
+      >
+        Accepted
+      </div>
+    </div>
+
+
+    <!-- IN PROGRESS -->
+
+    <div
+      class="rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition hover:shadow-md"
+    >
+      <div
+        class="text-3xl font-bold leading-none text-gray-900"
+      >
+        {{ inProgressCount }}
+      </div>
+
+      <div
+        class="mt-2 text-sm font-medium text-gray-500"
+      >
+        In Progress
+      </div>
+    </div>
+
+
+    <!-- SUBMITTED -->
+
+    <div
+      class="rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition hover:shadow-md"
+    >
+      <div
+        class="text-3xl font-bold leading-none text-gray-900"
+      >
+        {{ submittedCount }}
+      </div>
+
+      <div
+        class="mt-2 text-sm font-medium text-gray-500"
+      >
+        Submitted
+      </div>
+    </div>
+
+  </div>
+
+
+  <!-- ================================================= -->
+  <!-- LOADING -->
+  <!-- ================================================= -->
+
+  <div
+    *ngIf="loading && requests.length === 0"
+    class="flex min-h-[180px] items-center justify-center rounded-xl border border-gray-200 bg-white p-8 text-sm text-gray-500 shadow-sm"
+  >
+    <div class="flex items-center gap-3">
+
+      <span
+        class="h-5 w-5 animate-spin rounded-full border-2 border-gray-300 border-t-gray-900"
+      ></span>
+
+      <span>
+        Loading inspection requests...
+      </span>
+
+    </div>
+  </div>
+
+
+  <!-- ================================================= -->
+  <!-- EMPTY -->
+  <!-- ================================================= -->
+
+  <div
+    *ngIf="
+      !loading &&
+      requests.length === 0 &&
+      !errorMessage
+    "
+    class="rounded-xl border border-dashed border-gray-300 bg-white px-6 py-14 text-center shadow-sm"
+  >
+    <div
+      class="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-gray-100 text-gray-500"
+    >
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.8"
+        class="h-7 w-7"
+      >
+        <path d="M4 4h16v16H4z"></path>
+        <path d="M8 8h8"></path>
+        <path d="M8 12h8"></path>
+        <path d="M8 16h5"></path>
+      </svg>
+    </div>
+
+    <h3
+      class="m-0 text-lg font-semibold text-gray-900"
+    >
+      No inspection requests
+    </h3>
+
+    <p
+      class="mt-2 text-sm text-gray-500"
+    >
+      You don't have any inspection assigned right now.
+    </p>
+  </div>
+
+
+  <!-- ================================================= -->
+  <!-- REQUESTS -->
+  <!-- ================================================= -->
+
+  <div
+    *ngIf="requests.length > 0"
+    id="inspections"
+    class="scroll-mt-24"
+  >
+
+    <!-- SECTION HEADER -->
+
+    <div
+      class="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between"
+    >
+      <h2
+        class="m-0 text-xl font-bold text-gray-900"
+      >
+        My Inspection Requests
+      </h2>
+
+      <span
+        class="w-fit rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold text-gray-600"
+      >
+        {{ requests.length }} request(s)
+      </span>
+    </div>
+
+
+    <!-- REQUEST LIST -->
+
+    <div class="space-y-5">
+
+      <div
+        *ngFor="let request of requests"
+        class="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm transition hover:shadow-md"
+      >
+
+        <!-- =========================================== -->
+        <!-- TOP -->
+        <!-- =========================================== -->
+
+        <div
+          class="flex flex-col gap-4 border-b border-gray-100 px-5 py-5 sm:flex-row sm:items-start sm:justify-between sm:px-6"
+        >
+
+          <div class="min-w-0">
+
+            <h3
+              class="m-0 text-lg font-bold text-gray-900"
+            >
+              {{ getVehicleName(request) }}
+            </h3>
+
+            <div
+              class="mt-1.5 inline-flex rounded-md bg-gray-100 px-2.5 py-1 text-xs font-semibold tracking-wide text-gray-700"
+            >
+              {{ getVehicleNumber(request) }}
+            </div>
+
+          </div>
+
+
+          <!-- STATUS -->
+
+          <span
+            class="inline-flex w-fit shrink-0 rounded-full px-3 py-1.5 text-xs font-bold"
+            [ngClass]="{
+              'bg-amber-100 text-amber-700':
+                request.status === 'Assigned',
+
+              'bg-blue-100 text-blue-700':
+                request.status === 'Accepted',
+
+              'bg-purple-100 text-purple-700':
+                request.status === 'In Progress',
+
+              'bg-orange-100 text-orange-700':
+                request.status === 'Submitted',
+
+              'bg-red-100 text-red-700':
+                request.status === 'Rejected',
+
+              'bg-rose-100 text-rose-700':
+                request.status === 'Admin Rejected',
+
+              'bg-green-100 text-green-700':
+                request.status === 'Approved',
+
+              'bg-emerald-100 text-emerald-700':
+                request.status === 'Published'
+            }"
+          >
+            {{ getStatusText(request.status) }}
+          </span>
+
+        </div>
+
+
+        <!-- =========================================== -->
+        <!-- DETAILS -->
+        <!-- =========================================== -->
+
+        <div
+          class="grid grid-cols-1 gap-x-6 gap-y-5 px-5 py-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 sm:px-6"
+        >
+
+          <!-- CUSTOMER -->
+
+          <div class="min-w-0">
+            <div
+              class="mb-1 text-xs font-semibold uppercase tracking-wide text-gray-400"
+            >
+              Customer
+            </div>
+
+            <div
+              class="truncate text-sm font-medium text-gray-800"
+            >
+              {{ getCustomerName(request) }}
+            </div>
+          </div>
+
+
+          <!-- MOBILE -->
+
+          <div class="min-w-0">
+            <div
+              class="mb-1 text-xs font-semibold uppercase tracking-wide text-gray-400"
+            >
+              Mobile
+            </div>
+
+            <div
+              class="truncate text-sm font-medium text-gray-800"
+            >
+              {{ getMobile(request) }}
+            </div>
+          </div>
+
+
+          <!-- CITY -->
+
+          <div class="min-w-0">
+            <div
+              class="mb-1 text-xs font-semibold uppercase tracking-wide text-gray-400"
+            >
+              City
+            </div>
+
+            <div
+              class="truncate text-sm font-medium text-gray-800"
+            >
+              {{ getCity(request) }}
+            </div>
+          </div>
+
+
+          <!-- INSPECTION DATE -->
+
+          <div class="min-w-0">
+            <div
+              class="mb-1 text-xs font-semibold uppercase tracking-wide text-gray-400"
+            >
+              Inspection Date
+            </div>
+
+            <div
+              class="truncate text-sm font-medium text-gray-800"
+            >
+              {{ getBookingDate(request) }}
+            </div>
+          </div>
+
+
+          <!-- TIME SLOT -->
+
+          <div class="min-w-0">
+            <div
+              class="mb-1 text-xs font-semibold uppercase tracking-wide text-gray-400"
+            >
+              Time Slot
+            </div>
+
+            <div
+              class="truncate text-sm font-medium text-gray-800"
+            >
+              {{ getTimeSlot(request) }}
+            </div>
+          </div>
+
+        </div>
+
+
+        <!-- =========================================== -->
+        <!-- REMARK -->
+        <!-- =========================================== -->
+
+        <div
+          *ngIf="request.employee_remark"
+          class="mx-5 mb-5 rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-700 sm:mx-6"
+        >
+          <strong class="font-semibold text-gray-900">
+            Remark:
+          </strong>
+
+          <span class="ml-1">
+            {{ request.employee_remark }}
+          </span>
+        </div>
+
+
+        <!-- =========================================== -->
+        <!-- ADMIN REMARK -->
+        <!-- =========================================== -->
+
+        <div
+          *ngIf="request.admin_remark"
+          class="mx-5 mb-5 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 sm:mx-6"
+        >
+          <strong class="font-semibold">
+            Admin Remark:
+          </strong>
+
+          <span class="ml-1">
+            {{ request.admin_remark }}
+          </span>
+        </div>
+
+
+        <!-- =========================================== -->
+        <!-- ACTIONS -->
+        <!-- =========================================== -->
+
+        <div
+          class="flex flex-col gap-3 border-t border-gray-100 bg-gray-50/70 px-5 py-4 sm:flex-row sm:items-center sm:justify-end sm:px-6"
+        >
+
+          <!-- ======================================= -->
+          <!-- ASSIGNED -->
+          <!-- ======================================= -->
+
+          <ng-container
+            *ngIf="request.status === 'Assigned'"
+          >
+
+            <button
+              type="button"
+              (click)="rejectRequest(request)"
+              [disabled]="loading"
+              class="inline-flex min-h-[42px] items-center justify-center rounded-lg border border-red-200 bg-white px-5 text-sm font-semibold text-red-600 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              Reject
+            </button>
+
+
+            <button
+              type="button"
+              (click)="acceptRequest(request)"
+              [disabled]="loading"
+              class="inline-flex min-h-[42px] items-center justify-center rounded-lg bg-gray-900 px-5 text-sm font-semibold text-white transition hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              Accept
+            </button>
+
+          </ng-container>
+
+
+          <!-- ======================================= -->
+          <!-- ACCEPTED -->
+          <!-- ======================================= -->
+
+          <button
+            *ngIf="request.status === 'Accepted'"
+            type="button"
+            (click)="startInspection(request)"
+            [disabled]="loading"
+            class="inline-flex min-h-[42px] items-center justify-center rounded-lg bg-gray-900 px-5 text-sm font-semibold text-white transition hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            Start Inspection
+          </button>
+
+
+          <!-- ======================================= -->
+          <!-- IN PROGRESS -->
+          <!-- ======================================= -->
+
+          <button
+            *ngIf="request.status === 'In Progress'"
+            type="button"
+            (click)="openInspection(request)"
+            class="inline-flex min-h-[42px] items-center justify-center rounded-lg bg-gray-900 px-5 text-sm font-semibold text-white transition hover:bg-gray-800"
+          >
+            Continue Inspection
+          </button>
+
+
+          <!-- ======================================= -->
+          <!-- SUBMITTED -->
+          <!-- ======================================= -->
+
+          <span
+            *ngIf="request.status === 'Submitted'"
+            class="inline-flex min-h-[42px] items-center justify-center rounded-lg bg-amber-50 px-4 text-sm font-semibold text-amber-700"
+          >
+            Waiting for Admin Approval
+          </span>
+
+
+          <!-- ======================================= -->
+          <!-- ADMIN REJECTED -->
+          <!-- ======================================= -->
+
+          <button
+            *ngIf="request.status === 'Admin Rejected'"
+            type="button"
+            (click)="openInspection(request)"
+            class="inline-flex min-h-[42px] items-center justify-center rounded-lg bg-gray-900 px-5 text-sm font-semibold text-white transition hover:bg-gray-800"
+          >
+            Correction Required
+          </button>
+
+
+          <!-- ======================================= -->
+          <!-- APPROVED -->
+          <!-- ======================================= -->
+
+          <span
+            *ngIf="request.status === 'Approved'"
+            class="inline-flex min-h-[42px] items-center justify-center rounded-lg bg-green-50 px-4 text-sm font-semibold text-green-700"
+          >
+            ✓ Approved by Admin
+          </span>
+
+
+          <!-- ======================================= -->
+          <!-- PUBLISHED -->
+          <!-- ======================================= -->
+
+          <span
+            *ngIf="request.status === 'Published'"
+            class="inline-flex min-h-[42px] items-center justify-center rounded-lg bg-emerald-50 px-4 text-sm font-semibold text-emerald-700"
+          >
+            ✓ Published
+          </span>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>

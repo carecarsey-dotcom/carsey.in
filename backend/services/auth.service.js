@@ -1,114 +1,537 @@
 const {
     findAdminByEmail,
     findAdminById,
-    updatePassword
+    updatePassword,
+
+    findAccountByEmail,
+    createEmployee,
+    getAllEmployees,
+    getEmployeeById,
+    updateEmployeeStatus
+
 } = require("../repositories/auth.repository");
+
 
 const {
     comparePassword,
     hashPassword
+
 } = require("../utils/password");
 
-const { generateToken } = require("../utils/jwt");
 
-// ==========================
-// Admin Login
-// ==========================
-const login = async (email, password) => {
+const {
+    generateToken
 
-    // Find Admin
-    const admin = await findAdminByEmail(email);
+} = require("../utils/jwt");
+
+
+// ======================================================
+// ADMIN / EMPLOYEE LOGIN
+// ======================================================
+
+const login = async (
+    email,
+    password
+) => {
+
+    // ==================================================
+    // FIND ACCOUNT
+    // ==================================================
+
+    const admin =
+        await findAdminByEmail(email);
+
 
     if (!admin) {
-        throw new Error("Admin not found");
+
+        throw new Error(
+            "Admin not found"
+        );
+
     }
 
-    // Check Status
-    if (admin.status !== "Active") {
-        throw new Error("Admin account is inactive");
+
+    // ==================================================
+    // CHECK STATUS
+    // ==================================================
+
+    if (
+        admin.status !== "Active"
+    ) {
+
+        throw new Error(
+            "Admin account is inactive"
+        );
+
     }
 
-    // Compare Password
-    const isMatch = await comparePassword(password, admin.password);
+
+    // ==================================================
+    // COMPARE PASSWORD
+    // ==================================================
+
+    const isMatch =
+        await comparePassword(
+            password,
+            admin.password
+        );
+
 
     if (!isMatch) {
-        throw new Error("Invalid Password");
+
+        throw new Error(
+            "Invalid Password"
+        );
+
     }
 
-    // Generate JWT
-    const token = generateToken({
-        admin_id: admin.admin_id,
-        email: admin.email,
-        role: admin.role
-    });
 
-    // Return Response
+    // ==================================================
+    // GENERATE JWT
+    // ==================================================
+
+    const token =
+        generateToken({
+
+            admin_id:
+                admin.admin_id,
+
+            email:
+                admin.email,
+
+            role:
+                admin.role
+
+        });
+
+
+    // ==================================================
+    // RETURN RESPONSE
+    // ==================================================
+
     return {
+
         admin: {
-            admin_id: admin.admin_id,
-            name: admin.name,
-            email: admin.email,
-            role: admin.role
+
+            admin_id:
+                admin.admin_id,
+
+            name:
+                admin.name,
+
+            email:
+                admin.email,
+
+            role:
+                admin.role
+
         },
+
         token
+
     };
+
 };
 
-// ==========================
-// Admin Profile
-// ==========================
-const getProfile = async (adminId) => {
 
-    const admin = await findAdminById(adminId);
+// ======================================================
+// ADMIN PROFILE
+// ======================================================
+
+const getProfile = async (
+    adminId
+) => {
+
+    const admin =
+        await findAdminById(
+            adminId
+        );
+
 
     if (!admin) {
-        throw new Error("Admin not found");
+
+        throw new Error(
+            "Admin not found"
+        );
+
     }
 
+
     return {
-        admin_id: admin.admin_id,
-        name: admin.name,
-        email: admin.email,
-        role: admin.role,
-        status: admin.status
+
+        admin_id:
+            admin.admin_id,
+
+        name:
+            admin.name,
+
+        email:
+            admin.email,
+
+        role:
+            admin.role,
+
+        status:
+            admin.status
+
     };
+
 };
 
-// ==========================
-// Change Password
-// ==========================
+
+// ======================================================
+// CHANGE PASSWORD
+// ======================================================
+
 const changePassword = async (
     adminId,
     oldPassword,
     newPassword
 ) => {
 
-    const admin = await findAdminById(adminId);
+    if (
+        !oldPassword ||
+        !newPassword
+    ) {
+
+        throw new Error(
+            "Old Password and New Password are required."
+        );
+
+    }
+
+
+    const admin =
+        await findAdminById(
+            adminId
+        );
+
 
     if (!admin) {
-        throw new Error("Admin not found");
+
+        throw new Error(
+            "Admin not found"
+        );
+
     }
 
-    const isMatch = await comparePassword(
-        oldPassword,
-        admin.password
-    );
+
+    const isMatch =
+        await comparePassword(
+            oldPassword,
+            admin.password
+        );
+
 
     if (!isMatch) {
-        throw new Error("Old Password is incorrect");
+
+        throw new Error(
+            "Old Password is incorrect"
+        );
+
     }
 
-    const hashedPassword = await hashPassword(newPassword);
 
-    await updatePassword(adminId, hashedPassword);
+    const hashedPassword =
+        await hashPassword(
+            newPassword
+        );
+
+
+    await updatePassword(
+        adminId,
+        hashedPassword
+    );
+
 
     return {
-        message: "Password changed successfully."
+
+        message:
+            "Password changed successfully."
+
     };
+
 };
 
+
+// ======================================================
+// CREATE EMPLOYEE
+// ADMIN ONLY
+// ======================================================
+
+const createEmployeeAccount = async (
+    name,
+    email,
+    password
+) => {
+
+    // ==================================================
+    // VALIDATION
+    // ==================================================
+
+    if (!name || !name.trim()) {
+
+        throw new Error(
+            "Employee name is required."
+        );
+
+    }
+
+
+    if (!email || !email.trim()) {
+
+        throw new Error(
+            "Employee email is required."
+        );
+
+    }
+
+
+    if (!password) {
+
+        throw new Error(
+            "Employee password is required."
+        );
+
+    }
+
+
+    // ==================================================
+    // NORMALIZE EMAIL
+    // ==================================================
+
+    email =
+        email
+            .trim()
+            .toLowerCase();
+
+
+    // ==================================================
+    // PASSWORD LENGTH
+    // ==================================================
+
+    if (
+        password.length < 6
+    ) {
+
+        throw new Error(
+            "Password must be at least 6 characters."
+        );
+
+    }
+
+
+    // ==================================================
+    // CHECK EXISTING ACCOUNT
+    // ==================================================
+
+    const existingAccount =
+        await findAccountByEmail(
+            email
+        );
+
+
+    if (existingAccount) {
+
+        throw new Error(
+            "An account with this email already exists."
+        );
+
+    }
+
+
+    // ==================================================
+    // HASH PASSWORD
+    // ==================================================
+
+    const hashedPassword =
+        await hashPassword(
+            password
+        );
+
+
+    // ==================================================
+    // CREATE EMPLOYEE
+    // ==================================================
+
+    const result =
+        await createEmployee(
+            name.trim(),
+            email,
+            hashedPassword
+        );
+
+
+    // ==================================================
+    // RETURN CREATED EMPLOYEE
+    // ==================================================
+
+    return {
+
+        employee: {
+
+            admin_id:
+                result.insertId,
+
+            name:
+                name.trim(),
+
+            email,
+
+            role:
+                "Employee",
+
+            status:
+                "Active"
+
+        }
+
+    };
+
+};
+
+
+// ======================================================
+// GET ALL EMPLOYEES
+// ADMIN ONLY
+// ======================================================
+
+const getEmployees = async () => {
+
+    return await getAllEmployees();
+
+};
+
+
+// ======================================================
+// GET EMPLOYEE BY ID
+// ADMIN ONLY
+// ======================================================
+
+const getEmployee = async (
+    employeeId
+) => {
+
+    if (!employeeId) {
+
+        throw new Error(
+            "Employee ID is required."
+        );
+
+    }
+
+
+    const employee =
+        await getEmployeeById(
+            employeeId
+        );
+
+
+    if (!employee) {
+
+        throw new Error(
+            "Employee not found."
+        );
+
+    }
+
+
+    return employee;
+
+};
+
+
+// ======================================================
+// UPDATE EMPLOYEE STATUS
+// ADMIN ONLY
+// ======================================================
+
+const changeEmployeeStatus = async (
+    employeeId,
+    status
+) => {
+
+    if (!employeeId) {
+
+        throw new Error(
+            "Employee ID is required."
+        );
+
+    }
+
+
+    const allowedStatuses = [
+
+        "Active",
+        "Inactive"
+
+    ];
+
+
+    if (
+        !allowedStatuses.includes(status)
+    ) {
+
+        throw new Error(
+            "Invalid employee status."
+        );
+
+    }
+
+
+    const employee =
+        await getEmployeeById(
+            employeeId
+        );
+
+
+    if (!employee) {
+
+        throw new Error(
+            "Employee not found."
+        );
+
+    }
+
+
+    await updateEmployeeStatus(
+        employeeId,
+        status
+    );
+
+
+    return {
+
+        employeeId,
+
+        status,
+
+        message:
+            "Employee status updated successfully."
+
+    };
+
+};
+
+
+// ======================================================
+// EXPORT
+// ======================================================
+
 module.exports = {
+
     login,
+
     getProfile,
-    changePassword
+
+    changePassword,
+
+    createEmployeeAccount,
+
+    getEmployees,
+
+    getEmployee,
+
+    changeEmployeeStatus
+
 };

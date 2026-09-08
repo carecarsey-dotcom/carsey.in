@@ -1,159 +1,76 @@
-const express =
-    require("express");
+const express = require("express");
 
-
-const router =
-    express.Router();
-
+const router = express.Router();
 
 const inspectionReportController =
-    require(
-        "../controllers/inspectionReport.controller"
-    );
-
+    require("../controllers/inspectionReport.controller");
 
 const {
-    verifyToken
-} = require(
-    "../middlewares/auth.middleware"
-);
+    verifyToken,
+    requireAdmin,
+    requireAdminOrEmployee
+} = require("../middlewares/auth.middleware");
 
-
-// ======================================================
 // CUSTOMER
-// GET UNLOCKED INSPECTION REPORT
-// ======================================================
-
 router.get(
-
     "/:carId/inspection-report",
-
-    inspectionReportController
-        .getUnlockedInspectionReport
-
+    inspectionReportController.getUnlockedInspectionReport
 );
 
-
-// ======================================================
 // CUSTOMER
-// GENERATE INSPECTION REPORT PDF
-// ======================================================
-
 router.get(
-
     "/:carId/inspection-report/pdf",
-
-    inspectionReportController
-        .generateInspectionReportPdf
-
+    inspectionReportController.generateInspectionReportPdf
 );
 
-
-// ======================================================
 // ADMIN
-// CREATE INSPECTION REPORT
-// ======================================================
-
 router.post(
-
     "/inspection-reports",
-
     verifyToken,
-
-    inspectionReportController
-        .createInspectionReport
-
+    requireAdmin,
+    inspectionReportController.createInspectionReport
 );
 
-
-// ======================================================
 // ADMIN
-// GET ALL REPORTS
-// ======================================================
-
 router.get(
-
     "/inspection-reports",
-
     verifyToken,
-
-    inspectionReportController
-        .getAllInspectionReports
-
+    requireAdmin,
+    inspectionReportController.getAllInspectionReports
 );
 
-
-// ======================================================
 // ADMIN
-// GET REPORT BY ID
-// ======================================================
-
 router.get(
-
     "/inspection-reports/:reportId",
-
     verifyToken,
-
-    inspectionReportController
-        .getInspectionReportById
-
+    requireAdmin,
+    inspectionReportController.getInspectionReportById
 );
 
-
-// ======================================================
 // ADMIN
-// UPDATE / PUBLISH REPORT
-// ======================================================
-
 router.put(
-
     "/inspection-reports/:reportId",
-
     verifyToken,
-
-    inspectionReportController
-        .updateInspectionReport
-
+    requireAdmin,
+    inspectionReportController.updateInspectionReport
 );
 
-
-// ======================================================
-// ADMIN
-// GENERATE / SAVE PDF
-// ======================================================
-
+// ADMIN + EMPLOYEE
+// Employee uses this only after Submit to generate/save the
+// same backend PDF. This endpoint does NOT publish the vehicle.
 router.get(
-
     "/inspection-reports/:reportId/pdf",
-
     verifyToken,
-
-    inspectionReportController
-        .generateAdminInspectionReportPdf
-
+    requireAdminOrEmployee,
+    inspectionReportController.generateAdminInspectionReportPdf
 );
 
-
-// ======================================================
 // ADMIN
-// SEND PDF TO CUSTOMER
-// ======================================================
-
 router.post(
-
     "/inspection-reports/:reportId/send-email",
-
     verifyToken,
-
-    inspectionReportController
-        .sendInspectionReportEmail
-
+    requireAdmin,
+    inspectionReportController.sendInspectionReportEmail
 );
 
-
-// ======================================================
-// EXPORT
-// ======================================================
-
-module.exports =
-    router;
+module.exports = router;

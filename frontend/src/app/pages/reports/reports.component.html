@@ -217,6 +217,13 @@
                 Not Published
               </span>
 
+              <span
+                *ngIf="report.request_status && report.request_status !== 'Report Only'"
+                class="mt-1 inline-flex rounded-full bg-amber-50 px-2 py-1 text-xs font-bold text-amber-700"
+              >
+                {{ report.request_status }}
+              </span>
+
             </td>
 
 
@@ -298,6 +305,117 @@
         }}
 
       </button>
+
+    </div>
+
+
+    <!-- ================================================= -->
+    <!-- ADMIN REVIEW / APPROVE / REJECT / PUBLISH -->
+    <!-- ================================================= -->
+
+    <div
+      class="mb-5 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"
+    >
+
+      <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+
+        <div>
+          <div class="text-xs font-bold uppercase tracking-wider text-slate-500">
+            Admin Workflow
+          </div>
+
+          <div class="mt-1 flex flex-wrap items-center gap-2">
+            <span class="text-sm font-semibold text-slate-900">
+              Request #{{ selectedReport.request_id || '-' }}
+            </span>
+
+            <span
+              class="rounded-full px-3 py-1 text-xs font-bold"
+              [ngClass]="{
+                'bg-amber-100 text-amber-700': selectedReport.request_status === 'Submitted',
+                'bg-emerald-100 text-emerald-700': selectedReport.request_status === 'Approved',
+                'bg-red-100 text-red-700': selectedReport.request_status === 'Admin Rejected',
+                'bg-blue-100 text-blue-700': selectedReport.request_status === 'Published',
+                'bg-slate-100 text-slate-700': !selectedReport.request_status || selectedReport.request_status === 'Report Only'
+              }"
+            >
+              {{ selectedReport.request_status || 'Report Only' }}
+            </span>
+          </div>
+
+          <p
+            *ngIf="selectedReport.employee_name"
+            class="mt-2 text-sm text-slate-500"
+          >
+            Inspected by: <span class="font-semibold text-slate-700">{{ selectedReport.employee_name }}</span>
+          </p>
+
+          <p
+            *ngIf="selectedReport.admin_remark"
+            class="mt-1 text-sm text-slate-500"
+          >
+            Admin remark: <span class="font-medium text-slate-700">{{ selectedReport.admin_remark }}</span>
+          </p>
+        </div>
+
+        <div
+          *ngIf="selectedReport.request_status === 'Submitted'"
+          class="flex flex-wrap gap-2"
+        >
+
+          <button
+            type="button"
+            [disabled]="workflowLoading"
+            (click)="approveSelectedReport()"
+            class="rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {{ workflowLoading ? 'Processing...' : '✓ Approve Inspection' }}
+          </button>
+
+          <button
+            type="button"
+            [disabled]="workflowLoading"
+            (click)="rejectSelectedReport()"
+            class="rounded-lg bg-red-600 px-4 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            ✕ Reject / Send for Correction
+          </button>
+
+        </div>
+
+        <div
+          *ngIf="selectedReport.request_status === 'Approved'"
+          class="flex flex-col gap-2 sm:flex-row sm:items-center"
+        >
+
+          <input
+            type="number"
+            min="0"
+            step="1"
+            [(ngModel)]="adminPrice"
+            placeholder="Vehicle price"
+            class="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm font-semibold text-slate-900 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 sm:w-48"
+          />
+
+          <button
+            type="button"
+            [disabled]="workflowLoading || adminPrice === null || adminPrice === undefined"
+            (click)="publishSelectedReport()"
+            class="rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {{ workflowLoading ? 'Publishing...' : 'Publish Vehicle' }}
+          </button>
+
+        </div>
+
+        <div
+          *ngIf="selectedReport.request_status === 'Published'"
+          class="rounded-lg bg-blue-50 px-4 py-3 text-sm font-bold text-blue-700"
+        >
+          ✓ Vehicle Published — visible in Buy Car
+        </div>
+
+      </div>
 
     </div>
 

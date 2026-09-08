@@ -1,12 +1,16 @@
-const inspectionBookingRepository = require(
-    "../repositories/inspectionBooking.repository"
-);
+const inspectionBookingRepository =
+    require(
+        "../repositories/inspectionBooking.repository"
+    );
+
 
 // ======================================================
 // CREATE BOOKING
 // ======================================================
 
-const createBooking = async (bookingData) => {
+const createBooking = async (
+    bookingData
+) => {
 
     const {
         name,
@@ -98,6 +102,7 @@ const createBooking = async (bookingData) => {
 
 
     return result.insertId;
+
 };
 
 
@@ -107,7 +112,9 @@ const createBooking = async (bookingData) => {
 
 const getAllBookings = async () => {
 
-    return await inspectionBookingRepository.getAllBookings();
+    return await
+        inspectionBookingRepository
+            .getAllBookings();
 
 };
 
@@ -120,27 +127,35 @@ const getBookingById = async (
     bookingId
 ) => {
 
-    const booking =
-        await inspectionBookingRepository.getBookingById(
-            bookingId
+    if (!bookingId) {
+        throw new Error(
+            "Booking ID is required."
         );
+    }
+
+
+    const booking =
+        await
+            inspectionBookingRepository
+                .getBookingById(
+                    bookingId
+                );
 
 
     if (!booking) {
-
         throw new Error(
             "Inspection booking not found."
         );
-
     }
 
 
     return booking;
+
 };
 
 
 // ======================================================
-// UPDATE STATUS
+// UPDATE BOOKING STATUS
 // ======================================================
 
 const updateBookingStatus = async (
@@ -155,42 +170,395 @@ const updateBookingStatus = async (
     ];
 
 
-    if (
-        !allowedStatuses.includes(status)
-    ) {
+    if (!bookingId) {
+        throw new Error(
+            "Booking ID is required."
+        );
+    }
 
+
+    if (!allowedStatuses.includes(status)) {
         throw new Error(
             "Invalid booking status."
         );
-
     }
 
 
     const booking =
-        await inspectionBookingRepository.getBookingById(
-            bookingId
-        );
+        await
+            inspectionBookingRepository
+                .getBookingById(
+                    bookingId
+                );
 
 
     if (!booking) {
-
         throw new Error(
             "Inspection booking not found."
+        );
+    }
+
+
+    await
+        inspectionBookingRepository
+            .updateBookingStatus(
+                bookingId,
+                status
+            );
+
+
+    return {
+
+        bookingId,
+
+        status
+
+    };
+
+};
+
+
+// ======================================================
+// ASSIGN INSPECTION TO EMPLOYEE
+// ADMIN ONLY
+// ======================================================
+
+const assignInspection = async (
+    bookingId,
+    employeeId
+) => {
+
+    // ==================================================
+    // VALIDATION
+    // ==================================================
+
+    if (!bookingId) {
+        throw new Error(
+            "Booking ID is required."
+        );
+    }
+
+
+    if (!employeeId) {
+        throw new Error(
+            "Employee ID is required."
+        );
+    }
+
+
+    // ==================================================
+    // CHECK BOOKING
+    // ==================================================
+
+    const booking =
+        await
+            inspectionBookingRepository
+                .getBookingById(
+                    bookingId
+                );
+
+
+    if (!booking) {
+        throw new Error(
+            "Inspection booking not found."
+        );
+    }
+
+
+    // ==================================================
+    // CHECK EMPLOYEE
+    // ==================================================
+
+    const employee =
+        await
+            inspectionBookingRepository
+                .findEmployeeById(
+                    employeeId
+                );
+
+
+    if (!employee) {
+        throw new Error(
+            "Employee not found."
+        );
+    }
+
+
+    // ==================================================
+    // EMPLOYEE ROLE CHECK
+    // ==================================================
+
+    if (
+        employee.role !== "Employee"
+    ) {
+
+        throw new Error(
+            "Selected account is not an Employee."
         );
 
     }
 
 
-    await inspectionBookingRepository.updateBookingStatus(
-        bookingId,
-        status
-    );
+    // ==================================================
+    // EMPLOYEE STATUS CHECK
+    // ==================================================
+
+    if (
+        employee.status !== "Active"
+    ) {
+
+        throw new Error(
+            "Selected Employee account is inactive."
+        );
+
+    }
+
+
+    // ==================================================
+    // CHECK LATEST INSPECTION REQUEST
+    // ==================================================
+
+    const existingRequest =
+        await
+            inspectionBookingRepository
+                .findInspectionRequestByBookingId(
+                    bookingId
+                );
+
+
+    // ==================================================
+    // IF REQUEST ALREADY EXISTS
+    // ==================================================
+
+    if (existingRequest) {
+
+        // ------------------------------------------------
+        // ACTIVE / COMPLETED REQUEST
+        // ------------------------------------------------
+
+        const blockedStatuses = [
+            "Assigned",
+            "Accepted",
+            "In Progress",
+            "Submitted",
+            "Approved",
+            "Published"
+        ];
+
+
+        if (
+            blockedStatuses.includes(
+                existingRequest.status
+            )
+        ) {
+
+            throw new Error(
+                `This booking is already assigned. Current inspection status: ${existingRequest.status}`
+            );
+
+        }
+
+
+        // ------------------------------------------------
+        // REJECTED REQUEST
+        // ------------------------------------------------
+        //
+        // IMPORTANT:
+        // Old request ko update/reset nahi karna.
+        //
+        // New inspection request create hogi.
+        // Isse rejection history safe rahegi.
+        //
+        // Allowed:
+        // Rejected
+        // Admin Rejected
+        //
+        // ------------------------------------------------
+
+        if (
+            existingRequest.status === "Rejected" ||
+            existingRequest.status === "Admin Rejected"
+        ) {
+
+            const result =
+                await
+                    inspectionBookingRepository
+                        .createInspectionRequest(
+                            bookingId,
+                            employeeId
+                        );
+
+
+            const requestId =
+                result.insertId;
+
+
+            return {
+
+                requestId,
+
+                bookingId,
+
+                employeeId,
+
+                employeeName:
+                    employee.name,
+
+                employeeEmail:
+                    employee.email,
+
+                status:
+                    "Assigned",
+
+                previousRequestId:
+                    existingRequest.request_id,
+
+                previousStatus:
+                    existingRequest.status,
+
+                message:
+                    "Inspection reassigned to Employee successfully."
+
+            };
+
+        }
+
+
+        // ------------------------------------------------
+        // SAFETY FALLBACK
+        // ------------------------------------------------
+
+        throw new Error(
+            `Inspection cannot be assigned. Current status: ${existingRequest.status}`
+        );
+
+    }
+
+
+    // ==================================================
+    // CREATE FIRST INSPECTION REQUEST
+    // ==================================================
+
+    const result =
+        await
+            inspectionBookingRepository
+                .createInspectionRequest(
+                    bookingId,
+                    employeeId
+                );
+
+
+    const requestId =
+        result.insertId;
 
 
     return {
+
+        requestId,
+
         bookingId,
-        status
+
+        employeeId,
+
+        employeeName:
+            employee.name,
+
+        employeeEmail:
+            employee.email,
+
+        status:
+            "Assigned",
+
+        message:
+            "Inspection assigned to Employee successfully."
+
     };
+
+};
+
+
+// ======================================================
+// GET EMPLOYEE ASSIGNMENTS
+// EMPLOYEE ONLY
+// ======================================================
+
+const getEmployeeAssignments = async (
+    employeeId
+) => {
+
+    if (!employeeId) {
+        throw new Error(
+            "Employee ID is required."
+        );
+    }
+
+
+    const employee =
+        await
+            inspectionBookingRepository
+                .findEmployeeById(
+                    employeeId
+                );
+
+
+    if (!employee) {
+        throw new Error(
+            "Employee not found."
+        );
+    }
+
+
+    if (
+        employee.role !== "Employee"
+    ) {
+
+        throw new Error(
+            "Selected account is not an Employee."
+        );
+
+    }
+
+
+    return await
+        inspectionBookingRepository
+            .getEmployeeAssignments(
+                employeeId
+            );
+
+};
+
+
+// ======================================================
+// GET INSPECTION REQUEST
+// ======================================================
+
+const getInspectionRequestById = async (
+    requestId
+) => {
+
+    if (!requestId) {
+        throw new Error(
+            "Request ID is required."
+        );
+    }
+
+
+    const request =
+        await
+            inspectionBookingRepository
+                .getInspectionRequestById(
+                    requestId
+                );
+
+
+    if (!request) {
+        throw new Error(
+            "Inspection request not found."
+        );
+    }
+
+
+    return request;
 
 };
 
@@ -207,6 +575,12 @@ module.exports = {
 
     getBookingById,
 
-    updateBookingStatus
+    updateBookingStatus,
+
+    assignInspection,
+
+    getEmployeeAssignments,
+
+    getInspectionRequestById
 
 };

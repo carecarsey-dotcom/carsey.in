@@ -4,6 +4,10 @@ import { authGuard } from './guards/auth.guard';
 
 import { CarDetailsComponent } from './pages/customer/car-details/car-details.component';
 
+import { EmployeeDashboardComponent } from './pages/employee-dashboard/employee-dashboard.component';
+
+import { EmployeeInspectionComponent } from './pages/employee-inspection/employee-inspection.component';
+
 
 export const routes: Routes = [
 
@@ -13,7 +17,6 @@ export const routes: Routes = [
   // =====================================================
 
   {
-
     path: '',
 
     loadComponent: () =>
@@ -32,15 +35,16 @@ export const routes: Routes = [
       // =================================================
 
       {
-  path: '',
-  title: 'Carsey.in – Buy, Sell & Exchange Cars',
-  loadComponent: () =>
-    import(
-      './pages/customer/home/home.component'
-    ).then(
-      m => m.HomeComponent
-    )
-},
+        path: '',
+        title: 'Carsey.in – Buy, Sell & Exchange Cars',
+
+        loadComponent: () =>
+          import(
+            './pages/customer/home/home.component'
+          ).then(
+            m => m.HomeComponent
+          )
+      },
 
 
       // =================================================
@@ -52,7 +56,6 @@ export const routes: Routes = [
 
       /*
       {
-
         path: 'buy-car',
 
         loadComponent: () =>
@@ -61,7 +64,6 @@ export const routes: Routes = [
           ).then(
             m => m.BuyCarComponent
           )
-
       },
       */
 
@@ -70,32 +72,36 @@ export const routes: Routes = [
       // SELL CAR
       // /sell-car
       // =================================================
-{
-  path: 'sell-car',
-  title: 'Sell Your Car Online | Carsey.in',
-  loadComponent: () =>
-    import(
-      './pages/customer/sell-car/sell-car.component'
-    ).then(
-      m => m.SellCarComponent
-    )
-},
+
+      {
+        path: 'sell-car',
+        title: 'Sell Your Car Online | Carsey.in',
+
+        loadComponent: () =>
+          import(
+            './pages/customer/sell-car/sell-car.component'
+          ).then(
+            m => m.SellCarComponent
+          )
+      },
 
 
       // =================================================
       // UPGRADE / EXCHANGE
       // /exchange
       // =================================================
-{
-  path: 'exchange',
-  title: 'Exchange Your Car | Carsey.in',
-  loadComponent: () =>
-    import(
-      './pages/customer/exchange/exchange.component'
-    ).then(
-      m => m.ExchangeComponent
-    )
-},
+
+      {
+        path: 'exchange',
+        title: 'Exchange Your Car | Carsey.in',
+
+        loadComponent: () =>
+          import(
+            './pages/customer/exchange/exchange.component'
+          ).then(
+            m => m.ExchangeComponent
+          )
+      },
 
 
       // =================================================
@@ -104,16 +110,16 @@ export const routes: Routes = [
       // =================================================
 
       {
-  path: 'book-inspection',
-  title: 'Book Car Inspection | Carsey.in',
-  loadComponent: () =>
-    import(
-      './pages/customer/book-inspection/book-inspection.component'
-    ).then(
-      m => m.BookInspectionComponent
-    )
-},
-      
+        path: 'book-inspection',
+        title: 'Book Car Inspection | Carsey.in',
+
+        loadComponent: () =>
+          import(
+            './pages/customer/book-inspection/book-inspection.component'
+          ).then(
+            m => m.BookInspectionComponent
+          )
+      },
 
 
       // =================================================
@@ -122,16 +128,16 @@ export const routes: Routes = [
       // =================================================
 
       {
-  path: 'about',
-  title: 'About Carsey.in',
-  loadComponent: () =>
-    import(
-      './pages/customer/about/about.component'
-    ).then(
-      m => m.AboutComponent
-    )
-},
-      
+        path: 'about',
+        title: 'About Carsey.in',
+
+        loadComponent: () =>
+          import(
+            './pages/customer/about/about.component'
+          ).then(
+            m => m.AboutComponent
+          )
+      },
 
 
       // =================================================
@@ -140,15 +146,12 @@ export const routes: Routes = [
       // =================================================
 
       {
-
         path: 'car/:id',
 
         component: CarDetailsComponent
-
       }
 
     ]
-
   },
 
 
@@ -157,7 +160,6 @@ export const routes: Routes = [
   // =====================================================
 
   {
-
     path: 'login',
 
     loadComponent: () =>
@@ -171,23 +173,84 @@ export const routes: Routes = [
 
 
   // =====================================================
+  // EMPLOYEE PANEL
+  // =====================================================
+
+  {
+    path: 'employee',
+
+    canActivate: [
+      authGuard
+    ],
+
+    canActivateChild: [
+      authGuard
+    ],
+
+    loadComponent: () =>
+      import(
+        './layout/employee-layout/employee-layout.component'
+      ).then(
+        m => m.EmployeeLayoutComponent
+      ),
+
+    children: [
+
+
+      // =================================================
+      // EMPLOYEE DASHBOARD
+      // /employee/dashboard
+      // =================================================
+
+      {
+        path: 'dashboard',
+
+        component: EmployeeDashboardComponent
+      },
+
+
+      // =================================================
+      // EMPLOYEE INSPECTION
+      // /employee/inspection/:requestId
+      // =================================================
+
+      {
+        path: 'inspection/:requestId',
+
+        component: EmployeeInspectionComponent
+      },
+
+
+      // =================================================
+      // EMPLOYEE DEFAULT
+      // /employee
+      // ↓
+      // /employee/dashboard
+      // =================================================
+
+      {
+        path: '',
+        redirectTo: 'dashboard',
+        pathMatch: 'full'
+      }
+
+    ]
+  },
+
+
+  // =====================================================
   // ADMIN PANEL
   // =====================================================
 
   {
-
     path: 'admin',
 
     canActivate: [
-
       authGuard
-
     ],
 
     canActivateChild: [
-
       authGuard
-
     ],
 
     loadComponent: () =>
@@ -206,7 +269,6 @@ export const routes: Routes = [
       // ================================================
 
       {
-
         path: 'dashboard',
 
         loadComponent: () =>
@@ -220,12 +282,29 @@ export const routes: Routes = [
 
 
       // ================================================
+// EMPLOYEE MANAGEMENT
+// /admin/employees
+// ================================================
+
+{
+  path: 'employees',
+
+  loadComponent: () =>
+    import(
+      './pages/employee-management/employee-management.component'
+    ).then(
+      m => m.EmployeeManagementComponent
+    )
+
+},
+
+
+      // ================================================
       // ADD VEHICLE
       // /admin/vehicles/add
       // ================================================
 
       {
-
         path: 'vehicles/add',
 
         loadComponent: () =>
@@ -244,7 +323,6 @@ export const routes: Routes = [
       // ================================================
 
       {
-
         path: 'vehicles/edit/:carId',
 
         loadComponent: () =>
@@ -263,7 +341,6 @@ export const routes: Routes = [
       // ================================================
 
       {
-
         path: 'vehicles',
 
         loadComponent: () =>
@@ -281,7 +358,6 @@ export const routes: Routes = [
       // ================================================
 
       {
-
         path: 'report-unlock-requests',
 
         loadComponent: () =>
@@ -299,7 +375,6 @@ export const routes: Routes = [
       // ================================================
 
       {
-
         path: 'test-drive-requests',
 
         loadComponent: () =>
@@ -317,7 +392,6 @@ export const routes: Routes = [
       // ================================================
 
       {
-
         path: 'finance-requests',
 
         loadComponent: () =>
@@ -335,7 +409,6 @@ export const routes: Routes = [
       // ================================================
 
       {
-
         path: 'sell-car-requests',
 
         loadComponent: () =>
@@ -353,7 +426,6 @@ export const routes: Routes = [
       // ================================================
 
       {
-
         path: 'exchange-requests',
 
         loadComponent: () =>
@@ -371,7 +443,6 @@ export const routes: Routes = [
       // ================================================
 
       {
-
         path: 'loan-requests',
 
         loadComponent: () =>
@@ -389,7 +460,6 @@ export const routes: Routes = [
       // ================================================
 
       {
-
         path: 'inspection-bookings',
 
         loadComponent: () =>
@@ -407,7 +477,6 @@ export const routes: Routes = [
       // ================================================
 
       {
-
         path: 'inspection-reports',
 
         loadComponent: () =>
@@ -428,7 +497,6 @@ export const routes: Routes = [
       // ================================================
 
       {
-
         path: '',
 
         redirectTo: 'dashboard',
@@ -447,7 +515,6 @@ export const routes: Routes = [
   // =====================================================
 
   {
-
     path: '**',
 
     redirectTo: ''

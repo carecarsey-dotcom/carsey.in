@@ -22,13 +22,19 @@ import {
 // ======================================================
 
 interface LoginResponse {
+
   success: boolean;
+
   message: string;
 
   data?: {
+
     token?: string;
-    admin?: unknown;
+
+    admin?: any;
+
   };
+
 }
 
 
@@ -37,14 +43,20 @@ interface LoginResponse {
 // ======================================================
 
 @Component({
+
   selector: 'app-login',
+
   standalone: true,
+
   imports: [
     FormsModule
   ],
+
   templateUrl:
     './login.component.html'
+
 })
+
 
 export class LoginComponent
   implements OnInit {
@@ -66,6 +78,7 @@ export class LoginComponent
   // ====================================================
 
   private readonly API_BASE_URL =
+
     window.location.hostname === 'localhost' ||
     window.location.hostname === '127.0.0.1'
 
@@ -103,6 +116,56 @@ export class LoginComponent
 
     if (token) {
 
+      const adminData =
+        localStorage.getItem('admin');
+
+
+      let user: any = null;
+
+
+      if (adminData) {
+
+        try {
+
+          user =
+            JSON.parse(adminData);
+
+        } catch (error) {
+
+          console.error(
+            'Unable to parse saved user data:',
+            error
+          );
+
+        }
+
+      }
+
+
+      // ================================================
+      // EMPLOYEE
+      // ================================================
+
+      if (
+        user?.role === 'Employee'
+      ) {
+
+        this.router.navigate(
+          ['/employee/dashboard'],
+          {
+            replaceUrl: true
+          }
+        );
+
+        return;
+
+      }
+
+
+      // ================================================
+      // ADMIN
+      // ================================================
+
       this.router.navigate(
         ['/admin/dashboard'],
         {
@@ -121,7 +184,11 @@ export class LoginComponent
 
   login(): void {
 
-    // Clear previous error
+
+    // ==================================================
+    // CLEAR PREVIOUS ERROR
+    // ==================================================
+
     this.errorMessage = '';
 
 
@@ -180,21 +247,25 @@ export class LoginComponent
     // ==================================================
 
     this.http
+
       .post<LoginResponse>(
         loginUrl,
         {
+
           email:
             this.email.trim(),
 
           password:
             this.password
+
         }
       )
+
       .subscribe({
 
-        // =================================================
+        // ===============================================
         // SUCCESS
-        // =================================================
+        // ===============================================
 
         next: (
           response: LoginResponse
@@ -206,20 +277,24 @@ export class LoginComponent
           );
 
 
-          // ===============================================
+          // =============================================
           // SUCCESS + TOKEN
-          // ===============================================
+          // =============================================
 
           if (
+
             response &&
+
             response.success &&
+
             response.data?.token
+
           ) {
 
 
-            // =============================================
+            // =========================================
             // SAVE JWT TOKEN
-            // =============================================
+            // =========================================
 
             localStorage.setItem(
               'token',
@@ -232,9 +307,9 @@ export class LoginComponent
             );
 
 
-            // =============================================
-            // SAVE ADMIN DATA
-            // =============================================
+            // =========================================
+            // SAVE USER / ADMIN DATA
+            // =========================================
 
             if (
               response.data.admin
@@ -247,33 +322,136 @@ export class LoginComponent
                 )
               );
 
+
+              // =======================================
+              // DEBUG ROLE
+              // =======================================
+
+              console.log(
+                'Logged in user:',
+                response.data.admin
+              );
+
+              console.log(
+                'Logged in role:',
+                response.data.admin?.role
+              );
+
             }
 
 
-            // =============================================
+            // =========================================
             // CLEAR ERROR
-            // =============================================
+            // =========================================
 
             this.errorMessage = '';
 
 
-            // =============================================
-            // DASHBOARD
-            // =============================================
+            // =========================================
+            // GET ROLE
+            // =========================================
 
-            this.router.navigate(
-              ['/admin/dashboard'],
-              {
-                replaceUrl: true
-              }
+            const loggedInUser =
+              response.data.admin;
+
+
+            const role =
+              String(
+                loggedInUser?.role || ''
+              ).trim();
+
+
+            // =========================================
+            // EMPLOYEE DASHBOARD
+            // =========================================
+
+            if (
+              role === 'Employee'
+            ) {
+
+              console.log(
+                'Employee login detected.'
+              );
+
+
+              this.router.navigate(
+                ['/employee/dashboard'],
+                {
+                  replaceUrl: true
+                }
+              );
+
+
+              this.loading = false;
+
+              return;
+
+            }
+
+
+            // =========================================
+            // ADMIN DASHBOARD
+            // =========================================
+
+            if (
+              role === 'Admin'
+            ) {
+
+              console.log(
+                'Admin login detected.'
+              );
+
+
+              this.router.navigate(
+                ['/admin/dashboard'],
+                {
+                  replaceUrl: true
+                }
+              );
+
+
+              this.loading = false;
+
+              return;
+
+            }
+
+
+            // =========================================
+            // UNKNOWN ROLE
+            // =========================================
+
+            console.error(
+              'Unknown login role:',
+              role
             );
+
+
+            this.errorMessage =
+              'User role is not authorized.';
+
+
+            // Remove token if role is invalid
+
+            localStorage.removeItem(
+              'token'
+            );
+
+            localStorage.removeItem(
+              'admin'
+            );
+
+
+            this.loading = false;
+
+            return;
 
           }
 
 
-          // ===============================================
+          // =============================================
           // LOGIN FAILED FROM BACKEND
-          // ===============================================
+          // =============================================
 
           else {
 

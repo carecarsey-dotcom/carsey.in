@@ -12,11 +12,14 @@ import {
   FormsModule
 } from '@angular/forms';
 
-
 import {
   InspectionBookingService
 } from '../../services/inspection-booking.service';
 
+
+// ======================================================
+// INSPECTION BOOKING INTERFACE
+// ======================================================
 
 interface InspectionBooking {
 
@@ -46,6 +49,39 @@ interface InspectionBooking {
 
   created_at: string;
 
+  // ====================================================
+  // INSPECTION REQUEST DATA
+  // ====================================================
+
+  inspection_request_id?: number;
+
+  inspection_request_status?: string;
+
+  employee_id?: number;
+
+  employee_name?: string;
+
+  employee_email?: string;
+
+}
+
+
+// ======================================================
+// EMPLOYEE INTERFACE
+// ======================================================
+
+interface Employee {
+
+  admin_id: number;
+
+  name: string;
+
+  email: string;
+
+  role: string;
+
+  status: string;
+
 }
 
 
@@ -60,9 +96,7 @@ interface InspectionBooking {
 
     CommonModule,
 
-    FormsModule,
-
-    
+    FormsModule
 
   ],
 
@@ -102,6 +136,34 @@ export class InspectionBookingsComponent
 
 
   // ======================================================
+  // EMPLOYEES
+  // ======================================================
+
+  employees:
+    Employee[] = [];
+
+
+  employeesLoading = false;
+
+
+  employeeErrorMessage = '';
+
+
+  // ======================================================
+  // ASSIGNMENT
+  // ======================================================
+
+  assigningBookingId:
+    number | null = null;
+
+
+  selectedEmployeeByBooking:
+    {
+      [bookingId: number]: number | null;
+    } = {};
+
+
+  // ======================================================
   // SEARCH
   // ======================================================
 
@@ -128,7 +190,181 @@ export class InspectionBookingsComponent
 
   ngOnInit(): void {
 
+    this.loadEmployees();
+
     this.loadBookings();
+
+  }
+
+
+  // ======================================================
+  // LOAD EMPLOYEES
+  // ======================================================
+
+  loadEmployees(): void {
+
+    this.employeesLoading = true;
+
+    this.employeeErrorMessage = '';
+
+
+    this.bookingService
+      .getEmployees()
+      .subscribe({
+
+        next: (response: any) => {
+
+          console.log(
+            'EMPLOYEES API RESPONSE:',
+            response
+          );
+
+
+          if (
+            response?.success === false
+          ) {
+
+            this.employeeErrorMessage =
+              response?.message ||
+              'Unable to load employees.';
+
+            this.employees = [];
+
+            this.employeesLoading = false;
+
+            return;
+
+          }
+
+
+          // ==================================================
+          // HANDLE DIFFERENT API RESPONSE STRUCTURES
+          // ==================================================
+
+          const data =
+            response?.data;
+
+
+          let employees: any[] = [];
+
+
+          if (
+            Array.isArray(data)
+          ) {
+
+            employees = data;
+
+          }
+
+          else if (
+            Array.isArray(data?.employees)
+          ) {
+
+            employees =
+              data.employees;
+
+          }
+
+          else if (
+            Array.isArray(response?.employees)
+          ) {
+
+            employees =
+              response.employees;
+
+          }
+
+
+          // ==================================================
+          // ONLY ACTIVE EMPLOYEES
+          // ==================================================
+
+          this.employees =
+            employees
+              .map(
+                (employee: any) =>
+                  this.normalizeEmployee(
+                    employee
+                  )
+              )
+              .filter(
+                (employee: Employee) =>
+                  employee.role === 'Employee' &&
+                  employee.status === 'Active'
+              );
+
+
+          this.employeesLoading = false;
+
+        },
+
+
+        error: (error) => {
+
+          console.error(
+            'GET EMPLOYEES ERROR:',
+            error
+          );
+
+
+          this.employeeErrorMessage =
+            error?.error?.message ||
+            error?.message ||
+            'Unable to load employees.';
+
+
+          this.employees = [];
+
+          this.employeesLoading = false;
+
+        }
+
+      });
+
+  }
+
+
+  // ======================================================
+  // NORMALIZE EMPLOYEE
+  // ======================================================
+
+  private normalizeEmployee(
+    employee: any
+  ): Employee {
+
+    return {
+
+      admin_id:
+        employee?.admin_id ??
+        employee?.employee_id ??
+        employee?.employeeId ??
+        employee?.id ??
+        0,
+
+
+      name:
+        employee?.name ??
+        employee?.employee_name ??
+        employee?.employeeName ??
+        '',
+
+
+      email:
+        employee?.email ??
+        employee?.employee_email ??
+        '',
+
+
+      role:
+        employee?.role ??
+        'Employee',
+
+
+      status:
+        employee?.status ??
+        'Active'
+
+    };
 
   }
 
@@ -171,6 +407,7 @@ export class InspectionBookingsComponent
             this.loading = false;
 
             return;
+
           }
 
 
@@ -334,7 +571,43 @@ export class InspectionBookingsComponent
       created_at:
         booking?.created_at ??
         booking?.createdAt ??
-        ''
+        '',
+
+
+      // ==================================================
+      // INSPECTION REQUEST
+      // ==================================================
+
+      inspection_request_id:
+        booking?.inspection_request_id ??
+        booking?.request_id ??
+        booking?.inspectionRequestId ??
+        undefined,
+
+
+      inspection_request_status:
+        booking?.inspection_request_status ??
+        booking?.request_status ??
+        booking?.inspectionRequestStatus ??
+        undefined,
+
+
+      employee_id:
+        booking?.employee_id ??
+        booking?.employeeId ??
+        undefined,
+
+
+      employee_name:
+        booking?.employee_name ??
+        booking?.employeeName ??
+        undefined,
+
+
+      employee_email:
+        booking?.employee_email ??
+        booking?.employeeEmail ??
+        undefined
 
     };
 
@@ -447,6 +720,8 @@ export class InspectionBookingsComponent
   refresh(): void {
 
     this.searchText = '';
+
+    this.loadEmployees();
 
     this.loadBookings();
 
@@ -581,6 +856,12 @@ Time Slot: ${
 Status: ${
   booking?.status ??
   '-'
+}
+
+Employee: ${
+  booking?.employee_name ??
+  booking?.employeeName ??
+  'Not Assigned'
 }`
 
           );
@@ -797,7 +1078,219 @@ Status: ${
 
 
   // ======================================================
-  // TRACK BY
+  // ASSIGN INSPECTION
+  // ======================================================
+
+  assignInspection(
+    booking: InspectionBooking
+  ): void {
+
+    const employeeId =
+      this.selectedEmployeeByBooking[
+        booking.booking_id
+      ];
+
+
+    // ====================================================
+    // VALIDATE EMPLOYEE
+    // ====================================================
+
+    if (
+      !employeeId
+    ) {
+
+      alert(
+        'Please select an employee first.'
+      );
+
+      return;
+
+    }
+
+
+    // ====================================================
+    // CONFIRM ASSIGNMENT
+    // ====================================================
+
+    const employee =
+      this.employees.find(
+        item =>
+          item.admin_id ===
+          Number(employeeId)
+      );
+
+
+    const confirmed =
+      confirm(
+
+`Assign inspection booking #${booking.booking_id}
+
+Customer: ${booking.name || '-'}
+
+Vehicle: ${
+  booking.brand || '-'
+} ${
+  booking.model || ''
+}
+
+Employee: ${
+  employee?.name || '-'
+}
+
+Do you want to continue?`
+
+      );
+
+
+    if (!confirmed) {
+
+      return;
+
+    }
+
+
+    this.assigningBookingId =
+      booking.booking_id;
+
+
+    // ====================================================
+    // API
+    // ====================================================
+
+    this.bookingService
+      .assignInspection(
+        booking.booking_id,
+        Number(employeeId)
+      )
+      .subscribe({
+
+        next: (response: any) => {
+
+          console.log(
+            'ASSIGN INSPECTION RESPONSE:',
+            response
+          );
+
+
+          if (
+            response?.success === false
+          ) {
+
+            alert(
+              response?.message ||
+              'Unable to assign inspection.'
+            );
+
+            this.assigningBookingId = null;
+
+            return;
+
+          }
+
+
+          // ==================================================
+          // UPDATE LOCAL BOOKING
+          // ==================================================
+
+          booking.employee_id =
+            employee?.admin_id;
+
+
+          booking.employee_name =
+            employee?.name;
+
+
+          booking.employee_email =
+            employee?.email;
+
+
+          booking.inspection_request_status =
+            response?.data?.status ??
+            response?.status ??
+            'Assigned';
+
+
+          booking.inspection_request_id =
+            response?.data?.request_id ??
+            response?.request_id ??
+            booking.inspection_request_id;
+
+
+          // ==================================================
+          // CLEAR SELECTION
+          // ==================================================
+
+          delete this.selectedEmployeeByBooking[
+            booking.booking_id
+          ];
+
+
+          this.assigningBookingId =
+            null;
+
+
+          alert(
+            `Inspection booking #${booking.booking_id} assigned to ${employee?.name || 'employee'} successfully.`
+          );
+
+
+          // ==================================================
+          // REFRESH BOOKINGS
+          // ==================================================
+
+          this.loadBookings();
+
+        },
+
+
+        error: (error) => {
+
+          console.error(
+            'ASSIGN INSPECTION ERROR:',
+            error
+          );
+
+
+          this.assigningBookingId =
+            null;
+
+
+          alert(
+
+            error?.error?.message ||
+
+            error?.message ||
+
+            'Unable to assign inspection.'
+
+          );
+
+        }
+
+      });
+
+  }
+
+
+  // ======================================================
+  // CHECK ASSIGNED
+  // ======================================================
+
+  isAssigned(
+    booking: InspectionBooking
+  ): boolean {
+
+    return !!(
+      booking.employee_id ||
+      booking.employee_name ||
+      booking.inspection_request_id
+    );
+
+  }
+
+
+  // ======================================================
+  // TRACK BY BOOKING ID
   // ======================================================
 
   trackByBookingId(
@@ -806,6 +1299,20 @@ Status: ${
   ): number {
 
     return booking.booking_id;
+
+  }
+
+
+  // ======================================================
+  // TRACK BY EMPLOYEE ID
+  // ======================================================
+
+  trackByEmployeeId(
+    index: number,
+    employee: Employee
+  ): number {
+
+    return employee.admin_id;
 
   }
 

@@ -1,9 +1,24 @@
+// ======================================================
+// CARSEY.IN BACKEND APP
+// ======================================================
+
 const express = require("express");
 const cors = require("cors");
 const path = require("path");
 const fs = require("fs");
 
+
+// ======================================================
+// DOTENV
+// ======================================================
+
 require("dotenv").config();
+
+
+// ======================================================
+// DATABASE
+// ======================================================
+
 require("./config/db");
 
 
@@ -13,6 +28,7 @@ require("./config/db");
 
 const vehicleController =
     require("./controllers/vehicle.controller");
+
 
 // ======================================================
 // VEHICLE REPOSITORY
@@ -42,21 +58,26 @@ const authRoutes = require(
     "./routes/auth.routes"
 );
 
+
 const vehicleRoutes = require(
     "./routes/vehicle.routes"
 );
+
 
 const vehicleImageRoutes = require(
     "./routes/vehicleImage.routes"
 );
 
+
 const reportUnlockRoutes = require(
     "./routes/reportUnlock.routes"
 );
 
+
 const inspectionReportRoutes = require(
     "./routes/inspectionReport.routes"
 );
+
 
 const testDriveRoutes = require(
     "./routes/testDrive.routes"
@@ -114,6 +135,16 @@ const loanRoutes = require(
 
 const inspectionBookingRoutes = require(
     "./routes/inspectionBooking.routes"
+);
+
+
+// ======================================================
+// INSPECTION REQUEST ROUTES
+// EMPLOYEE + ADMIN WORKFLOW
+// ======================================================
+
+const inspectionRequestRoutes = require(
+    "./routes/inspectionRequest.routes"
 );
 
 
@@ -212,12 +243,14 @@ if (
         uploadDirectory
     )
 ) {
+
     fs.mkdirSync(
         uploadDirectory,
         {
             recursive: true
         }
     );
+
 }
 
 
@@ -241,12 +274,14 @@ if (
         vehicleUploadDirectory
     )
 ) {
+
     fs.mkdirSync(
         vehicleUploadDirectory,
         {
             recursive: true
         }
     );
+
 }
 
 
@@ -407,6 +442,35 @@ app.use(
 app.use(
     "/api/vehicles",
     inspectionBookingRoutes
+);
+
+
+// ======================================================
+// INSPECTION REQUEST WORKFLOW
+// EMPLOYEE + ADMIN
+// ======================================================
+//
+// Employee:
+//
+// GET    /api/inspection-requests/employee/my-requests
+// GET    /api/inspection-requests/request/:requestId
+// PATCH  /api/inspection-requests/request/:requestId/accept
+// PATCH  /api/inspection-requests/request/:requestId/reject
+// PATCH  /api/inspection-requests/request/:requestId/start
+// PATCH  /api/inspection-requests/request/:requestId/submit
+//
+// Admin:
+//
+// GET    /api/inspection-requests
+// PATCH  /api/inspection-requests/request/:requestId/approve
+// PATCH  /api/inspection-requests/request/:requestId/reject-admin
+// PATCH  /api/inspection-requests/request/:requestId/publish
+//
+// ======================================================
+
+app.use(
+    "/api",
+    inspectionRequestRoutes
 );
 
 
@@ -668,34 +732,56 @@ app.get(
             const publishedVehicles =
                 await vehicleRepository.getPublishedVehicles({});
 
+
             const staticUrls = [
+
                 "https://carsey.in/",
+
                 "https://carsey.in/sell-car",
+
                 "https://carsey.in/exchange",
+
                 "https://carsey.in/book-inspection",
+
                 "https://carsey.in/about"
+
             ];
+
 
             const vehicleUrls =
                 Array.isArray(publishedVehicles)
+
                     ? publishedVehicles
-                        .filter((vehicle) => vehicle && vehicle.car_id)
+                        .filter(
+                            (vehicle) =>
+                                vehicle &&
+                                vehicle.car_id
+                        )
                         .map(
                             (vehicle) =>
                                 `https://carsey.in/car/${encodeURIComponent(
                                     vehicle.car_id
                                 )}`
                         )
+
                     : [];
 
+
             const urls = [
+
                 ...staticUrls,
+
                 ...vehicleUrls
+
             ];
 
+
             const uniqueUrls = [
+
                 ...new Set(urls)
+
             ];
+
 
             const xmlUrls =
                 uniqueUrls
@@ -705,16 +791,19 @@ app.get(
                     )
                     .join("\n");
 
+
             const sitemapXml =
                 `<?xml version="1.0" encoding="UTF-8"?>\n` +
                 `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n` +
                 `${xmlUrls}\n` +
                 `</urlset>`;
 
+
             res
                 .status(200)
                 .type("application/xml")
                 .send(sitemapXml);
+
 
         } catch (error) {
 
@@ -723,6 +812,7 @@ app.get(
                 error
             );
 
+
             return res
                 .status(500)
                 .type("application/xml")
@@ -730,7 +820,9 @@ app.get(
                     `<?xml version="1.0" encoding="UTF-8"?>\n` +
                     `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"></urlset>`
                 );
+
         }
+
     }
 );
 

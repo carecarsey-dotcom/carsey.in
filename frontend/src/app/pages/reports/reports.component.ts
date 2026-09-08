@@ -25,6 +25,10 @@ import {
   VehicleService
 } from '../../services/vehicle.service';
 
+import {
+  InspectionBookingService
+} from '../../services/inspection-booking.service';
+
 
 // =====================================================
 // VEHICLE
@@ -194,6 +198,14 @@ interface ReportData {
     [key: string]: ChecklistItem;
   };
 
+  request_id?: number;
+
+  request_status?: string;
+
+  employee_name?: string;
+
+  admin_remark?: string;
+
 }
 
 
@@ -226,6 +238,14 @@ interface ReportListItem {
   created_at?: string;
 
   createdAt?: string;
+
+  request_id?: number;
+
+  request_status?: string;
+
+  employee_name?: string;
+
+  admin_remark?: string;
 
 }
 
@@ -262,6 +282,10 @@ export class ReportsComponent
 
   private vehicleService =
     inject(VehicleService);
+
+
+  private inspectionBookingService =
+    inject(InspectionBookingService);
 
 
   // =====================================================
@@ -343,6 +367,18 @@ export class ReportsComponent
 
   sendEmailLoading = false;
 
+  // =====================================================
+  // ADMIN WORKFLOW
+  // =====================================================
+
+  adminRequests: any[] = [];
+
+  workflowLoading = false;
+
+  adminPrice: number | null = null;
+
+  adminRemark = '';
+
 
   // =====================================================
   // ERROR
@@ -358,6 +394,7 @@ export class ReportsComponent
   ngOnInit(): void {
 
     this.loadReports();
+    this.loadAdminRequests();
 
   }
 
@@ -548,6 +585,8 @@ export class ReportsComponent
             this.reports
           );
 
+          this.mergeWorkflowIntoReports();
+
 
           // =================================================
           // EMPTY
@@ -607,6 +646,74 @@ export class ReportsComponent
 
       });
 
+  }
+
+
+  // =====================================================
+  // LOAD ADMIN INSPECTION REQUESTS
+  // =====================================================
+
+  loadAdminRequests(): void {
+
+    this.inspectionBookingService
+      .getAdminRequests()
+      .subscribe({
+
+        next: (response: any) => {
+          const data = response?.data;
+
+          this.adminRequests =
+            Array.isArray(data)
+              ? data
+              : Array.isArray(data?.requests)
+                ? data.requests
+                : Array.isArray(response?.requests)
+                  ? response.requests
+                  : [];
+
+          this.mergeWorkflowIntoReports();
+        },
+
+        error: (error: any) => {
+          console.error(
+            'ADMIN INSPECTION REQUESTS ERROR:',
+            error
+          );
+          this.adminRequests = [];
+        }
+      });
+  }
+
+
+  private mergeWorkflowIntoReports(): void {
+
+    if (!this.reports.length) return;
+
+    this.reports = this.reports.map(report => {
+      const request = this.adminRequests.find(
+        item =>
+          Number(item?.report_id) === Number(report.report_id)
+      );
+
+      return {
+        ...report,
+        request_id: request?.request_id,
+        request_status: request?.status || 'Report Only',
+        employee_name: request?.employee_name || '',
+        admin_remark: request?.admin_remark || ''
+      };
+    });
+  }
+
+
+  private getWorkflowForReport(
+    reportId: number
+  ): any | null {
+
+    return this.adminRequests.find(
+      item =>
+        Number(item?.report_id) === Number(reportId)
+    ) || null;
   }
 
 
@@ -689,6 +796,9 @@ export class ReportsComponent
     this.pdfUrl = '';
 
     this.sendEmailLoading = false;
+    this.workflowLoading = false;
+    this.adminPrice = null;
+    this.adminRemark = '';
 
 
     console.log(
@@ -974,7 +1084,22 @@ export class ReportsComponent
 
             inspection,
 
-            checklist
+            checklist,
+
+            request_id:
+              this.getWorkflowForReport(report.report_id)?.request_id,
+
+            request_status:
+              this.getWorkflowForReport(report.report_id)?.status ||
+              'Report Only',
+
+            employee_name:
+              this.getWorkflowForReport(report.report_id)?.employee_name ||
+              '',
+
+            admin_remark:
+              this.getWorkflowForReport(report.report_id)?.admin_remark ||
+              ''
 
           };
 
@@ -1082,6 +1207,212 @@ export class ReportsComponent
 
       });
 
+  }
+
+
+  // =====================================================
+  // ADMIN APPROVE
+  // =====================================================
+
+  approveSelectedReport(): void {
+
+    if (!this.selectedReport) return;
+
+    const requestId = Number(
+      this.selectedReport.request_id
+    );
+
+    if (!requestId) {
+      this.errorMessage =
+        'Inspection request is not linked with this report.';
+      return;
+    }
+
+    const confirmed = window.confirm(
+      `Approve inspection request #${requestId}?`
+    );
+
+    if (!confirmed) return;
+
+    this.workflowLoading = true;
+
+    this.inspectionBookingService
+      .approveInspectionRequest(
+        requestId,
+        this.adminRemark.trim()
+      )
+      .subscribe({
+
+        next: (response: any) => {
+          this.workflowLoading = false;
+
+          if (!response?.success) {
+            this.errorMessage =
+              response?.message ||
+              'Unable to approve inspection.';
+            return;
+          }
+
+          this.selectedReport!.request_status = 'Approved';
+          this.adminRemark = '';
+          this.adminPrice = null;
+          this.loadAdminRequests();
+          this.loadReports();
+        },
+
+        error: (error: any) => {
+          this.workflowLoading = false;
+          this.errorMessage =
+            error?.error?.message ||
+            error?.message ||
+            'Unable to approve inspection.';
+        }
+      });
+  }
+
+
+  rejectSelectedReport(): void {
+
+    if (!this.selectedReport) return;
+
+    const requestId = Number(
+      this.selectedReport.request_id
+    );
+
+    if (!requestId) {
+      this.errorMessage =
+        'Inspection request is not linked with this report.';
+      return;
+    }
+
+    const remark = window.prompt(
+      'Enter rejection/correction remark:'
+    );
+
+    if (remark === null) return;
+
+    if (!remark.trim()) {
+      this.errorMessage =
+        'Admin rejection remark is required.';
+      return;
+    }
+
+    this.workflowLoading = true;
+
+    this.inspectionBookingService
+      .rejectInspectionRequest(
+        requestId,
+        remark.trim()
+      )
+      .subscribe({
+
+        next: (response: any) => {
+          this.workflowLoading = false;
+
+          if (!response?.success) {
+            this.errorMessage =
+              response?.message ||
+              'Unable to reject inspection.';
+            return;
+          }
+
+          this.selectedReport!.request_status =
+            'Admin Rejected';
+          this.selectedReport!.admin_remark =
+            remark.trim();
+          this.loadAdminRequests();
+          this.loadReports();
+        },
+
+        error: (error: any) => {
+          this.workflowLoading = false;
+          this.errorMessage =
+            error?.error?.message ||
+            error?.message ||
+            'Unable to reject inspection.';
+        }
+      });
+  }
+
+
+  publishSelectedReport(): void {
+
+    if (!this.selectedReport) return;
+
+    const requestId = Number(
+      this.selectedReport.request_id
+    );
+
+    if (!requestId) {
+      this.errorMessage =
+        'Inspection request is not linked with this report.';
+      return;
+    }
+
+    let price = Number(this.adminPrice);
+
+    if (!Number.isFinite(price) || price < 0) {
+      const priceText = window.prompt(
+        'Enter vehicle price before publishing:'
+      );
+
+      if (priceText === null) return;
+
+      price = Number(
+        priceText.replace(/,/g, '').trim()
+      );
+    }
+
+    if (!Number.isFinite(price) || price < 0) {
+      this.errorMessage =
+        'Please enter a valid vehicle price.';
+      return;
+    }
+
+    const confirmed = window.confirm(
+      `Publish vehicle with price ₹${price.toLocaleString('en-IN')}?`
+    );
+
+    if (!confirmed) return;
+
+    this.workflowLoading = true;
+
+    this.inspectionBookingService
+      .publishInspectionRequest(
+        requestId,
+        price
+      )
+      .subscribe({
+
+        next: (response: any) => {
+          this.workflowLoading = false;
+
+          if (!response?.success) {
+            this.errorMessage =
+              response?.message ||
+              'Unable to publish vehicle.';
+            return;
+          }
+
+          if (this.selectedReport) {
+            this.selectedReport.request_status = 'Published';
+            this.selectedReport.publish_status = 'Yes';
+            this.selectedReport.vehicle.price = price;
+            this.selectedReport.vehicle.status = 'Published';
+          }
+
+          this.loadAdminRequests();
+          this.loadReports();
+        },
+
+        error: (error: any) => {
+          this.workflowLoading = false;
+          this.errorMessage =
+            error?.error?.message ||
+            error?.message ||
+            'Unable to publish vehicle.';
+        }
+      });
   }
 
 

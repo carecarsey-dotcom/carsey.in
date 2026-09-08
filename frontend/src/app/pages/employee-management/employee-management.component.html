@@ -1,0 +1,698 @@
+<div
+  class="min-h-screen w-full min-w-0 max-w-full overflow-x-hidden bg-slate-100 p-4 sm:p-6 lg:p-8"
+>
+
+  <!-- ================================================== -->
+  <!-- HEADER -->
+  <!-- ================================================== -->
+
+  <div
+    class="mb-8 flex w-full min-w-0 flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
+  >
+
+    <div>
+
+      <h1
+        class="text-3xl font-bold text-slate-900"
+      >
+        Employees
+      </h1>
+
+      <p
+        class="mt-2 text-slate-500"
+      >
+        Manage Carsey.in inspection employees
+      </p>
+
+    </div>
+
+
+    <button
+      type="button"
+      (click)="openAddEmployeeForm()"
+      class="rounded-lg bg-slate-900 px-5 py-3 text-sm font-semibold text-white shadow transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
+    >
+      + Add Employee
+    </button>
+
+  </div>
+
+
+  <!-- ================================================== -->
+  <!-- SUCCESS MESSAGE -->
+  <!-- ================================================== -->
+
+  @if (successMessage) {
+
+    <div
+      class="mb-6 w-full rounded-xl border border-green-200 bg-green-50 p-4"
+    >
+
+      <p
+        class="text-sm font-medium text-green-700"
+      >
+        {{ successMessage }}
+      </p>
+
+    </div>
+
+  }
+
+
+  <!-- ================================================== -->
+  <!-- ERROR MESSAGE -->
+  <!-- ================================================== -->
+
+  @if (errorMessage) {
+
+    <div
+      class="mb-6 w-full rounded-xl border border-red-200 bg-red-50 p-4"
+    >
+
+      <p
+        class="text-sm font-medium text-red-700"
+      >
+        {{ errorMessage }}
+      </p>
+
+    </div>
+
+  }
+
+
+  <!-- ================================================== -->
+  <!-- ADD EMPLOYEE FORM -->
+  <!-- ================================================== -->
+
+  @if (showAddEmployeeForm) {
+
+    <div
+      class="mb-8 w-full rounded-2xl bg-white p-6 shadow"
+    >
+
+      <div
+        class="mb-6 flex items-start justify-between gap-4"
+      >
+
+        <div>
+
+          <h2
+            class="text-xl font-bold text-slate-900"
+          >
+            Add Employee
+          </h2>
+
+          <p
+            class="mt-1 text-sm text-slate-500"
+          >
+            Create an employee account for inspection work.
+          </p>
+
+        </div>
+
+
+        <button
+          type="button"
+          (click)="closeAddEmployeeForm()"
+          class="rounded-lg px-3 py-2 text-sm font-medium text-slate-500 hover:bg-slate-100 hover:text-slate-900"
+        >
+          ✕
+        </button>
+
+      </div>
+
+
+      <!-- FORM ERROR -->
+
+      @if (formError) {
+
+        <div
+          class="mb-5 rounded-lg border border-red-200 bg-red-50 p-4"
+        >
+
+          <p
+            class="text-sm font-medium text-red-700"
+          >
+            {{ formError }}
+          </p>
+
+        </div>
+
+      }
+
+
+      <div
+        class="grid w-full grid-cols-1 gap-5 md:grid-cols-2"
+      >
+
+        <!-- NAME -->
+
+        <div
+          class="w-full"
+        >
+
+          <label
+            class="mb-2 block text-sm font-semibold text-slate-700"
+          >
+            Employee Name
+          </label>
+
+          <input
+            type="text"
+            [(ngModel)]="employeeName"
+            placeholder="Enter employee name"
+            autocomplete="name"
+            class="w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-slate-900 focus:ring-2 focus:ring-slate-200"
+            [disabled]="saving"
+          />
+
+        </div>
+
+
+        <!-- EMAIL -->
+
+        <div
+          class="w-full"
+        >
+
+          <label
+            class="mb-2 block text-sm font-semibold text-slate-700"
+          >
+            Employee Email
+          </label>
+
+          <input
+            type="email"
+            [(ngModel)]="employeeEmail"
+            placeholder="Enter employee email"
+            autocomplete="email"
+            class="w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-slate-900 focus:ring-2 focus:ring-slate-200"
+            [disabled]="saving"
+          />
+
+        </div>
+
+
+        <!-- PASSWORD -->
+
+        <div
+          class="w-full md:col-span-2"
+        >
+
+          <label
+            class="mb-2 block text-sm font-semibold text-slate-700"
+          >
+            Employee Password
+          </label>
+
+          <input
+            type="password"
+            [(ngModel)]="employeePassword"
+            placeholder="Create employee password"
+            autocomplete="new-password"
+            class="w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-slate-900 focus:ring-2 focus:ring-slate-200"
+            [disabled]="saving"
+          />
+
+          <p
+            class="mt-2 text-xs text-slate-500"
+          >
+            Minimum 6 characters.
+          </p>
+
+        </div>
+
+      </div>
+
+
+      <!-- FORM ACTIONS -->
+
+      <div
+        class="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end"
+      >
+
+        <button
+          type="button"
+          (click)="closeAddEmployeeForm()"
+          [disabled]="saving"
+          class="rounded-lg border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          Cancel
+        </button>
+
+
+        <button
+          type="button"
+          (click)="createEmployee()"
+          [disabled]="saving"
+          class="rounded-lg bg-slate-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
+        >
+
+          @if (saving) {
+            Creating Employee...
+          } @else {
+            Create Employee
+          }
+
+        </button>
+
+      </div>
+
+    </div>
+
+  }
+
+
+  <!-- ================================================== -->
+  <!-- EMPLOYEE LIST -->
+  <!-- ================================================== -->
+
+  <div
+    class="w-full min-w-0 overflow-hidden rounded-2xl bg-white shadow"
+  >
+
+    <!-- LIST HEADER -->
+
+    <div
+      class="border-b border-slate-200 p-6"
+    >
+
+      <div
+        class="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between"
+      >
+
+        <div>
+
+          <h2
+            class="text-xl font-bold text-slate-900"
+          >
+            Employee Accounts
+          </h2>
+
+          <p
+            class="mt-1 text-sm text-slate-500"
+          >
+            {{ employees.length }} employee{{ employees.length === 1 ? '' : 's' }}
+          </p>
+
+        </div>
+
+
+        <button
+          type="button"
+          (click)="loadEmployees()"
+          [disabled]="loading"
+          class="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          Refresh
+        </button>
+
+      </div>
+
+    </div>
+
+
+    <!-- LOADING -->
+
+    @if (loading) {
+
+      <div
+        class="p-8 text-center"
+      >
+
+        <p
+          class="text-sm text-slate-500"
+        >
+          Loading employees...
+        </p>
+
+      </div>
+
+    }
+
+
+    <!-- EMPTY -->
+
+    @if (!loading && employees.length === 0) {
+
+      <div
+        class="p-10 text-center"
+      >
+
+        <div
+          class="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-slate-100"
+        >
+
+          <span
+            class="text-xl text-slate-500"
+          >
+            👤
+          </span>
+
+        </div>
+
+
+        <h3
+          class="text-lg font-semibold text-slate-900"
+        >
+          No Employees Yet
+        </h3>
+
+
+        <p
+          class="mt-2 text-sm text-slate-500"
+        >
+          Create your first employee account to assign inspections.
+        </p>
+
+
+        <button
+          type="button"
+          (click)="openAddEmployeeForm()"
+          class="mt-5 rounded-lg bg-slate-900 px-5 py-3 text-sm font-semibold text-white hover:bg-slate-800"
+        >
+          + Add Employee
+        </button>
+
+      </div>
+
+    }
+
+
+    <!-- DESKTOP TABLE -->
+
+    @if (!loading && employees.length > 0) {
+
+      <div
+        class="hidden overflow-x-auto md:block"
+      >
+
+        <table
+          class="w-full min-w-[700px] text-left"
+        >
+
+          <thead
+            class="bg-slate-50"
+          >
+
+            <tr>
+
+              <th
+                class="px-6 py-4 text-xs font-bold uppercase tracking-wide text-slate-500"
+              >
+                ID
+              </th>
+
+              <th
+                class="px-6 py-4 text-xs font-bold uppercase tracking-wide text-slate-500"
+              >
+                Employee
+              </th>
+
+              <th
+                class="px-6 py-4 text-xs font-bold uppercase tracking-wide text-slate-500"
+              >
+                Email
+              </th>
+
+              <th
+                class="px-6 py-4 text-xs font-bold uppercase tracking-wide text-slate-500"
+              >
+                Role
+              </th>
+
+              <th
+                class="px-6 py-4 text-xs font-bold uppercase tracking-wide text-slate-500"
+              >
+                Status
+              </th>
+
+              <th
+                class="px-6 py-4 text-right text-xs font-bold uppercase tracking-wide text-slate-500"
+              >
+                Action
+              </th>
+
+            </tr>
+
+          </thead>
+
+
+          <tbody
+            class="divide-y divide-slate-100"
+          >
+
+            @for (
+              employee of employees;
+              track trackByEmployeeId($index, employee)
+            ) {
+
+              <tr
+                class="transition hover:bg-slate-50"
+              >
+
+                <!-- ID -->
+
+                <td
+                  class="px-6 py-5 text-sm font-medium text-slate-600"
+                >
+                  #{{ getEmployeeId(employee) }}
+                </td>
+
+
+                <!-- NAME -->
+
+                <td
+                  class="px-6 py-5"
+                >
+
+                  <p
+                    class="font-semibold text-slate-900"
+                  >
+                    {{ getEmployeeName(employee) }}
+                  </p>
+
+                </td>
+
+
+                <!-- EMAIL -->
+
+                <td
+                  class="px-6 py-5 text-sm text-slate-600"
+                >
+                  {{ getEmployeeEmail(employee) }}
+                </td>
+
+
+                <!-- ROLE -->
+
+                <td
+                  class="px-6 py-5"
+                >
+
+                  <span
+                    class="inline-flex rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700"
+                  >
+                    Employee
+                  </span>
+
+                </td>
+
+
+                <!-- STATUS -->
+
+                <td
+                  class="px-6 py-5"
+                >
+
+                  @if (getEmployeeStatus(employee) === 'Active') {
+
+                    <span
+                      class="inline-flex rounded-full bg-green-50 px-3 py-1 text-xs font-semibold text-green-700"
+                    >
+                      Active
+                    </span>
+
+                  } @else {
+
+                    <span
+                      class="inline-flex rounded-full bg-red-50 px-3 py-1 text-xs font-semibold text-red-700"
+                    >
+                      Inactive
+                    </span>
+
+                  }
+
+                </td>
+
+
+                <!-- ACTION -->
+
+                <td
+                  class="px-6 py-5 text-right"
+                >
+
+                  <button
+                    type="button"
+                    (click)="toggleEmployeeStatus(employee)"
+                    [disabled]="updatingEmployeeId === getEmployeeId(employee)"
+                    class="rounded-lg border px-4 py-2 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-60"
+                    [class.border-red-200]="getEmployeeStatus(employee) === 'Active'"
+                    [class.bg-red-50]="getEmployeeStatus(employee) === 'Active'"
+                    [class.text-red-700]="getEmployeeStatus(employee) === 'Active'"
+                    [class.border-green-200]="getEmployeeStatus(employee) !== 'Active'"
+                    [class.bg-green-50]="getEmployeeStatus(employee) !== 'Active'"
+                    [class.text-green-700]="getEmployeeStatus(employee) !== 'Active'"
+                  >
+
+                    @if (
+                      updatingEmployeeId === getEmployeeId(employee)
+                    ) {
+
+                      Updating...
+
+                    } @else if (
+                      getEmployeeStatus(employee) === 'Active'
+                    ) {
+
+                      Deactivate
+
+                    } @else {
+
+                      Activate
+
+                    }
+
+                  </button>
+
+                </td>
+
+              </tr>
+
+            }
+
+          </tbody>
+
+        </table>
+
+      </div>
+
+
+      <!-- ================================================= -->
+      <!-- MOBILE CARDS -->
+      <!-- ================================================= -->
+
+      <div
+        class="divide-y divide-slate-100 md:hidden"
+      >
+
+        @for (
+          employee of employees;
+          track trackByEmployeeId($index, employee)
+        ) {
+
+          <div
+            class="p-5"
+          >
+
+            <div
+              class="flex items-start justify-between gap-4"
+            >
+
+              <div
+                class="min-w-0"
+              >
+
+                <p
+                  class="font-semibold text-slate-900"
+                >
+                  {{ getEmployeeName(employee) }}
+                </p>
+
+                <p
+                  class="mt-1 break-all text-sm text-slate-500"
+                >
+                  {{ getEmployeeEmail(employee) }}
+                </p>
+
+                <p
+                  class="mt-1 text-xs text-slate-400"
+                >
+                  Employee ID:
+                  #{{ getEmployeeId(employee) }}
+                </p>
+
+              </div>
+
+
+              @if (getEmployeeStatus(employee) === 'Active') {
+
+                <span
+                  class="shrink-0 rounded-full bg-green-50 px-3 py-1 text-xs font-semibold text-green-700"
+                >
+                  Active
+                </span>
+
+              } @else {
+
+                <span
+                  class="shrink-0 rounded-full bg-red-50 px-3 py-1 text-xs font-semibold text-red-700"
+                >
+                  Inactive
+                </span>
+
+              }
+
+            </div>
+
+
+            <div
+              class="mt-4"
+            >
+
+              <button
+                type="button"
+                (click)="toggleEmployeeStatus(employee)"
+                [disabled]="updatingEmployeeId === getEmployeeId(employee)"
+                class="w-full rounded-lg border px-4 py-2.5 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-60"
+                [class.border-red-200]="getEmployeeStatus(employee) === 'Active'"
+                [class.bg-red-50]="getEmployeeStatus(employee) === 'Active'"
+                [class.text-red-700]="getEmployeeStatus(employee) === 'Active'"
+                [class.border-green-200]="getEmployeeStatus(employee) !== 'Active'"
+                [class.bg-green-50]="getEmployeeStatus(employee) !== 'Active'"
+                [class.text-green-700]="getEmployeeStatus(employee) !== 'Active'"
+              >
+
+                @if (
+                  updatingEmployeeId === getEmployeeId(employee)
+                ) {
+
+                  Updating...
+
+                } @else if (
+                  getEmployeeStatus(employee) === 'Active'
+                ) {
+
+                  Deactivate Employee
+
+                } @else {
+
+                  Activate Employee
+
+                }
+
+              </button>
+
+            </div>
+
+          </div>
+
+        }
+
+      </div>
+
+    }
+
+  </div>
+
+</div>

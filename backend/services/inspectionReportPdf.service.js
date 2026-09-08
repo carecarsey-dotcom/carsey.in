@@ -496,6 +496,24 @@ const drawMultiLineField = (
 };
 
 // ======================================================
+// JSON PARSE SAFE HELPER
+// ======================================================
+
+const parseJsonSafe = (data) => {
+    if (!data) return null;
+    let current = data;
+    while (typeof current === "string") {
+        try {
+            const parsed = JSON.parse(current);
+            current = parsed;
+        } catch {
+            break;
+        }
+    }
+    return current;
+};
+
+// ======================================================
 // VEHICLE OBJECT
 // ======================================================
 
@@ -514,6 +532,11 @@ const getVehicleObject = (
         isObject(report.vehicleData)
     ) {
         return report.vehicleData;
+    }
+
+    const parsed = parseJsonSafe(report?.vehicle) || parseJsonSafe(report?.vehicleData);
+    if (parsed && isObject(parsed)) {
+        return parsed;
     }
 
     return {};
@@ -549,6 +572,11 @@ const getOwnerObject = (
         return report.customerDetails;
     }
 
+    const parsed = parseJsonSafe(report?.owner) || parseJsonSafe(report?.customer) || parseJsonSafe(report?.customerDetails);
+    if (parsed && isObject(parsed)) {
+        return parsed;
+    }
+
     return {};
 };
 
@@ -564,6 +592,11 @@ const getInspectionObject = (
         isObject(report.inspection)
     ) {
         return report.inspection;
+    }
+
+    const parsed = parseJsonSafe(report?.inspection);
+    if (parsed && isObject(parsed)) {
+        return parsed;
     }
 
     return {};
@@ -617,7 +650,7 @@ const normalizeReport = (
         sourceReport &&
         typeof sourceReport === "object"
             ? sourceReport
-            : {};
+            : parseJsonSafe(sourceReport) || {};
 
     const vehicleData =
         getVehicleObject(
@@ -720,21 +753,23 @@ const normalizeReport = (
      */
 
     const checklist =
-        report.checklist ||
-        report.inspection_checklist ||
-        report.inspectionChecklist ||
-        report.checklists ||
-        inspectionData.checklist ||
-        inspectionData.inspection_checklist ||
-        inspectionData.inspectionChecklist ||
-        inspectionData.checklists ||
+        parseJsonSafe(report.checklist) ||
+        parseJsonSafe(report.inspection_checklist) ||
+        parseJsonSafe(report.inspectionChecklist) ||
+        parseJsonSafe(report.checklists) ||
+        parseJsonSafe(inspectionData.checklist) ||
+        parseJsonSafe(inspectionData.inspection_checklist) ||
+        parseJsonSafe(inspectionData.inspectionChecklist) ||
+        parseJsonSafe(inspectionData.checklists) ||
+        parseJsonSafe(vehicleData.checklist) ||
         {};
 
     const detailedInspection =
-        report.detailedInspection ||
-        report.detailed_inspection ||
-        inspectionData.detailedInspection ||
-        inspectionData.detailed_inspection ||
+        parseJsonSafe(report.detailedInspection) ||
+        parseJsonSafe(report.detailed_inspection) ||
+        parseJsonSafe(inspectionData.detailedInspection) ||
+        parseJsonSafe(inspectionData.detailed_inspection) ||
+        parseJsonSafe(vehicleData.detailedInspection) ||
         {};
 
     const overallScore =
@@ -1018,8 +1053,6 @@ const drawThreeColumnFields = (
 
 // ======================================================
 // VEHICLE BASIC PARAMETERS
-// HTML:
-// Vehicle Basic Parameters
 // ======================================================
 
 const drawVehicleBasicParameters = (
@@ -1918,7 +1951,6 @@ const drawOverallScore = (
 
 // ======================================================
 // INSPECTION SECTION LABELS
-// Based on HTML inspection structure
 // ======================================================
 
 const INSPECTION_SECTION_LABELS = {
@@ -2008,7 +2040,15 @@ const getSectionLabel = (
 // ======================================================
 
 const SPECIAL_KEYS = new Set([
+    "id",
+    "checklist_id",
+    "checklistid",
+    "report_id",
+    "reportid",
     "status",
+    "created_at",
+    "updated_at",
+    "deleted_at",
     "remark",
     "remarks",
     "note",
@@ -2287,11 +2327,6 @@ const flattenDetailedInspection = (
                             return;
                         }
 
-                        /*
-                         * Section-level status/
-                         * remark should not become
-                         * an inspection item.
-                         */
                         if (
                             SPECIAL_KEYS.has(
                                 itemKey
@@ -2336,11 +2371,6 @@ const flattenDetailedInspection = (
                                     )
                             });
 
-                            /*
-                             * If there are additional
-                             * arbitrary values inside
-                             * this item, preserve them.
-                             */
                             Object.entries(
                                 itemValue
                             ).forEach(
@@ -2570,10 +2600,6 @@ const flattenChecklist = (
                     sectionValue
                 )
             ) {
-                /*
-                 * If this object itself is
-                 * one checklist item.
-                 */
                 if (
                     "status" in
                         sectionValue ||
@@ -2827,8 +2853,156 @@ const drawChecklistTableHeader = (
 };
 
 // ======================================================
-// DRAW DETAILED INSPECTION
+// SCREENSHOT PARSER & DRAW CHECKLIST
 // ======================================================
+
+const parseChecklistSections = (report) => {
+    const parsed = parseJsonSafe(report) || (typeof report === "object" ? report : {});
+    const inspectionObj = getInspectionObject(parsed);
+    const vehicleObj = getVehicleObject(parsed);
+
+    const candidates = [
+        parsed.checklist?.checklist,
+        parsed.checklist?.data,
+        parsed.checklist?.categories,
+        parsed.checklist?.items,
+        parsed.checklist_data,
+        parsed.checklist,
+        parsed.inspection_checklist,
+        parsed.inspectionChecklist,
+        parsed.detailedInspection,
+        parsed.detailed_inspection,
+        inspectionObj.checklist?.checklist,
+        inspectionObj.checklist?.data,
+        inspectionObj.checklist,
+        inspectionObj.checklist_data,
+        inspectionObj.inspection_checklist,
+        vehicleObj.checklist,
+        vehicleObj.checklist_data
+    ];
+
+    let rawSource = null;
+
+    for (const item of candidates) {
+        const decoded = parseJsonSafe(item);
+        if (decoded && typeof decoded === "object") {
+            const keys = Object.keys(decoded);
+            const nonMetaKeys = keys.filter(k => !SPECIAL_KEYS.has(k.toLowerCase()));
+
+            if (nonMetaKeys.length > 0) {
+                rawSource = decoded;
+                break;
+            }
+        }
+    }
+
+    if (!rawSource) return [];
+
+    const sections = [];
+
+    const extractTickedOption = (itemKey, itemVal) => {
+        const val = parseJsonSafe(itemVal);
+        if (!val) return null;
+
+        const label = titleCase(itemKey);
+        let selectedOptions = [];
+
+        if (isObject(val)) {
+            const opts =
+                val.selectedOptions ||
+                val.selected ||
+                val.options ||
+                val.value ||
+                val.answer ||
+                val.checked ||
+                val.result ||
+                [];
+
+            if (Array.isArray(opts)) {
+                selectedOptions.push(...opts);
+            } else if (hasValue(opts) && typeof opts !== "boolean") {
+                selectedOptions.push(String(opts));
+            } else if (typeof opts === "boolean" && opts) {
+                selectedOptions.push("ok");
+            }
+
+            Object.entries(val).forEach(([propKey, propVal]) => {
+                if (propVal === true && !selectedOptions.includes(propKey)) {
+                    selectedOptions.push(titleCase(propKey));
+                }
+            });
+
+            if (hasValue(val.remark) && !selectedOptions.includes(val.remark)) {
+                selectedOptions.push(val.remark);
+            }
+            if (hasValue(val.comment) && !selectedOptions.includes(val.comment)) {
+                selectedOptions.push(val.comment);
+            }
+        } else if (Array.isArray(val)) {
+            selectedOptions.push(...val);
+        } else if (typeof val === "string" && hasValue(val)) {
+            selectedOptions.push(val);
+        } else if (typeof val === "boolean" && val) {
+            selectedOptions.push("ok");
+        }
+
+        if (selectedOptions.length === 0) return null;
+
+        return {
+            label,
+            value: selectedOptions.join(", ")
+        };
+    };
+
+    if (Array.isArray(rawSource)) {
+        const defaultItems = [];
+        rawSource.forEach((el, idx) => {
+            if (!el || typeof el !== "object") return;
+            const res = extractTickedOption(el.item || el.name || el.label || el.question || `Item ${idx + 1}`, el);
+            if (res) defaultItems.push(res);
+        });
+
+        if (defaultItems.length > 0) {
+            sections.push({
+                title: "EXTERIOR + TYRE",
+                items: defaultItems
+            });
+        }
+        return sections;
+    }
+
+    Object.entries(rawSource).forEach(([secKey, secVal]) => {
+        if (SPECIAL_KEYS.has(secKey.toLowerCase())) return;
+
+        const parsedSection = parseJsonSafe(secVal);
+        if (!parsedSection) return;
+
+        const secTitle = INSPECTION_SECTION_LABELS[secKey.toLowerCase()] || secKey.replace(/[_-]+/g, " + ").toUpperCase();
+        const items = [];
+
+        if (isObject(parsedSection)) {
+            Object.entries(parsedSection).forEach(([itKey, itVal]) => {
+                if (SPECIAL_KEYS.has(itKey.toLowerCase())) return;
+                const it = extractTickedOption(itKey, itVal);
+                if (it) items.push(it);
+            });
+        } else if (Array.isArray(parsedSection)) {
+            parsedSection.forEach((el, i) => {
+                const it = extractTickedOption(el.item || el.name || `Item ${i + 1}`, el);
+                if (it) items.push(it);
+            });
+        }
+
+        if (items.length > 0) {
+            sections.push({
+                title: secTitle,
+                items
+            });
+        }
+    });
+
+    return sections;
+};
 
 const drawDetailedInspection = (
     doc,
@@ -2837,7 +3011,7 @@ const drawDetailedInspection = (
     pageNumberRef
 ) => {
     if (
-        y + 100 >
+        y + 80 >
         PAGE_BOTTOM
     ) {
         pageNumberRef.value += 1;
@@ -2860,321 +3034,73 @@ const drawDetailedInspection = (
             y
         );
 
-    y += 5;
+    y += 12;
 
-    const detailed =
-        report.detailedInspection ||
-        report.detailed_inspection ||
-        {};
+    const sections = parseChecklistSections(report);
 
-    const checklist =
-        report.checklist ||
-        report.inspection_checklist ||
-        {};
-
-    /*
-     * Prefer the actual detailedInspection
-     * object because that contains the
-     * individual HTML inspection items.
-     *
-     * Fallback to the 9 checklist sections
-     * when detailedInspection is absent.
-     */
-    let rows =
-        flattenDetailedInspection(
-            detailed
-        );
-
-    if (
-        rows.length === 0
-    ) {
-        rows =
-            flattenChecklist(
-                checklist
-            );
+    if (sections.length === 0) {
+        doc.font("Helvetica").fontSize(8.5).fillColor(COLORS.gray)
+            .text("No detailed inspection checklist data provided.", MARGIN_LEFT, y);
+        return y + 25;
     }
 
-    /*
-     * Last fallback:
-     * some backend payloads may have only
-     * inspection_checklist.
-     */
-    if (
-        rows.length === 0
-    ) {
-        rows =
-            flattenChecklist(
-                report.inspection_checklist
-            );
-    }
+    const col1Width = 190;
+    const col2Width = CONTENT_WIDTH - col1Width;
 
-    if (
-        rows.length === 0
-    ) {
-        doc
-            .rect(
-                MARGIN_LEFT,
-                y,
-                CONTENT_WIDTH,
-                50
-            )
-            .fillAndStroke(
-                COLORS.white,
-                COLORS.border
-            );
+    sections.forEach((section) => {
+        if (y + 35 > PAGE_BOTTOM) {
+            pageNumberRef.value += 1;
+            doc.addPage();
+            drawFooter(doc, getReportId(report), pageNumberRef.value);
+            y = MARGIN_TOP;
+        }
 
-        doc
-            .font("Helvetica")
-            .fontSize(8)
-            .fillColor(
-                COLORS.gray
-            )
-            .text(
-                "No detailed inspection checklist data provided.",
-                MARGIN_LEFT + 8,
-                y + 18,
-                {
-                    width:
-                        CONTENT_WIDTH - 16
-                }
-            );
+        // Section Title: EXTERIOR + TYRE / ENGINE + TRANSMISSION
+        doc.font("Helvetica-Bold")
+            .fontSize(9.5)
+            .fillColor(COLORS.dark)
+            .text(section.title, MARGIN_LEFT, y);
 
-        return y + 60;
-    }
+        y += 14;
 
-    let table =
-        drawChecklistTableHeader(
-            doc,
-            y
-        );
+        // Sub-items: Door Front RHS          Broking/Crack
+        section.items.forEach((item) => {
+            doc.font("Helvetica").fontSize(8.5);
+            const valHeight = doc.heightOfString(item.value, { width: col2Width, lineGap: 2 });
+            const itemHeight = Math.max(14, valHeight) + 4;
 
-    y = table.y;
-
-    rows.forEach(
-        (row) => {
-            const optionText =
-                Array.isArray(
-                    row.options
-                ) &&
-                row.options.length
-                    ? row.options
-                          .map(
-                              (
-                                  option
-                              ) =>
-                                  typeof option ===
-                                  "object"
-                                      ? formatInspectionValue(
-                                            option
-                                        )
-                                      : String(
-                                            option
-                                        )
-                          )
-                          .join(", ")
-                    : "";
-
-            let rightText =
-                optionText;
-
-            const remarkText =
-                safeValue(
-                    row.remark,
-                    ""
-                );
-
-            if (
-                remarkText &&
-                remarkText !== "-"
-            ) {
-                rightText =
-                    rightText
-                        ? `${rightText}\nRemark: ${remarkText}`
-                        : `Remark: ${remarkText}`;
-            }
-
-            if (
-                !rightText
-            ) {
-                rightText = "-";
-            }
-
-            const values = [
-                safeValue(
-                    row.section
-                ),
-                safeValue(
-                    row.item
-                ),
-                safeValue(
-                    row.status
-                ),
-                rightText
-            ];
-
-            const textWidths =
-                table.widths.map(
-                    (width) =>
-                        width - 12
-                );
-
-            const heights =
-                values.map(
-                    (
-                        value,
-                        index
-                    ) =>
-                        doc.heightOfString(
-                            value,
-                            {
-                                width:
-                                    textWidths[
-                                        index
-                                    ],
-                                font:
-                                    index ===
-                                    2
-                                        ? "Helvetica-Bold"
-                                        : "Helvetica",
-                                fontSize: 7
-                            }
-                        )
-                );
-
-            const rowHeight =
-                Math.max(
-                    34,
-                    Math.min(
-                        110,
-                        Math.max(
-                            ...heights
-                        ) + 16
-                    )
-                );
-
-            if (
-                y + rowHeight >
-                PAGE_BOTTOM
-            ) {
+            if (y + itemHeight > PAGE_BOTTOM) {
                 pageNumberRef.value += 1;
-
                 doc.addPage();
-
-                drawFooter(
-                    doc,
-                    getReportId(report),
-                    pageNumberRef.value
-                );
-
+                drawFooter(doc, getReportId(report), pageNumberRef.value);
                 y = MARGIN_TOP;
 
-                y =
-                    drawSectionHeader(
-                        doc,
-                        "Detailed Vehicle Inspection Checklist - Continued",
-                        y
-                    );
-
-                y += 5;
-
-                table =
-                    drawChecklistTableHeader(
-                        doc,
-                        y
-                    );
-
-                y = table.y;
+                doc.font("Helvetica-Bold")
+                    .fontSize(9.5)
+                    .fillColor(COLORS.dark)
+                    .text(`${section.title} (Continued)`, MARGIN_LEFT, y);
+                y += 14;
             }
 
-            doc
-                .rect(
-                    MARGIN_LEFT,
-                    y,
-                    CONTENT_WIDTH,
-                    rowHeight
-                )
-                .fillAndStroke(
-                    COLORS.white,
-                    COLORS.border
-                );
+            // Left Column
+            doc.font("Helvetica")
+                .fontSize(8.5)
+                .fillColor(COLORS.dark)
+                .text(item.label, MARGIN_LEFT, y, { width: col1Width - 10 });
 
-            for (
-                let i = 1;
-                i < 4;
-                i++
-            ) {
-                const x =
-                    MARGIN_LEFT +
-                    table.widths
-                        .slice(
-                            0,
-                            i
-                        )
-                        .reduce(
-                            (
-                                a,
-                                b
-                            ) =>
-                                a + b,
-                            0
-                        );
+            // Right Column
+            doc.font("Helvetica")
+                .fontSize(8.5)
+                .fillColor(COLORS.dark)
+                .text(item.value, MARGIN_LEFT + col1Width, y, { width: col2Width, lineGap: 2 });
 
-                doc
-                    .strokeColor(
-                        COLORS.border
-                    )
-                    .lineWidth(0.5)
-                    .moveTo(
-                        x,
-                        y
-                    )
-                    .lineTo(
-                        x,
-                        y +
-                            rowHeight
-                    )
-                    .stroke();
-            }
+            y += itemHeight;
+        });
 
-            values.forEach(
-                (
-                    value,
-                    index
-                ) => {
-                    doc
-                        .font(
-                            index ===
-                                2
-                                ? "Helvetica-Bold"
-                                : "Helvetica"
-                        )
-                        .fontSize(7)
-                        .fillColor(
-                            COLORS.dark
-                        )
-                        .text(
-                            value,
-                            table.xs[
-                                index
-                            ] + 6,
-                            y + 8,
-                            {
-                                width:
-                                    table.widths[
-                                        index
-                                    ] - 12,
-                                height:
-                                    rowHeight - 12
-                            }
-                        );
-                }
-            );
+        y += 12;
+    });
 
-            y += rowHeight;
-        }
-    );
-
-    return y + 10;
+    return y;
 };
 
 // ======================================================
@@ -3269,48 +3195,74 @@ const normalizeImageArray = (
 };
 
 // ======================================================
-// GET ALL REPORT IMAGES
+// DYNAMIC MULTI-SOURCE IMAGE EXTRACTOR
 // ======================================================
+
+const extractAllImagesRecursive = (data, list = []) => {
+    if (!data) return list;
+
+    if (typeof data === "string") {
+        const val = data.trim();
+        if (
+            val.match(/\.(jpg|jpeg|png|webp|avif)$/i) ||
+            val.startsWith("/uploads/") ||
+            val.startsWith("uploads/") ||
+            val.includes("uploads")
+        ) {
+            list.push({ path: val, category: "Vehicle Photo" });
+        }
+        return list;
+    }
+
+    if (Array.isArray(data)) {
+        data.forEach(item => extractAllImagesRecursive(item, list));
+        return list;
+    }
+
+    if (isObject(data)) {
+        const directPath =
+            data.path ||
+            data.filePath ||
+            data.file_path ||
+            data.url ||
+            data.imageUrl ||
+            data.image_url ||
+            data.src ||
+            data.image;
+
+        if (typeof directPath === "string") {
+            list.push({
+                path: directPath,
+                category: data.category || data.label || "Vehicle Photo"
+            });
+        } else {
+            Object.values(data).forEach(val => extractAllImagesRecursive(val, list));
+        }
+    }
+
+    return list;
+};
 
 const getReportImages = (
     report
 ) => {
-    const possibleSources = [
-        report.images,
-        report.vehicleImages,
-        report.vehicle_images,
-        report.photoData,
-        report.vehiclePhotos,
-        report.vehicle_photos
-    ];
+    const parsed = parseJsonSafe(report) || (typeof report === "object" ? report : {});
+    const collected = [];
 
-    for (
-        const source of possibleSources
-    ) {
-        if (
-            source &&
-            (
-                Array.isArray(
-                    source
-                ) ||
-                typeof source ===
-                    "object"
-        )
-        ) {
-            const images =
-                normalizeImageArray(
-                    source
-                );
+    extractAllImagesRecursive(parsed.images, collected);
+    extractAllImagesRecursive(parsed.vehicleImages, collected);
+    extractAllImagesRecursive(parsed.vehicle_images, collected);
+    extractAllImagesRecursive(parsed.vehiclePhotos, collected);
+    extractAllImagesRecursive(parsed.vehicle_photos, collected);
+    extractAllImagesRecursive(parsed.photoData, collected);
+    extractAllImagesRecursive(parsed.standardPhotos, collected);
 
-            if (
-                images.length
-            ) {
-                return images;
-            }
-        }
-    }
-
-    return [];
+    const seen = new Set();
+    return collected.filter(item => {
+        if (!item.path || seen.has(item.path)) return false;
+        seen.add(item.path);
+        return true;
+    });
 };
 
 // ======================================================
@@ -3341,10 +3293,6 @@ const resolveUploadPath = (
             );
     }
 
-    /*
-     * Full API URL:
-     * https://api.carsey.in/uploads/vehicles/a.jpg
-     */
     if (
         /^https?:\/\//i.test(
             imagePath
@@ -3365,20 +3313,10 @@ const resolveUploadPath = (
         }
     }
 
-    /*
-     * Railway persistent volume.
-     *
-     * /app/uploads
-     */
     const uploadsRoot =
         process.env.RAILWAY_VOLUME_MOUNT_PATH ||
         "/app/uploads";
 
-    /*
-     * /uploads/vehicles/a.jpg
-     * ->
-     * /app/uploads/vehicles/a.jpg
-     */
     if (
         imagePath.startsWith(
             "/uploads/"
@@ -3393,9 +3331,6 @@ const resolveUploadPath = (
         );
     }
 
-    /*
-     * /app/uploads/...
-     */
     if (
         imagePath.startsWith(
             "/app/uploads/"
@@ -3404,10 +3339,6 @@ const resolveUploadPath = (
         return imagePath;
     }
 
-    /*
-     * Relative:
-     * vehicles/a.jpg
-     */
     if (
         imagePath.startsWith(
             "uploads/"
@@ -3422,9 +3353,6 @@ const resolveUploadPath = (
         );
     }
 
-    /*
-     * If already an absolute local path.
-     */
     if (
         path.isAbsolute(
             imagePath
@@ -3438,16 +3366,9 @@ const resolveUploadPath = (
             return imagePath;
         }
 
-        /*
-         * Local absolute path may point
-         * to /app/... in Railway.
-         */
         return imagePath;
     }
 
-    /*
-     * Relative vehicle path.
-     */
     return path.join(
         uploadsRoot,
         imagePath
@@ -3526,7 +3447,7 @@ const drawPhotoCategory = (
 };
 
 // ======================================================
-// DRAW VEHICLE PHOTOS
+// DRAW VEHICLE PHOTOS (CLEAN GRID, NO REPEAT HEADERS)
 // ======================================================
 
 const drawVehiclePhotos = async (
@@ -3546,44 +3467,20 @@ const drawVehiclePhotos = async (
         return y;
     }
 
-    if (
-        y + 100 >
-        PAGE_BOTTOM
-    ) {
+    const gap = 8;
+    const columns = 2;
+    const imgWidth = (CONTENT_WIDTH - gap * (columns - 1)) / columns;
+    const imageHeight = 160;
+
+    if (y + 35 + imageHeight > PAGE_BOTTOM) {
         pageNumberRef.value += 1;
-
         doc.addPage();
-
-        drawFooter(
-            doc,
-            getReportId(report),
-            pageNumberRef.value
-        );
-
+        drawFooter(doc, getReportId(report), pageNumberRef.value);
         y = MARGIN_TOP;
     }
 
-    y =
-        drawSectionHeader(
-            doc,
-            "STANDARD PHOTO",
-            y
-        );
-
+    y = drawSectionHeader(doc, "STANDARD PHOTO", y);
     y += 8;
-
-    const imageGap = 10;
-
-    const imageWidth =
-        (
-            CONTENT_WIDTH -
-            imageGap
-        ) / 2;
-
-    const imageHeight =
-        190;
-
-    let lastCategory = null;
 
     for (
         let i = 0;
@@ -3634,81 +3531,8 @@ const drawVehiclePhotos = async (
             continue;
         }
 
-        if (
-            !fs.existsSync(
-                resolvedPath
-            )
-        ) {
-            console.warn(
-                "Vehicle image not found:",
-                {
-                    rawPath,
-                    resolvedPath
-                }
-            );
-
-            continue;
-        }
-
-        const category =
-            image.category ||
-            image.photoCategory ||
-            "";
-
-        /*
-         * Category heading
-         */
-        if (
-            category &&
-            category !==
-                lastCategory
-        ) {
-            /*
-             * Start new category
-             * on a clean page if required.
-             */
-            if (
-                y + 220 >
-                PAGE_BOTTOM
-            ) {
-                pageNumberRef.value += 1;
-
-                doc.addPage();
-
-                drawFooter(
-                    doc,
-                    getReportId(report),
-                    pageNumberRef.value
-                );
-
-                y = MARGIN_TOP;
-
-                y =
-                    drawSectionHeader(
-                        doc,
-                        "STANDARD PHOTO - Continued",
-                        y
-                    );
-
-                y += 8;
-            }
-
-            y =
-                drawPhotoCategory(
-                    doc,
-                    category,
-                    y
-                );
-
-            lastCategory =
-                category;
-        }
-
-        /*
-         * Every two images form a row.
-         */
         const column =
-            i % 2;
+            i % columns;
 
         if (
             column === 0 &&
@@ -3726,41 +3550,21 @@ const drawVehiclePhotos = async (
             );
 
             y = MARGIN_TOP;
-
-            y =
-                drawSectionHeader(
-                    doc,
-                    "STANDARD PHOTO - Continued",
-                    y
-                );
-
-            y += 8;
-
-            if (
-                category
-            ) {
-                y =
-                    drawPhotoCategory(
-                        doc,
-                        category,
-                        y
-                    );
-            }
         }
 
         const x =
             MARGIN_LEFT +
             column *
                 (
-                    imageWidth +
-                    imageGap
+                    imgWidth +
+                    gap
                 );
 
         doc
             .rect(
                 x,
                 y,
-                imageWidth,
+                imgWidth,
                 imageHeight
             )
             .fillAndStroke(
@@ -3768,60 +3572,70 @@ const drawVehiclePhotos = async (
                 COLORS.border
             );
 
-        try {
-            doc.image(
-                resolvedPath,
-                x + 5,
-                y + 5,
-                {
-                    fit: [
-                        imageWidth - 10,
-                        imageHeight - 10
-                    ],
-                    align: "center",
-                    valign: "center"
-                }
-            );
-        } catch (error) {
-            console.error(
-                "Error adding vehicle image:",
-                {
-                    rawPath,
+        if (fs.existsSync(resolvedPath)) {
+            try {
+                doc.image(
                     resolvedPath,
-                    error
-                }
-            );
-
+                    x + 4,
+                    y + 4,
+                    {
+                        fit: [
+                            imgWidth - 8,
+                            imageHeight - 8
+                        ],
+                        align: "center",
+                        valign: "center"
+                    }
+                );
+            } catch (error) {
+                doc
+                    .font("Helvetica")
+                    .fontSize(7.5)
+                    .fillColor(
+                        COLORS.gray
+                    )
+                    .text(
+                        "Image could not be loaded.",
+                        x + 8,
+                        y + imageHeight / 2 - 4,
+                        {
+                            width:
+                                imgWidth - 16,
+                            align: "center"
+                        }
+                    );
+            }
+        } else {
             doc
                 .font("Helvetica")
-                .fontSize(8)
+                .fontSize(7.5)
                 .fillColor(
                     COLORS.gray
                 )
                 .text(
-                    "Image could not be loaded.",
-                    x + 10,
-                    y + 20,
+                    "Image not found",
+                    x + 8,
+                    y + imageHeight / 2 - 4,
                     {
                         width:
-                            imageWidth - 20,
+                            imgWidth - 16,
                         align: "center"
                     }
                 );
         }
 
         if (
-            column === 1 ||
+            column === columns - 1 ||
             i ===
                 images.length - 1
         ) {
             y +=
                 imageHeight +
-                imageGap;
+                gap;
         }
     }
 
-    return y;
+    return y + 6;
 };
 
 // ======================================================
@@ -3952,37 +3766,16 @@ const generateInspectionReportPdf = (
                         );
 
                     // ==================================================
-                    // PUBLISHED CHECK
+                    // PDF GENERATION STATUS
                     // ==================================================
-
-                    const publishStatus =
-                        firstValue(
-                            normalizedReport,
-                            [
-                                "publishStatus",
-                                "publish_status",
-                                "status"
-                            ],
-                            "No"
-                        );
-
-                    const publishText =
-                        String(
-                            publishStatus
-                        )
-                            .trim()
-                            .toLowerCase();
-
-                    if (
-                        publishText !==
-                            "yes" &&
-                        publishText !==
-                            "published"
-                    ) {
-                        throw new Error(
-                            "Inspection PDF can only be generated after vehicle/report is published."
-                        );
-                    }
+                    // The PDF is generated when the Employee submits the
+                    // inspection. The vehicle/report does NOT need to be
+                    // published at this stage.
+                    //
+                    // inspection_reports.publish_status remains "No" until
+                    // the Admin approves and publishes the vehicle.
+                    // Public/customer routes enforce publication separately.
+                    // ==================================================
 
                     // ==================================================
                     // REPORT ID
@@ -4143,29 +3936,8 @@ const generateInspectionReportPdf = (
                         );
 
                     // ==================================================
-                    // 4. STANDARD PHOTO
+                    // 4. STANDARD PHOTO (Clean Grid Layout)
                     // ==================================================
-
-                    y += 12;
-
-                    if (
-                        y + 100 >
-                        PAGE_BOTTOM
-                    ) {
-                        pageNumberRef.value +=
-                            1;
-
-                        doc.addPage();
-
-                        drawFooter(
-                            doc,
-                            reportId,
-                            pageNumberRef.value
-                        );
-
-                        y =
-                            MARGIN_TOP;
-                    }
 
                     y =
                         await drawVehiclePhotos(
@@ -4176,29 +3948,10 @@ const generateInspectionReportPdf = (
                         );
 
                     // ==================================================
-                    // 5. DETAILED VEHICLE INSPECTION CHECKLIST
+                    // 5. DETAILED VEHICLE INSPECTION CHECKLIST (Category -> Item -> Option)
                     // ==================================================
 
                     y += 10;
-
-                    if (
-                        y + 120 >
-                        PAGE_BOTTOM
-                    ) {
-                        pageNumberRef.value +=
-                            1;
-
-                        doc.addPage();
-
-                        drawFooter(
-                            doc,
-                            reportId,
-                            pageNumberRef.value
-                        );
-
-                        y =
-                            MARGIN_TOP;
-                    }
 
                     y =
                         drawDetailedInspection(
