@@ -381,18 +381,44 @@ const isDetailedImage = (image) => {
 };
 
 const getDetailedImageKey = (image) => {
-    const type = String(image?.imageType || "");
+    const type = String(image?.imageType || "").trim();
 
-    if (type.toLowerCase().startsWith("detailed|")) {
+    if (!type) {
+        return "";
+    }
+
+    // Employee Inspection upload format:
+    // Detailed|sectionKey|rowName
+    if (
+        type.toLowerCase().startsWith("detailed|")
+    ) {
         const parts = type.split("|");
+
         if (parts.length >= 3) {
-            return `${parts[1]}__${parts.slice(2).join("|")}`;
+            const sectionKey = String(parts[1]).trim();
+            const rowName = parts
+                .slice(2)
+                .join("|")
+                .trim();
+
+            if (sectionKey && rowName) {
+                return `${sectionKey}__${rowName}`;
+            }
         }
     }
 
-    const match = type.match(/detailed inspection\s*[:|-]\s*(.*?)\s*[:|-]\s*(.*)$/i);
+    // Alternative formats.
+    const match = type.match(
+        /detailed inspection\s*[:|-]\s*(.*?)\s*[:|-]\s*(.*)$/i
+    );
+
     if (match) {
-        return `${match[1]}__${match[2]}`;
+        const sectionKey = String(match[1]).trim();
+        const rowName = String(match[2]).trim();
+
+        if (sectionKey && rowName) {
+            return `${sectionKey}__${rowName}`;
+        }
     }
 
     return "";
@@ -566,106 +592,419 @@ const normalizeSelectedOptions = (value) => {
     return [];
 };
 
-const getRawChecklist = (report) => {
-    let checklist =
-        report?.checklist ??
-        report?.inspection_checklist ??
-        report?.inspectionChecklist ??
-        report?.detailedInspection ??
-        report?.checklists ??
-        report?.inspection?.checklist ??
-        report?.inspection?.inspection_checklist ??
-        report?.inspection?.detailedInspection ??
-        [];
+const getRawChecklist = (report = {}) => {
+    const candidates = [
+        report?.checklist,
+        report?.inspection_checklist,
+        report?.inspectionChecklist,
+        report?.detailedInspection,
+        report?.detailed_inspection,
+        report?.checklists,
+
+        report?.vehicle?.checklist,
+        report?.vehicle?.inspection_checklist,
+        report?.vehicle?.inspectionChecklist,
+        report?.vehicle?.detailedInspection,
+
+        report?.vehicleData?.checklist,
+        report?.vehicleData?.inspection_checklist,
+        report?.vehicleData?.inspectionChecklist,
+        report?.vehicleData?.detailedInspection,
+
+        report?.inspection?.checklist,
+        report?.inspection?.inspection_checklist,
+        report?.inspection?.inspectionChecklist,
+        report?.inspection?.detailedInspection
+    ];
+
+    let checklist = [];
+
+    for (const candidate of candidates) {
+        const parsed = parseJsonIfNeeded(candidate);
+
+        if (
+            Array.isArray(parsed) &&
+            parsed.length > 0
+        ) {
+            checklist = parsed;
+            break;
+        }
+
+        if (
+            parsed &&
+            typeof parsed === "object" &&
+            !Array.isArray(parsed) &&
+            Object.keys(parsed).length > 0
+        ) {
+            checklist = parsed;
+            break;
+        }
+    }
+
+    if (!checklist || checklist === "") {
+        return [];
+    }
 
     checklist = parseJsonIfNeeded(checklist);
 
-    if (checklist && typeof checklist === "object" && !Array.isArray(checklist)) {
-        const nested = firstValue(
-            checklist,
-            ["items", "data", "checklist", "inspection_data", "inspectionData"],
-            undefined
-        );
+    // --------------------------------------------------
+    // DB / API WRAPPER
+    // --------------------------------------------------
+    if (
+        checklist &&
+        typeof checklist === "object" &&
+        !Array.isArray(checklist)
+    ) {
+        const nestedKeys = [
+            "items",
+            "data",
+            "checklist",
+            "inspection_checklist",
+            "inspectionChecklist",
+            "inspection_data",
+            "inspectionData",
+            "rows",
+            "results"
+        ];
 
-        if (nested !== undefined) {
-            const parsedNested = parseJsonIfNeeded(nested);
-            if (Array.isArray(parsedNested) || (parsedNested && typeof parsedNested === "object")) {
-                checklist = parsedNested;
+        for (const key of nestedKeys) {
+            if (
+                checklist[key] !== undefined &&
+                checklist[key] !== null
+            ) {
+                const nested = parseJsonIfNeeded(checklist[key]);
+
+                if (
+                    Array.isArray(nested) ||
+                    (
+                        nested &&
+                        typeof nested === "object"
+                    )
+                ) {
+                    checklist = nested;
+                    break;
+                }
             }
         }
     }
 
-    return Array.isArray(checklist) ? expandChecklistArray(checklist) : checklist;
+    if (Array.isArray(checklist)) {
+        return expandChecklistArray(checklist);
+    }
+
+    return checklist;
 };
 
-const normalizeDetailedChecklist = (report) => {
+const normalizeDetailedChecklist = (report = {}) => {
     const raw = getRawChecklist(report);
     const result = [];
 
-    // --------------------------------------------------
-    // ARRAY FORMAT - database / employee payload
-    // --------------------------------------------------
+    // ==================================================
+    // ARRAY FORMAT
+    // DB inspection_checklist / Employee submit payload
+    // ==================================================
+
     if (Array.isArray(raw)) {
         raw.forEach((rawItem, index) => {
-            if (!rawItem || typeof rawItem !== "object") return;
+            if (
+                rawItem === undefined ||
+                rawItem === null
+            ) {
+                return;
+            }
 
-            const item = unwrapChecklistPayload(rawItem);
-            if (!item || typeof item !== "object" || Array.isArray(item)) return;
+            let item = parseJsonIfNeeded(rawItem);
 
-            const sectionKey = firstValue(
+            if (
+                !item ||
+                typeof item !== "object"
+            ) {
+                return;
+            }
+
+            item = unwrapChecklistPayload(item);
+
+            if (
+                !item ||
+                typeof item !== "object" ||
+                Array.isArray(item)
+            ) {
+                return;
+            }
+
+            // --------------------------------------------------
+            // IMPORTANT:
+            // DB row can contain checklist_data / data /
+            // inspection_data JSON.
+            // --------------------------------------------------
+
+            const nestedChecklist = firstValue(
                 item,
-                ["section", "section_key", "sectionKey", "category", "category_key"],
-                "other"
+                [
+                    "checklist_data",
+                    "checklistData",
+                    "data",
+                    "inspection_data",
+                    "inspectionData"
+                ],
+                undefined
             );
 
-            const sectionTitle = firstValue(
-                item,
-                ["section_title", "sectionTitle", "section_name", "sectionName"],
-                DETAILED_SECTION_TITLES[sectionKey] || "INSPECTION CHECKLIST"
-            );
+            let source = item;
 
-            const rowName = firstValue(
-                item,
-                ["item_name", "itemName", "row_name", "rowName", "area", "inspection_area", "title", "name"],
-                `Inspection Item ${index + 1}`
-            );
+            if (
+                nestedChecklist !== undefined &&
+                nestedChecklist !== null &&
+                nestedChecklist !== ""
+            ) {
+                const parsedNested =
+                    parseJsonIfNeeded(nestedChecklist);
 
-            let selectedOptions = normalizeSelectedOptions(
+                if (
+                    parsedNested &&
+                    typeof parsedNested === "object" &&
+                    !Array.isArray(parsedNested)
+                ) {
+                    source = {
+                        ...item,
+                        ...parsedNested
+                    };
+                }
+            }
+
+            // --------------------------------------------------
+            // SECTION
+            // --------------------------------------------------
+
+            const sectionKey = String(
                 firstValue(
-                    item,
-                    ["selected_options", "selectedOptions", "options", "values"],
-                    []
+                    source,
+                    [
+                        "section",
+                        "section_key",
+                        "sectionKey",
+                        "category",
+                        "category_key",
+                        "categoryKey"
+                    ],
+                    firstValue(
+                        item,
+                        [
+                            "section",
+                            "section_key",
+                            "sectionKey",
+                            "category",
+                            "category_key",
+                            "categoryKey"
+                        ],
+                        "other"
+                    )
+                )
+            ).trim();
+
+            // --------------------------------------------------
+            // SECTION TITLE
+            // --------------------------------------------------
+
+            const sectionTitle = String(
+                firstValue(
+                    source,
+                    [
+                        "section_title",
+                        "sectionTitle",
+                        "section_name",
+                        "sectionName"
+                    ],
+                    DETAILED_SECTION_TITLES[sectionKey] ||
+                    String(sectionKey)
+                        .replace(/_/g, " ")
+                        .toUpperCase()
                 )
             );
 
-            if (selectedOptions.length === 0) {
-                selectedOptions = normalizeSelectedOptions(
-                    firstValue(item, ["status", "condition", "result", "value"], [])
+            // --------------------------------------------------
+            // ROW / ITEM NAME
+            // --------------------------------------------------
+
+            const rowName = String(
+                firstValue(
+                    source,
+                    [
+                        "item_name",
+                        "itemName",
+                        "row_name",
+                        "rowName",
+                        "area",
+                        "inspection_area",
+                        "inspectionArea",
+                        "title",
+                        "name"
+                    ],
+                    `Inspection Item ${index + 1}`
+                )
+            ).trim();
+
+            // --------------------------------------------------
+            // SELECTED OPTIONS
+            // --------------------------------------------------
+
+            let selectedValue = firstValue(
+                source,
+                [
+                    "selected_options",
+                    "selectedOptions",
+                    "options",
+                    "values"
+                ],
+                undefined
+            );
+
+            if (
+                selectedValue === undefined ||
+                selectedValue === null
+            ) {
+                selectedValue = firstValue(
+                    item,
+                    [
+                        "selected_options",
+                        "selectedOptions",
+                        "options",
+                        "values"
+                    ],
+                    []
                 );
             }
 
-            const availableOptions = getAvailableOptions(
-                sectionKey,
-                rowName,
-                selectedOptions
+            let selectedOptions =
+                normalizeSelectedOptions(selectedValue);
+
+            // --------------------------------------------------
+            // FALLBACK: status / condition / result
+            // --------------------------------------------------
+
+            if (selectedOptions.length === 0) {
+                const statusValue = firstValue(
+                    source,
+                    [
+                        "status",
+                        "condition",
+                        "result"
+                    ],
+                    undefined
+                );
+
+                if (
+                    statusValue !== undefined &&
+                    statusValue !== null &&
+                    String(statusValue).trim()
+                ) {
+                    selectedOptions =
+                        normalizeSelectedOptions(statusValue);
+                }
+            }
+
+            // --------------------------------------------------
+            // REMARK
+            // --------------------------------------------------
+
+            let remarkValue = firstValue(
+                source,
+                [
+                    "remark",
+                    "remarks",
+                    "note",
+                    "comment"
+                ],
+                undefined
             );
 
-            const remark = safeString(
-                firstValue(item, ["remark", "remarks", "note", "comment"], ""),
+            if (
+                remarkValue === undefined ||
+                remarkValue === null
+            ) {
+                remarkValue = firstValue(
+                    item,
+                    [
+                        "remark",
+                        "remarks",
+                        "note",
+                        "comment"
+                    ],
+                    ""
+                );
+            }
+
+            let remark = "";
+
+            if (
+                remarkValue !== undefined &&
+                remarkValue !== null
+            ) {
+                remark = String(remarkValue).trim();
+            }
+
+            // --------------------------------------------------
+            // AVAILABLE OPTIONS
+            // --------------------------------------------------
+
+            const availableOptions =
+                getAvailableOptions(
+                    sectionKey,
+                    rowName,
+                    selectedOptions
+                );
+
+            // --------------------------------------------------
+            // STATUS
+            // --------------------------------------------------
+
+            const rawStatus = firstValue(
+                source,
+                [
+                    "status",
+                    "condition",
+                    "result"
+                ],
                 ""
             );
 
-            const status = safeString(
-                firstValue(item, ["status", "condition", "result"], ""),
-                selectedOptions.some((option) => option !== "Ok/No imperfection")
-                    ? "Need Attention"
-                    : "Good"
-            );
+            let status = String(rawStatus || "").trim();
+
+            if (!status) {
+                status =
+                    selectedOptions.some(
+                        (option) =>
+                            String(option)
+                                .trim()
+                                .toLowerCase() !==
+                            "ok/no imperfection"
+                                .toLowerCase()
+                    )
+                        ? "Need Attention"
+                        : "Good";
+            }
+
+            // --------------------------------------------------
+            // IGNORE EMPTY / INVALID DB ROW
+            // --------------------------------------------------
+
+            const hasUsefulData =
+                rowName &&
+                (
+                    selectedOptions.length > 0 ||
+                    remark ||
+                    availableOptions.length > 0 ||
+                    status
+                );
+
+            if (!hasUsefulData) {
+                return;
+            }
 
             result.push({
-                sectionKey: String(sectionKey),
-                sectionTitle: String(sectionTitle),
-                rowName: String(rowName),
+                sectionKey,
+                sectionTitle,
+                rowName,
                 availableOptions,
                 selectedOptions,
                 remark,
@@ -676,23 +1015,218 @@ const normalizeDetailedChecklist = (report) => {
         return result;
     }
 
-    // --------------------------------------------------
-    // OBJECT FORMAT - raw Employee Inspection structure
-    // section -> row -> selected checkbox array
-    // --------------------------------------------------
-    if (raw && typeof raw === "object") {
-        for (const [sectionKey, sectionRowsValue] of Object.entries(raw)) {
-            if (!sectionRowsValue || typeof sectionRowsValue !== "object" || Array.isArray(sectionRowsValue)) {
+    // ==================================================
+    // OBJECT FORMAT
+    // section -> row -> selected options
+    // ==================================================
+
+    if (
+        raw &&
+        typeof raw === "object" &&
+        !Array.isArray(raw)
+    ) {
+        for (
+            const [sectionKey, sectionRowsValue]
+            of Object.entries(raw)
+        ) {
+            if (
+                !sectionRowsValue ||
+                typeof sectionRowsValue !== "object"
+            ) {
+                continue;
+            }
+
+            if (Array.isArray(sectionRowsValue)) {
+                sectionRowsValue.forEach(
+                    (rawRow, index) => {
+                        const rowObject =
+                            parseJsonIfNeeded(rawRow);
+
+                        if (
+                            !rowObject ||
+                            typeof rowObject !== "object"
+                        ) {
+                            return;
+                        }
+
+                        const rowName = String(
+                            firstValue(
+                                rowObject,
+                                [
+                                    "item_name",
+                                    "itemName",
+                                    "row_name",
+                                    "rowName",
+                                    "area",
+                                    "title",
+                                    "name"
+                                ],
+                                `Inspection Item ${index + 1}`
+                            )
+                        ).trim();
+
+                        const selectedOptions =
+                            normalizeSelectedOptions(
+                                firstValue(
+                                    rowObject,
+                                    [
+                                        "selected_options",
+                                        "selectedOptions",
+                                        "options",
+                                        "values",
+                                        "status",
+                                        "condition",
+                                        "result"
+                                    ],
+                                    []
+                                )
+                            );
+
+                        const remark = String(
+                            firstValue(
+                                rowObject,
+                                [
+                                    "remark",
+                                    "remarks",
+                                    "note",
+                                    "comment"
+                                ],
+                                ""
+                            ) || ""
+                        ).trim();
+
+                        const availableOptions =
+                            getAvailableOptions(
+                                sectionKey,
+                                rowName,
+                                selectedOptions
+                            );
+
+                        const status =
+                            selectedOptions.some(
+                                (option) =>
+                                    String(option)
+                                        .trim()
+                                        .toLowerCase() !==
+                                    "ok/no imperfection"
+                                        .toLowerCase()
+                            )
+                                ? "Need Attention"
+                                : "Good";
+
+                        result.push({
+                            sectionKey,
+                            sectionTitle:
+                                DETAILED_SECTION_TITLES[
+                                    sectionKey
+                                ] ||
+                                String(sectionKey)
+                                    .replace(/_/g, " ")
+                                    .toUpperCase(),
+                            rowName,
+                            availableOptions,
+                            selectedOptions,
+                            remark,
+                            status
+                        });
+                    }
+                );
+
                 continue;
             }
 
             const sectionTitle =
-                DETAILED_SECTION_TITLES[sectionKey] ||
-                String(sectionKey).replace(/_/g, " ").toUpperCase();
+                DETAILED_SECTION_TITLES[
+                    sectionKey
+                ] ||
+                String(sectionKey)
+                    .replace(/_/g, " ")
+                    .toUpperCase();
 
-            for (const [rowName, rawSelected] of Object.entries(sectionRowsValue)) {
-                const selectedOptions = normalizeSelectedOptions(rawSelected);
-                const availableOptions = getAvailableOptions(sectionKey, rowName, selectedOptions);
+            for (
+                const [rowName, rawSelected]
+                of Object.entries(sectionRowsValue)
+            ) {
+                let selectedOptions = [];
+                let remark = "";
+                let status = "";
+
+                const parsedValue =
+                    parseJsonIfNeeded(rawSelected);
+
+                if (
+                    parsedValue &&
+                    typeof parsedValue === "object" &&
+                    !Array.isArray(parsedValue)
+                ) {
+                    selectedOptions =
+                        normalizeSelectedOptions(
+                            firstValue(
+                                parsedValue,
+                                [
+                                    "selected_options",
+                                    "selectedOptions",
+                                    "options",
+                                    "values",
+                                    "status",
+                                    "condition",
+                                    "result"
+                                ],
+                                []
+                            )
+                        );
+
+                    remark = String(
+                        firstValue(
+                            parsedValue,
+                            [
+                                "remark",
+                                "remarks",
+                                "note",
+                                "comment"
+                            ],
+                            ""
+                        ) || ""
+                    ).trim();
+
+                    status = String(
+                        firstValue(
+                            parsedValue,
+                            [
+                                "status",
+                                "condition",
+                                "result"
+                            ],
+                            ""
+                        ) || ""
+                    ).trim();
+                } else {
+                    selectedOptions =
+                        normalizeSelectedOptions(
+                            parsedValue
+                        );
+                }
+
+                const availableOptions =
+                    getAvailableOptions(
+                        sectionKey,
+                        rowName,
+                        selectedOptions
+                    );
+
+                if (!status) {
+                    status =
+                        selectedOptions.some(
+                            (option) =>
+                                String(option)
+                                    .trim()
+                                    .toLowerCase() !==
+                                "ok/no imperfection"
+                                    .toLowerCase()
+                        )
+                            ? "Need Attention"
+                            : "Good";
+                }
 
                 result.push({
                     sectionKey,
@@ -700,10 +1234,8 @@ const normalizeDetailedChecklist = (report) => {
                     rowName,
                     availableOptions,
                     selectedOptions,
-                    remark: "",
-                    status: selectedOptions.some((option) => option !== "Ok/No imperfection")
-                        ? "Need Attention"
-                        : "Good"
+                    remark,
+                    status
                 });
             }
         }
@@ -712,23 +1244,68 @@ const normalizeDetailedChecklist = (report) => {
     return result;
 };
 
-const mergeDetailedRemarks = (rows, report) => {
-    const remarks =
-        parseJsonIfNeeded(
-            report?.detailedInspectionRemarks ||
-            report?.detailed_inspection_remarks ||
-            {}
-        ) || {};
+const mergeDetailedRemarks = (rows, report = {}) => {
+    const possibleRemarks = [
+        report?.detailedInspectionRemarks,
+        report?.detailed_inspection_remarks,
+        report?.detailedInspection?.remarks,
+        report?.detailed_inspection?.remarks,
+        report?.inspection?.detailedInspectionRemarks,
+        report?.inspection?.detailed_inspection_remarks
+    ];
 
-    if (!remarks || typeof remarks !== "object") {
+    let remarks = {};
+
+    for (const candidate of possibleRemarks) {
+        const parsed = parseJsonIfNeeded(candidate);
+
+        if (
+            parsed &&
+            typeof parsed === "object" &&
+            !Array.isArray(parsed) &&
+            Object.keys(parsed).length > 0
+        ) {
+            remarks = parsed;
+            break;
+        }
+    }
+
+    if (
+        !remarks ||
+        typeof remarks !== "object"
+    ) {
         return rows;
     }
 
     return rows.map((row) => {
-        const key = `${row.sectionKey}__${row.rowName}`;
-        const value = remarks[key];
+        const exactKey =
+            `${row.sectionKey}__${row.rowName}`;
 
-        if (value !== undefined && value !== null && String(value).trim()) {
+        const alternateKeys = [
+            exactKey,
+            `${row.sectionKey}|${row.rowName}`,
+            `${row.sectionKey}:${row.rowName}`,
+            row.rowName
+        ];
+
+        let value;
+
+        for (const key of alternateKeys) {
+            if (
+                remarks[key] !== undefined &&
+                remarks[key] !== null &&
+                String(remarks[key]).trim()
+            ) {
+                value = remarks[key];
+                break;
+            }
+        }
+
+        if (
+            value !== undefined &&
+            value !== null &&
+            String(value).trim()
+        ) {
             return {
                 ...row,
                 remark: String(value).trim()
@@ -738,7 +1315,6 @@ const mergeDetailedRemarks = (rows, report) => {
         return row;
     });
 };
-
 // ======================================================
 // DRAWING HELPERS
 // ======================================================
