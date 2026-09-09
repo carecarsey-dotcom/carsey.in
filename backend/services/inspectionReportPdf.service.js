@@ -1470,45 +1470,68 @@ const drawVehicleDetails = (doc, report, y, reportId) => {
 // ======================================================
 
 const drawAllOptions = (doc, availableOptions, selectedOptions, x, y, width) => {
-    const options = Array.isArray(availableOptions) && availableOptions.length
-        ? availableOptions
-        : (selectedOptions || []);
+    // PDF ME SIRF SELECTED / TICKED OPTIONS DIKHAYENGE
+    const options = Array.isArray(selectedOptions)
+        ? selectedOptions
+        : [];
 
     const selectedSet = new Set(
-        (selectedOptions || []).map((option) => String(option).trim().toLowerCase())
+        (selectedOptions || []).map((option) =>
+            String(option).trim().toLowerCase()
+        )
     );
 
-    doc.font("Helvetica-Bold").fontSize(7).fillColor(COLORS.gray)
+    doc.font("Helvetica-Bold")
+        .fontSize(7)
+        .fillColor(COLORS.gray)
         .text("INSPECTION OPTIONS", x, y, { width });
 
     y += 13;
 
     if (!options.length) {
-        doc.font("Helvetica").fontSize(8.5).fillColor(COLORS.gray)
+        doc.font("Helvetica")
+            .fontSize(8.5)
+            .fillColor(COLORS.gray)
             .text("No option selected", x, y, { width });
+
         return y + 12;
     }
 
     for (const option of options) {
         const label = String(option);
-        const selected = selectedSet.has(label.trim().toLowerCase());
+        const selected = selectedSet.has(
+            label.trim().toLowerCase()
+        );
 
-        doc.roundedRect(x, y + 1, 9, 9, 1)
-            .fillAndStroke(COLORS.white, COLORS.border);
+        doc.roundedRect(
+            x,
+            y + 1,
+            9,
+            9,
+            1
+        )
+            .fillAndStroke(
+                COLORS.white,
+                COLORS.border
+            );
 
         if (selected) {
-            // Draw the tick with PDF lines instead of a Unicode glyph so it
-            // renders correctly with PDFKit's built-in fonts.
             doc.save();
-            doc.strokeColor(COLORS.blue).lineWidth(1.4);
+
+            doc.strokeColor(COLORS.blue)
+                .lineWidth(1.4);
+
             doc.moveTo(x + 2, y + 6)
                 .lineTo(x + 4, y + 8)
                 .lineTo(x + 8, y + 3)
                 .stroke();
+
             doc.restore();
         }
 
-        doc.font("Helvetica").fontSize(8.2).fillColor(COLORS.dark)
+        doc.font("Helvetica")
+            .fontSize(8.2)
+            .fillColor(COLORS.dark)
             .text(label, x + 15, y, {
                 width: width - 15,
                 lineGap: 1
@@ -1617,47 +1640,121 @@ const drawDetailedRow = (doc, row, detailedImage, y, reportId) => {
 };
 
 const drawDetailedChecklist = (doc, rows, detailedImages, reportId) => {
-    doc.addPage();
-    let y = MARGIN_TOP;
+    // Sirf wahi rows PDF me dikhani hain jisme employee ne
+    // kam se kam ek option select/tick kiya hai.
+    const selectedRows = (Array.isArray(rows) ? rows : []).filter((row) => {
+        const selectedOptions = Array.isArray(row.selectedOptions)
+            ? row.selectedOptions.filter(
+                (option) =>
+                    option !== null &&
+                    option !== undefined &&
+                    String(option).trim() !== ""
+            )
+            : [];
 
-    y = drawSectionHeader(doc, "Detailed Vehicle Inspection Checklist", y);
-    y += 8;
+        return selectedOptions.length > 0;
+    });
 
-    if (!rows.length) {
-        doc.font("Helvetica").fontSize(9).fillColor(COLORS.gray)
-            .text("No detailed inspection checklist data provided.", MARGIN_LEFT, y, {
-                width: CONTENT_WIDTH
-            });
+    // Agar koi bhi option select nahi hai to detailed checklist ka
+    // extra page create hi nahi karna.
+    if (!selectedRows.length) {
         return;
     }
 
+    doc.addPage();
+
+    let y = MARGIN_TOP;
+
+    y = drawSectionHeader(
+        doc,
+        "Detailed Vehicle Inspection Checklist",
+        y
+    );
+
+    y += 8;
+
     let currentSection = null;
 
-    for (const row of rows) {
-        if (row.sectionKey !== currentSection) {
-            currentSection = row.sectionKey;
-            y = ensureSpace(doc, y, 35, reportId);
+    // Sirf selected rows ke sections nikalo.
+    const sectionKeys = [
+        ...new Set(
+            selectedRows.map((row) => row.sectionKey)
+        )
+    ];
 
-            doc.roundedRect(MARGIN_LEFT, y, CONTENT_WIDTH, 26, 4)
-                .fill(COLORS.navy);
+    for (const sectionKey of sectionKeys) {
+        const sectionRows = selectedRows.filter(
+            (item) => item.sectionKey === sectionKey
+        );
 
-            doc.font("Helvetica-Bold").fontSize(9.5).fillColor(COLORS.white)
-                .text(row.sectionTitle, MARGIN_LEFT + 9, y + 7, {
-                    width: CONTENT_WIDTH - 120,
-                    ellipsis: true
-                });
+        // Safety check
+        if (!sectionRows.length) {
+            continue;
+        }
 
-            const sectionRows = rows.filter(
-                item => item.sectionKey === row.sectionKey
+        const firstRow = sectionRows[0];
+
+        if (firstRow.sectionKey !== currentSection) {
+            currentSection = firstRow.sectionKey;
+
+            y = ensureSpace(
+                doc,
+                y,
+                35,
+                reportId
             );
 
+            // ==================================================
+            // SECTION HEADER
+            // ==================================================
+
+            doc.roundedRect(
+                MARGIN_LEFT,
+                y,
+                CONTENT_WIDTH,
+                26,
+                4
+            )
+                .fill(COLORS.navy);
+
+            doc.font("Helvetica-Bold")
+                .fontSize(9.5)
+                .fillColor(COLORS.white)
+                .text(
+                    firstRow.sectionTitle,
+                    MARGIN_LEFT + 9,
+                    y + 7,
+                    {
+                        width: CONTENT_WIDTH - 120,
+                        ellipsis: true
+                    }
+                );
+
+            // ==================================================
+            // SECTION STATUS
+            // ==================================================
+
             const sectionNeedsAttention = sectionRows.some(
-                item => {
-                    const options = item.selectedOptions || [];
+                (item) => {
+                    const options = Array.isArray(
+                        item.selectedOptions
+                    )
+                        ? item.selectedOptions
+                        : [];
+
                     return (
-                        item.status === "Need Attention" ||
-                        options.some(option => option !== "Ok/No imperfection")
-                    );
+                        String(item.status || "")
+                            .trim()
+                            .toLowerCase() ===
+                        "need attention".toLowerCase() ||
+                        options.some(
+                            (option) =>
+                                String(option)
+                                    .trim()
+                                    .toLowerCase() !==
+                                "ok/no imperfection"
+                            )
+                        );
                 }
             );
 
@@ -1665,8 +1762,15 @@ const drawDetailedChecklist = (doc, rows, detailedImages, reportId) => {
                 ? "Need Attention"
                 : "Good";
 
-            const badgeWidth = sectionNeedsAttention ? 82 : 42;
-            const badgeX = MARGIN_LEFT + CONTENT_WIDTH - badgeWidth - 8;
+            const badgeWidth = sectionNeedsAttention
+                ? 82
+                : 42;
+
+            const badgeX =
+                MARGIN_LEFT +
+                CONTENT_WIDTH -
+                badgeWidth -
+                8;
 
             doc.roundedRect(
                 badgeX,
@@ -1680,7 +1784,8 @@ const drawDetailedChecklist = (doc, rows, detailedImages, reportId) => {
                     : COLORS.greenLight
             );
 
-            doc.font("Helvetica-Bold").fontSize(6.5)
+            doc.font("Helvetica-Bold")
+                .fontSize(6.5)
                 .fillColor(
                     sectionNeedsAttention
                         ? COLORS.amber
@@ -1699,9 +1804,48 @@ const drawDetailedChecklist = (doc, rows, detailedImages, reportId) => {
             y += 34;
         }
 
-        const key = `${row.sectionKey}__${row.rowName}`;
-        const image = detailedImages.get(key) || null;
-        y = drawDetailedRow(doc, row, image, y, reportId);
+        // ======================================================
+        // SELECTED ROWS ONLY
+        // ======================================================
+
+        for (const row of sectionRows) {
+            const selectedOptions = Array.isArray(
+                row.selectedOptions
+            )
+                ? row.selectedOptions.filter(
+                    (option) =>
+                        option !== null &&
+                        option !== undefined &&
+                        String(option).trim() !== ""
+                )
+                : [];
+
+            // Double safety:
+            // koi selected option nahi hai to row skip.
+            if (!selectedOptions.length) {
+                continue;
+            }
+
+            const key =
+                `${row.sectionKey}__${row.rowName}`;
+
+            const image =
+                detailedImages.get(key) || null;
+
+            // drawDetailedRow ko sirf selected options pass karo.
+            const rowForPdf = {
+                ...row,
+                selectedOptions
+            };
+
+            y = drawDetailedRow(
+                doc,
+                rowForPdf,
+                image,
+                y,
+                reportId
+            );
+        }
     }
 };
 
