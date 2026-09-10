@@ -1,8 +1,5 @@
 <div class="min-h-screen bg-slate-100 p-4 md:p-6">
-
   <div class="mx-auto max-w-7xl space-y-5">
-
-
     <!-- ================================================== -->
     <!-- HEADER -->
     <!-- ================================================== -->
@@ -10,13 +7,10 @@
     <div
       class="rounded-xl border border-slate-200 bg-white px-5 py-4 shadow-sm"
     >
-
       <div
         class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between"
       >
-
         <div class="flex items-center gap-3">
-
           <div
             class="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-50 text-2xl"
           >
@@ -24,71 +18,33 @@
           </div>
 
           <div>
+            <h1 class="text-xl font-bold text-slate-900">Vehicle Inspection</h1>
 
-            <h1
-              class="text-xl font-bold text-slate-900"
-            >
-              Vehicle Inspection
-            </h1>
-
-            <p
-              class="text-sm text-slate-500"
-            >
+            <p class="text-sm text-slate-500">
               Complete vehicle inspection and submit the report.
             </p>
-
           </div>
-
         </div>
-
 
         <div
           class="grid grid-cols-2 overflow-hidden rounded-lg border border-slate-200"
         >
+          <div class="border-r border-slate-200 px-4 py-2">
+            <p class="text-xs text-slate-500">Request ID</p>
 
-          <div
-            class="border-r border-slate-200 px-4 py-2"
-          >
-
-            <p
-              class="text-xs text-slate-500"
-            >
-              Request ID
-            </p>
-
-            <p
-              class="font-semibold text-slate-900"
-            >
-              #{{ requestId }}
-            </p>
-
+            <p class="font-semibold text-slate-900">#{{ requestId }}</p>
           </div>
 
+          <div class="px-4 py-2">
+            <p class="text-xs text-slate-500">Booking Date</p>
 
-          <div
-            class="px-4 py-2"
-          >
-
-            <p
-              class="text-xs text-slate-500"
-            >
-              Booking Date
+            <p class="font-semibold text-slate-900">
+              {{ request?.booking_date || "-" }}
             </p>
-
-            <p
-              class="font-semibold text-slate-900"
-            >
-              {{ request?.booking_date || '-' }}
-            </p>
-
           </div>
-
         </div>
-
       </div>
-
     </div>
-
 
     <!-- ================================================== -->
     <!-- LOADING -->
@@ -101,7 +57,6 @@
       Loading inspection request...
     </div>
 
-
     <!-- ================================================== -->
     <!-- ERROR -->
     <!-- ================================================== -->
@@ -112,7 +67,6 @@
     >
       {{ errorMessage }}
     </div>
-
 
     <!-- ================================================== -->
     <!-- SUCCESS -->
@@ -125,45 +79,24 @@
       {{ successMessage }}
     </div>
 
-
     <!-- ================================================== -->
     <!-- VEHICLE DETAILS -->
     <!-- ================================================== -->
 
-    <section
-      class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm"
-    >
+    <section class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+      <div class="mb-5 border-b border-slate-200 pb-4">
+        <h2 class="text-lg font-bold text-slate-900">Vehicle Details</h2>
 
-      <div
-        class="mb-5 border-b border-slate-200 pb-4"
-      >
-
-        <h2
-          class="text-lg font-bold text-slate-900"
-        >
-          Vehicle Details
-        </h2>
-
-        <p
-          class="mt-1 text-sm text-slate-500"
-        >
+        <p class="mt-1 text-sm text-slate-500">
           Verify the vehicle information before starting the inspection.
         </p>
-
       </div>
 
-
-      <div
-        class="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-4"
-      >
-
+      <div class="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-4">
         <!-- BRAND -->
 
         <div>
-
-          <label
-            class="mb-1.5 block text-sm font-medium text-slate-700"
-          >
+          <label class="mb-1.5 block text-sm font-medium text-slate-700">
             Brand <span class="text-red-500">*</span>
           </label>
 
@@ -173,17 +106,12 @@
             placeholder="Vehicle brand"
             class="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
           />
-
         </div>
-
 
         <!-- MODEL -->
 
         <div>
-
-          <label
-            class="mb-1.5 block text-sm font-medium text-slate-700"
-          >
+          <label class="mb-1.5 block text-sm font-medium text-slate-700">
             Model <span class="text-red-500">*</span>
           </label>
 
@@ -193,17 +121,12 @@
             placeholder="Vehicle model"
             class="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
           />
-
         </div>
-
 
         <!-- VARIANT -->
 
         <div>
-
-          <label
-            class="mb-1.5 block text-sm font-medium text-slate-700"
-          >
+          <label class="mb-1.5 block text-sm font-medium text-slate-700">
             Variant
           </label>
 
@@ -213,17 +136,12 @@
             placeholder="Variant"
             class="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
           />
-
         </div>
-
 
         <!-- YEAR -->
 
         <div>
-
-          <label
-            class="mb-1.5 block text-sm font-medium text-slate-700"
-          >
+          <label class="mb-1.5 block text-sm font-medium text-slate-700">
             Manufacturing Year <span class="text-red-500">*</span>
           </label>
 
@@ -232,17 +150,12 @@
             [(ngModel)]="vehicle.manufacturing_year"
             class="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
           />
-
         </div>
-
 
         <!-- ODOMETER -->
 
         <div>
-
-          <label
-            class="mb-1.5 block text-sm font-medium text-slate-700"
-          >
+          <label class="mb-1.5 block text-sm font-medium text-slate-700">
             Odometer (KM) <span class="text-red-500">*</span>
           </label>
 
@@ -252,17 +165,12 @@
             placeholder="KM"
             class="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
           />
-
         </div>
-
 
         <!-- CITY -->
 
         <div>
-
-          <label
-            class="mb-1.5 block text-sm font-medium text-slate-700"
-          >
+          <label class="mb-1.5 block text-sm font-medium text-slate-700">
             City
           </label>
 
@@ -272,17 +180,12 @@
             placeholder="City"
             class="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
           />
-
         </div>
-
 
         <!-- TRANSMISSION -->
 
         <div>
-
-          <label
-            class="mb-1.5 block text-sm font-medium text-slate-700"
-          >
+          <label class="mb-1.5 block text-sm font-medium text-slate-700">
             Transmission
           </label>
 
@@ -290,39 +193,22 @@
             [(ngModel)]="vehicle.transmission"
             class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
           >
+            <option value="Manual">Manual</option>
 
-            <option value="Manual">
-              Manual
-            </option>
+            <option value="Automatic">Automatic</option>
 
-            <option value="Automatic">
-              Automatic
-            </option>
+            <option value="AMT">AMT</option>
 
-            <option value="AMT">
-              AMT
-            </option>
+            <option value="CVT">CVT</option>
 
-            <option value="CVT">
-              CVT
-            </option>
-
-            <option value="DCT">
-              DCT
-            </option>
-
+            <option value="DCT">DCT</option>
           </select>
-
         </div>
-
 
         <!-- FUEL -->
 
         <div>
-
-          <label
-            class="mb-1.5 block text-sm font-medium text-slate-700"
-          >
+          <label class="mb-1.5 block text-sm font-medium text-slate-700">
             Fuel Type
           </label>
 
@@ -330,39 +216,24 @@
             [(ngModel)]="vehicle.fuel_type"
             class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
           >
+            <option value="Petrol">Petrol</option>
 
-            <option value="Petrol">
-              Petrol
-            </option>
+            <option value="Diesel">Diesel</option>
 
-            <option value="Diesel">
-              Diesel
-            </option>
+            <option value="CNG">CNG</option>
 
-            <option value="CNG">
-              CNG
-            </option>
+            <option value="Petrol + CNG">Petrol + CNG</option>
 
-            <option value="Electric">
-              Electric
-            </option>
+            <option value="Electric">Electric</option>
 
-            <option value="Hybrid">
-              Hybrid
-            </option>
-
+            <option value="Hybrid">Hybrid</option>
           </select>
-
         </div>
-
 
         <!-- OWNER -->
 
         <div>
-
-          <label
-            class="mb-1.5 block text-sm font-medium text-slate-700"
-          >
+          <label class="mb-1.5 block text-sm font-medium text-slate-700">
             Owner Classification
           </label>
 
@@ -370,35 +241,20 @@
             [(ngModel)]="vehicle.owner_classification"
             class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
           >
+            <option value="First">First Owner</option>
 
-            <option value="First">
-              First Owner
-            </option>
+            <option value="Second">Second Owner</option>
 
-            <option value="Second">
-              Second Owner
-            </option>
+            <option value="Third">Third Owner</option>
 
-            <option value="Third">
-              Third Owner
-            </option>
-
-            <option value="Fourth">
-              Fourth Owner
-            </option>
-
+            <option value="Fourth">Fourth Owner</option>
           </select>
-
         </div>
-
 
         <!-- REGISTRATION -->
 
         <div>
-
-          <label
-            class="mb-1.5 block text-sm font-medium text-slate-700"
-          >
+          <label class="mb-1.5 block text-sm font-medium text-slate-700">
             Registration Number <span class="text-red-500">*</span>
           </label>
 
@@ -408,17 +264,12 @@
             placeholder="Registration number"
             class="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm uppercase outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
           />
-
         </div>
-
 
         <!-- CHASSIS -->
 
         <div>
-
-          <label
-            class="mb-1.5 block text-sm font-medium text-slate-700"
-          >
+          <label class="mb-1.5 block text-sm font-medium text-slate-700">
             Chassis Number
           </label>
 
@@ -428,17 +279,12 @@
             placeholder="Chassis number"
             class="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
           />
-
         </div>
-
 
         <!-- ENGINE NUMBER -->
 
         <div>
-
-          <label
-            class="mb-1.5 block text-sm font-medium text-slate-700"
-          >
+          <label class="mb-1.5 block text-sm font-medium text-slate-700">
             Engine Number
           </label>
 
@@ -448,17 +294,12 @@
             placeholder="Engine number"
             class="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
           />
-
         </div>
-
 
         <!-- INSPECTION DATE -->
 
         <div>
-
-          <label
-            class="mb-1.5 block text-sm font-medium text-slate-700"
-          >
+          <label class="mb-1.5 block text-sm font-medium text-slate-700">
             Inspection Date
           </label>
 
@@ -467,17 +308,12 @@
             [(ngModel)]="vehicle.inspection_date"
             class="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
           />
-
         </div>
-
 
         <!-- RTO -->
 
         <div>
-
-          <label
-            class="mb-1.5 block text-sm font-medium text-slate-700"
-          >
+          <label class="mb-1.5 block text-sm font-medium text-slate-700">
             RTO
           </label>
 
@@ -487,17 +323,12 @@
             placeholder="RTO"
             class="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
           />
-
         </div>
-
 
         <!-- SPARE KEY -->
 
         <div>
-
-          <label
-            class="mb-1.5 block text-sm font-medium text-slate-700"
-          >
+          <label class="mb-1.5 block text-sm font-medium text-slate-700">
             Spare Key
           </label>
 
@@ -505,27 +336,16 @@
             [(ngModel)]="vehicle.spare_key"
             class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
           >
+            <option value="Yes">Yes</option>
 
-            <option value="Yes">
-              Yes
-            </option>
-
-            <option value="No">
-              No
-            </option>
-
+            <option value="No">No</option>
           </select>
-
         </div>
-
 
         <!-- INSURANCE TYPE -->
 
         <div>
-
-          <label
-            class="mb-1.5 block text-sm font-medium text-slate-700"
-          >
+          <label class="mb-1.5 block text-sm font-medium text-slate-700">
             Insurance Type
           </label>
 
@@ -533,47 +353,26 @@
             [(ngModel)]="vehicle.insurance_type"
             class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
           >
+            <option value="">Select Insurance Type</option>
 
-            <option value="">
-              Select Insurance Type
-            </option>
+            <option value="Comprehensive">Comprehensive</option>
 
-            <option value="Comprehensive">
-              Comprehensive
-            </option>
+            <option value="Third Party">Third Party</option>
 
-            <option value="Third Party">
-              Third Party
-            </option>
+            <option value="Zero Depreciation">Zero Depreciation</option>
 
-            <option value="Zero Depreciation">
-              Zero Depreciation
-            </option>
+            <option value="Own Damage">Own Damage</option>
 
-            <option value="Own Damage">
-              Own Damage
-            </option>
+            <option value="Expired">Expired</option>
 
-            <option value="Expired">
-              Expired
-            </option>
-
-            <option value="Not Available">
-              Not Available
-            </option>
-
+            <option value="Not Available">Not Available</option>
           </select>
-
         </div>
-
 
         <!-- INSURANCE VALIDITY -->
 
         <div>
-
-          <label
-            class="mb-1.5 block text-sm font-medium text-slate-700"
-          >
+          <label class="mb-1.5 block text-sm font-medium text-slate-700">
             Insurance Validity
           </label>
 
@@ -582,269 +381,233 @@
             [(ngModel)]="vehicle.insurance_validity"
             class="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
           />
-
         </div>
-
       </div>
-
     </section>
 
+    <!-- ================================================== -->
+    <!-- DETAILED VEHICLE INSPECTION CHECKLIST -->
+    <!-- EXACT OPTIONS FROM ADD VEHICLE -->
+    <!-- ================================================== -->
 
-<!-- ================================================== -->
-<!-- DETAILED VEHICLE INSPECTION CHECKLIST -->
-<!-- EXACT OPTIONS FROM ADD VEHICLE -->
-<!-- ================================================== -->
+    <section class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+      <div class="mb-5 border-b border-slate-200 pb-4">
+        <div>
+          <h2 class="text-lg font-bold text-slate-900">
+            📋 Detailed Vehicle Inspection Checklist
+          </h2>
 
-<section
-  class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm"
->
-  <div
-    class="mb-5 border-b border-slate-200 pb-4"
-  >
-    <div>
-      <h2 class="text-lg font-bold text-slate-900">
-        📋 Detailed Vehicle Inspection Checklist
-      </h2>
-
-      <p class="mt-1 text-sm text-slate-500">
-        Har inspection item ke liye applicable options select karein.
-        Multiple options select kiye ja sakte hain. Har row me camera/gallery
-        image aur remark bhi add kiya ja sakta hai.
-      </p>
-    </div>
-  </div>
-
-  <div class="space-y-4">
-    <div
-      *ngFor="let section of inspectionSections"
-      class="overflow-hidden rounded-xl border border-slate-200 bg-white"
-    >
-      <!-- SECTION HEADER -->
-      <button
-        type="button"
-        (click)="toggleInspectionSection(section.key)"
-        class="flex w-full items-center justify-between gap-3 bg-slate-50 px-4 py-4 text-left transition hover:bg-blue-50"
-      >
-        <div class="flex min-w-0 items-center gap-3">
-          <span
-            class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-100 text-blue-600"
-          >
-            {{ openInspectionSections[section.key] ? '▲' : '▼' }}
-          </span>
-
-          <div class="min-w-0">
-            <h3 class="text-base font-bold text-slate-800 md:text-lg">
-              {{ section.title }}
-            </h3>
-
-            <p class="mt-0.5 text-xs text-slate-400">
-              Click to view inspection options
-            </p>
-          </div>
+          <p class="mt-1 text-sm text-slate-500">
+            Har inspection item ke liye applicable options select karein.
+            Multiple options select kiye ja sakte hain. Har row me
+            camera/gallery image aur remark bhi add kiya ja sakta hai.
+          </p>
         </div>
+      </div>
 
-        <span
-          *ngIf="hasInspectionIssue(section.key)"
-          class="shrink-0 rounded-full bg-red-100 px-3 py-1 text-xs font-bold text-red-700"
-        >
-          Need Attention
-        </span>
-
-        <span
-          *ngIf="!hasInspectionIssue(section.key)"
-          class="shrink-0 rounded-full bg-green-100 px-3 py-1 text-xs font-bold text-green-700"
-        >
-          Good
-        </span>
-      </button>
-
-      <!-- SECTION CONTENT -->
-      <div
-        *ngIf="openInspectionSections[section.key]"
-        class="border-t border-slate-200"
-      >
+      <div class="space-y-4">
         <div
-          *ngFor="let row of section.rows"
-          class="border-b border-slate-200 p-4 last:border-b-0"
+          *ngFor="let section of inspectionSections"
+          class="overflow-hidden rounded-xl border border-slate-200 bg-white"
         >
-          <!-- ROW TITLE -->
-          <div
-            class="mb-3 flex flex-col gap-1 md:flex-row md:items-center md:justify-between"
+          <!-- SECTION HEADER -->
+          <button
+            type="button"
+            (click)="toggleInspectionSection(section.key)"
+            class="flex w-full items-center justify-between gap-3 bg-slate-50 px-4 py-4 text-left transition hover:bg-blue-50"
           >
-            <h4 class="font-semibold text-slate-800">
-              {{ row[0] }}
-            </h4>
-
-            <span
-              *ngIf="getSelectedOptionCount(section.key, row[0]) > 0"
-              class="text-xs font-medium text-slate-500"
-            >
-              {{ getSelectedOptionCount(section.key, row[0]) }} selected
-            </span>
-          </div>
-
-          <!-- OPTIONS -->
-          <div
-            class="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
-          >
-            <label
-              *ngFor="let option of row[1]"
-              class="flex cursor-pointer items-start gap-2 rounded-lg border border-slate-200 bg-white p-3 text-sm transition hover:border-blue-300 hover:bg-blue-50"
-              [ngClass]="
-                isInspectionOptionSelected(section.key, row[0], option)
-                  ? 'border-blue-400 bg-blue-50'
-                  : ''
-              "
-            >
-              <input
-                type="checkbox"
-                [checked]="
-                  isInspectionOptionSelected(
-                    section.key,
-                    row[0],
-                    option
-                  )
-                "
-                (change)="
-                  toggleInspectionOption(
-                    section.key,
-                    row[0],
-                    option
-                  )
-                "
-                class="mt-0.5 h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
-              />
-
-              <span class="leading-5 text-slate-700">
-                {{ option }}
-              </span>
-            </label>
-          </div>
-
-          <!-- ROW REMARK + IMAGE -->
-          <div
-            class="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-2"
-          >
-            <!-- REMARK -->
-            <div>
-              <label
-                class="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-500"
+            <div class="flex min-w-0 items-center gap-3">
+              <span
+                class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-100 text-blue-600"
               >
-                Remark
-              </label>
+                {{ openInspectionSections[section.key] ? "▲" : "▼" }}
+              </span>
 
-              <input
-                type="text"
-                [value]="getDetailedRowRemark(section.key, row[0])"
-                (input)="
-                  setDetailedRowRemark(
-                    section.key,
-                    row[0],
-                    $any($event.target).value
-                  )
-                "
-                placeholder="Enter remark for this inspection item"
-                class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-              />
+              <div class="min-w-0">
+                <h3 class="text-base font-bold text-slate-800 md:text-lg">
+                  {{ section.title }}
+                </h3>
+
+                <p class="mt-0.5 text-xs text-slate-400">
+                  Click to view inspection options
+                </p>
+              </div>
             </div>
 
-            <!-- IMAGE -->
-            <div>
-              <label
-                class="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-500"
+            <span
+              *ngIf="hasInspectionIssue(section.key)"
+              class="shrink-0 rounded-full bg-red-100 px-3 py-1 text-xs font-bold text-red-700"
+            >
+              Need Attention
+            </span>
+
+            <span
+              *ngIf="!hasInspectionIssue(section.key)"
+              class="shrink-0 rounded-full bg-green-100 px-3 py-1 text-xs font-bold text-green-700"
+            >
+              Good
+            </span>
+          </button>
+
+          <!-- SECTION CONTENT -->
+          <div
+            *ngIf="openInspectionSections[section.key]"
+            class="border-t border-slate-200"
+          >
+            <div
+              *ngFor="let row of section.rows"
+              class="border-b border-slate-200 p-4 last:border-b-0"
+            >
+              <!-- ROW TITLE -->
+              <div
+                class="mb-3 flex flex-col gap-1 md:flex-row md:items-center md:justify-between"
               >
-                Inspection Image
-              </label>
+                <h4 class="font-semibold text-slate-800">
+                  {{ row[0] }}
+                </h4>
 
-              <div class="flex gap-2">
-                <!-- CAMERA -->
-                <button
-                  type="button"
-                  (click)="openDetailedCamera(section.key, row[0])"
-                  class="flex flex-1 items-center justify-center gap-2 rounded-lg border border-blue-200 bg-blue-50 px-3 py-2.5 text-sm font-semibold text-blue-700 transition hover:bg-blue-100"
+                <span
+                  *ngIf="getSelectedOptionCount(section.key, row[0]) > 0"
+                  class="text-xs font-medium text-slate-500"
                 >
-                  📷 Camera
-                </button>
+                  {{ getSelectedOptionCount(section.key, row[0]) }} selected
+                </span>
+              </div>
 
-                <!-- GALLERY -->
+              <!-- OPTIONS -->
+              <div
+                class="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+              >
                 <label
-                  class="flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                  *ngFor="let option of row[1]"
+                  class="flex cursor-pointer items-start gap-2 rounded-lg border border-slate-200 bg-white p-3 text-sm transition hover:border-blue-300 hover:bg-blue-50"
+                  [ngClass]="
+                    isInspectionOptionSelected(section.key, row[0], option)
+                      ? 'border-blue-400 bg-blue-50'
+                      : ''
+                  "
                 >
-                  🖼️ Gallery
-
                   <input
-                    type="file"
-                    accept="image/*"
-                    class="hidden"
-                    (change)="
-                      onDetailedRowGallerySelected(
-                        $event,
-                        section.key,
-                        row[0]
-                      )
+                    type="checkbox"
+                    [checked]="
+                      isInspectionOptionSelected(section.key, row[0], option)
                     "
+                    (change)="
+                      toggleInspectionOption(section.key, row[0], option)
+                    "
+                    class="mt-0.5 h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
                   />
+
+                  <span class="leading-5 text-slate-700">
+                    {{ option }}
+                  </span>
                 </label>
               </div>
 
-              <div
-                *ngIf="getDetailedRowImage(section.key, row[0]).preview"
-                class="mt-2 flex items-center gap-3"
-              >
-                <img
-                  [src]="getDetailedRowImage(section.key, row[0]).preview"
-                  class="h-16 w-24 rounded-lg border border-slate-200 object-cover"
-                  alt="Inspection preview"
-                />
+              <!-- ROW REMARK + IMAGE -->
+              <div class="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-2">
+                <!-- REMARK -->
+                <div>
+                  <label
+                    class="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-500"
+                  >
+                    Remark
+                  </label>
 
-                <button
-                  type="button"
-                  (click)="removeDetailedRowImage(section.key, row[0])"
-                  class="text-xs font-semibold text-red-600 hover:text-red-700"
-                >
-                  Remove
-                </button>
+                  <input
+                    type="text"
+                    [value]="getDetailedRowRemark(section.key, row[0])"
+                    (input)="
+                      setDetailedRowRemark(
+                        section.key,
+                        row[0],
+                        $any($event.target).value
+                      )
+                    "
+                    placeholder="Enter remark for this inspection item"
+                    class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                  />
+                </div>
+
+                <!-- IMAGE -->
+                <div>
+                  <label
+                    class="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-500"
+                  >
+                    Inspection Image
+                  </label>
+
+                  <div class="flex gap-2">
+                    <!-- CAMERA -->
+                    <button
+                      type="button"
+                      (click)="openDetailedCamera(section.key, row[0])"
+                      class="flex flex-1 items-center justify-center gap-2 rounded-lg border border-blue-200 bg-blue-50 px-3 py-2.5 text-sm font-semibold text-blue-700 transition hover:bg-blue-100"
+                    >
+                      📷 Camera
+                    </button>
+
+                    <!-- GALLERY -->
+                    <label
+                      class="flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                    >
+                      🖼️ Gallery
+
+                      <input
+                        type="file"
+                        accept="image/*"
+                        class="hidden"
+                        (change)="
+                          onDetailedRowGallerySelected(
+                            $event,
+                            section.key,
+                            row[0]
+                          )
+                        "
+                      />
+                    </label>
+                  </div>
+
+                  <div
+                    *ngIf="getDetailedRowImage(section.key, row[0]).preview"
+                    class="mt-2 flex items-center gap-3"
+                  >
+                    <img
+                      [src]="getDetailedRowImage(section.key, row[0]).preview"
+                      class="h-16 w-24 rounded-lg border border-slate-200 object-cover"
+                      alt="Inspection preview"
+                    />
+
+                    <button
+                      type="button"
+                      (click)="removeDetailedRowImage(section.key, row[0])"
+                      class="text-xs font-semibold text-red-600 hover:text-red-700"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
-  </div>
-</section>
-
+    </section>
 
     <!-- ================================================== -->
     <!-- VEHICLE PHOTOS -->
     <!-- ================================================== -->
 
-    <section
-      class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm"
-    >
+    <section class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+      <div class="mb-5 border-b border-slate-200 pb-4">
+        <h2 class="text-lg font-bold text-slate-900">Vehicle Photos</h2>
 
-      <div
-        class="mb-5 border-b border-slate-200 pb-4"
-      >
-
-        <h2
-          class="text-lg font-bold text-slate-900"
-        >
-          Vehicle Photos
-        </h2>
-
-        <p
-          class="mt-1 text-sm text-slate-500"
-        >
+        <p class="mt-1 text-sm text-slate-500">
           Upload clear photos from the required vehicle angles.
         </p>
-
       </div>
 
-
-      <div
-        class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5"
-      >
-
+      <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
         <div
           *ngFor="
             let photo of vehiclePhotos;
@@ -853,27 +616,13 @@
           "
           class="rounded-xl border border-slate-200 bg-slate-50 p-3"
         >
-
-          <div
-            class="mb-2 text-sm font-semibold text-slate-800"
-          >
-
+          <div class="mb-2 text-sm font-semibold text-slate-800">
             {{ i + 1 }}. {{ photo.title }}
 
-            <span
-              class="text-red-500"
-            >
-              *
-            </span>
-
+            <span class="text-red-500"> * </span>
           </div>
 
-
-          <div
-            *ngIf="photo.preview"
-            class="relative mb-2"
-          >
-
+          <div *ngIf="photo.preview" class="relative mb-2">
             <img
               [src]="photo.preview"
               class="h-32 w-full rounded-lg border border-slate-200 object-cover"
@@ -886,38 +635,22 @@
             >
               Remove
             </button>
-
           </div>
-
 
           <div
             *ngIf="!photo.preview"
             class="mb-2 flex h-32 items-center justify-center rounded-lg border border-dashed border-slate-300 bg-white text-center text-xs text-slate-500"
           >
-
             <div>
-
-              <div
-                class="mb-1 text-2xl"
-              >
-                📷
-              </div>
+              <div class="mb-1 text-2xl">📷</div>
 
               Click to upload
 
-              <div>
-                Camera or Gallery
-              </div>
-
+              <div>Camera or Gallery</div>
             </div>
-
           </div>
 
-
-          <div
-            class="flex gap-2"
-          >
-
+          <div class="flex gap-2">
             <!-- CAMERA -->
 
             <button
@@ -925,18 +658,14 @@
               (click)="openVehicleCamera(photo.key)"
               class="flex flex-1 cursor-pointer items-center justify-center rounded-lg border border-blue-200 bg-blue-50 px-2 py-2 text-xs font-semibold text-blue-700 transition hover:bg-blue-100"
             >
-
               📷 Camera
-
             </button>
-
 
             <!-- GALLERY -->
 
             <label
               class="flex flex-1 cursor-pointer items-center justify-center rounded-lg border border-slate-300 bg-white px-2 py-2 text-xs font-semibold text-slate-700"
             >
-
               🖼️ Gallery
 
               <input
@@ -945,56 +674,30 @@
                 class="hidden"
                 (change)="onVehiclePhotoSelected($event, photo)"
               />
-
             </label>
-
           </div>
-
         </div>
-
       </div>
-
     </section>
-
 
     <!-- ================================================== -->
     <!-- INSPECTION SUMMARY -->
     <!-- ================================================== -->
 
-    <section
-      class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm"
-    >
+    <section class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+      <div class="mb-5 border-b border-slate-200 pb-4">
+        <h2 class="text-lg font-bold text-slate-900">Inspection Summary</h2>
 
-      <div
-        class="mb-5 border-b border-slate-200 pb-4"
-      >
-
-        <h2
-          class="text-lg font-bold text-slate-900"
-        >
-          Inspection Summary
-        </h2>
-
-        <p
-          class="mt-1 text-sm text-slate-500"
-        >
+        <p class="mt-1 text-sm text-slate-500">
           Add final inspection remarks and select the overall score.
         </p>
-
       </div>
 
-
-      <div
-        class="grid grid-cols-1 gap-5 lg:grid-cols-3"
-      >
-
+      <div class="grid grid-cols-1 gap-5 lg:grid-cols-3">
         <!-- ENGINE REMARK -->
 
         <div>
-
-          <label
-            class="mb-2 block text-sm font-semibold text-slate-700"
-          >
+          <label class="mb-2 block text-sm font-semibold text-slate-700">
             Engine Remark <span class="text-red-500">*</span>
           </label>
 
@@ -1004,17 +707,12 @@
             placeholder="Enter engine inspection remark..."
             class="w-full resize-none rounded-lg border border-slate-300 px-3 py-3 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
           ></textarea>
-
         </div>
-
 
         <!-- OVERALL REMARK -->
 
         <div>
-
-          <label
-            class="mb-2 block text-sm font-semibold text-slate-700"
-          >
+          <label class="mb-2 block text-sm font-semibold text-slate-700">
             Overall Remark <span class="text-red-500">*</span>
           </label>
 
@@ -1024,27 +722,18 @@
             placeholder="Enter overall inspection remark..."
             class="w-full resize-none rounded-lg border border-slate-300 px-3 py-3 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
           ></textarea>
-
         </div>
-
 
         <!-- SCORE -->
 
         <div>
-
-          <label
-            class="mb-2 block text-sm font-semibold text-slate-700"
-          >
+          <label class="mb-2 block text-sm font-semibold text-slate-700">
             Overall Score <span class="text-red-500">*</span>
           </label>
 
-
-          <div
-            class="grid grid-cols-5 gap-2 sm:grid-cols-10"
-          >
-
+          <div class="grid grid-cols-5 gap-2 sm:grid-cols-10">
             <button
-              *ngFor="let score of [1,2,3,4,5,6,7,8,9,10]"
+              *ngFor="let score of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]"
               type="button"
               (click)="selectScore(score)"
               [ngClass]="
@@ -1056,50 +745,29 @@
             >
               {{ score }}
             </button>
-
           </div>
 
-
-          <p
-            class="mt-3 text-xs text-slate-500"
-          >
+          <p class="mt-3 text-xs text-slate-500">
             1 = Poor &nbsp; | &nbsp; 10 = Excellent
           </p>
-
 
           <div
             *ngIf="overall_score"
             class="mt-4 rounded-lg bg-blue-50 px-4 py-3"
           >
+            <span class="text-sm text-blue-700"> Selected Score: </span>
 
-            <span
-              class="text-sm text-blue-700"
-            >
-              Selected Score:
-            </span>
-
-            <span
-              class="ml-2 text-lg font-bold text-blue-900"
-            >
+            <span class="ml-2 text-lg font-bold text-blue-900">
               {{ overall_score }}/10
             </span>
-
           </div>
-
         </div>
-
       </div>
-
 
       <!-- EMPLOYEE REMARK -->
 
-      <div
-        class="mt-5"
-      >
-
-        <label
-          class="mb-2 block text-sm font-semibold text-slate-700"
-        >
+      <div class="mt-5">
+        <label class="mb-2 block text-sm font-semibold text-slate-700">
           Employee Remark
         </label>
 
@@ -1109,11 +777,8 @@
           placeholder="Additional employee remark..."
           class="w-full resize-none rounded-lg border border-slate-300 px-3 py-3 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
         ></textarea>
-
       </div>
-
     </section>
-
 
     <!-- ================================================== -->
     <!-- ACTIONS -->
@@ -1122,11 +787,9 @@
     <div
       class="sticky bottom-0 z-20 rounded-xl border border-slate-200 bg-white/95 p-4 shadow-lg backdrop-blur"
     >
-
       <div
         class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"
       >
-
         <button
           type="button"
           (click)="goBack()"
@@ -1135,34 +798,19 @@
           ← Back to Dashboard
         </button>
 
-
         <button
           type="button"
           (click)="submitInspection()"
           [disabled]="submitting"
           class="rounded-lg bg-blue-700 px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-60"
         >
+          <span *ngIf="!submitting"> ➤ Submit Inspection </span>
 
-          <span
-            *ngIf="!submitting"
-          >
-            ➤ Submit Inspection
-          </span>
-
-          <span
-            *ngIf="submitting"
-          >
-            Submitting...
-          </span>
-
+          <span *ngIf="submitting"> Submitting... </span>
         </button>
-
       </div>
-
     </div>
-
   </div>
-
 </div>
 
 <!-- ================================================== -->
@@ -1172,13 +820,15 @@
   *ngIf="cameraOpen"
   class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 p-4"
 >
-  <div
-    class="w-full max-w-2xl overflow-hidden rounded-2xl bg-white shadow-2xl"
-  >
-    <div class="flex items-center justify-between border-b border-slate-200 px-5 py-4">
+  <div class="w-full max-w-2xl overflow-hidden rounded-2xl bg-white shadow-2xl">
+    <div
+      class="flex items-center justify-between border-b border-slate-200 px-5 py-4"
+    >
       <div>
         <h3 class="text-base font-bold text-slate-900">Camera</h3>
-        <p class="text-xs text-slate-500">Position the vehicle photo and capture it.</p>
+        <p class="text-xs text-slate-500">
+          Position the vehicle photo and capture it.
+        </p>
       </div>
 
       <button
@@ -1219,4 +869,3 @@
     </div>
   </div>
 </div>
-
