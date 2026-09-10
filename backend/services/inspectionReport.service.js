@@ -695,20 +695,15 @@ const getCompleteInspectionReport = (
                 ) {
 
                     try {
-
-                        checklist =
-                            await getInspectionChecklistByCarId(
-                                report.car_id
-                            );
-
-                    } catch (carChecklistError) {
-
-                        console.error(
-                            "Car checklist fallback error:",
-                            carChecklistError.message
-                        );
-
-                    }
+    checklist = await getInspectionChecklist(
+        report.report_id
+    );
+} catch (checklistError) {
+    console.error(
+        "Checklist fetch error:",
+        checklistError.message
+    );
+}
 
                 }
 
