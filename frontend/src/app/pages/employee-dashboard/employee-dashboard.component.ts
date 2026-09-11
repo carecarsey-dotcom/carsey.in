@@ -106,17 +106,28 @@ export class EmployeeDashboardComponent
 
             this.requests =
               Array.isArray(response.data)
-                ? response.data
+                ? response.data.map(
+                    (request: any) =>
+                      this.normalizeRequest(request)
+                  )
                 : [];
 
           } else {
 
             this.requests =
               Array.isArray(response?.data)
-                ? response.data
+                ? response.data.map(
+                    (request: any) =>
+                      this.normalizeRequest(request)
+                  )
                 : [];
 
           }
+
+          console.log(
+            'Employee normalized requests:',
+            this.requests
+          );
 
           // -------------------------------------------------
           // CALCULATE COUNTS
@@ -144,6 +155,57 @@ export class EmployeeDashboardComponent
         }
 
       });
+  }
+
+  // =====================================================
+  // NORMALIZE REQUEST DATA
+  // =====================================================
+
+  normalizeRequest(
+    request: any
+  ): any {
+
+    if (!request) {
+      return {};
+    }
+
+    return {
+      ...request,
+
+      // -------------------------------------------------
+      // CITY
+      // -------------------------------------------------
+
+      city:
+        request?.city ||
+        request?.booking_city ||
+        request?.customer_city ||
+        '',
+
+      // -------------------------------------------------
+      // BOOKING DATE
+      // -------------------------------------------------
+
+      booking_date:
+        request?.booking_date ||
+        request?.bookingDate ||
+        request?.inspection_date ||
+        request?.inspectionDate ||
+        '',
+
+      // -------------------------------------------------
+      // TIME SLOT
+      // -------------------------------------------------
+
+      time_slot:
+        request?.time_slot ||
+        request?.timeSlot ||
+        request?.booking_time ||
+        request?.bookingTime ||
+        request?.inspection_time ||
+        request?.inspectionTime ||
+        ''
+    };
   }
 
   // =====================================================
@@ -616,15 +678,26 @@ export class EmployeeDashboardComponent
     return vehicle || '-';
   }
 
+  // =====================================================
+  // CITY
+  // =====================================================
+
   getCity(
     request: any
   ): string {
 
-    return (
+    const city =
       request?.city ||
-      '-'
-    );
+      request?.booking_city ||
+      request?.customer_city ||
+      '';
+
+    return String(city).trim() || '-';
   }
+
+  // =====================================================
+  // ADDRESS
+  // =====================================================
 
   getAddress(
     request: any
@@ -632,29 +705,208 @@ export class EmployeeDashboardComponent
 
     return (
       request?.address ||
+      request?.customer_address ||
       '-'
     );
   }
+
+  // =====================================================
+  // BOOKING DATE
+  // =====================================================
 
   getBookingDate(
     request: any
   ): string {
 
-    return (
+    const value =
       request?.booking_date ||
       request?.bookingDate ||
-      '-'
-    );
+      request?.inspection_date ||
+      request?.inspectionDate;
+
+    if (!value) {
+      return '-';
+    }
+
+    const dateString =
+      String(value).trim();
+
+    // -------------------------------------------------
+    // YYYY-MM-DD
+    // -------------------------------------------------
+
+    const dateMatch =
+      dateString.match(
+        /^(\d{4})-(\d{2})-(\d{2})/
+      );
+
+    if (dateMatch) {
+
+      return (
+        `${dateMatch[3]}/` +
+        `${dateMatch[2]}/` +
+        `${dateMatch[1]}`
+      );
+    }
+
+    // -------------------------------------------------
+    // DD-MM-YYYY
+    // -------------------------------------------------
+
+    const indianDateMatch =
+      dateString.match(
+        /^(\d{2})-(\d{2})-(\d{4})/
+      );
+
+    if (indianDateMatch) {
+
+      return (
+        `${indianDateMatch[1]}/` +
+        `${indianDateMatch[2]}/` +
+        `${indianDateMatch[3]}`
+      );
+    }
+
+    // -------------------------------------------------
+    // ISO / DATE OBJECT FALLBACK
+    // -------------------------------------------------
+
+    const parsedDate =
+      new Date(dateString);
+
+    if (
+      !isNaN(
+        parsedDate.getTime()
+      )
+    ) {
+
+      const day =
+        String(
+          parsedDate.getDate()
+        ).padStart(2, '0');
+
+      const month =
+        String(
+          parsedDate.getMonth() + 1
+        ).padStart(2, '0');
+
+      const year =
+        parsedDate.getFullYear();
+
+      return (
+        `${day}/${month}/${year}`
+      );
+    }
+
+    return dateString;
   }
+
+  // =====================================================
+  // TIME SLOT
+  // =====================================================
 
   getTimeSlot(
     request: any
   ): string {
 
-    return (
+    const value =
       request?.time_slot ||
       request?.timeSlot ||
-      '-'
+      request?.booking_time ||
+      request?.bookingTime ||
+      request?.inspection_time ||
+      request?.inspectionTime;
+
+    if (!value) {
+      return '-';
+    }
+
+    const timeSlot =
+      String(value).trim();
+
+    if (!timeSlot) {
+      return '-';
+    }
+
+    // -------------------------------------------------
+    // ALREADY FORMATTED
+    // Example:
+    // 09:00 AM - 11:00 AM
+    // -------------------------------------------------
+
+    if (
+      /AM|PM/i.test(timeSlot)
+    ) {
+
+      return timeSlot;
+    }
+
+    // -------------------------------------------------
+    // TIME RANGE
+    // Examples:
+    // 09:00 - 11:00
+    // 09:00:00 - 11:00:00
+    // -------------------------------------------------
+
+    const parts =
+      timeSlot
+        .split(
+          /\s*-\s*/
+        );
+
+    if (
+      parts.length !== 2
+    ) {
+
+      return timeSlot;
+    }
+
+    const formatTime =
+      (
+        time: string
+      ): string => {
+
+        const cleanTime =
+          time.trim();
+
+        const match =
+          cleanTime.match(
+            /^(\d{1,2}):(\d{2})(?::(\d{2}))?$/
+          );
+
+        if (!match) {
+          return cleanTime;
+        }
+
+        let hour =
+          Number(match[1]);
+
+        const minute =
+          match[2];
+
+        const period =
+          hour >= 12
+            ? 'PM'
+            : 'AM';
+
+        if (hour === 0) {
+
+          hour = 12;
+
+        } else if (hour > 12) {
+
+          hour -= 12;
+        }
+
+        return (
+          `${String(hour).padStart(2, '0')}:` +
+          `${minute} ${period}`
+        );
+      };
+
+    return (
+      `${formatTime(parts[0])} - ` +
+      `${formatTime(parts[1])}`
     );
   }
 

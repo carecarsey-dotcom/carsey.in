@@ -63,6 +63,21 @@ interface DetailedRowImage {
   preview: string;
 }
 
+interface InspectionVideo {
+  key: 'engine_video' | 'engine_blow_by_video';
+  title: string;
+  file: File | null;
+  preview: string;
+  processing: boolean;
+}
+
+interface TestDrivePhoto {
+  key: 'test_drive_photo_1' | 'test_drive_photo_2';
+  title: string;
+  file: File | null;
+  preview: string;
+}
+
 
 // ======================================================
 // INSPECTION REQUEST
@@ -220,6 +235,9 @@ export class EmployeeInspectionComponent
   overall_score:
     number | null = null;
 
+  // Transmission star rating (1-5)
+  transmission_rating: number = 0;
+
 
   // ======================================================
   // DETAILED INSPECTION
@@ -258,8 +276,8 @@ export class EmployeeInspectionComponent
         ['Bonnet / Hood', ['Ok/No imperfection','Dent','Scratch','Rusting','Scooper Not Working','Crack / Hole']],
         ['Upper Cross Member', ['Ok/No imperfection','Rusting','Damage','Repaired / Welded']],
         ['Roof', ['Ok/No imperfection','Paint Mismatch + Faded','Dent','Crack / Hole','Scratches','Roof Rail Broken','Sun Roof Not Working']],
-        ['Apron Both RHS', ['Ok/No imperfection','Repaired / Welded','Repainted','Rusting','Dent','Crack / Hole']],
-        ['Apron Both LHS', ['Ok/No imperfection','Repaired / Welded','Repainted','Rusting','Dent','Crack / Hole']],
+        ['Apron RHS', ['Ok/No imperfection','Repaired / Welded','Repainted','Rusting','Dent','Crack / Hole']],
+        ['Apron LHS', ['Ok/No imperfection','Repaired / Welded','Repainted','Rusting','Dent','Crack / Hole']],
         ['Firewall', ['Ok/No imperfection','Rusted','Cover Damage','Carpet Damage','Crack & Hole','Repaired / Welded']],
       ]
     },
@@ -288,10 +306,7 @@ export class EmployeeInspectionComponent
       title: 'STEERING + SUSPENSION + BRAKE',
       rows: [
         ['Suspension', ['Ok/No imperfection','Lower + Upper Arm Noise','Major Leakage Noise','Boot Damage','Strut Noise','Shocker Mount Noise']],
-        ['Brakes Front RHS', ['Ok/No imperfection','Brake Oil Cap Missing','Brake Oil Level Low','Brake Pad Worn Out','Brake Disk Worn Out']],
-        ['Brakes Rear RHS', ['Ok/No imperfection','Brake Oil Cap Missing','Brake Oil Level Low','Brake Pad Worn Out','Brake Disk Worn Out']],
-        ['Brakes Front LHS', ['Ok/No imperfection','Brake Oil Cap Missing','Brake Oil Level Low','Brake Pad Worn Out','Brake Disk Worn Out']],
-        ['Brakes Rear LHS', ['Ok/No imperfection','Brake Oil Cap Missing','Brake Oil Level Low','Brake Pad Worn Out','Brake Disk Worn Out']],
+        
         ['Jumping Rod Bush Front RHS', ['Ok/No imperfection','Rusting','Assembly Noise']],
         ['Jumping Rod Bush Rear RHS', ['Ok/No imperfection','Rusting','Assembly Noise']],
         ['Jumping Rod Bush Rear LHS', ['Ok/No imperfection','Rusting','Assembly Noise']],
@@ -310,7 +325,6 @@ export class EmployeeInspectionComponent
         ['Flooring', ['Ok/No imperfection','Water On Floor','Floor Rusting','Mat Missing','Crack & Hole']],
         ['Ceiling', ['Ok/No imperfection','Sun Visor Missing + Damage','Roof Handle Missing + Broken','Rear View Mirror Broken']],
         ['Lock System', ['Ok/No imperfection','Remote Key Not Working + Broken','Door Lock Knob Broken / Missing','Keyless Sensor Not Working','Mechanical Key Damage','Push Start Not Working']],
-        ['Seat All', ['Ok/No imperfection','Seat Belt Damage','Dirty','Cover Torn','Seat Adjuster Not Working']],
         ['Steering Handle', ['Ok/No imperfection','Horn Not Working','Steering Handle Faded','Steering System Control Not Working']],
         ['Gear Lever', ['Ok/No imperfection','Boot Cover Torn','Knob Torn','Knob Broken']],
         ['Infotainment System', ['Ok/No imperfection','Not Applicable','Music System Crack','Speaker Not Working / Broken']],
@@ -318,13 +332,43 @@ export class EmployeeInspectionComponent
       ]
     },
     {
+      key: 'all_side_window',
+      title: 'ALL SIDE WINDOW',
+      rows: [
+        ['Front RHS', ['Ok/No imperfection','Glass Crack','Glass Scratch','Window Not Working','Window Noise']],
+        ['Front LHS', ['Ok/No imperfection','Glass Crack','Glass Scratch','Window Not Working','Window Noise']],
+        ['Rear RHS', ['Ok/No imperfection','Glass Crack','Glass Scratch','Window Not Working','Window Noise']],
+        ['Rear LHS', ['Ok/No imperfection','Glass Crack','Glass Scratch','Window Not Working','Window Noise']],
+      ]
+    },
+    {
+      key: 'all_seats',
+      title: 'ALL SEATS',
+      rows: [
+        ['1st Row RHS', ['Ok/No imperfection','Seat Belt Damage','Dirty','Cover Torn','Seat Adjuster Not Working']],
+        ['1st Row LHS', ['Ok/No imperfection','Seat Belt Damage','Dirty','Cover Torn','Seat Adjuster Not Working']],
+        ['2nd Row RHS', ['Ok/No imperfection','Seat Belt Damage','Dirty','Cover Torn','Seat Adjuster Not Working']],
+        ['2nd Row LHS', ['Ok/No imperfection','Seat Belt Damage','Dirty','Cover Torn','Seat Adjuster Not Working']],
+        ['3rd Row Seat', ['Ok/No imperfection','Seat Belt Damage','Dirty','Cover Torn','Seat Adjuster Not Working']],
+      ]
+    },
+    {
+      key: 'lights_separate',
+      title: 'LIGHTS',
+      rows: [
+        ['Head Light RHS', ['Ok/No imperfection','Fading','Broken','Crack','Moisture','Scratch','Light Not Working']],
+        ['Head Light LHS', ['Ok/No imperfection','Fading','Broken','Crack','Moisture','Scratch','Light Not Working']],
+        ['Fog Light RHS', ['Ok/No imperfection','Not Applicable','Fading','Broken','Crack','Moisture','Scratch','Light Not Working']],
+        ['Fog Light LHS', ['Ok/No imperfection','Not Applicable','Fading','Broken','Crack','Moisture','Scratch','Light Not Working']],
+        ['Tail Light RHS', ['Ok/No imperfection','Fading','Broken','Crack','Moisture','Scratch','Light Not Working']],
+        ['Tail Light LHS', ['Ok/No imperfection','Fading','Broken','Crack','Moisture','Scratch','Light Not Working']],
+      ]
+    },
+    {
       key: 'electricals_ac',
       title: 'AC + LIGHT',
       rows: [
         ['AC Unit', ['Ok/No imperfection','AC Cooling Not Working','AC Vent Not Fixed / Broken','Blower Motor Not Working','Noise','Heater Ineffective','AC Not Cooling','Cooling Fan Noise']],
-        ['Head Light Both', ['Ok/No imperfection','Fading','Broken','Crack','Moisture','Scratch','Light Not Working']],
-        ['Fog Light Both', ['Ok/No imperfection','Not Applicable','Fading','Broken','Crack','Moisture','Scratch','Light Not Working']],
-        ['Tail Light', ['Ok/No imperfection','Fading','Broken','Crack','Moisture','Scratch','Light Not Working']],
       ]
     },
     {
@@ -394,7 +438,19 @@ export class EmployeeInspectionComponent
     {
       mode: 'vehicle';
       key: string;
+    } |
+    {
+      mode: 'test_drive';
+      key: TestDrivePhoto['key'];
     } | null = null;
+
+  videoCameraOpen = false;
+  videoCameraStream: MediaStream | null = null;
+  videoCameraVideo: HTMLVideoElement | null = null;
+  videoCameraTarget: InspectionVideo['key'] | 'test_drive_video' | null = null;
+  videoRecorder: MediaRecorder | null = null;
+  videoRecorderChunks: Blob[] = [];
+  videoRecording = false;
 
 
   // ======================================================
@@ -614,83 +670,43 @@ export class EmployeeInspectionComponent
 
   // ======================================================
   // VEHICLE PHOTOS
-  // EXACTLY 10 OPTIONS
+  // EXACTLY 6 OPTIONS
   // ======================================================
 
   vehiclePhotos: VehiclePhoto[] = [
-
-    {
-      key: 'front_view',
-      title: 'Front View',
-      file: null,
-      preview: ''
-    },
-
-    {
-      key: 'rear_view',
-      title: 'Rear View',
-      file: null,
-      preview: ''
-    },
-
-    {
-      key: 'left_side',
-      title: 'Left Side',
-      file: null,
-      preview: ''
-    },
-
-    {
-      key: 'right_side',
-      title: 'Right Side',
-      file: null,
-      preview: ''
-    },
-
-    {
-      key: 'interior',
-      title: 'Interior',
-      file: null,
-      preview: ''
-    },
-
-    {
-      key: 'dashboard',
-      title: 'Dashboard',
-      file: null,
-      preview: ''
-    },
-
-    {
-      key: 'odometer',
-      title: 'Odometer',
-      file: null,
-      preview: ''
-    },
-
-    {
-      key: 'engine',
-      title: 'Engine',
-      file: null,
-      preview: ''
-    },
-
-    {
-      key: 'dicky_boot',
-      title: 'Dicky / Boot',
-      file: null,
-      preview: ''
-    },
-
-    {
-      key: 'seat',
-      title: 'Seat',
-      file: null,
-      preview: ''
-    }
-
+    { key: 'front_view', title: 'Front View', file: null, preview: '' },
+    { key: 'rear_view', title: 'Rear View', file: null, preview: '' },
+    { key: 'left_side', title: 'Left Side', file: null, preview: '' },
+    { key: 'right_side', title: 'Right Side', file: null, preview: '' },
+    { key: 'interior', title: 'Interior', file: null, preview: '' },
+    { key: 'dashboard', title: 'Dashboard', file: null, preview: '' }
   ];
 
+  // ======================================================
+  // INSPECTION VIDEOS
+  // ======================================================
+
+  inspectionVideos: InspectionVideo[] = [
+    { key: 'engine_video', title: 'Engine Video', file: null, preview: '', processing: false },
+    { key: 'engine_blow_by_video', title: 'Engine Blow By Video', file: null, preview: '', processing: false }
+  ];
+
+  // ======================================================
+  // TEST DRIVE MEDIA
+  // ======================================================
+
+  testDrivePhotos: TestDrivePhoto[] = [
+    { key: 'test_drive_photo_1', title: 'Test Drive Photo 1', file: null, preview: '' },
+    { key: 'test_drive_photo_2', title: 'Test Drive Photo 2', file: null, preview: '' }
+  ];
+
+  testDriveVideo: InspectionVideo = {
+    key: 'engine_video',
+    title: 'Test Drive Video',
+    file: null,
+    preview: '',
+    processing: false
+  };
 
   // ======================================================
   // CONSTRUCTOR
@@ -1400,6 +1416,40 @@ export class EmployeeInspectionComponent
   }
 
 
+  async openTestDrivePhotoCamera(key: TestDrivePhoto['key']): Promise<void> {
+    this.closeCamera();
+    this.cameraTarget = { mode: 'test_drive', key };
+    this.errorMessage = '';
+
+    try {
+      if (!navigator.mediaDevices?.getUserMedia) {
+        throw new Error('Camera is not supported by this browser. Please use Gallery.');
+      }
+
+      this.cameraStream = await navigator.mediaDevices.getUserMedia({
+        video: {
+          facingMode: { ideal: 'environment' },
+          width: { ideal: 1280 },
+          height: { ideal: 720 }
+        },
+        audio: false
+      });
+
+      this.cameraOpen = true;
+      setTimeout(() => {
+        const video = document.getElementById('inspectionCameraVideo') as HTMLVideoElement | null;
+        if (!video) return;
+        this.cameraVideo = video;
+        video.srcObject = this.cameraStream;
+        video.play().catch(() => {});
+      }, 100);
+    } catch (error: any) {
+      console.error('Test drive photo camera error:', error);
+      this.closeCamera();
+      this.errorMessage = error?.message || 'Unable to open camera. Please allow camera permission or use Gallery.';
+    }
+  }
+
   async openDetailedCamera(
     sectionKey: string,
     rowName: string
@@ -1510,6 +1560,11 @@ export class EmployeeInspectionComponent
       return;
     }
 
+    if (this.cameraTarget.mode === 'test_drive') {
+      this.captureTestDriveCameraPhoto();
+      return;
+    }
+
     const video =
       this.cameraVideo;
 
@@ -1591,6 +1646,40 @@ export class EmployeeInspectionComponent
   // CAPTURE VEHICLE CAMERA PHOTO
   // ======================================================
 
+  private captureTestDriveCameraPhoto(): void {
+    if (!this.cameraVideo || !this.cameraTarget || this.cameraTarget.mode !== 'test_drive') return;
+
+    const video = this.cameraVideo;
+    if (!video.videoWidth || !video.videoHeight) {
+      this.errorMessage = 'Camera is not ready yet. Please try again.';
+      return;
+    }
+
+    const canvas = document.createElement('canvas');
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    const context = canvas.getContext('2d');
+    if (!context) {
+      this.errorMessage = 'Unable to capture camera image.';
+      return;
+    }
+
+    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+    const target = this.cameraTarget;
+
+    canvas.toBlob(blob => {
+      if (!blob) return;
+      const file = new File([blob], `test-drive-${target.key}-${Date.now()}.jpg`, { type: 'image/jpeg' });
+      const photo = this.testDrivePhotos.find(item => item.key === target.key);
+      if (photo) {
+        if (photo.preview) URL.revokeObjectURL(photo.preview);
+        photo.file = file;
+        photo.preview = URL.createObjectURL(file);
+      }
+      this.closeCamera();
+    }, 'image/jpeg', 0.90);
+  }
+
   private captureVehicleCameraPhoto(): void {
 
     if (
@@ -1647,6 +1736,347 @@ export class EmployeeInspectionComponent
     }, 'image/jpeg', 0.9);
   }
 
+
+  onTestDrivePhotoSelected(event: Event, photo: TestDrivePhoto): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    input.value = '';
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      this.errorMessage = 'Please select a valid image file.';
+      return;
+    }
+
+    if (photo.preview) URL.revokeObjectURL(photo.preview);
+    photo.file = file;
+    photo.preview = URL.createObjectURL(file);
+    this.errorMessage = '';
+  }
+
+  removeTestDrivePhoto(key: TestDrivePhoto['key']): void {
+    const photo = this.testDrivePhotos.find(item => item.key === key);
+    if (!photo) return;
+    if (photo.preview) URL.revokeObjectURL(photo.preview);
+    photo.file = null;
+    photo.preview = '';
+  }
+
+  async openTestDriveVideoCamera(): Promise<void> {
+    this.videoCameraTarget = 'test_drive_video';
+    this.errorMessage = '';
+
+    try {
+      if (!navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === 'undefined') {
+        throw new Error('Video camera recording is not supported by this browser. Please use Gallery.');
+      }
+
+      this.videoCameraStream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } },
+        audio: true
+      });
+
+      this.videoCameraOpen = true;
+      setTimeout(() => {
+        const video = document.getElementById('inspectionVideoCameraVideo') as HTMLVideoElement | null;
+        if (!video) return;
+        this.videoCameraVideo = video;
+        video.srcObject = this.videoCameraStream;
+        video.muted = true;
+        video.play().catch(() => {});
+      }, 100);
+    } catch (error: any) {
+      this.closeVideoCamera();
+      this.errorMessage = error?.message || 'Unable to open video camera. Please allow camera/microphone permission or use Gallery.';
+    }
+  }
+
+  // ======================================================
+  // VIDEO CAMERA
+  // ======================================================
+
+  async openInspectionVideoCamera(key: InspectionVideo['key']): Promise<void> {
+    this.videoCameraTarget = key;
+    this.errorMessage = '';
+
+    try {
+      if (!navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === 'undefined') {
+        throw new Error('Video camera recording is not supported by this browser. Please use Gallery.');
+      }
+
+      this.videoCameraStream = await navigator.mediaDevices.getUserMedia({
+        video: {
+          facingMode: { ideal: 'environment' },
+          width: { ideal: 1280 },
+          height: { ideal: 720 }
+        },
+        audio: true
+      });
+
+      this.videoCameraOpen = true;
+
+      setTimeout(() => {
+        const video = document.getElementById('inspectionVideoCameraVideo') as HTMLVideoElement | null;
+        if (!video) return;
+        this.videoCameraVideo = video;
+        video.srcObject = this.videoCameraStream;
+        video.muted = true;
+        video.play().catch(() => {});
+      }, 100);
+    } catch (error: any) {
+      this.closeVideoCamera();
+      this.errorMessage = error?.message || 'Unable to open video camera. Please allow camera/microphone permission or use Gallery.';
+    }
+  }
+
+  startInspectionVideoRecording(): void {
+    if (!this.videoCameraStream || !this.videoCameraTarget || this.videoRecording) return;
+
+    const mimeTypes = [
+      'video/mp4;codecs=h264,aac',
+      'video/webm;codecs=vp8,opus',
+      'video/webm'
+    ];
+    const mimeType = mimeTypes.find(type => MediaRecorder.isTypeSupported(type)) || '';
+
+    this.videoRecorderChunks = [];
+    this.videoRecorder = mimeType
+      ? new MediaRecorder(this.videoCameraStream, { mimeType, videoBitsPerSecond: 1200000, audioBitsPerSecond: 96000 })
+      : new MediaRecorder(this.videoCameraStream, { videoBitsPerSecond: 1200000, audioBitsPerSecond: 96000 });
+
+    this.videoRecorder.ondataavailable = event => {
+      if (event.data?.size) this.videoRecorderChunks.push(event.data);
+    };
+
+    this.videoRecorder.onstop = async () => {
+      const blob = new Blob(this.videoRecorderChunks, { type: this.videoRecorder?.mimeType || mimeType || 'video/webm' });
+      const extension = blob.type.includes('mp4') ? 'mp4' : 'webm';
+      const file = new File([blob], `inspection-${this.videoCameraTarget}-${Date.now()}.${extension}`, { type: blob.type });
+      const target = this.videoCameraTarget;
+      this.videoRecording = false;
+      this.videoRecorder = null;
+      this.videoRecorderChunks = [];
+      this.closeVideoCamera();
+      if (!target) {
+        this.errorMessage = 'Unable to determine the video type. Please record again.';
+        return;
+      }
+      if (target === 'test_drive_video') {
+        await this.setTestDriveVideo(file);
+      } else {
+        await this.setInspectionVideo(target, file);
+      }
+    };
+
+    this.videoRecorder.onerror = () => {
+      this.videoRecording = false;
+      this.errorMessage = 'Video recording failed. Please try again or use Gallery.';
+    };
+
+    this.videoRecorder.start(1000);
+    this.videoRecording = true;
+  }
+
+  stopInspectionVideoRecording(): void {
+    if (!this.videoRecorder || this.videoRecorder.state === 'inactive') return;
+    this.videoRecorder.stop();
+  }
+
+  closeVideoCamera(): void {
+    if (this.videoRecorder && this.videoRecorder.state !== 'inactive') {
+      this.videoRecorder.stop();
+    }
+
+    if (this.videoCameraStream) {
+      this.videoCameraStream.getTracks().forEach(track => track.stop());
+    }
+
+    this.videoCameraStream = null;
+    this.videoCameraVideo = null;
+    this.videoCameraTarget = null;
+    this.videoCameraOpen = false;
+    this.videoRecording = false;
+    this.videoRecorder = null;
+    this.videoRecorderChunks = [];
+  }
+
+  // ======================================================
+  // VIDEO SELECT / COMPRESSION
+  // ======================================================
+
+  async onInspectionVideoSelected(event: Event, key: InspectionVideo['key']): Promise<void> {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    input.value = '';
+
+    if (!file) return;
+
+    if (!file.type.startsWith('video/')) {
+      this.errorMessage = 'Please select a valid video file.';
+      return;
+    }
+
+    await this.setInspectionVideo(key, file);
+  }
+
+  private async setInspectionVideo(key: InspectionVideo['key'], file: File): Promise<void> {
+    const video = this.inspectionVideos.find(item => item.key === key);
+    if (!video) return;
+
+    video.processing = true;
+    this.errorMessage = '';
+
+    try {
+      const compressed = await this.compressInspectionVideo(file);
+
+      if (compressed.size > 25 * 1024 * 1024) {
+        throw new Error('Video is still larger than 25 MB after compression. Please record a shorter video.');
+      }
+
+      if (video.preview) URL.revokeObjectURL(video.preview);
+
+      video.file = compressed;
+      video.preview = URL.createObjectURL(compressed);
+    } catch (error: any) {
+      video.file = null;
+      if (video.preview) URL.revokeObjectURL(video.preview);
+      video.preview = '';
+      this.errorMessage = error?.message || 'Unable to compress video. Please try a shorter video.';
+    } finally {
+      video.processing = false;
+    }
+  }
+
+  private async compressInspectionVideo(file: File): Promise<File> {
+    const maxBytes = 15 * 1024 * 1024;
+
+    if (file.size <= maxBytes) {
+      const originalExtension = file.name.includes('.')
+        ? file.name.slice(file.name.lastIndexOf('.')).toLowerCase()
+        : (file.type.includes('webm') ? '.webm' : '.mp4');
+
+      return new File(
+        [file],
+        `${file.name.replace(/\.[^.]+$/, '')}-compressed${originalExtension}`,
+        { type: file.type || (originalExtension === '.webm' ? 'video/webm' : 'video/mp4') }
+      );
+    }
+
+    if (typeof MediaRecorder === 'undefined') {
+      throw new Error('Video compression is not supported by this browser. Please use a shorter video.');
+    }
+
+    const source = document.createElement('video');
+    source.preload = 'metadata';
+    source.playsInline = true;
+    source.muted = false;
+    source.src = URL.createObjectURL(file);
+
+    await new Promise<void>((resolve, reject) => {
+      source.onloadedmetadata = () => resolve();
+      source.onerror = () => reject(new Error('Unable to read selected video.'));
+    });
+
+    const duration = Math.max(1, source.duration || 1);
+    const targetBitrate = Math.min(1800000, Math.max(700000, Math.floor((maxBytes * 8 * 0.85) / duration)));
+    const stream = (source as any).captureStream?.() || (source as any).mozCaptureStream?.();
+
+    if (!stream) {
+      URL.revokeObjectURL(source.src);
+      throw new Error('Video compression is not supported on this browser. Please use a shorter video.');
+    }
+
+    const mimeTypes = [
+      'video/mp4;codecs=h264,aac',
+      'video/webm;codecs=vp8,opus',
+      'video/webm'
+    ];
+    const mimeType = mimeTypes.find(type => MediaRecorder.isTypeSupported(type)) || '';
+
+    const recorder = mimeType
+      ? new MediaRecorder(stream, { mimeType, videoBitsPerSecond: targetBitrate, audioBitsPerSecond: 96000 })
+      : new MediaRecorder(stream, { videoBitsPerSecond: targetBitrate, audioBitsPerSecond: 96000 });
+
+    const chunks: Blob[] = [];
+
+    const result = await new Promise<Blob>((resolve, reject) => {
+      recorder.ondataavailable = event => {
+        if (event.data?.size) chunks.push(event.data);
+      };
+      recorder.onerror = () => reject(new Error('Video compression failed.'));
+      recorder.onstop = () => resolve(new Blob(chunks, { type: recorder.mimeType || mimeType || 'video/webm' }));
+
+      recorder.start(1000);
+      source.onended = () => {
+        if (recorder.state !== 'inactive') recorder.stop();
+      };
+      source.play().catch(() => reject(new Error('Unable to play video for compression.')));
+    });
+
+    stream.getTracks().forEach((track: MediaStreamTrack) => track.stop());
+    URL.revokeObjectURL(source.src);
+
+    const extension = result.type.includes('mp4') ? 'mp4' : 'webm';
+    return new File(
+      [result],
+      `${file.name.replace(/\.[^.]+$/, '')}-compressed.${extension}`,
+      { type: result.type }
+    );
+  }
+
+  async onTestDriveVideoSelected(event: Event): Promise<void> {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    input.value = '';
+    if (!file) return;
+    if (!file.type.startsWith('video/')) {
+      this.errorMessage = 'Please select a valid video file.';
+      return;
+    }
+    await this.setTestDriveVideo(file);
+  }
+
+  private async setTestDriveVideo(file: File): Promise<void> {
+    this.testDriveVideo.processing = true;
+    this.errorMessage = '';
+    try {
+      const compressed = await this.compressInspectionVideo(file);
+      if (compressed.size > 25 * 1024 * 1024) {
+        throw new Error('Test Drive Video is still larger than 25 MB after compression. Please record a shorter video.');
+      }
+      if (this.testDriveVideo.preview) URL.revokeObjectURL(this.testDriveVideo.preview);
+      this.testDriveVideo.file = compressed;
+      this.testDriveVideo.preview = URL.createObjectURL(compressed);
+    } catch (error: any) {
+      this.testDriveVideo.file = null;
+      if (this.testDriveVideo.preview) URL.revokeObjectURL(this.testDriveVideo.preview);
+      this.testDriveVideo.preview = '';
+      this.errorMessage = error?.message || 'Unable to compress Test Drive Video.';
+    } finally {
+      this.testDriveVideo.processing = false;
+    }
+  }
+
+  removeTestDriveVideo(): void {
+    if (this.testDriveVideo.preview) URL.revokeObjectURL(this.testDriveVideo.preview);
+    this.testDriveVideo.file = null;
+    this.testDriveVideo.preview = '';
+    this.testDriveVideo.processing = false;
+  }
+
+  removeInspectionVideo(key: InspectionVideo['key']): void {
+    const video = this.inspectionVideos.find(item => item.key === key);
+    if (!video) return;
+
+    if (video.preview) URL.revokeObjectURL(video.preview);
+    video.file = null;
+    video.preview = '';
+    video.processing = false;
+  }
+
+  getInspectionVideo(key: InspectionVideo['key']): InspectionVideo | undefined {
+    return this.inspectionVideos.find(item => item.key === key);
+  }
 
   // ======================================================
   // CLOSE CAMERA
@@ -2001,6 +2431,21 @@ export class EmployeeInspectionComponent
 
 
   // ======================================================
+  // TRANSMISSION STAR RATING
+  // ======================================================
+
+  selectTransmissionRating(rating: number): void {
+    if (rating >= 1 && rating <= 5) {
+      this.transmission_rating = rating;
+    }
+  }
+
+  getTransmissionRating(): number {
+    return this.transmission_rating;
+  }
+
+
+  // ======================================================
   // VALIDATE
   // ======================================================
 
@@ -2082,6 +2527,25 @@ export class EmployeeInspectionComponent
       }
     }
 
+    for (const video of this.inspectionVideos) {
+      if (!video.file) {
+        this.errorMessage = `${video.title} is required.`;
+        return false;
+      }
+    }
+
+    for (const photo of this.testDrivePhotos) {
+      if (!photo.file) {
+        this.errorMessage = `${photo.title}: photo is required.`;
+        return false;
+      }
+    }
+
+    if (!this.testDriveVideo.file) {
+      this.errorMessage = 'Test Drive Video is required.';
+      return false;
+    }
+
 
     // DETAILED INSPECTION
     // EVERY ROW NEEDS AT LEAST ONE TICK
@@ -2107,7 +2571,7 @@ export class EmployeeInspectionComponent
         ) {
 
           this.errorMessage =
-            `${section.title} ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ ${row[0]}: Please select at least one inspection option.`;
+            `${section.title} ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ ${row[0]}: Please select at least one inspection option.`;
 
           return false;
         }
@@ -2396,6 +2860,9 @@ export class EmployeeInspectionComponent
       overall_score:
         this.overall_score,
 
+      transmission_rating:
+        this.transmission_rating,
+
 
       // The Detailed Vehicle Inspection Checklist is the
       // actual inspection checklist shown to the employee.
@@ -2478,6 +2945,50 @@ export class EmployeeInspectionComponent
       }
     }
 
+    for (const video of this.inspectionVideos) {
+      if (!video.file) continue;
+
+      const sourceFile = video.file;
+      const extension = sourceFile.name.includes('.')
+        ? sourceFile.name.slice(sourceFile.name.lastIndexOf('.'))
+        : '.mp4';
+
+      const uploadFile = new File(
+        [sourceFile],
+        `__video__${video.key}${extension}`,
+        { type: sourceFile.type || 'video/mp4' }
+      );
+
+      vehicleImages.push({
+        type: `Video|${video.key}|${video.title}`,
+        row: video.key,
+        file: uploadFile
+      });
+    }
+
+    for (const photo of this.testDrivePhotos) {
+      if (!photo.file) continue;
+      const sourceFile = photo.file;
+      const extension = sourceFile.name.includes('.') ? sourceFile.name.slice(sourceFile.name.lastIndexOf('.')) : '.jpg';
+      const uploadFile = new File([sourceFile], `__test_drive__${photo.key}${extension}`, { type: sourceFile.type || 'image/jpeg' });
+      vehicleImages.push({
+        type: `Test Drive Photo|${photo.key}|${photo.title}`,
+        row: photo.key,
+        file: uploadFile
+      });
+    }
+
+    if (this.testDriveVideo.file) {
+      const sourceFile = this.testDriveVideo.file;
+      const extension = sourceFile.name.includes('.') ? sourceFile.name.slice(sourceFile.name.lastIndexOf('.')) : '.mp4';
+      const uploadFile = new File([sourceFile], `__test_drive__test_drive_video${extension}`, { type: sourceFile.type || 'video/mp4' });
+      vehicleImages.push({
+        type: 'Test Drive Video|test_drive_video|Test Drive Video',
+        row: 'test_drive_video',
+        file: uploadFile
+      });
+    }
+
     this.employeeService
       .submitInspection(
         this.requestId,
@@ -2555,6 +3066,7 @@ export class EmployeeInspectionComponent
   ngOnDestroy(): void {
 
     this.closeCamera();
+    this.closeVideoCamera();
 
 
     for (
@@ -2590,6 +3102,17 @@ export class EmployeeInspectionComponent
       }
     }
 
+
+    for (const video of this.inspectionVideos) {
+      if (video.preview) {
+        URL.revokeObjectURL(video.preview);
+      }
+    }
+
+    for (const photo of this.testDrivePhotos) {
+      if (photo.preview) URL.revokeObjectURL(photo.preview);
+    }
+    if (this.testDriveVideo.preview) URL.revokeObjectURL(this.testDriveVideo.preview);
 
     for (
       const item

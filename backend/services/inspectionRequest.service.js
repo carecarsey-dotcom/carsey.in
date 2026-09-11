@@ -585,7 +585,7 @@ const submitInspection = async (
         ? uploadedFiles
         : [];
 
-    const minimumVehiclePhotoCount = 10;
+    const minimumVehiclePhotoCount = 6;
 
     if (imageFiles.length < minimumVehiclePhotoCount) {
         throw new Error(
@@ -594,16 +594,12 @@ const submitInspection = async (
     }
 
     const imageTypeMap = [
-        "Exterior Front Photo",
-        "Rear Left",
-        "Exterior LHS Photo",
-        "Exterior RHS Photo",
-        "Interior Photo",
-        "Interior RHS",
-        "Interior LHS",
-        "Engine Photo",
-        "Dicky Boot",
-        "Interior LHS"
+        "Front View",
+        "Rear View",
+        "Left Side",
+        "Right Side",
+        "Interior",
+        "Dashboard"
     ];
 
     const savedVehicleImages = [];
@@ -653,6 +649,44 @@ const submitInspection = async (
         }
 
         const originalName = String(file.originalname || "");
+        const isVideo = String(file.mimetype || "").toLowerCase().startsWith("video/") || originalName.startsWith("__video__");
+
+        if (isVideo) {
+            const imagePath = `/uploads/vehicles/${file.filename}`;
+            let videoType = "Engine Video";
+
+            if (originalName.includes("engine_blow_by_video")) {
+                videoType = "Engine Blow By Video";
+            } else if (originalName.includes("test_drive_video")) {
+                videoType = "Test Drive Video";
+            }
+
+            await vehicleImageRepository.addVehicleImage(
+                vehicleId,
+                videoType,
+                imagePath,
+                false
+            );
+
+            continue;
+        }
+
+        if (originalName.startsWith("__test_drive__")) {
+            const imagePath = `/uploads/vehicles/${file.filename}`;
+            const photoType = originalName.includes("test_drive_photo_2")
+                ? "Test Drive Photo 2"
+                : "Test Drive Photo 1";
+
+            await vehicleImageRepository.addVehicleImage(
+                vehicleId,
+                photoType,
+                imagePath,
+                false
+            );
+
+            continue;
+        }
+
         const marker = "__detailed__";
         const markerIndex = originalName.indexOf(marker);
 

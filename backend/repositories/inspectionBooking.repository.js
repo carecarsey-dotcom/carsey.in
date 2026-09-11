@@ -123,8 +123,16 @@ const getAllBookings = async () => {
             ib.brand,
             ib.model,
             ib.address,
-            ib.booking_date,
-            ib.time_slot,
+
+            DATE_FORMAT(
+                ib.booking_date,
+                '%Y-%m-%d'
+            ) AS booking_date,
+
+            TRIM(
+                ib.time_slot
+            ) AS time_slot,
+
             ib.status,
             ib.created_at,
 
@@ -184,8 +192,16 @@ const getBookingById = async (
             ib.brand,
             ib.model,
             ib.address,
-            ib.booking_date,
-            ib.time_slot,
+
+            DATE_FORMAT(
+                ib.booking_date,
+                '%Y-%m-%d'
+            ) AS booking_date,
+
+            TRIM(
+                ib.time_slot
+            ) AS time_slot,
+
             ib.status,
             ib.created_at,
 
@@ -528,13 +544,23 @@ const getEmployeeAssignments = async (
             ib.name AS customer_name,
             ib.mobile AS customer_mobile,
             ib.email AS customer_email,
-            ib.city AS customer_city,
+
+            ib.city AS city,
+
             ib.vehicle_number,
             ib.brand,
             ib.model,
             ib.address,
-            ib.booking_date,
-            ib.time_slot,
+
+            DATE_FORMAT(
+                ib.booking_date,
+                '%Y-%m-%d'
+            ) AS booking_date,
+
+            TRIM(
+                ib.time_slot
+            ) AS time_slot,
+
             ib.status AS booking_status
 
         FROM inspection_requests ir
@@ -594,13 +620,23 @@ const getInspectionRequestById = async (
             ib.name AS customer_name,
             ib.mobile AS customer_mobile,
             ib.email AS customer_email,
-            ib.city AS customer_city,
+
+            ib.city AS city,
+
             ib.vehicle_number,
             ib.brand,
             ib.model,
             ib.address,
-            ib.booking_date,
-            ib.time_slot,
+
+            DATE_FORMAT(
+                ib.booking_date,
+                '%Y-%m-%d'
+            ) AS booking_date,
+
+            TRIM(
+                ib.time_slot
+            ) AS time_slot,
+
             ib.status AS booking_status
 
         FROM inspection_requests ir
