@@ -373,7 +373,7 @@ export class EmployeeInspectionComponent
     },
     {
       key: 'electricals_ac',
-      title: 'AC + LIGHT',
+      title: 'AC',
       rows: [
         ['AC Unit', ['Ok/No imperfection','AC Cooling Not Working','AC Vent Not Fixed / Broken','Blower Motor Not Working','Noise','Heater Ineffective','AC Not Cooling','Cooling Fan Noise']],
       ]
