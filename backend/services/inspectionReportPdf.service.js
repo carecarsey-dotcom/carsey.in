@@ -388,7 +388,8 @@ const getImageTitle = (image, fallback = "Image") => {
     const type = getImageType(image);
     if (!type) return fallback;
 
-    const parts = type.split("|");
+    const normalized = type.trim();
+    const parts = normalized.split("|");
     const prefix = String(parts[0] || "").trim().toLowerCase();
 
     // Detailed|sectionKey|rowName
@@ -401,10 +402,11 @@ const getImageTitle = (image, fallback = "Image") => {
         return parts.slice(2).join("|").trim() || parts[1]?.trim() || fallback;
     }
 
-    // Legacy document format: Document - Insurance
-    if (prefix === "document -" || prefix === "document-") {
-        return type
-            .replace(/^document\s*-\s*/i, "")
+    // Legacy database format: "Document - RC"
+    // The submit service currently stores documents using this format.
+    if (prefix.startsWith("document -") || prefix.startsWith("document:")) {
+        return normalized
+            .replace(/^document\s*[-:]\s*/i, "")
             .trim() || fallback;
     }
 
@@ -413,9 +415,11 @@ const getImageTitle = (image, fallback = "Image") => {
         return parts.slice(2).join("|").trim() || parts[1]?.trim() || fallback;
     }
 
-    // Plain Test Drive Photo 1 / Test Drive Photo 2
-    if (/^test drive photo(?: \d+)?$/i.test(type)) {
-        return type.trim();
+    // Legacy/alternate test-drive photo formats.
+    if (prefix.startsWith("test drive photo -") || prefix.startsWith("test drive photo:")) {
+        return normalized
+            .replace(/^test\s+drive\s+photo\s*[-:]\s*/i, "")
+            .trim() || fallback;
     }
 
     // Video|key|title
@@ -423,93 +427,65 @@ const getImageTitle = (image, fallback = "Image") => {
         return parts.slice(2).join("|").trim() || parts[1]?.trim() || fallback;
     }
 
-    // Plain video types stored by the inspection service.
-    if (type === "engine video" ||
-        type === "engine blow by video" ||
-        type === "test drive video") {
-        return getImageType(image).trim();
-    }
-
     // Normal vehicle photo: Front View, Rear View, etc.
     return parts[parts.length - 1]?.trim() || fallback;
 };
 
-const normalizeMediaType = (image) =>
-    getImageType(image)
-        .trim()
-        .replace(/\s+/g, " ")
-        .toLowerCase();
-
 const isDetailedImage = (image) => {
-    const type = normalizeMediaType(image);
-    return type.startsWith("detailed|") ||
-        type.startsWith("detailed:") ||
-        type.startsWith("detailed inspection");
+    const type = getImageType(image).toLowerCase();
+    return type.startsWith("detailed|") || type.startsWith("detailed inspection");
 };
 
 const isDocumentImage = (image) => {
-    const type = normalizeMediaType(image);
+    const type = getImageType(image)
+        .trim()
+        .toLowerCase();
 
-    return type.startsWith("document|") ||
+    // Current + legacy DB formats:
+    // Document|key|title
+    // Document: key: title
+    // Document - RC
+    // Document: RC
+    return (
+        type.startsWith("document|") ||
         type.startsWith("document:") ||
-        type.startsWith("document -") ||
-        type.startsWith("document-");
+        type.startsWith("document -")
+    );
 };
 
 const isTestDrivePhotoImage = (image) => {
-    const type = normalizeMediaType(image);
+    const type = getImageType(image)
+        .trim()
+        .toLowerCase();
 
-    return type.startsWith("test drive photo|") ||
+    return (
+        type.startsWith("test drive photo|") ||
         type.startsWith("test drive photo:") ||
-        /^test drive photo(?: \d+)?$/.test(type);
+        type.startsWith("test drive photo -")
+    );
 };
 
 const isVideoImage = (image) => {
-    const type = normalizeMediaType(image);
+    const type = getImageType(image)
+        .trim()
+        .toLowerCase();
 
-    return type.startsWith("video|") ||
+    return (
+        type.startsWith("video|") ||
         type.startsWith("video:") ||
+        type.startsWith("video -") ||
         type.startsWith("test drive video|") ||
-        type === "test drive video" ||
-        type === "engine video" ||
-        type === "engine blow by video" ||
-        type.startsWith("engine video ") ||
-        type.startsWith("engine blow by video ");
+        type.startsWith("test drive video:") ||
+        type.startsWith("test drive video -")
+    );
 };
-
-// IMPORTANT:
-// A vehicle photo must be one of the exact 10 standard vehicle photo titles.
-// Do NOT treat an unknown/legacy image as a vehicle photo. This prevents
-// documents, test-drive photos and videos from appearing inside Vehicle Photos.
-const VEHICLE_PHOTO_TITLES = new Set([
-    "front view",
-    "rear view",
-    "left side",
-    "right side",
-    "interior",
-    "odometer",
-    "dashboard",
-    "engine",
-    "seat",
-    "dicky"
-]);
 
 const isStandardVehiclePhoto = (image) => {
     if (!image) return false;
-
-    if (isDetailedImage(image) ||
-        isDocumentImage(image) ||
-        isTestDrivePhotoImage(image) ||
-        isVideoImage(image)) {
-        return false;
-    }
-
-    const title = getImageTitle(image, "")
-        .trim()
-        .replace(/\s+/g, " ")
-        .toLowerCase();
-
-    return VEHICLE_PHOTO_TITLES.has(title);
+    return !isDetailedImage(image) &&
+        !isDocumentImage(image) &&
+        !isTestDrivePhotoImage(image) &&
+        !isVideoImage(image);
 };
 
 const getDetailedImageKey = (image) => {
@@ -1548,6 +1524,7 @@ const drawVehicleDetails = (doc, report, y, reportId) => {
         ["Variant", vehicleValue(report, ["variant", "vehicleVariant"])],
         ["Manufacturing Year", vehicleValue(report, ["manufacturing_year", "manufacturingYear", "year"])],
         ["Odometer", formatOdometer(vehicleValue(report, ["odometer", "kmDriven", "km_driven", "mileage"], "-"))],
+        ["City", vehicleValue(report, ["city", "location", "vehicleCity"])],
         ["Transmission", vehicleValue(report, ["transmission"])],
         ["Fuel Type", vehicleValue(report, ["fuel_type", "fuelType", "fuel"])],
         ["Owner Classification", vehicleValue(report, ["owner_classification", "ownerClassification", "owner_type"])],
@@ -1555,6 +1532,7 @@ const drawVehicleDetails = (doc, report, y, reportId) => {
         ["Chassis Number", vehicleValue(report, ["chassis_number", "chassisNumber", "chassis_no"])],
         ["Engine Number", vehicleValue(report, ["engine_number", "engineNumber", "engine_no"])],
         ["Inspection Date", formatDate(vehicleValue(report, ["inspection_date", "inspectionDate"]))],
+        ["RTO", vehicleValue(report, ["rto", "rtoName", "rto_name"])],
         ["Spare Key", vehicleValue(report, ["spare_key", "spareKey", "spareKeys"])],
         ["Insurance Type", vehicleValue(report, ["insurance_type", "insuranceType", "insurance"])],
         ["Insurance Validity", formatDate(vehicleValue(report, ["insurance_validity", "insuranceValidity", "insurance_expiry"]))]
@@ -2011,11 +1989,29 @@ const TEST_DRIVE_PHOTO_ORDER = [
     "Test Drive Photo 2"
 ];
 
-const drawImageGridSection = (doc, images, reportId, sectionTitle, emptyText) => {
-    const validImages = Array.isArray(images) ? images.filter((image) => image?.filePath) : [];
+const drawImageGridSection = (
+    doc,
+    images,
+    reportId,
+    sectionTitle,
+    emptyText,
+    startY = null
+) => {
+    const validImages = Array.isArray(images)
+        ? images.filter((image) => image?.filePath)
+        : [];
 
-    doc.addPage();
-    let y = MARGIN_TOP;
+    // If a start position is supplied, continue on the current page.
+    // Otherwise preserve the existing behavior and start a new page.
+    let y;
+
+    if (startY === null || startY === undefined) {
+        doc.addPage();
+        y = MARGIN_TOP;
+    } else {
+        y = startY;
+    }
+
     y = drawSectionHeader(doc, sectionTitle, y) + 8;
 
     if (!validImages.length) {
@@ -2088,9 +2084,11 @@ const orderImagesByTitle = (images, orderedTitles) => {
         }
     }
 
-    // Do not append unknown media here. Each PDF section has its own strict
-    // classifier, so an image that does not belong to that section must stay
-    // out of it rather than being displayed under the wrong title.
+    // Never lose an uploaded image just because its title is not in the standard list.
+    source.forEach((image, index) => {
+        if (!used.has(index)) result.push(image);
+    });
+
     return result;
 };
 
@@ -2117,18 +2115,22 @@ const drawVehiclePhotos = (doc, images, reportId) => {
 // DOCUMENT / TITLE IMAGES
 // ======================================================
 
-const drawDocumentPhotos = (doc, images, reportId) => {
+const drawDocumentPhotos = (doc, images, reportId, startY = null) => {
     const documentImages = (Array.isArray(images) ? images : [])
         .filter(isDocumentImage);
 
-    const orderedImages = orderImagesByTitle(documentImages, DOCUMENT_PHOTO_ORDER);
+    const orderedImages = orderImagesByTitle(
+        documentImages,
+        DOCUMENT_PHOTO_ORDER
+    );
 
     drawImageGridSection(
         doc,
         orderedImages,
         reportId,
         "Documents / Title Images",
-        "No document images uploaded."
+        "No document images uploaded.",
+        startY
     );
 };
 
@@ -2362,16 +2364,27 @@ const generateInspectionReportPdf = (report) => {
                 y = drawVehicleDetails(doc, normalizedReport, y, reportId);
 
                 // ==================================================
-                // DOCUMENT / TITLE IMAGES - DIRECTLY BELOW VEHICLE DETAILS
+                // DOCUMENT / TITLE IMAGES
+                // Immediately below Vehicle Details on page 1.
+                // Documents are classified explicitly so they never
+                // appear inside Vehicle Photos.
                 // ==================================================
 
-                drawDocumentPhotos(doc, allImages, reportId);
+                drawDocumentPhotos(
+                    doc,
+                    allImages,
+                    reportId,
+                    y
+                );
+
+                // The document grid may continue onto additional pages.
+                // Start the next major report section on a clean page.
+                drawFooter(doc, reportId);
 
                 // ==================================================
                 // DETAILED VEHICLE INSPECTION CHECKLIST
                 // ==================================================
 
-                drawFooter(doc, reportId);
                 drawDetailedChecklist(
                     doc,
                     detailedRows,
