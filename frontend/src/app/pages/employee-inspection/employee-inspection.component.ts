@@ -1229,14 +1229,88 @@ export class EmployeeInspectionComponent
 
 
   // ======================================================
+  // FAST IMAGE COMPRESSION
+  // ======================================================
+  // Large gallery photos are the main reason Submit takes time.
+  // Keep small images untouched; resize/compress only large ones.
+  private async optimizeImageForUpload(file: File): Promise<File> {
+    const MAX_BYTES = 900 * 1024;       // ~900 KB
+    const MAX_DIMENSION = 1600;
+    const MIN_QUALITY = 0.72;
+
+    if (!file.type.startsWith('image/') || file.size <= MAX_BYTES) {
+      return file;
+    }
+
+    return new Promise<File>((resolve) => {
+      const image = new Image();
+      const objectUrl = URL.createObjectURL(file);
+
+      image.onload = () => {
+        try {
+          const scale = Math.min(
+            1,
+            MAX_DIMENSION / Math.max(image.naturalWidth, image.naturalHeight)
+          );
+
+          const canvas = document.createElement('canvas');
+          canvas.width = Math.max(1, Math.round(image.naturalWidth * scale));
+          canvas.height = Math.max(1, Math.round(image.naturalHeight * scale));
+
+          const context = canvas.getContext('2d');
+          if (!context) {
+            URL.revokeObjectURL(objectUrl);
+            resolve(file);
+            return;
+          }
+
+          context.drawImage(image, 0, 0, canvas.width, canvas.height);
+
+          canvas.toBlob(
+            blob => {
+              URL.revokeObjectURL(objectUrl);
+
+              if (!blob || blob.size >= file.size) {
+                resolve(file);
+                return;
+              }
+
+              const baseName = file.name.replace(/\.[^.]+$/, '');
+              resolve(
+                new File(
+                  [blob],
+                  `${baseName}-optimized.jpg`,
+                  { type: 'image/jpeg' }
+                )
+              );
+            },
+            'image/jpeg',
+            MIN_QUALITY
+          );
+        } catch {
+          URL.revokeObjectURL(objectUrl);
+          resolve(file);
+        }
+      };
+
+      image.onerror = () => {
+        URL.revokeObjectURL(objectUrl);
+        resolve(file);
+      };
+
+      image.src = objectUrl;
+    });
+  }
+
+  // ======================================================
   // GALLERY - DETAILED ROW
   // ======================================================
 
-  onDetailedRowGallerySelected(
+  async onDetailedRowGallerySelected(
     event: Event,
     sectionKey: string,
     rowName: string
-  ): void {
+  ): Promise<void> {
 
     const input =
       event.target as HTMLInputElement;
@@ -1266,10 +1340,13 @@ export class EmployeeInspectionComponent
       return;
     }
 
+    const optimizedFile =
+      await this.optimizeImageForUpload(file);
+
     this.setDetailedRowImage(
       sectionKey,
       rowName,
-      file
+      optimizedFile
     );
 
     input.value = '';
@@ -1531,7 +1608,7 @@ export class EmployeeInspectionComponent
     }, 'image/jpeg', 0.9);
   }
 
-  onDocumentPhotoSelected(event: Event, photo: DocumentPhoto): void {
+  async onDocumentPhotoSelected(event: Event, photo: DocumentPhoto): Promise<void> {
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0];
     input.value = '';
@@ -1540,9 +1617,13 @@ export class EmployeeInspectionComponent
       this.errorMessage = 'Please select a valid image file.';
       return;
     }
+
+    const optimizedFile =
+      await this.optimizeImageForUpload(file);
+
     if (photo.preview) URL.revokeObjectURL(photo.preview);
-    photo.file = file;
-    photo.preview = URL.createObjectURL(file);
+    photo.file = optimizedFile;
+    photo.preview = URL.createObjectURL(optimizedFile);
     this.errorMessage = '';
   }
 
@@ -1846,7 +1927,7 @@ export class EmployeeInspectionComponent
   }
 
 
-  onTestDrivePhotoSelected(event: Event, photo: TestDrivePhoto): void {
+  async onTestDrivePhotoSelected(event: Event, photo: TestDrivePhoto): Promise<void> {
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0];
     input.value = '';
@@ -1857,9 +1938,12 @@ export class EmployeeInspectionComponent
       return;
     }
 
+    const optimizedFile =
+      await this.optimizeImageForUpload(file);
+
     if (photo.preview) URL.revokeObjectURL(photo.preview);
-    photo.file = file;
-    photo.preview = URL.createObjectURL(file);
+    photo.file = optimizedFile;
+    photo.preview = URL.createObjectURL(optimizedFile);
     this.errorMessage = '';
   }
 
@@ -2057,7 +2141,7 @@ export class EmployeeInspectionComponent
   }
 
   private async compressInspectionVideo(file: File): Promise<File> {
-    const maxBytes = 15 * 1024 * 1024;
+    const maxBytes = 8 * 1024 * 1024;
 
     if (file.size <= maxBytes) {
       const originalExtension = file.name.includes('.')
@@ -2087,7 +2171,7 @@ export class EmployeeInspectionComponent
     });
 
     const duration = Math.max(1, source.duration || 1);
-    const targetBitrate = Math.min(1800000, Math.max(700000, Math.floor((maxBytes * 8 * 0.85) / duration)));
+    const targetBitrate = Math.min(1400000, Math.max(500000, Math.floor((maxBytes * 8 * 0.85) / duration)));
     const stream = (source as any).captureStream?.() || (source as any).mozCaptureStream?.();
 
     if (!stream) {
@@ -2301,10 +2385,10 @@ export class EmployeeInspectionComponent
   // CHECKLIST IMAGE
   // ======================================================
 
-  onChecklistImageSelected(
+  async onChecklistImageSelected(
     event: Event,
     item: ChecklistItem
-  ): void {
+  ): Promise<void> {
 
     const input =
       event.target as HTMLInputElement;
@@ -2334,8 +2418,11 @@ export class EmployeeInspectionComponent
       return;
     }
 
+    const optimizedFile =
+      await this.optimizeImageForUpload(file);
+
     item.file =
-      file;
+      optimizedFile;
 
     if (
       item.preview
@@ -2348,10 +2435,11 @@ export class EmployeeInspectionComponent
 
     item.preview =
       URL.createObjectURL(
-        file
+        optimizedFile
       );
 
     this.errorMessage = '';
+    input.value = '';
   }
 
 
@@ -2401,10 +2489,10 @@ export class EmployeeInspectionComponent
   }
 
 
-  onVehiclePhotoSelected(
+  async onVehiclePhotoSelected(
     event: Event,
     photoOrKey: VehiclePhoto | string
-  ): void {
+  ): Promise<void> {
 
     const photo =
       typeof photoOrKey === 'string'
@@ -2445,8 +2533,11 @@ export class EmployeeInspectionComponent
       return;
     }
 
+    const optimizedFile =
+      await this.optimizeImageForUpload(file);
+
     photo.file =
-      file;
+      optimizedFile;
 
     if (
       photo.preview
@@ -2459,10 +2550,11 @@ export class EmployeeInspectionComponent
 
     photo.preview =
       URL.createObjectURL(
-        file
+        optimizedFile
       );
 
     this.errorMessage = '';
+    input.value = '';
   }
 
 
@@ -2687,7 +2779,7 @@ export class EmployeeInspectionComponent
         ) {
 
           this.errorMessage =
-            `${section.title} ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ ${row[0]}: Please select at least one inspection option.`;
+            `${section.title} ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ ${row[0]}: Please select at least one inspection option.`;
 
           return false;
         }

@@ -376,13 +376,24 @@ const submitInspection = async (
             }
         }
 
+        // Preserve the exact media metadata sent by EmployeeService.
+        const uploadedFiles = req.files || [];
+        const mediaMetadata = uploadedFiles.map((file, index) => ({
+            type: req.body?.[`imageType_${index}`] || null,
+            row: req.body?.[`imageRow_${index}`] || null,
+            column: req.body?.[`imageColumn_${index}`] !== undefined
+                ? Number(req.body[`imageColumn_${index}`])
+                : undefined
+        }));
+
         const result =
             await inspectionRequestService
                 .submitInspection(
                     requestId,
                     employeeId,
                     inspectionData,
-                    req.files || []
+                    uploadedFiles,
+                    mediaMetadata
                 );
 
         return res.status(200).json({
