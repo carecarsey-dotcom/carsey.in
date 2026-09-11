@@ -375,9 +375,72 @@ const loadVehicleImages = async (report) => {
         });
 };
 
+const getImageType = (image) =>
+    String(
+        firstValue(
+            image && typeof image === "object" ? image : {},
+            ["image_type", "imageType", "type"],
+            ""
+        )
+    ).trim();
+
+const getImageTitle = (image, fallback = "Image") => {
+    const type = getImageType(image);
+    if (!type) return fallback;
+
+    const parts = type.split("|");
+    const prefix = String(parts[0] || "").trim().toLowerCase();
+
+    // Detailed|sectionKey|rowName
+    if (prefix === "detailed") {
+        return parts.slice(2).join("|").trim() || parts[1]?.trim() || fallback;
+    }
+
+    // Document|documentKey|documentTitle
+    if (prefix === "document") {
+        return parts.slice(2).join("|").trim() || parts[1]?.trim() || fallback;
+    }
+
+    // Test Drive Photo|key|title
+    if (prefix === "test drive photo") {
+        return parts.slice(2).join("|").trim() || parts[1]?.trim() || fallback;
+    }
+
+    // Video|key|title
+    if (prefix === "video") {
+        return parts.slice(2).join("|").trim() || parts[1]?.trim() || fallback;
+    }
+
+    // Normal vehicle photo: Front View, Rear View, etc.
+    return parts[parts.length - 1]?.trim() || fallback;
+};
+
 const isDetailedImage = (image) => {
-    const type = String(image?.imageType || "").toLowerCase();
+    const type = getImageType(image).toLowerCase();
     return type.startsWith("detailed|") || type.startsWith("detailed inspection");
+};
+
+const isDocumentImage = (image) => {
+    const type = getImageType(image).toLowerCase();
+    return type.startsWith("document|") || type.startsWith("document:");
+};
+
+const isTestDrivePhotoImage = (image) => {
+    const type = getImageType(image).toLowerCase();
+    return type.startsWith("test drive photo|") || type.startsWith("test drive photo:");
+};
+
+const isVideoImage = (image) => {
+    const type = getImageType(image).toLowerCase();
+    return type.startsWith("video|") || type.startsWith("video:") || type.startsWith("test drive video|");
+};
+
+const isStandardVehiclePhoto = (image) => {
+    if (!image) return false;
+    return !isDetailedImage(image) &&
+        !isDocumentImage(image) &&
+        !isTestDrivePhotoImage(image) &&
+        !isVideoImage(image);
 };
 
 const getDetailedImageKey = (image) => {
@@ -1586,8 +1649,9 @@ const drawDetailedRow = (doc, row, detailedImage, y, reportId) => {
         y = ensureSpace(doc, y, imageHeight + 25, reportId);
 
         doc.font("Helvetica-Bold").fontSize(7).fillColor(COLORS.gray)
-            .text("INSPECTION IMAGE", MARGIN_LEFT + 10, y, {
-                width: textWidth
+            .text(`INSPECTION IMAGE - ${safeString(row.rowName, "Inspection Item")}`, MARGIN_LEFT + 10, y, {
+                width: textWidth,
+                ellipsis: true
             });
 
         y += 11;
@@ -1853,19 +1917,43 @@ const drawDetailedChecklist = (doc, rows, detailedImages, reportId) => {
 // VEHICLE PHOTOS
 // ======================================================
 
-const drawVehiclePhotos = (doc, images, reportId) => {
-    const vehicleImages = images.filter((image) => !isDetailedImage(image));
+const VEHICLE_PHOTO_ORDER = [
+    "Front View",
+    "Rear View",
+    "Left Side",
+    "Right Side",
+    "Interior",
+    "Odometer",
+    "Dashboard",
+    "Engine",
+    "Seat",
+    "Dicky"
+];
+
+const DOCUMENT_PHOTO_ORDER = [
+    "RC",
+    "Insurance",
+    "PUC",
+    "Service History",
+    "Duplicate Key",
+    "Registration Details"
+];
+
+const TEST_DRIVE_PHOTO_ORDER = [
+    "Test Drive Photo 1",
+    "Test Drive Photo 2"
+];
+
+const drawImageGridSection = (doc, images, reportId, sectionTitle, emptyText) => {
+    const validImages = Array.isArray(images) ? images.filter((image) => image?.filePath) : [];
 
     doc.addPage();
     let y = MARGIN_TOP;
+    y = drawSectionHeader(doc, sectionTitle, y) + 8;
 
-    y = drawSectionHeader(doc, "Vehicle Photos", y) + 8;
-
-    if (!vehicleImages.length) {
+    if (!validImages.length) {
         doc.font("Helvetica").fontSize(9).fillColor(COLORS.gray)
-            .text("No vehicle photos uploaded.", MARGIN_LEFT, y, {
-                width: CONTENT_WIDTH
-            });
+            .text(emptyText, MARGIN_LEFT, y, { width: CONTENT_WIDTH });
         return;
     }
 
@@ -1874,9 +1962,8 @@ const drawVehiclePhotos = (doc, images, reportId) => {
     const cardWidth = (CONTENT_WIDTH - gap) / columns;
     const cardHeight = 205;
 
-    for (let i = 0; i < vehicleImages.length; i++) {
+    for (let i = 0; i < validImages.length; i++) {
         const col = i % columns;
-        const rowIndex = Math.floor(i / columns);
 
         if (col === 0 && i > 0) {
             y += cardHeight + gap;
@@ -1884,20 +1971,15 @@ const drawVehiclePhotos = (doc, images, reportId) => {
 
         if (y + cardHeight > PAGE_BOTTOM) {
             y = newPage(doc, reportId);
-            y = drawSectionHeader(doc, "Vehicle Photos - Continued", y) + 8;
+            y = drawSectionHeader(doc, `${sectionTitle} - Continued`, y) + 8;
         }
 
         const x = MARGIN_LEFT + col * (cardWidth + gap);
-        const image = vehicleImages[i];
+        const image = validImages[i];
+        const title = getImageTitle(image, `${sectionTitle} ${i + 1}`);
 
         doc.roundedRect(x, y, cardWidth, cardHeight, 5)
             .fillAndStroke(COLORS.white, COLORS.border);
-
-        const title = firstValue(
-            image,
-            ["image_type", "imageType", "type"],
-            `Vehicle Photo ${i + 1}`
-        );
 
         doc.font("Helvetica-Bold").fontSize(8).fillColor(COLORS.dark)
             .text(title, x + 8, y + 8, {
@@ -1919,11 +2001,89 @@ const drawVehiclePhotos = (doc, images, reportId) => {
                     align: "center"
                 });
         }
+    }
+};
 
-        if (col === 1 || i === vehicleImages.length - 1) {
-            // The y increment happens at the next item.
+const orderImagesByTitle = (images, orderedTitles) => {
+    const source = Array.isArray(images) ? images : [];
+    const result = [];
+    const used = new Set();
+
+    for (const expectedTitle of orderedTitles) {
+        const index = source.findIndex((image, i) =>
+            !used.has(i) &&
+            getImageTitle(image, "").trim().toLowerCase() === expectedTitle.trim().toLowerCase()
+        );
+
+        if (index !== -1) {
+            used.add(index);
+            result.push(source[index]);
         }
     }
+
+    // Never lose an uploaded image just because its title is not in the standard list.
+    source.forEach((image, index) => {
+        if (!used.has(index)) result.push(image);
+    });
+
+    return result;
+};
+
+// ======================================================
+// VEHICLE PHOTOS
+// ======================================================
+
+const drawVehiclePhotos = (doc, images, reportId) => {
+    const vehicleImages = (Array.isArray(images) ? images : [])
+        .filter(isStandardVehiclePhoto);
+
+    const orderedImages = orderImagesByTitle(vehicleImages, VEHICLE_PHOTO_ORDER);
+
+    drawImageGridSection(
+        doc,
+        orderedImages,
+        reportId,
+        "Vehicle Photos",
+        "No vehicle photos uploaded."
+    );
+};
+
+// ======================================================
+// DOCUMENT / TITLE IMAGES
+// ======================================================
+
+const drawDocumentPhotos = (doc, images, reportId) => {
+    const documentImages = (Array.isArray(images) ? images : [])
+        .filter(isDocumentImage);
+
+    const orderedImages = orderImagesByTitle(documentImages, DOCUMENT_PHOTO_ORDER);
+
+    drawImageGridSection(
+        doc,
+        orderedImages,
+        reportId,
+        "Documents / Title Images",
+        "No document images uploaded."
+    );
+};
+
+// ======================================================
+// TEST DRIVE PHOTOS
+// ======================================================
+
+const drawTestDrivePhotos = (doc, images, reportId) => {
+    const testDriveImages = (Array.isArray(images) ? images : [])
+        .filter(isTestDrivePhotoImage);
+
+    const orderedImages = orderImagesByTitle(testDriveImages, TEST_DRIVE_PHOTO_ORDER);
+
+    drawImageGridSection(
+        doc,
+        orderedImages,
+        reportId,
+        "Test Drive Photos",
+        "No test drive photos uploaded."
+    );
 };
 
 // ======================================================
@@ -2153,6 +2313,18 @@ const generateInspectionReportPdf = (report) => {
                 // ==================================================
 
                 drawVehiclePhotos(doc, allImages, reportId);
+
+                // ==================================================
+                // DOCUMENT / TITLE IMAGES - SEPARATE SECTION
+                // ==================================================
+
+                drawDocumentPhotos(doc, allImages, reportId);
+
+                // ==================================================
+                // TEST DRIVE PHOTOS - SEPARATE SECTION
+                // ==================================================
+
+                drawTestDrivePhotos(doc, allImages, reportId);
 
                 // ==================================================
                 // INSPECTION SUMMARY - SEPARATE SECTION
