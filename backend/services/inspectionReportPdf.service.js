@@ -401,9 +401,21 @@ const getImageTitle = (image, fallback = "Image") => {
         return parts.slice(2).join("|").trim() || parts[1]?.trim() || fallback;
     }
 
+    // Legacy document format: Document - Insurance
+    if (prefix === "document -" || prefix === "document-") {
+        return type
+            .replace(/^document\s*-\s*/i, "")
+            .trim() || fallback;
+    }
+
     // Test Drive Photo|key|title
     if (prefix === "test drive photo") {
         return parts.slice(2).join("|").trim() || parts[1]?.trim() || fallback;
+    }
+
+    // Plain Test Drive Photo 1 / Test Drive Photo 2
+    if (/^test drive photo(?: \d+)?$/i.test(type)) {
+        return type.trim();
     }
 
     // Video|key|title
@@ -411,36 +423,93 @@ const getImageTitle = (image, fallback = "Image") => {
         return parts.slice(2).join("|").trim() || parts[1]?.trim() || fallback;
     }
 
+    // Plain video types stored by the inspection service.
+    if (type === "engine video" ||
+        type === "engine blow by video" ||
+        type === "test drive video") {
+        return getImageType(image).trim();
+    }
+
     // Normal vehicle photo: Front View, Rear View, etc.
     return parts[parts.length - 1]?.trim() || fallback;
 };
 
+const normalizeMediaType = (image) =>
+    getImageType(image)
+        .trim()
+        .replace(/\s+/g, " ")
+        .toLowerCase();
+
 const isDetailedImage = (image) => {
-    const type = getImageType(image).toLowerCase();
-    return type.startsWith("detailed|") || type.startsWith("detailed inspection");
+    const type = normalizeMediaType(image);
+    return type.startsWith("detailed|") ||
+        type.startsWith("detailed:") ||
+        type.startsWith("detailed inspection");
 };
 
 const isDocumentImage = (image) => {
-    const type = getImageType(image).toLowerCase();
-    return type.startsWith("document|") || type.startsWith("document:");
+    const type = normalizeMediaType(image);
+
+    return type.startsWith("document|") ||
+        type.startsWith("document:") ||
+        type.startsWith("document -") ||
+        type.startsWith("document-");
 };
 
 const isTestDrivePhotoImage = (image) => {
-    const type = getImageType(image).toLowerCase();
-    return type.startsWith("test drive photo|") || type.startsWith("test drive photo:");
+    const type = normalizeMediaType(image);
+
+    return type.startsWith("test drive photo|") ||
+        type.startsWith("test drive photo:") ||
+        /^test drive photo(?: \d+)?$/.test(type);
 };
 
 const isVideoImage = (image) => {
-    const type = getImageType(image).toLowerCase();
-    return type.startsWith("video|") || type.startsWith("video:") || type.startsWith("test drive video|");
+    const type = normalizeMediaType(image);
+
+    return type.startsWith("video|") ||
+        type.startsWith("video:") ||
+        type.startsWith("test drive video|") ||
+        type === "test drive video" ||
+        type === "engine video" ||
+        type === "engine blow by video" ||
+        type.startsWith("engine video ") ||
+        type.startsWith("engine blow by video ");
 };
+
+// IMPORTANT:
+// A vehicle photo must be one of the exact 10 standard vehicle photo titles.
+// Do NOT treat an unknown/legacy image as a vehicle photo. This prevents
+// documents, test-drive photos and videos from appearing inside Vehicle Photos.
+const VEHICLE_PHOTO_TITLES = new Set([
+    "front view",
+    "rear view",
+    "left side",
+    "right side",
+    "interior",
+    "odometer",
+    "dashboard",
+    "engine",
+    "seat",
+    "dicky"
+]);
 
 const isStandardVehiclePhoto = (image) => {
     if (!image) return false;
-    return !isDetailedImage(image) &&
-        !isDocumentImage(image) &&
-        !isTestDrivePhotoImage(image) &&
-        !isVideoImage(image);
+
+    if (isDetailedImage(image) ||
+        isDocumentImage(image) ||
+        isTestDrivePhotoImage(image) ||
+        isVideoImage(image)) {
+        return false;
+    }
+
+    const title = getImageTitle(image, "")
+        .trim()
+        .replace(/\s+/g, " ")
+        .toLowerCase();
+
+    return VEHICLE_PHOTO_TITLES.has(title);
 };
 
 const getDetailedImageKey = (image) => {
@@ -1479,7 +1548,6 @@ const drawVehicleDetails = (doc, report, y, reportId) => {
         ["Variant", vehicleValue(report, ["variant", "vehicleVariant"])],
         ["Manufacturing Year", vehicleValue(report, ["manufacturing_year", "manufacturingYear", "year"])],
         ["Odometer", formatOdometer(vehicleValue(report, ["odometer", "kmDriven", "km_driven", "mileage"], "-"))],
-        ["City", vehicleValue(report, ["city", "location", "vehicleCity"])],
         ["Transmission", vehicleValue(report, ["transmission"])],
         ["Fuel Type", vehicleValue(report, ["fuel_type", "fuelType", "fuel"])],
         ["Owner Classification", vehicleValue(report, ["owner_classification", "ownerClassification", "owner_type"])],
@@ -1487,7 +1555,6 @@ const drawVehicleDetails = (doc, report, y, reportId) => {
         ["Chassis Number", vehicleValue(report, ["chassis_number", "chassisNumber", "chassis_no"])],
         ["Engine Number", vehicleValue(report, ["engine_number", "engineNumber", "engine_no"])],
         ["Inspection Date", formatDate(vehicleValue(report, ["inspection_date", "inspectionDate"]))],
-        ["RTO", vehicleValue(report, ["rto", "rtoName", "rto_name"])],
         ["Spare Key", vehicleValue(report, ["spare_key", "spareKey", "spareKeys"])],
         ["Insurance Type", vehicleValue(report, ["insurance_type", "insuranceType", "insurance"])],
         ["Insurance Validity", formatDate(vehicleValue(report, ["insurance_validity", "insuranceValidity", "insurance_expiry"]))]
@@ -2021,11 +2088,9 @@ const orderImagesByTitle = (images, orderedTitles) => {
         }
     }
 
-    // Never lose an uploaded image just because its title is not in the standard list.
-    source.forEach((image, index) => {
-        if (!used.has(index)) result.push(image);
-    });
-
+    // Do not append unknown media here. Each PDF section has its own strict
+    // classifier, so an image that does not belong to that section must stay
+    // out of it rather than being displayed under the wrong title.
     return result;
 };
 
@@ -2297,6 +2362,12 @@ const generateInspectionReportPdf = (report) => {
                 y = drawVehicleDetails(doc, normalizedReport, y, reportId);
 
                 // ==================================================
+                // DOCUMENT / TITLE IMAGES - DIRECTLY BELOW VEHICLE DETAILS
+                // ==================================================
+
+                drawDocumentPhotos(doc, allImages, reportId);
+
+                // ==================================================
                 // DETAILED VEHICLE INSPECTION CHECKLIST
                 // ==================================================
 
@@ -2313,12 +2384,6 @@ const generateInspectionReportPdf = (report) => {
                 // ==================================================
 
                 drawVehiclePhotos(doc, allImages, reportId);
-
-                // ==================================================
-                // DOCUMENT / TITLE IMAGES - SEPARATE SECTION
-                // ==================================================
-
-                drawDocumentPhotos(doc, allImages, reportId);
 
                 // ==================================================
                 // TEST DRIVE PHOTOS - SEPARATE SECTION
