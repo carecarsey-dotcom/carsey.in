@@ -458,10 +458,18 @@ const isTestDrivePhotoImage = (image) => {
         .trim()
         .toLowerCase();
 
+    // Support both current prefixed DB values and the plain option names
+    // used by older/current inspection records.
+    const title = getImageTitle(image, "")
+        .trim()
+        .toLowerCase();
+
     return (
         type.startsWith("test drive photo|") ||
         type.startsWith("test drive photo:") ||
-        type.startsWith("test drive photo -")
+        type.startsWith("test drive photo -") ||
+        title === "test drive photo 1" ||
+        title === "test drive photo 2"
     );
 };
 
@@ -482,10 +490,18 @@ const isVideoImage = (image) => {
 
 const isStandardVehiclePhoto = (image) => {
     if (!image) return false;
-    return !isDetailedImage(image) &&
-        !isDocumentImage(image) &&
-        !isTestDrivePhotoImage(image) &&
-        !isVideoImage(image);
+
+    // PDF Vehicle Photos must contain ONLY the 10 standard vehicle photo options.
+    // This is intentionally a strict whitelist so documents, test-drive photos,
+    // inspection videos, test-drive videos, and any unknown media can NEVER
+    // appear in the Vehicle Photos section.
+    const title = getImageTitle(image, "")
+        .trim()
+        .toLowerCase();
+
+    return VEHICLE_PHOTO_ORDER.some(
+        (expectedTitle) => expectedTitle.trim().toLowerCase() === title
+    );
 };
 
 const getDetailedImageKey = (image) => {
