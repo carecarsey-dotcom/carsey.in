@@ -64,7 +64,7 @@ interface DetailedRowImage {
 }
 
 interface InspectionVideo {
-  key: 'engine_video' | 'engine_blow_by_video';
+  key: 'engine_video' | 'engine_blow_by_video' | 'test_drive_video';
   title: string;
   file: File | null;
   preview: string;
@@ -73,6 +73,13 @@ interface InspectionVideo {
 
 interface TestDrivePhoto {
   key: 'test_drive_photo_1' | 'test_drive_photo_2';
+  title: string;
+  file: File | null;
+  preview: string;
+}
+
+interface DocumentPhoto {
+  key: 'rc' | 'insurance' | 'puc' | 'service_history' | 'duplicate_key' | 'registration_details';
   title: string;
   file: File | null;
   preview: string;
@@ -442,6 +449,10 @@ export class EmployeeInspectionComponent
     {
       mode: 'test_drive';
       key: TestDrivePhoto['key'];
+    } |
+    {
+      mode: 'document';
+      key: DocumentPhoto['key'];
     } | null = null;
 
   videoCameraOpen = false;
@@ -679,7 +690,11 @@ export class EmployeeInspectionComponent
     { key: 'left_side', title: 'Left Side', file: null, preview: '' },
     { key: 'right_side', title: 'Right Side', file: null, preview: '' },
     { key: 'interior', title: 'Interior', file: null, preview: '' },
-    { key: 'dashboard', title: 'Dashboard', file: null, preview: '' }
+    { key: 'odometer', title: 'Odometer', file: null, preview: '' },
+    { key: 'dashboard', title: 'Dashboard', file: null, preview: '' },
+    { key: 'engine', title: 'Engine', file: null, preview: '' },
+    { key: 'seat', title: 'Seat', file: null, preview: '' },
+    { key: 'dicky', title: 'Dicky', file: null, preview: '' }
   ];
 
   // ======================================================
@@ -698,6 +713,15 @@ export class EmployeeInspectionComponent
   testDrivePhotos: TestDrivePhoto[] = [
     { key: 'test_drive_photo_1', title: 'Test Drive Photo 1', file: null, preview: '' },
     { key: 'test_drive_photo_2', title: 'Test Drive Photo 2', file: null, preview: '' }
+  ];
+
+  documentPhotos: DocumentPhoto[] = [
+    { key: 'rc', title: 'RC', file: null, preview: '' },
+    { key: 'insurance', title: 'Insurance', file: null, preview: '' },
+    { key: 'puc', title: 'PUC', file: null, preview: '' },
+    { key: 'service_history', title: 'Service History', file: null, preview: '' },
+    { key: 'duplicate_key', title: 'Duplicate Key', file: null, preview: '' },
+    { key: 'registration_details', title: 'Registration Details', file: null, preview: '' }
   ];
 
   testDriveVideo: InspectionVideo = {
@@ -1450,6 +1474,86 @@ export class EmployeeInspectionComponent
     }
   }
 
+  async openDocumentCamera(key: DocumentPhoto['key']): Promise<void> {
+    this.closeCamera();
+    this.cameraTarget = { mode: 'document', key };
+    this.errorMessage = '';
+
+    try {
+      if (!navigator.mediaDevices?.getUserMedia) {
+        throw new Error('Camera is not supported by this browser. Please use Gallery.');
+      }
+
+      this.cameraStream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } },
+        audio: false
+      });
+
+      this.cameraOpen = true;
+      setTimeout(() => {
+        const video = document.getElementById('inspectionCameraVideo') as HTMLVideoElement | null;
+        if (!video) return;
+        this.cameraVideo = video;
+        video.srcObject = this.cameraStream;
+        video.play().catch(() => {});
+      }, 100);
+    } catch (error: any) {
+      this.closeCamera();
+      this.errorMessage = error?.message || 'Unable to open camera. Please allow camera permission or use Gallery.';
+    }
+  }
+
+  private captureDocumentCameraPhoto(): void {
+    if (!this.cameraVideo || !this.cameraTarget || this.cameraTarget.mode !== 'document') return;
+
+    const video = this.cameraVideo;
+    if (!video.videoWidth || !video.videoHeight) {
+      this.errorMessage = 'Camera is not ready yet. Please try again.';
+      return;
+    }
+
+    const canvas = document.createElement('canvas');
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    const context = canvas.getContext('2d');
+    if (!context) return;
+    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+    const key = this.cameraTarget.key;
+    canvas.toBlob(blob => {
+      if (!blob) return;
+      const photo = this.documentPhotos.find(item => item.key === key);
+      if (!photo) return;
+      if (photo.preview) URL.revokeObjectURL(photo.preview);
+      photo.file = new File([blob], `document-${key}-${Date.now()}.jpg`, { type: 'image/jpeg' });
+      photo.preview = URL.createObjectURL(photo.file);
+      this.closeCamera();
+    }, 'image/jpeg', 0.9);
+  }
+
+  onDocumentPhotoSelected(event: Event, photo: DocumentPhoto): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    input.value = '';
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      this.errorMessage = 'Please select a valid image file.';
+      return;
+    }
+    if (photo.preview) URL.revokeObjectURL(photo.preview);
+    photo.file = file;
+    photo.preview = URL.createObjectURL(file);
+    this.errorMessage = '';
+  }
+
+  removeDocumentPhoto(key: DocumentPhoto['key']): void {
+    const photo = this.documentPhotos.find(item => item.key === key);
+    if (!photo) return;
+    if (photo.preview) URL.revokeObjectURL(photo.preview);
+    photo.file = null;
+    photo.preview = '';
+  }
+
   async openDetailedCamera(
     sectionKey: string,
     rowName: string
@@ -1562,6 +1666,11 @@ export class EmployeeInspectionComponent
 
     if (this.cameraTarget.mode === 'test_drive') {
       this.captureTestDriveCameraPhoto();
+      return;
+    }
+
+    if (this.cameraTarget.mode === 'document') {
+      this.captureDocumentCameraPhoto();
       return;
     }
 
@@ -2527,6 +2636,18 @@ export class EmployeeInspectionComponent
       }
     }
 
+    for (const photo of this.documentPhotos) {
+      if (!photo.file) continue;
+      const sourceFile = photo.file;
+      const extension = sourceFile.name.includes('.') ? sourceFile.name.slice(sourceFile.name.lastIndexOf('.')) : '.jpg';
+      const uploadFile = new File([sourceFile], `__document__${photo.key}${extension}`, { type: sourceFile.type || 'image/jpeg' });
+      vehicleImages.push({
+        type: `Document|${photo.key}|${photo.title}`,
+        row: photo.key,
+        file: uploadFile
+      });
+    }
+
     for (const video of this.inspectionVideos) {
       if (!video.file) {
         this.errorMessage = `${video.title} is required.`;
@@ -2537,6 +2658,13 @@ export class EmployeeInspectionComponent
     for (const photo of this.testDrivePhotos) {
       if (!photo.file) {
         this.errorMessage = `${photo.title}: photo is required.`;
+        return false;
+      }
+    }
+
+    for (const photo of this.documentPhotos) {
+      if (!photo.file) {
+        this.errorMessage = `${photo.title}: document image is required.`;
         return false;
       }
     }

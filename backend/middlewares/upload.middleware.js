@@ -54,7 +54,7 @@ const upload = multer({
     limits: {
         // Compressed inspection videos are expected to stay below 25 MB.
         fileSize: 25 * 1024 * 1024,
-        files: 100
+        files: 120
     },
     fileFilter
 });

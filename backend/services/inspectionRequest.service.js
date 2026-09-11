@@ -585,7 +585,7 @@ const submitInspection = async (
         ? uploadedFiles
         : [];
 
-    const minimumVehiclePhotoCount = 6;
+    const minimumVehiclePhotoCount = 10;
 
     if (imageFiles.length < minimumVehiclePhotoCount) {
         throw new Error(
@@ -599,7 +599,11 @@ const submitInspection = async (
         "Left Side",
         "Right Side",
         "Interior",
-        "Dashboard"
+        "Odometer",
+        "Dashboard",
+        "Engine",
+        "Seat",
+        "Dicky"
     ];
 
     const savedVehicleImages = [];
@@ -649,6 +653,26 @@ const submitInspection = async (
         }
 
         const originalName = String(file.originalname || "");
+
+        if (originalName.startsWith("__document__")) {
+            const imagePath = `/uploads/vehicles/${file.filename}`;
+            let documentType = "Document";
+            if (originalName.includes("__document__rc")) documentType = "RC";
+            else if (originalName.includes("__document__insurance")) documentType = "Insurance";
+            else if (originalName.includes("__document__puc")) documentType = "PUC";
+            else if (originalName.includes("__document__service_history")) documentType = "Service History";
+            else if (originalName.includes("__document__duplicate_key")) documentType = "Duplicate Key";
+            else if (originalName.includes("__document__registration_details")) documentType = "Registration Details";
+
+            await vehicleImageRepository.addVehicleImage(
+                vehicleId,
+                `Document - ${documentType}`,
+                imagePath,
+                false
+            );
+            continue;
+        }
+
         const isVideo = String(file.mimetype || "").toLowerCase().startsWith("video/") || originalName.startsWith("__video__");
 
         if (isVideo) {
