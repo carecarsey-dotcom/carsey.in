@@ -2636,18 +2636,6 @@ export class EmployeeInspectionComponent
       }
     }
 
-    for (const photo of this.documentPhotos) {
-      if (!photo.file) continue;
-      const sourceFile = photo.file;
-      const extension = sourceFile.name.includes('.') ? sourceFile.name.slice(sourceFile.name.lastIndexOf('.')) : '.jpg';
-      const uploadFile = new File([sourceFile], `__document__${photo.key}${extension}`, { type: sourceFile.type || 'image/jpeg' });
-      vehicleImages.push({
-        type: `Document|${photo.key}|${photo.title}`,
-        row: photo.key,
-        file: uploadFile
-      });
-    }
-
     for (const video of this.inspectionVideos) {
       if (!video.file) {
         this.errorMessage = `${video.title} is required.`;
@@ -2699,7 +2687,7 @@ export class EmployeeInspectionComponent
         ) {
 
           this.errorMessage =
-            `${section.title} ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ ${row[0]}: Please select at least one inspection option.`;
+            `${section.title} ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ ${row[0]}: Please select at least one inspection option.`;
 
           return false;
         }
@@ -3033,6 +3021,25 @@ export class EmployeeInspectionComponent
       row: photo.key,
       file: photo.file
     }));
+
+    // DOCUMENT PHOTOS
+    for (const photo of this.documentPhotos) {
+      if (!photo.file) continue;
+      const sourceFile = photo.file;
+      const extension = sourceFile.name.includes('.')
+        ? sourceFile.name.slice(sourceFile.name.lastIndexOf('.'))
+        : '.jpg';
+      const uploadFile = new File(
+        [sourceFile],
+        `__document__${photo.key}${extension}`,
+        { type: sourceFile.type || 'image/jpeg' }
+      );
+      vehicleImages.push({
+        type: `Document|${photo.key}|${photo.title}`,
+        row: photo.key,
+        file: uploadFile
+      });
+    }
 
     for (const section of this.inspectionSections) {
       for (const row of section.rows) {
