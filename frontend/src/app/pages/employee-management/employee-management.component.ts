@@ -346,6 +346,17 @@ export class EmployeeManagementComponent {
 
 
   // ======================================================
+  // EMPLOYEE MOBILE INPUT
+  // ======================================================
+
+  onEmployeeMobileInput(): void {
+    this.employeeMobile = this.employeeMobile
+      .replace(/\\D/g, '')
+      .slice(0, 10);
+  }
+
+
+  // ======================================================
   // CREATE EMPLOYEE
   // ======================================================
 
