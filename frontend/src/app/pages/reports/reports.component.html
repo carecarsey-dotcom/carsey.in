@@ -505,7 +505,10 @@
         style="
           width: 100%;
           height: 850px;
+          min-height: 650px;
           background: #e5e7eb;
+          overflow: auto;
+          -webkit-overflow-scrolling: touch;
         "
       >
 
@@ -549,18 +552,65 @@
               color: #172033;
             "
           >
-            PDF Not Available
+            {{ pdfGenerating ? 'Generating PDF...' : (pdfLoadError ? 'PDF Viewer Unavailable' : 'PDF Not Available') }}
           </h3>
 
-          <p style="margin: 0;">
-            This inspection report does not have a saved PDF path.
+          <p
+            style="
+              margin: 0 auto 18px;
+              max-width: 560px;
+            "
+          >
+            {{
+              pdfGenerating
+                ? 'Please wait while the inspection report PDF is generated.'
+                : (pdfLoadError
+                  ? 'This browser could not display the PDF inline. Use Open PDF or Download PDF below.'
+                  : 'This inspection report does not have a saved PDF path. You can generate it now.')
+            }}
           </p>
+
+          <div
+            style="
+              display: flex;
+              justify-content: center;
+              gap: 10px;
+              flex-wrap: wrap;
+            "
+          >
+
+            <button
+              *ngIf="!pdfGenerating && pdfDirectUrl"
+              type="button"
+              class="print-btn"
+              (click)="openGeneratedPdf()"
+            >
+              ↗ Open PDF
+            </button>
+
+            <button
+              *ngIf="!pdfGenerating && pdfDirectUrl"
+              type="button"
+              class="print-btn"
+              (click)="downloadGeneratedPdf()"
+            >
+              ↓ Download PDF
+            </button>
+
+            <button
+              *ngIf="!pdfGenerating && !pdfDirectUrl"
+              type="button"
+              class="print-btn"
+              (click)="regeneratePdf()"
+            >
+              🔄 Generate PDF
+            </button>
+
+          </div>
 
         </div>
 
       </ng-template>
-
-    </div>
 
 
     <!-- ================================================= -->

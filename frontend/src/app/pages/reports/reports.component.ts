@@ -325,6 +325,13 @@ export class ReportsComponent
 
   pdfUrl = '';
 
+  // =====================================================
+  // PDF FALLBACK / MOBILE SUPPORT
+  // =====================================================
+
+  pdfLoadError = false;
+  pdfDirectUrl = '';
+
 
   // =====================================================
   // REPORTS
@@ -414,6 +421,8 @@ export class ReportsComponent
     this.pdfViewerUrl = null;
 
     this.pdfUrl = '';
+    this.pdfDirectUrl = '';
+    this.pdfLoadError = false;
 
 
     this.vehicleService
@@ -794,6 +803,8 @@ export class ReportsComponent
     this.pdfViewerUrl = null;
 
     this.pdfUrl = '';
+    this.pdfDirectUrl = '';
+    this.pdfLoadError = false;
 
     this.sendEmailLoading = false;
     this.workflowLoading = false;
@@ -1481,6 +1492,8 @@ export class ReportsComponent
 
           const generatedData =
             response?.data ??
+            response?.result ??
+            response?.report ??
             {};
 
 
@@ -1488,6 +1501,10 @@ export class ReportsComponent
             String(
               generatedData?.pdfPath ??
               generatedData?.pdf_path ??
+              generatedData?.report?.pdfPath ??
+              generatedData?.report?.pdf_path ??
+              response?.pdfPath ??
+              response?.pdf_path ??
               ''
             ).trim();
 
@@ -1496,6 +1513,10 @@ export class ReportsComponent
             String(
               generatedData?.pdfUrl ??
               generatedData?.pdf_url ??
+              generatedData?.report?.pdfUrl ??
+              generatedData?.report?.pdf_url ??
+              response?.pdfUrl ??
+              response?.pdf_url ??
               ''
             ).trim();
 
@@ -1630,139 +1651,68 @@ export class ReportsComponent
     pdfUrl: string
   ): void {
 
-    const cleanUrl =
-      String(
-        pdfUrl || ''
-      ).trim();
-
+    const cleanUrl = String(pdfUrl || '').trim();
+    this.pdfLoadError = false;
 
     if (!cleanUrl) {
-
       this.pdfViewerUrl = null;
       this.pdfUrl = '';
-
+      this.pdfDirectUrl = '';
       return;
-
     }
 
+    // Preserve backend URL for mobile/browser fallback.
+    this.pdfDirectUrl = cleanUrl;
 
-    // ===================================================
-    // CLEAR PREVIOUS BLOB URL
-    // ===================================================
-
-    if (
-      this.pdfObjectUrl
-    ) {
-
-      URL.revokeObjectURL(
-        this.pdfObjectUrl
-      );
-
+    if (this.pdfObjectUrl) {
+      URL.revokeObjectURL(this.pdfObjectUrl);
       this.pdfObjectUrl = '';
-
     }
 
-
-    // ===================================================
-    // FETCH PDF THROUGH ANGULAR HTTPCLIENT
-    // ===================================================
-    // IMPORTANT:
-    // Do NOT put the protected PDF URL directly into an
-    // iframe/window.open(). HttpClient goes through the
-    // existing authInterceptor and sends the JWT.
-    // ===================================================
-
-    console.log(
-      'FETCHING AUTHENTICATED PDF:',
-      cleanUrl
-    );
-
+    console.log('FETCHING AUTHENTICATED PDF:', cleanUrl);
     this.detailsLoading = true;
 
-    this.http
-      .get(
-        cleanUrl,
-        {
-          responseType: 'blob'
-        }
-      )
-      .subscribe({
-
-        // =================================================
-        // SUCCESS
-        // =================================================
-
-        next: (blob: Blob) => {
-
-          if (
-            !blob ||
-            blob.size === 0
-          ) {
-
-            console.error(
-              'PDF response is empty.'
-            );
-
-            this.pdfViewerUrl = null;
-            this.pdfUrl = '';
-            this.detailsLoading = false;
-
-            this.errorMessage =
-              'PDF file is empty or unavailable.';
-
-            return;
-
-          }
-
-
-          this.pdfObjectUrl =
-            URL.createObjectURL(
-              blob
-            );
-
-          this.pdfUrl =
-            this.pdfObjectUrl;
-
-          this.pdfViewerUrl =
-            this.sanitizer
-              .bypassSecurityTrustResourceUrl(
-                this.pdfObjectUrl
-              );
-
-          console.log(
-            'PDF BLOB URL:',
-            this.pdfObjectUrl
-          );
-
-          this.detailsLoading = false;
-
-        },
-
-        // =================================================
-        // ERROR
-        // =================================================
-
-        error: (error: any) => {
-
-          console.error(
-            'AUTHENTICATED PDF FETCH ERROR:',
-            error
-          );
-
+    this.http.get(cleanUrl, { responseType: 'blob' }).subscribe({
+      next: (blob: Blob) => {
+        if (!blob || blob.size === 0) {
           this.pdfViewerUrl = null;
-          this.pdfUrl = '';
+          this.pdfUrl = cleanUrl;
+          this.pdfDirectUrl = cleanUrl;
+          this.pdfLoadError = true;
           this.detailsLoading = false;
-
-          this.errorMessage =
-            error?.error?.message ||
-            error?.message ||
-            'Unable to load inspection report PDF.';
-
+          this.errorMessage = 'PDF file is empty or unavailable.';
+          return;
         }
 
-      });
+        this.pdfObjectUrl = URL.createObjectURL(blob);
+        this.pdfUrl = this.pdfObjectUrl;
+        this.pdfViewerUrl = this.sanitizer.bypassSecurityTrustResourceUrl(
+          this.pdfObjectUrl
+        );
+        this.pdfLoadError = false;
+        this.detailsLoading = false;
 
+        console.log('PDF BLOB URL:', this.pdfObjectUrl);
+      },
+
+      error: (error: any) => {
+        console.error('AUTHENTICATED PDF FETCH ERROR:', error);
+
+        // Keep the backend URL. Mobile browsers can open/download it
+        // even when inline blob rendering is unavailable.
+        this.pdfViewerUrl = null;
+        this.pdfUrl = cleanUrl;
+        this.pdfDirectUrl = cleanUrl;
+        this.pdfLoadError = true;
+        this.detailsLoading = false;
+        this.errorMessage =
+          error?.error?.message ||
+          error?.message ||
+          'Unable to load inspection report PDF.';
+      }
+    });
   }
+
 
   // =====================================================
   // BUILD BACKEND PDF URL
@@ -1956,6 +1906,33 @@ export class ReportsComponent
 
 
   // =====================================================
+  // REGENERATE / SHOW MISSING PDF
+  // =====================================================
+
+  regeneratePdf(): void {
+
+    if (!this.selectedReport) {
+      alert('Please open a report first.');
+      return;
+    }
+
+    const reportId = Number(
+      this.selectedReport.report_id ??
+      this.selectedReport.reportId
+    );
+
+    if (!Number.isInteger(reportId) || reportId <= 0) {
+      alert('Invalid inspection report ID.');
+      return;
+    }
+
+    this.errorMessage = '';
+    this.detailsLoading = true;
+    this.generateMissingPdf(reportId);
+  }
+
+
+  // =====================================================
   // OPEN SAME BACKEND PDF
   // =====================================================
 
@@ -1979,6 +1956,7 @@ export class ReportsComponent
       this.selectedReport.pdfUrl ||
       this.selectedReport.pdf_path ||
       this.selectedReport.pdfPath ||
+      this.pdfDirectUrl ||
       '';
 
 
@@ -2148,6 +2126,7 @@ export class ReportsComponent
       this.selectedReport.pdfUrl ||
       this.selectedReport.pdf_path ||
       this.selectedReport.pdfPath ||
+      this.pdfDirectUrl ||
       '';
 
 
@@ -2378,6 +2357,7 @@ export class ReportsComponent
       this.selectedReport.pdfUrl ||
       this.selectedReport.pdf_path ||
       this.selectedReport.pdfPath ||
+      this.pdfDirectUrl ||
       '';
 
 
@@ -2712,6 +2692,9 @@ export class ReportsComponent
 
     this.pdfUrl =
       '';
+
+    this.pdfDirectUrl = '';
+    this.pdfLoadError = false;
 
 
     this.errorMessage =

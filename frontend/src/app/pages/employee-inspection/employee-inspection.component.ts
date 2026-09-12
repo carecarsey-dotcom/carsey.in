@@ -5,7 +5,8 @@ import {
 import {
   Component,
   OnInit,
-  OnDestroy
+  OnDestroy,
+  HostListener
 } from '@angular/core';
 
 import {
@@ -120,6 +121,45 @@ interface InspectionRequest {
 
 
 // ======================================================
+// LOCAL INSPECTION DRAFT
+// IndexedDB keeps form data and uploaded media safe
+// across refresh, tab close and navigation.
+// ======================================================
+
+interface StoredDraftFile {
+  name: string;
+  type: string;
+  lastModified: number;
+  blob: Blob;
+}
+
+interface InspectionDraft {
+  requestId: number;
+  savedAt: number;
+  vehicle: any;
+  customer_name: string;
+  owner_mobile: string;
+  owner_email: string;
+  owner_address: string;
+  owner_city: string;
+  engine_remark: string;
+  overall_remark: string;
+  employee_remark: string;
+  overall_score: number | null;
+  transmission_rating: number;
+  detailedInspection: Record<string, Record<string, string[]>>;
+  detailedRowRemarks: Record<string, string>;
+  checklistItems: Array<{ key: string; status: 'Good' | 'Need Attention' | 'Issue'; remark: string; file: StoredDraftFile | null; }>;
+  vehiclePhotos: Array<{ key: string; file: StoredDraftFile | null; }>;
+  documentPhotos: Array<{ key: string; file: StoredDraftFile | null; }>;
+  detailedRowImages: Record<string, StoredDraftFile | null>;
+  inspectionVideos: Array<{ key: string; file: StoredDraftFile | null; }>;
+  testDrivePhotos: Array<{ key: string; file: StoredDraftFile | null; }>;
+  testDriveVideo: StoredDraftFile | null;
+}
+
+
+// ======================================================
 // COMPONENT
 // ======================================================
 
@@ -159,6 +199,19 @@ export class EmployeeInspectionComponent
   errorMessage = '';
 
   successMessage = '';
+
+  // ======================================================
+  // AUTO SAVE / LOCAL DRAFT
+  // ======================================================
+
+  private readonly DRAFT_DB_NAME = 'carseyInspectionDrafts';
+  private readonly DRAFT_STORE_NAME = 'drafts';
+  private readonly DRAFT_DB_VERSION = 1;
+  private draftSaveTimer: ReturnType<typeof setTimeout> | null = null;
+  draftSaving = false;
+  draftRestored = false;
+  draftSavedAt = '';
+  private inspectionSubmitted = false;
 
 
   // ======================================================
@@ -816,6 +869,7 @@ export class EmployeeInspectionComponent
           this.request = data;
 
           this.prefillRequestData();
+          void this.restoreInspectionDraft();
         },
 
         error: (error: any) => {
@@ -890,6 +944,285 @@ export class EmployeeInspectionComponent
       );
   }
 
+
+  // ======================================================
+  // INDEXED DB DRAFT HELPERS
+  // ======================================================
+
+  private openDraftDB(): Promise<IDBDatabase> {
+    return new Promise((resolve, reject) => {
+      if (!window.indexedDB) {
+        reject(new Error('IndexedDB is not supported by this browser.'));
+        return;
+      }
+
+      const request = window.indexedDB.open(
+        this.DRAFT_DB_NAME,
+        this.DRAFT_DB_VERSION
+      );
+
+      request.onupgradeneeded = () => {
+        const db = request.result;
+        if (!db.objectStoreNames.contains(this.DRAFT_STORE_NAME)) {
+          db.createObjectStore(this.DRAFT_STORE_NAME, { keyPath: 'requestId' });
+        }
+      };
+
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(
+        request.error || new Error('Unable to open draft database.')
+      );
+    });
+  }
+
+  private fileToStoredFile(file: File | null): StoredDraftFile | null {
+    if (!file) return null;
+    return {
+      name: file.name,
+      type: file.type || 'application/octet-stream',
+      lastModified: file.lastModified || Date.now(),
+      blob: file
+    };
+  }
+
+  private storedFileToFile(stored: StoredDraftFile | null): File | null {
+    if (!stored?.blob) return null;
+    return new File(
+      [stored.blob],
+      stored.name || 'inspection-file',
+      {
+        type: stored.type || stored.blob.type || 'application/octet-stream',
+        lastModified: stored.lastModified || Date.now()
+      }
+    );
+  }
+
+  private async saveInspectionDraft(): Promise<void> {
+    if (!this.requestId || this.inspectionSubmitted) return;
+
+    try {
+      this.draftSaving = true;
+
+      const draft: InspectionDraft = {
+        requestId: this.requestId,
+        savedAt: Date.now(),
+        vehicle: { ...this.vehicle },
+        customer_name: this.customer_name,
+        owner_mobile: this.owner_mobile,
+        owner_email: this.owner_email,
+        owner_address: this.owner_address,
+        owner_city: this.owner_city,
+        engine_remark: this.engine_remark,
+        overall_remark: this.overall_remark,
+        employee_remark: this.employee_remark,
+        overall_score: this.overall_score,
+        transmission_rating: this.transmission_rating,
+        detailedInspection: JSON.parse(JSON.stringify(this.detailedInspection)),
+        detailedRowRemarks: JSON.parse(JSON.stringify(this.detailedRowRemarks)),
+        checklistItems: this.checklistItems.map(item => ({
+          key: item.key,
+          status: item.status,
+          remark: item.remark || '',
+          file: this.fileToStoredFile(item.file)
+        })),
+        vehiclePhotos: this.vehiclePhotos.map(photo => ({
+          key: photo.key,
+          file: this.fileToStoredFile(photo.file)
+        })),
+        documentPhotos: this.documentPhotos.map(photo => ({
+          key: photo.key,
+          file: this.fileToStoredFile(photo.file)
+        })),
+        detailedRowImages: Object.fromEntries(
+          Object.entries(this.detailedRowImages).map(([key, image]) => [
+            key,
+            this.fileToStoredFile(image?.file || null)
+          ])
+        ),
+        inspectionVideos: this.inspectionVideos.map(video => ({
+          key: video.key,
+          file: this.fileToStoredFile(video.file)
+        })),
+        testDrivePhotos: this.testDrivePhotos.map(photo => ({
+          key: photo.key,
+          file: this.fileToStoredFile(photo.file)
+        })),
+        testDriveVideo: this.fileToStoredFile(this.testDriveVideo.file)
+      };
+
+      const db = await this.openDraftDB();
+
+      await new Promise<void>((resolve, reject) => {
+        const transaction = db.transaction(this.DRAFT_STORE_NAME, 'readwrite');
+        transaction.objectStore(this.DRAFT_STORE_NAME).put(draft);
+        transaction.oncomplete = () => resolve();
+        transaction.onerror = () => reject(
+          transaction.error || new Error('Unable to save inspection draft.')
+        );
+        transaction.onabort = () => reject(
+          transaction.error || new Error('Inspection draft save aborted.')
+        );
+      });
+
+      db.close();
+
+      this.draftSavedAt = new Date().toLocaleTimeString('en-IN', {
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    } catch (error) {
+      console.error('Inspection draft save failed:', error);
+    } finally {
+      this.draftSaving = false;
+    }
+  }
+
+  scheduleDraftSave(): void {
+    if (!this.requestId || this.inspectionSubmitted) return;
+
+    if (this.draftSaveTimer) clearTimeout(this.draftSaveTimer);
+
+    this.draftSaveTimer = setTimeout(() => {
+      this.draftSaveTimer = null;
+      void this.saveInspectionDraft();
+    }, 500);
+  }
+
+  private async restoreInspectionDraft(): Promise<void> {
+    if (!this.requestId || this.draftRestored) return;
+
+    try {
+      const db = await this.openDraftDB();
+
+      const draft = await new Promise<InspectionDraft | null>((resolve, reject) => {
+        const transaction = db.transaction(this.DRAFT_STORE_NAME, 'readonly');
+        const request = transaction.objectStore(this.DRAFT_STORE_NAME).get(this.requestId);
+        request.onsuccess = () => resolve(request.result || null);
+        request.onerror = () => reject(
+          request.error || new Error('Unable to read inspection draft.')
+        );
+      });
+
+      db.close();
+      if (!draft) return;
+
+      this.vehicle = { ...this.vehicle, ...draft.vehicle };
+      this.customer_name = draft.customer_name || '';
+      this.owner_mobile = draft.owner_mobile || '';
+      this.owner_email = draft.owner_email || '';
+      this.owner_address = draft.owner_address || '';
+      this.owner_city = draft.owner_city || '';
+      this.engine_remark = draft.engine_remark || '';
+      this.overall_remark = draft.overall_remark || '';
+      this.employee_remark = draft.employee_remark || '';
+      this.overall_score = draft.overall_score;
+      this.transmission_rating = draft.transmission_rating || 0;
+
+      if (draft.detailedInspection) {
+        this.detailedInspection = JSON.parse(JSON.stringify(draft.detailedInspection));
+      }
+      if (draft.detailedRowRemarks) {
+        this.detailedRowRemarks = JSON.parse(JSON.stringify(draft.detailedRowRemarks));
+      }
+
+      for (const savedItem of draft.checklistItems || []) {
+        const item = this.checklistItems.find(current => current.key === savedItem.key);
+        if (!item) continue;
+        item.status = savedItem.status;
+        item.remark = savedItem.remark || '';
+        if (item.preview) URL.revokeObjectURL(item.preview);
+        item.file = this.storedFileToFile(savedItem.file);
+        item.preview = item.file ? URL.createObjectURL(item.file) : '';
+      }
+
+      for (const savedPhoto of draft.vehiclePhotos || []) {
+        const photo = this.vehiclePhotos.find(current => current.key === savedPhoto.key);
+        if (!photo) continue;
+        if (photo.preview) URL.revokeObjectURL(photo.preview);
+        photo.file = this.storedFileToFile(savedPhoto.file);
+        photo.preview = photo.file ? URL.createObjectURL(photo.file) : '';
+      }
+
+      for (const savedPhoto of draft.documentPhotos || []) {
+        const photo = this.documentPhotos.find(current => current.key === savedPhoto.key);
+        if (!photo) continue;
+        if (photo.preview) URL.revokeObjectURL(photo.preview);
+        photo.file = this.storedFileToFile(savedPhoto.file);
+        photo.preview = photo.file ? URL.createObjectURL(photo.file) : '';
+      }
+
+      for (const [key, savedFile] of Object.entries(draft.detailedRowImages || {})) {
+        const current = this.detailedRowImages[key];
+        if (!current) continue;
+        if (current.preview) URL.revokeObjectURL(current.preview);
+        current.file = this.storedFileToFile(savedFile);
+        current.preview = current.file ? URL.createObjectURL(current.file) : '';
+      }
+
+      for (const savedVideo of draft.inspectionVideos || []) {
+        const video = this.inspectionVideos.find(current => current.key === savedVideo.key);
+        if (!video) continue;
+        if (video.preview) URL.revokeObjectURL(video.preview);
+        video.file = this.storedFileToFile(savedVideo.file);
+        video.preview = video.file ? URL.createObjectURL(video.file) : '';
+        video.processing = false;
+      }
+
+      for (const savedPhoto of draft.testDrivePhotos || []) {
+        const photo = this.testDrivePhotos.find(current => current.key === savedPhoto.key);
+        if (!photo) continue;
+        if (photo.preview) URL.revokeObjectURL(photo.preview);
+        photo.file = this.storedFileToFile(savedPhoto.file);
+        photo.preview = photo.file ? URL.createObjectURL(photo.file) : '';
+      }
+
+      if (this.testDriveVideo.preview) URL.revokeObjectURL(this.testDriveVideo.preview);
+      this.testDriveVideo.file = this.storedFileToFile(draft.testDriveVideo);
+      this.testDriveVideo.preview = this.testDriveVideo.file
+        ? URL.createObjectURL(this.testDriveVideo.file)
+        : '';
+      this.testDriveVideo.processing = false;
+
+      this.draftRestored = true;
+      this.draftSavedAt = new Date(draft.savedAt).toLocaleTimeString('en-IN', {
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    } catch (error) {
+      console.error('Inspection draft restore failed:', error);
+    }
+  }
+
+  private async deleteInspectionDraft(): Promise<void> {
+    if (!this.requestId) return;
+
+    try {
+      const db = await this.openDraftDB();
+      await new Promise<void>((resolve, reject) => {
+        const transaction = db.transaction(this.DRAFT_STORE_NAME, 'readwrite');
+        transaction.objectStore(this.DRAFT_STORE_NAME).delete(this.requestId);
+        transaction.oncomplete = () => resolve();
+        transaction.onerror = () => reject(
+          transaction.error || new Error('Unable to delete inspection draft.')
+        );
+      });
+      db.close();
+    } catch (error) {
+      console.error('Inspection draft delete failed:', error);
+    }
+  }
+
+  @HostListener('document:visibilitychange')
+  onDocumentVisibilityChange(): void {
+    if (document.visibilityState === 'hidden') {
+      void this.saveInspectionDraft();
+    }
+  }
+
+  @HostListener('window:pagehide')
+  onPageHide(): void {
+    void this.saveInspectionDraft();
+  }
 
   // ======================================================
   // INITIALIZE DETAILED INSPECTION
@@ -1015,6 +1348,7 @@ export class EmployeeInspectionComponent
     ];
 
     this.syncDetailedInspectionToChecklist();
+    this.scheduleDraftSave();
   }
 
 
@@ -1111,6 +1445,7 @@ export class EmployeeInspectionComponent
     ] = value;
 
     this.syncDetailedInspectionToChecklist();
+    this.scheduleDraftSave();
   }
 
 
@@ -1225,6 +1560,8 @@ export class EmployeeInspectionComponent
           section.key
         );
     }
+
+    this.scheduleDraftSave();
   }
 
 
@@ -1455,6 +1792,8 @@ export class EmployeeInspectionComponent
       file: null,
       preview: ''
     };
+
+    this.scheduleDraftSave();
   }
 
 
@@ -1604,6 +1943,7 @@ export class EmployeeInspectionComponent
       if (photo.preview) URL.revokeObjectURL(photo.preview);
       photo.file = new File([blob], `document-${key}-${Date.now()}.jpg`, { type: 'image/jpeg' });
       photo.preview = URL.createObjectURL(photo.file);
+      this.scheduleDraftSave();
       this.closeCamera();
     }, 'image/jpeg', 0.9);
   }
@@ -1625,6 +1965,7 @@ export class EmployeeInspectionComponent
     photo.file = optimizedFile;
     photo.preview = URL.createObjectURL(optimizedFile);
     this.errorMessage = '';
+    this.scheduleDraftSave();
   }
 
   removeDocumentPhoto(key: DocumentPhoto['key']): void {
@@ -1633,6 +1974,7 @@ export class EmployeeInspectionComponent
     if (photo.preview) URL.revokeObjectURL(photo.preview);
     photo.file = null;
     photo.preview = '';
+    this.scheduleDraftSave();
   }
 
   async openDetailedCamera(
@@ -1865,6 +2207,7 @@ export class EmployeeInspectionComponent
         if (photo.preview) URL.revokeObjectURL(photo.preview);
         photo.file = file;
         photo.preview = URL.createObjectURL(file);
+        this.scheduleDraftSave();
       }
       this.closeCamera();
     }, 'image/jpeg', 0.90);
@@ -1945,6 +2288,7 @@ export class EmployeeInspectionComponent
     photo.file = optimizedFile;
     photo.preview = URL.createObjectURL(optimizedFile);
     this.errorMessage = '';
+    this.scheduleDraftSave();
   }
 
   removeTestDrivePhoto(key: TestDrivePhoto['key']): void {
@@ -1953,6 +2297,7 @@ export class EmployeeInspectionComponent
     if (photo.preview) URL.revokeObjectURL(photo.preview);
     photo.file = null;
     photo.preview = '';
+    this.scheduleDraftSave();
   }
 
   async openTestDriveVideoCamera(): Promise<void> {
@@ -2130,6 +2475,7 @@ export class EmployeeInspectionComponent
 
       video.file = compressed;
       video.preview = URL.createObjectURL(compressed);
+      this.scheduleDraftSave();
     } catch (error: any) {
       video.file = null;
       if (video.preview) URL.revokeObjectURL(video.preview);
@@ -2240,6 +2586,7 @@ export class EmployeeInspectionComponent
       if (this.testDriveVideo.preview) URL.revokeObjectURL(this.testDriveVideo.preview);
       this.testDriveVideo.file = compressed;
       this.testDriveVideo.preview = URL.createObjectURL(compressed);
+      this.scheduleDraftSave();
     } catch (error: any) {
       this.testDriveVideo.file = null;
       if (this.testDriveVideo.preview) URL.revokeObjectURL(this.testDriveVideo.preview);
@@ -2255,6 +2602,7 @@ export class EmployeeInspectionComponent
     this.testDriveVideo.file = null;
     this.testDriveVideo.preview = '';
     this.testDriveVideo.processing = false;
+    this.scheduleDraftSave();
   }
 
   removeInspectionVideo(key: InspectionVideo['key']): void {
@@ -2265,6 +2613,7 @@ export class EmployeeInspectionComponent
     video.file = null;
     video.preview = '';
     video.processing = false;
+    this.scheduleDraftSave();
   }
 
   getInspectionVideo(key: InspectionVideo['key']): InspectionVideo | undefined {
@@ -2440,6 +2789,7 @@ export class EmployeeInspectionComponent
 
     this.errorMessage = '';
     input.value = '';
+    this.scheduleDraftSave();
   }
 
 
@@ -2465,6 +2815,7 @@ export class EmployeeInspectionComponent
 
     item.preview =
       '';
+    this.scheduleDraftSave();
   }
 
 
@@ -2486,6 +2837,7 @@ export class EmployeeInspectionComponent
 
     photo.file = file;
     photo.preview = URL.createObjectURL(file);
+    this.scheduleDraftSave();
   }
 
 
@@ -2580,6 +2932,7 @@ export class EmployeeInspectionComponent
 
     photo.preview =
       '';
+    this.scheduleDraftSave();
   }
 
 
@@ -2627,6 +2980,7 @@ export class EmployeeInspectionComponent
 
       this.overall_score =
         score;
+      this.scheduleDraftSave();
     }
   }
 
@@ -2638,6 +2992,7 @@ export class EmployeeInspectionComponent
   selectTransmissionRating(rating: number): void {
     if (rating >= 1 && rating <= 5) {
       this.transmission_rating = rating;
+      this.scheduleDraftSave();
     }
   }
 
@@ -3223,8 +3578,17 @@ export class EmployeeInspectionComponent
         vehicleImages
       )
       .subscribe({
-        next: (response: any) => {
+        next: async (response: any) => {
           this.submitting = false;
+          this.inspectionSubmitted = true;
+
+          if (this.draftSaveTimer) {
+            clearTimeout(this.draftSaveTimer);
+            this.draftSaveTimer = null;
+          }
+
+          await this.deleteInspectionDraft();
+
           this.successMessage =
             response?.message ||
             'Inspection submitted successfully. PDF generated and email delivery processed.';
@@ -3252,7 +3616,15 @@ export class EmployeeInspectionComponent
   // BACK
   // ======================================================
 
-  goBack(): void {
+  async goBack(): Promise<void> {
+
+    if (!this.inspectionSubmitted) {
+      if (this.draftSaveTimer) {
+        clearTimeout(this.draftSaveTimer);
+        this.draftSaveTimer = null;
+      }
+      await this.saveInspectionDraft();
+    }
 
     this.router.navigate([
       '/employee/dashboard'
@@ -3291,6 +3663,15 @@ export class EmployeeInspectionComponent
   // ======================================================
 
   ngOnDestroy(): void {
+
+    if (this.draftSaveTimer) {
+      clearTimeout(this.draftSaveTimer);
+      this.draftSaveTimer = null;
+    }
+
+    if (!this.inspectionSubmitted) {
+      void this.saveInspectionDraft();
+    }
 
     this.closeCamera();
     this.closeVideoCamera();
