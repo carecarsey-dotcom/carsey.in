@@ -2,28 +2,21 @@ const {
     findAdminByEmail,
     findAdminById,
     updatePassword,
-
     findAccountByEmail,
     createEmployee,
     getAllEmployees,
     getEmployeeById,
     updateEmployeeStatus
-
 } = require("../repositories/auth.repository");
-
 
 const {
     comparePassword,
     hashPassword
-
 } = require("../utils/password");
-
 
 const {
     generateToken
-
 } = require("../utils/jwt");
-
 
 // ======================================================
 // ADMIN / EMPLOYEE LOGIN
@@ -41,15 +34,11 @@ const login = async (
     const admin =
         await findAdminByEmail(email);
 
-
     if (!admin) {
-
         throw new Error(
             "Admin not found"
         );
-
     }
-
 
     // ==================================================
     // CHECK STATUS
@@ -58,13 +47,10 @@ const login = async (
     if (
         admin.status !== "Active"
     ) {
-
         throw new Error(
             "Admin account is inactive"
         );
-
     }
-
 
     // ==================================================
     // COMPARE PASSWORD
@@ -76,15 +62,11 @@ const login = async (
             admin.password
         );
 
-
     if (!isMatch) {
-
         throw new Error(
             "Invalid Password"
         );
-
     }
-
 
     // ==================================================
     // GENERATE JWT
@@ -92,7 +74,6 @@ const login = async (
 
     const token =
         generateToken({
-
             admin_id:
                 admin.admin_id,
 
@@ -101,18 +82,14 @@ const login = async (
 
             role:
                 admin.role
-
         });
-
 
     // ==================================================
     // RETURN RESPONSE
     // ==================================================
 
     return {
-
         admin: {
-
             admin_id:
                 admin.admin_id,
 
@@ -124,15 +101,11 @@ const login = async (
 
             role:
                 admin.role
-
         },
 
         token
-
     };
-
 };
-
 
 // ======================================================
 // ADMIN PROFILE
@@ -147,18 +120,13 @@ const getProfile = async (
             adminId
         );
 
-
     if (!admin) {
-
         throw new Error(
             "Admin not found"
         );
-
     }
 
-
     return {
-
         admin_id:
             admin.admin_id,
 
@@ -173,11 +141,8 @@ const getProfile = async (
 
         status:
             admin.status
-
     };
-
 };
-
 
 // ======================================================
 // CHANGE PASSWORD
@@ -193,28 +158,21 @@ const changePassword = async (
         !oldPassword ||
         !newPassword
     ) {
-
         throw new Error(
             "Old Password and New Password are required."
         );
-
     }
-
 
     const admin =
         await findAdminById(
             adminId
         );
 
-
     if (!admin) {
-
         throw new Error(
             "Admin not found"
         );
-
     }
-
 
     const isMatch =
         await comparePassword(
@@ -222,37 +180,27 @@ const changePassword = async (
             admin.password
         );
 
-
     if (!isMatch) {
-
         throw new Error(
             "Old Password is incorrect"
         );
-
     }
-
 
     const hashedPassword =
         await hashPassword(
             newPassword
         );
 
-
     await updatePassword(
         adminId,
         hashedPassword
     );
 
-
     return {
-
         message:
             "Password changed successfully."
-
     };
-
 };
-
 
 // ======================================================
 // CREATE EMPLOYEE
@@ -262,6 +210,7 @@ const changePassword = async (
 const createEmployeeAccount = async (
     name,
     email,
+    mobile,
     password
 ) => {
 
@@ -270,31 +219,28 @@ const createEmployeeAccount = async (
     // ==================================================
 
     if (!name || !name.trim()) {
-
         throw new Error(
             "Employee name is required."
         );
-
     }
 
-
     if (!email || !email.trim()) {
-
         throw new Error(
             "Employee email is required."
         );
-
     }
 
+    if (!mobile || !mobile.trim()) {
+        throw new Error(
+            "Employee mobile number is required."
+        );
+    }
 
     if (!password) {
-
         throw new Error(
             "Employee password is required."
         );
-
     }
-
 
     // ==================================================
     // NORMALIZE EMAIL
@@ -305,6 +251,24 @@ const createEmployeeAccount = async (
             .trim()
             .toLowerCase();
 
+    // ==================================================
+    // NORMALIZE MOBILE
+    // ==================================================
+
+    mobile =
+        mobile
+            .replace(/\D/g, '')
+            .trim();
+
+    // ==================================================
+    // MOBILE VALIDATION
+    // ==================================================
+
+    if (!/^[6-9]\d{9}$/.test(mobile)) {
+        throw new Error(
+            "Please enter a valid 10 digit mobile number."
+        );
+    }
 
     // ==================================================
     // PASSWORD LENGTH
@@ -313,13 +277,10 @@ const createEmployeeAccount = async (
     if (
         password.length < 6
     ) {
-
         throw new Error(
             "Password must be at least 6 characters."
         );
-
     }
-
 
     // ==================================================
     // CHECK EXISTING ACCOUNT
@@ -330,15 +291,11 @@ const createEmployeeAccount = async (
             email
         );
 
-
     if (existingAccount) {
-
         throw new Error(
             "An account with this email already exists."
         );
-
     }
-
 
     // ==================================================
     // HASH PASSWORD
@@ -349,7 +306,6 @@ const createEmployeeAccount = async (
             password
         );
 
-
     // ==================================================
     // CREATE EMPLOYEE
     // ==================================================
@@ -358,18 +314,16 @@ const createEmployeeAccount = async (
         await createEmployee(
             name.trim(),
             email,
+            mobile,
             hashedPassword
         );
-
 
     // ==================================================
     // RETURN CREATED EMPLOYEE
     // ==================================================
 
     return {
-
         employee: {
-
             admin_id:
                 result.insertId,
 
@@ -378,18 +332,16 @@ const createEmployeeAccount = async (
 
             email,
 
+            mobile,
+
             role:
                 "Employee",
 
             status:
                 "Active"
-
         }
-
     };
-
 };
-
 
 // ======================================================
 // GET ALL EMPLOYEES
@@ -402,7 +354,6 @@ const getEmployees = async () => {
 
 };
 
-
 // ======================================================
 // GET EMPLOYEE BY ID
 // ADMIN ONLY
@@ -413,33 +364,24 @@ const getEmployee = async (
 ) => {
 
     if (!employeeId) {
-
         throw new Error(
             "Employee ID is required."
         );
-
     }
-
 
     const employee =
         await getEmployeeById(
             employeeId
         );
 
-
     if (!employee) {
-
         throw new Error(
             "Employee not found."
         );
-
     }
 
-
     return employee;
-
 };
-
 
 // ======================================================
 // UPDATE EMPLOYEE STATUS
@@ -452,67 +394,48 @@ const changeEmployeeStatus = async (
 ) => {
 
     if (!employeeId) {
-
         throw new Error(
             "Employee ID is required."
         );
-
     }
 
-
     const allowedStatuses = [
-
         "Active",
         "Inactive"
-
     ];
-
 
     if (
         !allowedStatuses.includes(status)
     ) {
-
         throw new Error(
             "Invalid employee status."
         );
-
     }
-
 
     const employee =
         await getEmployeeById(
             employeeId
         );
 
-
     if (!employee) {
-
         throw new Error(
             "Employee not found."
         );
-
     }
-
 
     await updateEmployeeStatus(
         employeeId,
         status
     );
 
-
     return {
-
         employeeId,
-
         status,
 
         message:
             "Employee status updated successfully."
-
     };
-
 };
-
 
 // ======================================================
 // EXPORT

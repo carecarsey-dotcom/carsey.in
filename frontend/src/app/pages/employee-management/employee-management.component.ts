@@ -92,6 +92,9 @@ export class EmployeeManagementComponent {
 
   employeeEmail = '';
 
+  // Employee mobile number
+  employeeMobile = '';
+
   employeePassword = '';
 
 
@@ -320,6 +323,8 @@ export class EmployeeManagementComponent {
 
     this.employeeEmail = '';
 
+    this.employeeMobile = '';
+
     this.employeePassword = '';
 
   }
@@ -406,6 +411,34 @@ export class EmployeeManagementComponent {
 
 
     // ==================================================
+    // MOBILE NUMBER VALIDATION
+    // ==================================================
+
+    const mobile =
+      this.employeeMobile
+        .replace(/\D/g, '')
+        .trim();
+
+
+    if (!mobile) {
+
+      this.formError =
+        'Employee mobile number is required.';
+
+      return;
+    }
+
+
+    if (!/^[6-9]\d{9}$/.test(mobile)) {
+
+      this.formError =
+        'Please enter a valid 10 digit mobile number.';
+
+      return;
+    }
+
+
+    // ==================================================
     // PASSWORD VALIDATION
     // ==================================================
 
@@ -446,6 +479,8 @@ export class EmployeeManagementComponent {
 
       email,
 
+      mobile,
+
       password
 
     };
@@ -455,7 +490,8 @@ export class EmployeeManagementComponent {
       'Create Employee Payload:',
       {
         name,
-        email
+        email,
+        mobile
       }
     );
 
@@ -719,6 +755,24 @@ export class EmployeeManagementComponent {
 
       '—'
 
+    );
+
+  }
+
+
+  // ======================================================
+  // GET EMPLOYEE MOBILE
+  // ======================================================
+
+  getEmployeeMobile(
+    employee: any
+  ): string {
+
+    return (
+      employee?.mobile ||
+      employee?.phone ||
+      employee?.mobile_number ||
+      '—'
     );
 
   }

@@ -1,6 +1,5 @@
 const db = require("../config/db");
 
-
 // ======================================================
 // GET ADMIN BY EMAIL
 // ======================================================
@@ -26,14 +25,11 @@ const findAdminByEmail = (email) => {
                 }
 
                 resolve(result[0]);
-
             }
         );
 
     });
-
 };
-
 
 // ======================================================
 // GET ADMIN BY ID
@@ -60,14 +56,11 @@ const findAdminById = (adminId) => {
                 }
 
                 resolve(result[0]);
-
             }
         );
 
     });
-
 };
-
 
 // ======================================================
 // UPDATE ADMIN PASSWORD
@@ -99,14 +92,11 @@ const updatePassword = (
                 }
 
                 resolve(result);
-
             }
         );
 
     });
-
 };
-
 
 // ======================================================
 // CHECK ADMIN / EMPLOYEE EMAIL
@@ -139,15 +129,14 @@ const findAccountByEmail = (
                     return reject(err);
                 }
 
-                resolve(result[0] || null);
-
+                resolve(
+                    result[0] || null
+                );
             }
         );
 
     });
-
 };
-
 
 // ======================================================
 // CREATE EMPLOYEE
@@ -156,6 +145,7 @@ const findAccountByEmail = (
 const createEmployee = (
     name,
     email,
+    mobile,
     password
 ) => {
 
@@ -166,12 +156,14 @@ const createEmployee = (
             (
                 name,
                 email,
+                mobile,
                 password,
                 role,
                 status
             )
             VALUES
             (
+                ?,
                 ?,
                 ?,
                 ?,
@@ -185,6 +177,7 @@ const createEmployee = (
             [
                 name,
                 email,
+                mobile,
                 password
             ],
             (err, result) => {
@@ -194,14 +187,11 @@ const createEmployee = (
                 }
 
                 resolve(result);
-
             }
         );
 
     });
-
 };
-
 
 // ======================================================
 // GET ALL EMPLOYEES
@@ -216,6 +206,7 @@ const getAllEmployees = () => {
                 admin_id,
                 name,
                 email,
+                mobile,
                 role,
                 status,
                 created_at
@@ -234,14 +225,11 @@ const getAllEmployees = () => {
                 }
 
                 resolve(result);
-
             }
         );
 
     });
-
 };
-
 
 // ======================================================
 // GET EMPLOYEE BY ID
@@ -258,6 +246,7 @@ const getEmployeeById = (
                 admin_id,
                 name,
                 email,
+                mobile,
                 role,
                 status,
                 created_at
@@ -276,15 +265,14 @@ const getEmployeeById = (
                     return reject(err);
                 }
 
-                resolve(result[0] || null);
-
+                resolve(
+                    result[0] || null
+                );
             }
         );
 
     });
-
 };
-
 
 // ======================================================
 // UPDATE EMPLOYEE STATUS
@@ -317,14 +305,11 @@ const updateEmployeeStatus = (
                 }
 
                 resolve(result);
-
             }
         );
 
     });
-
 };
-
 
 // ======================================================
 // EXPORT
@@ -334,14 +319,20 @@ module.exports = {
 
     // Existing
     findAdminByEmail,
+
     findAdminById,
+
     updatePassword,
 
     // Employee Management
     findAccountByEmail,
+
     createEmployee,
+
     getAllEmployees,
+
     getEmployeeById,
+
     updateEmployeeStatus
 
 };

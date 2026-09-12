@@ -10,7 +10,6 @@ const {
     requireAdmin
 } = require("../middlewares/auth.middleware");
 
-
 // ======================================================
 // LOGIN
 // ADMIN + EMPLOYEE
@@ -24,7 +23,6 @@ router.post(
     "/login",
     authController.login
 );
-
 
 // ======================================================
 // PROFILE
@@ -41,7 +39,6 @@ router.get(
     authController.profile
 );
 
-
 // ======================================================
 // CHANGE PASSWORD
 // ADMIN + EMPLOYEE
@@ -57,12 +54,10 @@ router.put(
     authController.changePassword
 );
 
-
 // ======================================================
 // EMPLOYEE MANAGEMENT
 // ADMIN ONLY
 // ======================================================
-
 
 // ======================================================
 // CREATE EMPLOYEE
@@ -78,9 +73,9 @@ router.post(
     authController.createEmployee
 );
 
-
 // ======================================================
 // GET ALL EMPLOYEES
+// ADMIN ONLY
 // ======================================================
 
 // GET
@@ -93,9 +88,9 @@ router.get(
     authController.getEmployees
 );
 
-
 // ======================================================
 // GET SINGLE EMPLOYEE
+// ADMIN ONLY
 // ======================================================
 
 // GET
@@ -108,9 +103,9 @@ router.get(
     authController.getEmployee
 );
 
-
 // ======================================================
 // UPDATE EMPLOYEE STATUS
+// ADMIN ONLY
 // ======================================================
 
 // PATCH
@@ -122,7 +117,6 @@ router.patch(
     requireAdmin,
     authController.updateEmployeeStatus
 );
-
 
 // ======================================================
 // EXPORT

@@ -193,6 +193,39 @@
         </div>
 
 
+        <!-- MOBILE NUMBER -->
+
+        <div
+          class="w-full md:col-span-2"
+        >
+          <label
+            class="mb-2 block text-sm font-semibold text-slate-700"
+          >
+            Employee Mobile Number
+          </label>
+
+          <input
+            type="tel"
+            [(ngModel)]="employeeMobile"
+            name="employeeMobile"
+            placeholder="Enter 10 digit mobile number"
+            autocomplete="tel"
+            inputmode="numeric"
+            maxlength="10"
+            pattern="[6-9][0-9]{9}"
+            (input)="employeeMobile = employeeMobile.replace(/[^0-9]/g, '').slice(0, 10)"
+            class="w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-slate-900 focus:ring-2 focus:ring-slate-200"
+            [disabled]="saving"
+          />
+
+          <p
+            class="mt-2 text-xs text-slate-500"
+          >
+            Enter a valid 10 digit Indian mobile number.
+          </p>
+        </div>
+
+
         <!-- PASSWORD -->
 
         <div
@@ -418,6 +451,12 @@
               <th
                 class="px-6 py-4 text-xs font-bold uppercase tracking-wide text-slate-500"
               >
+                Mobile
+              </th>
+
+              <th
+                class="px-6 py-4 text-xs font-bold uppercase tracking-wide text-slate-500"
+              >
                 Role
               </th>
 
@@ -481,6 +520,15 @@
                   class="px-6 py-5 text-sm text-slate-600"
                 >
                   {{ getEmployeeEmail(employee) }}
+                </td>
+
+
+                <!-- MOBILE -->
+
+                <td
+                  class="px-6 py-5 text-sm text-slate-600"
+                >
+                  {{ getEmployeeMobile(employee) }}
                 </td>
 
 
@@ -613,6 +661,13 @@
                   class="mt-1 break-all text-sm text-slate-500"
                 >
                   {{ getEmployeeEmail(employee) }}
+                </p>
+
+                <p
+                  class="mt-1 text-sm font-medium text-slate-600"
+                >
+                  Mobile:
+                  {{ getEmployeeMobile(employee) }}
                 </p>
 
                 <p
