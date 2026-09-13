@@ -1054,59 +1054,13 @@ const submitInspection = async (
         }
 
         // --------------------------------------------------
-        // ADMIN EMAIL
+        // EMAIL
         // --------------------------------------------------
-        try {
-            if (env.ADMIN_EMAIL) {
-                await emailService.sendInspectionReportToAdmin({
-                    pdfPath: pdfResult.filePath || pdfResult.pdfPath,
-                    fileName:
-                        pdfResult.fileName ||
-                        `inspection-report-${reportId}.pdf`,
-                    carId: vehicleId,
-                    reportId
-                });
-            } else {
-                console.warn("EMPLOYEE SUBMIT - ADMIN_EMAIL is not configured.");
-            }
-        } catch (error) {
-            console.error("EMPLOYEE SUBMIT BACKGROUND ADMIN EMAIL ERROR:", error);
-        }
-
+        // Employee submit must NOT send any email.
+        // Admin will send the inspection report from the Admin panel.
+        // PDF generation and report-path update above remain unchanged.
         // --------------------------------------------------
-        // CUSTOMER EMAIL
-        // --------------------------------------------------
-        try {
-            const customerEmail = String(
-                request.customer_email ||
-                vehicleData.owner_email ||
-                vehicleData.email ||
-                ""
-            ).trim().toLowerCase();
 
-            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-            if (!customerEmail) {
-                console.warn("EMPLOYEE SUBMIT - CUSTOMER EMAIL NOT AVAILABLE.");
-            } else if (!emailRegex.test(customerEmail)) {
-                console.warn("EMPLOYEE SUBMIT - CUSTOMER EMAIL INVALID.");
-            } else {
-                await emailService.sendInspectionReportEmail({
-                    to: customerEmail,
-                    subject: `Carsey.in - Vehicle Inspection Report #${reportId}`,
-                    customerName:
-                        request.customer_name ||
-                        vehicleData.customer_name ||
-                        "Customer",
-                    pdfPath: pdfResult.filePath || pdfResult.pdfPath,
-                    fileName:
-                        pdfResult.fileName ||
-                        `inspection-report-${reportId}.pdf`
-                });
-            }
-        } catch (error) {
-            console.error("EMPLOYEE SUBMIT BACKGROUND CUSTOMER EMAIL ERROR:", error);
-        }
     });
 
     return {
@@ -1120,18 +1074,8 @@ const submitInspection = async (
         pdfPath: null,
         pdfUrl: null,
         fileName: null,
-        adminEmail: {
-            success: false,
-            pending: true,
-            message: "Admin email will be processed in the background."
-        },
-        customerEmail: {
-            success: false,
-            pending: true,
-            message: "Customer email will be processed in the background."
-        },
         message:
-            "Inspection submitted successfully. PDF and email delivery are being processed in the background. Report sent for Admin review."
+            "Inspection submitted successfully. PDF is being generated in the background. Report sent for Admin review."
     };
 };
 

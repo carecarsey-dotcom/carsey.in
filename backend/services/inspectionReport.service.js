@@ -1,4 +1,6 @@
 const db = require("../config/db");
+const emailService = require("./email.service");
+const env = require("../config/env");
 
 // ======================================================
 // SMALL HELPER FUNCTIONS
@@ -1371,6 +1373,106 @@ const markInspectionReportPublished = (
 
 
 // ======================================================
+// SEND INSPECTION REPORT TO CUSTOMER + ADMIN
+// ADMIN-ONLY MANUAL EMAIL FLOW
+// ======================================================
+
+const sendReportToCustomerEmail = async (
+    reportId,
+    customerEmail
+) => {
+
+    const id = Number(reportId);
+
+    if (!Number.isInteger(id) || id <= 0) {
+        throw new Error("Valid inspection report ID is required.");
+    }
+
+    const email = String(customerEmail || "")
+        .trim()
+        .toLowerCase();
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if (!email) {
+        throw new Error("Customer email is required.");
+    }
+
+    if (!emailRegex.test(email)) {
+        throw new Error("Invalid customer email address.");
+    }
+
+    const deliveryData =
+        await getReportDeliveryData(id);
+
+    if (!deliveryData) {
+        throw new Error("Inspection report not found.");
+    }
+
+    const pdfPath =
+        deliveryData.pdf_path ||
+        deliveryData.pdfPath ||
+        deliveryData.inspection?.pdf_path ||
+        deliveryData.inspection?.pdfPath ||
+        deliveryData.report?.pdf_path ||
+        deliveryData.report?.pdfPath;
+
+    if (!pdfPath) {
+        throw new Error("Inspection report PDF is not available.");
+    }
+
+    const customerName =
+        deliveryData.customer_name ||
+        deliveryData.customerName ||
+        deliveryData.owner_name ||
+        deliveryData.ownerName ||
+        deliveryData.owner?.ownerName ||
+        deliveryData.owner?.owner_name ||
+        "Customer";
+
+    const fileName =
+        `inspection-report-${id}.pdf`;
+
+    // --------------------------------------------------
+    // SEND TO CUSTOMER
+    // --------------------------------------------------
+    const customerResult =
+        await emailService.sendInspectionReportEmail({
+            to: email,
+            subject:
+                `Carsey.in - Vehicle Inspection Report #${id}`,
+            customerName,
+            pdfPath,
+            fileName
+        });
+
+    // --------------------------------------------------
+    // SEND TO ADMIN
+    // --------------------------------------------------
+    if (!env.ADMIN_EMAIL) {
+        throw new Error("ADMIN_EMAIL is not configured.");
+    }
+
+    const adminResult =
+        await emailService.sendInspectionReportToAdmin({
+            pdfPath,
+            fileName,
+            carId:
+                deliveryData.car_id ||
+                deliveryData.carId,
+            reportId: id
+        });
+
+    return {
+        reportId: id,
+        customerEmail: email,
+        adminEmail: env.ADMIN_EMAIL,
+        customer: customerResult,
+        admin: adminResult
+    };
+};
+
+// ======================================================
 // EXPORT
 // ======================================================
 
@@ -1402,6 +1504,8 @@ module.exports = {
     updateInspectionReportPdfPath,
 
     markInspectionReportPublished,
+
+    sendReportToCustomerEmail,
 
     getInspectionChecklistByCarId
 

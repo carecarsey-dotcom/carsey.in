@@ -423,159 +423,449 @@ export class VehicleService {
     // ===================================================
 
     {
+  key: 'exterior_tyre',
 
-      key: 'exterior_tyre',
+  title: 'EXTERIOR + TYRE',
 
-      title: 'EXTERIOR + TYRE',
+  rows: [
 
-      rows: [
+    // ==================== FRONT SIDE ====================
 
-        [
-          'Front Bumper',
-          [
-            'OK',
-            'Minor Scratches',
-            'Minor Dent',
-            'Major Dent',
-            'Cracked',
-            'Replaced'
-          ]
-        ],
-
-        [
-          'Rear Bumper',
-          [
-            'OK',
-            'Minor Scratches',
-            'Minor Dent',
-            'Major Dent',
-            'Cracked',
-            'Replaced'
-          ]
-        ],
-
-        [
-          'Bonnet',
-          [
-            'OK',
-            'Minor Scratches',
-            'Minor Dent',
-            'Major Dent',
-            'Repainted',
-            'Replaced'
-          ]
-        ],
-
-        [
-          'Roof',
-          [
-            'OK',
-            'Minor Scratches',
-            'Minor Dent',
-            'Major Dent',
-            'Repainted'
-          ]
-        ],
-
-        [
-          'Left Front Door',
-          [
-            'OK',
-            'Minor Scratches',
-            'Minor Dent',
-            'Major Dent',
-            'Repainted',
-            'Replaced'
-          ]
-        ],
-
-        [
-          'Right Front Door',
-          [
-            'OK',
-            'Minor Scratches',
-            'Minor Dent',
-            'Major Dent',
-            'Repainted',
-            'Replaced'
-          ]
-        ],
-
-        [
-          'Left Rear Door',
-          [
-            'OK',
-            'Minor Scratches',
-            'Minor Dent',
-            'Major Dent',
-            'Repainted',
-            'Replaced'
-          ]
-        ],
-
-        [
-          'Right Rear Door',
-          [
-            'OK',
-            'Minor Scratches',
-            'Minor Dent',
-            'Major Dent',
-            'Repainted',
-            'Replaced'
-          ]
-        ],
-
-        [
-          'Left Front Fender',
-          [
-            'OK',
-            'Minor Scratches',
-            'Minor Dent',
-            'Major Dent',
-            'Repainted',
-            'Replaced'
-          ]
-        ],
-
-        [
-          'Right Front Fender',
-          [
-            'OK',
-            'Minor Scratches',
-            'Minor Dent',
-            'Major Dent',
-            'Repainted',
-            'Replaced'
-          ]
-        ],
-
-        [
-          'Left Rear Quarter Panel',
-          [
-            'OK',
-            'Minor Scratches',
-            'Minor Dent',
-            'Major Dent',
-            'Repainted',
-            'Replaced'
-          ]
-        ],
-
-        [
-          'Right Rear Quarter Panel',
-          [
-            'OK',
-            'Minor Scratches',
-            'Minor Dent',
-            'Major Dent',
-            'Repainted',
-            'Replaced'
-          ]
-        ]
-
+    [
+      'Front Bumper',
+      [
+        'OK',
+        'Broken/Crack',
+        'Dented',
+        'Scratch',
+        'Rusted',
+        'Paint Mismatch',
+        'Repair + Repaint'
       ]
+    ],
 
-    },
+    [
+      'Bonnet / Hood',
+      [
+        'OK',
+        'Dent',
+        'Scratch',
+        'Rusting',
+        'Scooper Not Working',
+        'Crack / Hole'
+      ]
+    ],
+
+    [
+      'Front Windshield',
+      [
+        'OK',
+        'Glass Crack',
+        'Glass Chip',
+        'Scratch',
+        'Rubber Damage',
+        'Water Leakage'
+      ]
+    ],
+
+    [
+      'Roof',
+      [
+        'OK',
+        'Paint Mismatch + Faded',
+        'Dent',
+        'Crack / Hole',
+        'Scratches',
+        'Roof Rail Broken',
+        'Sun Roof Not Working'
+      ]
+    ],
+
+    [
+      'Upper Cross Member',
+      [
+        'OK',
+        'Rusting',
+        'Damage',
+        'Repaired / Welded'
+      ]
+    ],
+
+    [
+      'Apron RHS',
+      [
+        'OK',
+        'Repaired / Welded',
+        'Repainted',
+        'Rusting',
+        'Dent',
+        'Crack / Hole'
+      ]
+    ],
+
+    [
+      'Apron LHS',
+      [
+        'OK',
+        'Repaired / Welded',
+        'Repainted',
+        'Rusting',
+        'Dent',
+        'Crack / Hole'
+      ]
+    ],
+
+
+    // ==================== RIGHT SIDE ====================
+
+    [
+      'RHS Fender',
+      [
+        'OK',
+        'Dent',
+        'Scratch',
+        'Rusting',
+        'Lug Missing'
+      ]
+    ],
+
+    [
+      'RHS Front Tyre',
+      [
+        'OK',
+        'Tyre Crack',
+        'Rim Rusting',
+        'Wheel Cap Missing',
+        'Lug Nut Missing'
+      ]
+    ],
+
+    [
+      'RHS Front Door',
+      [
+        'OK',
+        'Broken/Crack',
+        'Dented',
+        'Rusted',
+        'Scratch',
+        'Paint Mismatch',
+        'Repair + Repaint'
+      ]
+    ],
+
+    [
+      'RHS ORVM',
+      [
+        'OK',
+        'Scratch + Faded',
+        'Mirror Crack',
+        'Folding Motor Not Working',
+        'Light Not Working'
+      ]
+    ],
+
+    [
+      'RHS A-Pillar',
+      [
+        'OK',
+        'Paint Faded / Mismatch',
+        'Scratches',
+        'Dent',
+        'Rusting',
+        'Repaired + Welded'
+      ]
+    ],
+
+    [
+      'RHS B-Pillar',
+      [
+        'OK',
+        'Paint Faded / Mismatch',
+        'Scratches',
+        'Dent',
+        'Rusting',
+        'Repaired + Welded'
+      ]
+    ],
+
+    [
+      'RHS C-Pillar',
+      [
+        'OK',
+        'Paint Faded / Mismatch',
+        'Scratches',
+        'Dent',
+        'Rusting',
+        'Repaired + Welded'
+      ]
+    ],
+
+    [
+      'RHS Rear Door',
+      [
+        'OK',
+        'Broken/Crack',
+        'Dented',
+        'Rusted',
+        'Scratch',
+        'Paint Mismatch',
+        'Repair + Repaint'
+      ]
+    ],
+
+    [
+      'RHS Running Board',
+      [
+        'OK',
+        'Scratches',
+        'Dent',
+        'Rusted',
+        'Cladding Broken / Not Fixed Properly',
+        'Paint Mismatch / Hole / Crack'
+      ]
+    ],
+
+    [
+      'RHS Rear Tyre',
+      [
+        'OK',
+        'Tyre Crack',
+        'Rim Rusting',
+        'Wheel Cap Missing',
+        'Lug Nut Missing'
+      ]
+    ],
+
+    [
+      'RHS Quarter Panel',
+      [
+        'OK',
+        'Fuel Lid Lock Not Working',
+        'Paint Issue + Mismatch + Faded',
+        'Dent',
+        'Rusting',
+        'Scratches',
+        'Repair + Repaint + Welded'
+      ]
+    ],
+
+
+    // ==================== REAR SIDE ====================
+
+    [
+      'Dicky / Boot Door',
+      [
+        'OK',
+        'Scratches',
+        'Dent',
+        'Rusted',
+        'Boot Partial Missing',
+        'Jack & Tools Missing',
+        'Shocker Not Working',
+        'Dicky Lock Not Working',
+        'Spoiler Broken / Damage'
+      ]
+    ],
+
+    [
+      'Rear Windshield',
+      [
+        'OK',
+        'Glass Crack',
+        'Glass Chip',
+        'Scratch',
+        'Rubber Damage',
+        'Water Leakage'
+      ]
+    ],
+
+    [
+      'Spare Tyre',
+      [
+        'OK',
+        'Tyre Crack',
+        'Rim Rusting',
+        'Wheel Cap Missing',
+        'Lug Nut Missing'
+      ]
+    ],
+
+    [
+      'Boot Floor',
+      [
+        'OK',
+        'Water Logging',
+        'Welded / Repaired',
+        'Rusting',
+        'Dent',
+        'Hole & Crack'
+      ]
+    ],
+
+    [
+      'Rear Bumper',
+      [
+        'OK',
+        'Broken/Crack',
+        'Dented',
+        'Scratch',
+        'Rusted',
+        'Paint Mismatch',
+        'Repair + Repaint'
+      ]
+    ],
+
+
+    // ==================== LEFT SIDE ====================
+
+    [
+      'LHS Quarter Panel',
+      [
+        'OK',
+        'Fuel Lid Lock Not Working',
+        'Paint Issue + Mismatch + Faded',
+        'Dent',
+        'Rusting',
+        'Scratches',
+        'Repair + Repaint + Welded'
+      ]
+    ],
+
+    [
+      'LHS Rear Tyre',
+      [
+        'OK',
+        'Tyre Crack',
+        'Rim Rusting',
+        'Wheel Cap Missing',
+        'Lug Nut Missing'
+      ]
+    ],
+
+    [
+      'LHS Running Board',
+      [
+        'OK',
+        'Scratches',
+        'Dent',
+        'Rusted',
+        'Cladding Broken / Not Fixed Properly',
+        'Paint Mismatch / Hole / Crack'
+      ]
+    ],
+
+    [
+      'LHS Rear Door',
+      [
+        'OK',
+        'Broken/Crack',
+        'Dented',
+        'Rusted',
+        'Scratch',
+        'Paint Mismatch',
+        'Repair + Repaint'
+      ]
+    ],
+
+    [
+      'LHS C-Pillar',
+      [
+        'OK',
+        'Paint Faded / Mismatch',
+        'Scratches',
+        'Dent',
+        'Rusting',
+        'Repaired + Welded'
+      ]
+    ],
+
+    [
+      'LHS B-Pillar',
+      [
+        'OK',
+        'Paint Faded / Mismatch',
+        'Scratches',
+        'Dent',
+        'Rusting',
+        'Repaired + Welded'
+      ]
+    ],
+
+    [
+      'LHS A-Pillar',
+      [
+        'OK',
+        'Paint Faded / Mismatch',
+        'Scratches',
+        'Dent',
+        'Rusting',
+        'Repaired + Welded'
+      ]
+    ],
+
+    [
+      'LHS Front Door',
+      [
+        'OK',
+        'Broken/Crack',
+        'Dented',
+        'Rusted',
+        'Scratch',
+        'Paint Mismatch',
+        'Repair + Repaint'
+      ]
+    ],
+
+    [
+      'LHS ORVM',
+      [
+        'OK',
+        'Scratch + Faded',
+        'Mirror Crack',
+        'Folding Motor Not Working',
+        'Light Not Working'
+      ]
+    ],
+
+    [
+      'LHS Front Tyre',
+      [
+        'OK',
+        'Tyre Crack',
+        'Rim Rusting',
+        'Wheel Cap Missing',
+        'Lug Nut Missing'
+      ]
+    ],
+
+    [
+      'LHS Fender',
+      [
+        'OK',
+        'Dent',
+        'Scratch',
+        'Rusting',
+        'Lug Missing'
+      ]
+    ],
+
+
+    // ==================== INNER / ENGINE AREA ====================
+
+    [
+      'Firewall',
+      [
+        'OK',
+        'Rusted',
+        'Cover Damage',
+        'Carpet Damage',
+        'Crack & Hole',
+        'Repaired / Welded'
+      ]
+    ]
+
+  ]
+},
 
 
     // ===================================================

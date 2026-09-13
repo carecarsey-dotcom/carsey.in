@@ -280,6 +280,21 @@
           />
         </div>
 
+        <!-- CITY -->
+
+        <div>
+          <label class="mb-1.5 block text-sm font-medium text-slate-700">
+            City
+          </label>
+
+          <input
+            type="text"
+            [(ngModel)]="vehicle.city"
+            placeholder="City"
+            class="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+          />
+        </div>
+
         <!-- CHASSIS -->
 
         <div>
@@ -773,10 +788,6 @@
 
       <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <div *ngFor="let photo of documentPhotos" class="rounded-xl border border-slate-200 bg-slate-50 p-3">
-          <div class="mb-2 text-sm font-semibold text-slate-800">
-            {{ photo.title }} <span class="text-red-500">*</span>
-          </div>
-
           <div *ngIf="photo.preview" class="relative mb-2">
             <img [src]="photo.preview" [alt]="photo.title" class="h-32 w-full rounded-lg border border-slate-200 bg-white object-contain" />
             <button type="button" (click)="removeDocumentPhoto(photo.key)" class="absolute right-2 top-2 rounded-full bg-white px-2 py-1 text-xs font-medium text-red-600 shadow">Remove</button>

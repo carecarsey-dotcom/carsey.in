@@ -248,8 +248,6 @@ export class EmployeeInspectionComponent
 
     inspection_date: '',
 
-    rto: '',
-
     spare_key: 'Yes',
 
     insurance_type: '',
@@ -305,42 +303,344 @@ export class EmployeeInspectionComponent
 
   inspectionSections: InspectionSection[] = [
     {
-      key: 'exterior',
-      title: 'EXTERIOR + TYRE',
-      rows: [
-        ['Door Front RHS', ['Ok/No imperfection','Broking/Crack','Dented','Rusted','Scratch','Paint Mismatch','Repair + Repaint']],
-        ['Door Rear RHS', ['Ok/No imperfection','Broking/Crack','Dented','Rusted','Scratch','Paint Mismatch','Repair + Repaint']],
-        ['Door Front LHS', ['Ok/No imperfection','Broking/Crack','Dented','Rusted','Scratch','Paint Mismatch','Repair + Repaint']],
-        ['Door Rear LHS', ['Ok/No imperfection','Broking/Crack','Dented','Rusted','Scratch','Paint Mismatch','Repair + Repaint']],
-        ['ORVM RHS', ['Ok/No imperfection','Scratch + Faded','Mirror Crack','Folding Motor Not Working','Light Not Working']],
-        ['ORVM LHS', ['Ok/No imperfection','Scratch + Faded','Mirror Crack','Folding Motor Not Working','Light Not Working']],
-        ['Pillar A - RHS', ['Ok/No imperfection','Paint Faded / Mismatch','Scratches','Dent','Rusting','Repaired + Welded']],
-        ['Pillar B - RHS', ['Ok/No imperfection','Paint Faded / Mismatch','Scratches','Dent','Rusting','Repaired + Welded']],
-        ['Pillar C - RHS', ['Ok/No imperfection','Paint Faded / Mismatch','Scratches','Dent','Rusting','Repaired + Welded']],
-        ['Pillar A - LHS', ['Ok/No imperfection','Paint Faded / Mismatch','Scratches','Dent','Rusting','Repaired + Welded']],
-        ['Pillar B - LHS', ['Ok/No imperfection','Paint Faded / Mismatch','Scratches','Dent','Rusting','Repaired + Welded']],
-        ['Pillar C - LHS', ['Ok/No imperfection','Paint Faded / Mismatch','Scratches','Dent','Rusting','Repaired + Welded']],
-        ['Quarter Panel RHS', ['Ok/No imperfection','Fuel Lid Lock Not Working','Paint Issue + Mismatch + Faded','Dent','Rusting','Scratches','Repair + Repaint + Welded']],
-        ['Quarter Panel LHS', ['Ok/No imperfection','Fuel Lid Lock Not Working','Paint Issue + Mismatch + Faded','Dent','Rusting','Scratches','Repair + Repaint + Welded']],
-        ['Running Board RHS', ['Ok/No imperfection','Scratches','Dent','Rusted','Cladding Broken / Not Fixed Properly','Paint Mismatch / Hole / Crack']],
-        ['Running Board LHS', ['Ok/No imperfection','Scratches','Dent','Rusted','Cladding Broken / Not Fixed Properly','Paint Mismatch / Hole / Crack']],
-        ['Dicky / Boot Door', ['Ok/No imperfection','Scratches','Dent','Rusted','Boot Partial Missing','Jack & Tools Missing','Shocker Not Working','Dicky Lock Not Working','Spoiler Broken / Damage']],
-        ['Tyre Front RHS', ['Ok/No imperfection','Tyre Crack','Rim Rusting','Wheel Cap Missing','Lug Nut Missing']],
-        ['Tyre Rear RHS', ['Ok/No imperfection','Tyre Crack','Rim Rusting','Wheel Cap Missing','Lug Nut Missing']],
-        ['Tyre Front LHS', ['Ok/No imperfection','Tyre Crack','Rim Rusting','Wheel Cap Missing','Lug Nut Missing']],
-        ['Tyre Rear LHS', ['Ok/No imperfection','Tyre Crack','Rim Rusting','Wheel Cap Missing','Lug Nut Missing']],
-        ['Spare Tyre', ['Ok/No imperfection','Tyre Crack','Rim Rusting','Wheel Cap Missing','Lug Nut Missing']],
-        ['Boot Floor', ['Ok/No imperfection','Water Logging','Welded / Repaired','Rusting','Dent','Hole & Crack']],
-        ['Fender RHS', ['Ok/No imperfection','Dent','Scratch','Rusting','Lug Missing']],
-        ['Fender LHS', ['Ok/No imperfection','Dent','Scratch','Rusting','Lug Missing']],
-        ['Bonnet / Hood', ['Ok/No imperfection','Dent','Scratch','Rusting','Scooper Not Working','Crack / Hole']],
-        ['Upper Cross Member', ['Ok/No imperfection','Rusting','Damage','Repaired / Welded']],
-        ['Roof', ['Ok/No imperfection','Paint Mismatch + Faded','Dent','Crack / Hole','Scratches','Roof Rail Broken','Sun Roof Not Working']],
-        ['Apron RHS', ['Ok/No imperfection','Repaired / Welded','Repainted','Rusting','Dent','Crack / Hole']],
-        ['Apron LHS', ['Ok/No imperfection','Repaired / Welded','Repainted','Rusting','Dent','Crack / Hole']],
-        ['Firewall', ['Ok/No imperfection','Rusted','Cover Damage','Carpet Damage','Crack & Hole','Repaired / Welded']],
-      ]
-    },
+  key: 'exterior',
+
+  title: 'EXTERIOR + TYRE',
+
+  rows: [
+
+    // ==================== FRONT SIDE ====================
+
+    ['Front Bumper', [
+      'Ok/No imperfection',
+      'Broken/Crack',
+      'Dented',
+      'Rusted',
+      'Scratch',
+      'Paint Mismatch',
+      'Repair + Repaint'
+    ]],
+
+    ['Bonnet / Hood', [
+      'Ok/No imperfection',
+      'Dent',
+      'Scratch',
+      'Rusting',
+      'Scooper Not Working',
+      'Crack / Hole'
+    ]],
+
+    ['Front Windshield', [
+      'Ok/No imperfection',
+      'Glass Crack',
+      'Glass Chip',
+      'Scratch',
+      'Rubber Damage',
+      'Water Leakage'
+    ]],
+
+    ['Roof', [
+      'Ok/No imperfection',
+      'Paint Mismatch + Faded',
+      'Dent',
+      'Crack / Hole',
+      'Scratches',
+      'Roof Rail Broken',
+      'Sun Roof Not Working'
+    ]],
+
+    ['Upper Cross Member', [
+      'Ok/No imperfection',
+      'Rusting',
+      'Damage',
+      'Repaired / Welded'
+    ]],
+
+    ['Apron RHS', [
+      'Ok/No imperfection',
+      'Repaired / Welded',
+      'Repainted',
+      'Rusting',
+      'Dent',
+      'Crack / Hole'
+    ]],
+
+    ['Apron LHS', [
+      'Ok/No imperfection',
+      'Repaired / Welded',
+      'Repainted',
+      'Rusting',
+      'Dent',
+      'Crack / Hole'
+    ]],
+
+
+    // ==================== RIGHT SIDE ====================
+
+    ['Fender RHS', [
+      'Ok/No imperfection',
+      'Dent',
+      'Scratch',
+      'Rusting',
+      'Lug Missing'
+    ]],
+
+    ['Tyre Front RHS', [
+      'Ok/No imperfection',
+      'Tyre Crack',
+      'Rim Rusting',
+      'Wheel Cap Missing',
+      'Lug Nut Missing'
+    ]],
+
+    ['Door Front RHS', [
+      'Ok/No imperfection',
+      'Broken/Crack',
+      'Dented',
+      'Rusted',
+      'Scratch',
+      'Paint Mismatch',
+      'Repair + Repaint'
+    ]],
+
+    ['ORVM RHS', [
+      'Ok/No imperfection',
+      'Scratch + Faded',
+      'Mirror Crack',
+      'Folding Motor Not Working',
+      'Light Not Working'
+    ]],
+
+    ['Pillar A - RHS', [
+      'Ok/No imperfection',
+      'Paint Faded / Mismatch',
+      'Scratches',
+      'Dent',
+      'Rusting',
+      'Repaired + Welded'
+    ]],
+
+    ['Pillar B - RHS', [
+      'Ok/No imperfection',
+      'Paint Faded / Mismatch',
+      'Scratches',
+      'Dent',
+      'Rusting',
+      'Repaired + Welded'
+    ]],
+
+    ['Pillar C - RHS', [
+      'Ok/No imperfection',
+      'Paint Faded / Mismatch',
+      'Scratches',
+      'Dent',
+      'Rusting',
+      'Repaired + Welded'
+    ]],
+
+    ['Door Rear RHS', [
+      'Ok/No imperfection',
+      'Broken/Crack',
+      'Dented',
+      'Rusted',
+      'Scratch',
+      'Paint Mismatch',
+      'Repair + Repaint'
+    ]],
+
+    ['Running Board RHS', [
+      'Ok/No imperfection',
+      'Scratches',
+      'Dent',
+      'Rusted',
+      'Cladding Broken / Not Fixed Properly',
+      'Paint Mismatch / Hole / Crack'
+    ]],
+
+    ['Tyre Rear RHS', [
+      'Ok/No imperfection',
+      'Tyre Crack',
+      'Rim Rusting',
+      'Wheel Cap Missing',
+      'Lug Nut Missing'
+    ]],
+
+    ['Quarter Panel RHS', [
+      'Ok/No imperfection',
+      'Fuel Lid Lock Not Working',
+      'Paint Issue + Mismatch + Faded',
+      'Dent',
+      'Rusting',
+      'Scratches',
+      'Repair + Repaint + Welded'
+    ]],
+
+
+    // ==================== REAR SIDE ====================
+
+    ['Dicky / Boot Door', [
+      'Ok/No imperfection',
+      'Scratches',
+      'Dent',
+      'Rusted',
+      'Boot Partial Missing',
+      'Jack & Tools Missing',
+      'Shocker Not Working',
+      'Dicky Lock Not Working',
+      'Spoiler Broken / Damage'
+    ]],
+
+    ['Rear Windshield', [
+      'Ok/No imperfection',
+      'Glass Crack',
+      'Glass Chip',
+      'Scratch',
+      'Rubber Damage',
+      'Water Leakage'
+    ]],
+
+    ['Spare Tyre', [
+      'Ok/No imperfection',
+      'Tyre Crack',
+      'Rim Rusting',
+      'Wheel Cap Missing',
+      'Lug Nut Missing'
+    ]],
+
+    ['Boot Floor', [
+      'Ok/No imperfection',
+      'Water Logging',
+      'Welded / Repaired',
+      'Rusting',
+      'Dent',
+      'Hole & Crack'
+    ]],
+
+    ['Rear Bumper', [
+      'Ok/No imperfection',
+      'Broken/Crack',
+      'Dented',
+      'Rusted',
+      'Scratch',
+      'Paint Mismatch',
+      'Repair + Repaint'
+    ]],
+
+
+    // ==================== LEFT SIDE ====================
+
+    ['Quarter Panel LHS', [
+      'Ok/No imperfection',
+      'Fuel Lid Lock Not Working',
+      'Paint Issue + Mismatch + Faded',
+      'Dent',
+      'Rusting',
+      'Scratches',
+      'Repair + Repaint + Welded'
+    ]],
+
+    ['Tyre Rear LHS', [
+      'Ok/No imperfection',
+      'Tyre Crack',
+      'Rim Rusting',
+      'Wheel Cap Missing',
+      'Lug Nut Missing'
+    ]],
+
+    ['Running Board LHS', [
+      'Ok/No imperfection',
+      'Scratches',
+      'Dent',
+      'Rusted',
+      'Cladding Broken / Not Fixed Properly',
+      'Paint Mismatch / Hole / Crack'
+    ]],
+
+    ['Door Rear LHS', [
+      'Ok/No imperfection',
+      'Broken/Crack',
+      'Dented',
+      'Rusted',
+      'Scratch',
+      'Paint Mismatch',
+      'Repair + Repaint'
+    ]],
+
+    ['Pillar C - LHS', [
+      'Ok/No imperfection',
+      'Paint Faded / Mismatch',
+      'Scratches',
+      'Dent',
+      'Rusting',
+      'Repaired + Welded'
+    ]],
+
+    ['Pillar B - LHS', [
+      'Ok/No imperfection',
+      'Paint Faded / Mismatch',
+      'Scratches',
+      'Dent',
+      'Rusting',
+      'Repaired + Welded'
+    ]],
+
+    ['Pillar A - LHS', [
+      'Ok/No imperfection',
+      'Paint Faded / Mismatch',
+      'Scratches',
+      'Dent',
+      'Rusting',
+      'Repaired + Welded'
+    ]],
+
+    ['Door Front LHS', [
+      'Ok/No imperfection',
+      'Broken/Crack',
+      'Dented',
+      'Rusted',
+      'Scratch',
+      'Paint Mismatch',
+      'Repair + Repaint'
+    ]],
+
+    ['ORVM LHS', [
+      'Ok/No imperfection',
+      'Scratch + Faded',
+      'Mirror Crack',
+      'Folding Motor Not Working',
+      'Light Not Working'
+    ]],
+
+    ['Tyre Front LHS', [
+      'Ok/No imperfection',
+      'Tyre Crack',
+      'Rim Rusting',
+      'Wheel Cap Missing',
+      'Lug Nut Missing'
+    ]],
+
+    ['Fender LHS', [
+      'Ok/No imperfection',
+      'Dent',
+      'Scratch',
+      'Rusting',
+      'Lug Missing'
+    ]],
+
+
+    // ==================== INNER / ENGINE AREA ====================
+
+    ['Firewall', [
+      'Ok/No imperfection',
+      'Rusted',
+      'Cover Damage',
+      'Carpet Damage',
+      'Crack & Hole',
+      'Repaired / Welded'
+    ]]
+
+  ]
+},
     {
       key: 'engine_bay',
       title: 'ENGINE + TRANSMISSION',
@@ -3093,13 +3393,6 @@ export class EmployeeInspectionComponent
     for (const photo of this.testDrivePhotos) {
       if (!photo.file) {
         this.errorMessage = `${photo.title}: photo is required.`;
-        return false;
-      }
-    }
-
-    for (const photo of this.documentPhotos) {
-      if (!photo.file) {
-        this.errorMessage = `${photo.title}: document image is required.`;
         return false;
       }
     }
