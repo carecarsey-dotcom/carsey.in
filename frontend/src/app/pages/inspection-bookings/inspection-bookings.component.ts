@@ -24,6 +24,7 @@ import {
 interface InspectionBooking {
 
   booking_id: number;
+  booking_code?: string;
 
   name: string;
 
@@ -509,6 +510,11 @@ export class InspectionBookingsComponent
         booking?.bookingId ??
         0,
 
+      booking_code:
+        booking?.booking_code ??
+        booking?.bookingCode ??
+        '',
+
 
       name:
         booking?.name ??
@@ -645,6 +651,14 @@ export class InspectionBookingsComponent
             String(
               booking.booking_id
             )
+              .toLowerCase()
+              .includes(search)
+
+
+            ||
+
+
+            (booking.booking_code || '')
               .toLowerCase()
               .includes(search)
 
@@ -796,10 +810,10 @@ export class InspectionBookingsComponent
 
           alert(
 
-`Booking #${
-  booking?.booking_id ??
-  booking?.bookingId ??
-  '-'
+`Booking ${
+  booking?.booking_code ??
+  booking?.bookingCode ??
+  ('CAR-' + String(booking?.booking_id ?? booking?.bookingId ?? 0).padStart(6, '0'))
 }
 
 Name: ${
@@ -913,7 +927,7 @@ Employee: ${
 
     const confirmed =
       confirm(
-        `Approve booking #${booking.booking_id}?`
+        `Approve booking ${booking.booking_code || ('CAR-' + String(booking.booking_id).padStart(6, '0'))}?`
       );
 
 
@@ -951,7 +965,7 @@ Employee: ${
 
     const confirmed =
       confirm(
-        `Reject booking #${booking.booking_id}?`
+        `Reject booking ${booking.booking_code || ('CAR-' + String(booking.booking_id).padStart(6, '0'))}?`
       );
 
 
@@ -1039,7 +1053,7 @@ Employee: ${
 
 
           alert(
-            `Booking #${booking.booking_id} ${status.toLowerCase()} successfully.`
+            `Booking ${booking.booking_code || ('CAR-' + String(booking.booking_id).padStart(6, '0'))} ${status.toLowerCase()} successfully.`
           );
 
 
@@ -1123,7 +1137,7 @@ Employee: ${
     const confirmed =
       confirm(
 
-`Assign inspection booking #${booking.booking_id}
+`Assign inspection booking ${booking.booking_code || ('CAR-' + String(booking.booking_id).padStart(6, '0'))}
 
 Customer: ${booking.name || '-'}
 
@@ -1230,7 +1244,7 @@ Do you want to continue?`
 
 
           alert(
-            `Inspection booking #${booking.booking_id} assigned to ${employee?.name || 'employee'} successfully.`
+            `Inspection booking ${booking.booking_code || ('CAR-' + String(booking.booking_id).padStart(6, '0'))} assigned to ${employee?.name || 'employee'} successfully.`
           );
 
 

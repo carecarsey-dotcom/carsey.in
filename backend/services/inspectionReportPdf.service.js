@@ -1846,7 +1846,6 @@ const drawVehicleDetails = (doc, report, y, reportId) => {
         ["Chassis Number", vehicleValue(report, ["chassis_number", "chassisNumber", "chassis_no"])],
         ["Engine Number", vehicleValue(report, ["engine_number", "engineNumber", "engine_no"])],
         ["Inspection Date", formatDate(vehicleValue(report, ["inspection_date", "inspectionDate"]))],
-        ["RTO", vehicleValue(report, ["rto", "rtoName", "rto_name"])],
         ["Spare Key", vehicleValue(report, ["spare_key", "spareKey", "spareKeys"])],
         ["Insurance Type", vehicleValue(report, ["insurance_type", "insuranceType", "insurance"])],
         ["Insurance Validity", formatDate(vehicleValue(report, ["insurance_validity", "insuranceValidity", "insurance_expiry"]))]
@@ -2309,7 +2308,8 @@ const drawImageGridSection = (
     reportId,
     sectionTitle,
     emptyText,
-    startY = null
+    startY = null,
+    showImageTitle = true
 ) => {
     const validImages = Array.isArray(images)
         ? images.filter((image) => image?.filePath)
@@ -2358,16 +2358,21 @@ const drawImageGridSection = (
         doc.roundedRect(x, y, cardWidth, cardHeight, 5)
             .fillAndStroke(COLORS.white, COLORS.border);
 
-        doc.font("Helvetica-Bold").fontSize(8).fillColor(COLORS.dark)
-            .text(title, x + 8, y + 8, {
-                width: cardWidth - 16,
-                ellipsis: true,
-                align: "center"
-            });
+        if (showImageTitle) {
+            doc.font("Helvetica-Bold").fontSize(8).fillColor(COLORS.dark)
+                .text(title, x + 8, y + 8, {
+                    width: cardWidth - 16,
+                    ellipsis: true,
+                    align: "center"
+                });
+        }
 
         try {
-            doc.image(image.filePath, x + 8, y + 25, {
-                fit: [cardWidth - 16, cardHeight - 33],
+            doc.image(image.filePath, x + 8, y + (showImageTitle ? 25 : 8), {
+                fit: [
+                    cardWidth - 16,
+                    showImageTitle ? cardHeight - 33 : cardHeight - 16
+                ],
                 align: "center",
                 valign: "center"
             });
@@ -2379,6 +2384,11 @@ const drawImageGridSection = (
                 });
         }
     }
+
+    // Return the bottom of the last image row so another section can
+    // continue directly below it on the same page when there is room.
+    const lastRowStartY = y;
+    return lastRowStartY + cardHeight;
 };
 
 const orderImagesByTitle = (images, orderedTitles) => {
@@ -2444,7 +2454,8 @@ const drawDocumentPhotos = (doc, images, reportId, startY = null) => {
         reportId,
         "Documents / Title Images",
         "No document images uploaded.",
-        startY
+        startY,
+        false
     );
 };
 
@@ -2458,7 +2469,7 @@ const drawTestDrivePhotos = (doc, images, reportId) => {
 
     const orderedImages = orderImagesByTitle(testDriveImages, TEST_DRIVE_PHOTO_ORDER);
 
-    drawImageGridSection(
+    return drawImageGridSection(
         doc,
         orderedImages,
         reportId,
@@ -2716,15 +2727,22 @@ const generateInspectionReportPdf = (report) => {
                 // TEST DRIVE PHOTOS - SEPARATE SECTION
                 // ==================================================
 
-                drawTestDrivePhotos(doc, allImages, reportId);
+                const testDriveEndY =
+                    drawTestDrivePhotos(doc, allImages, reportId);
 
                 // ==================================================
-                // INSPECTION SUMMARY - SEPARATE SECTION
+                // INSPECTION SUMMARY
+                // Continue directly below Test Drive Photos when possible.
                 // ==================================================
 
-                doc.addPage();
-                y = MARGIN_TOP;
-                y = drawInspectionSummary(doc, normalizedReport, y, reportId);
+                y = drawInspectionSummary(
+                    doc,
+                    normalizedReport,
+                    testDriveEndY === undefined
+                        ? MARGIN_TOP
+                        : testDriveEndY + 10,
+                    reportId
+                );
 
                 drawFooter(doc, reportId);
                 doc.end();

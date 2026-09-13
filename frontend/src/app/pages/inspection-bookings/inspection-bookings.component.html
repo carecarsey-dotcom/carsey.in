@@ -288,7 +288,7 @@
               class="whitespace-nowrap px-5 py-4 text-sm font-semibold text-slate-700"
             >
 
-              #{{ booking.booking_id }}
+              {{ booking.booking_code || ('CAR-' + (booking.booking_id | number:'6.0-0')) }}
 
             </td>
 

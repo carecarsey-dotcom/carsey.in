@@ -5,6 +5,21 @@ const inspectionBookingRepository =
 
 
 // ======================================================
+// CUSTOMER-FACING BOOKING ID
+// ======================================================
+
+const getBookingCode = (bookingId) => {
+    const id = Number(bookingId);
+
+    if (!Number.isInteger(id) || id <= 0) {
+        return null;
+    }
+
+    return `CAR-${String(id).padStart(6, "0")}`;
+};
+
+
+// ======================================================
 // CREATE BOOKING
 // ======================================================
 
@@ -112,9 +127,15 @@ const createBooking = async (
 
 const getAllBookings = async () => {
 
-    return await
-        inspectionBookingRepository
+    const bookings =
+        await inspectionBookingRepository
             .getAllBookings();
+
+    return bookings.map((booking) => ({
+        ...booking,
+        booking_code:
+            getBookingCode(booking?.booking_id)
+    }));
 
 };
 
@@ -149,7 +170,11 @@ const getBookingById = async (
     }
 
 
-    return booking;
+    return {
+        ...booking,
+        booking_code:
+            getBookingCode(booking?.booking_id)
+    };
 
 };
 
@@ -210,6 +235,8 @@ const updateBookingStatus = async (
     return {
 
         bookingId,
+
+        bookingCode: getBookingCode(bookingId),
 
         status
 
@@ -399,6 +426,8 @@ const assignInspection = async (
 
                 bookingId,
 
+                bookingCode: getBookingCode(bookingId),
+
                 employeeId,
 
                 employeeName:
@@ -457,6 +486,8 @@ const assignInspection = async (
         requestId,
 
         bookingId,
+
+        bookingCode: getBookingCode(bookingId),
 
         employeeId,
 
@@ -519,11 +550,17 @@ const getEmployeeAssignments = async (
     }
 
 
-    return await
-        inspectionBookingRepository
+    const assignments =
+        await inspectionBookingRepository
             .getEmployeeAssignments(
                 employeeId
             );
+
+    return assignments.map((assignment) => ({
+        ...assignment,
+        booking_code:
+            getBookingCode(assignment?.booking_id)
+    }));
 
 };
 
@@ -558,7 +595,11 @@ const getInspectionRequestById = async (
     }
 
 
-    return request;
+    return {
+        ...request,
+        booking_code:
+            getBookingCode(request?.booking_id)
+    };
 
 };
 
@@ -581,6 +622,8 @@ module.exports = {
 
     getEmployeeAssignments,
 
-    getInspectionRequestById
+    getInspectionRequestById,
+
+    getBookingCode
 
 };
