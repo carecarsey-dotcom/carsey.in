@@ -131,16 +131,6 @@
           </th>
 
 
-          <!-- BOOKING ID -->
-
-          <th
-            class="px-6 py-4 text-left text-sm font-semibold text-slate-600"
-          >
-            Booking ID
-          </th>
-
-
-
           <!-- MODEL -->
 
           <th
@@ -255,7 +245,7 @@
             <td
               class="px-6 py-4 text-sm text-slate-700"
             >
-              #{{ vehicle.car_id }}
+              {{ getBookingCode(vehicle) }}
             </td>
 
 
@@ -497,7 +487,7 @@
           <tr>
 
             <td
-              colspan="11"
+              colspan="10"
               class="px-6 py-12 text-center text-slate-500"
             >
 

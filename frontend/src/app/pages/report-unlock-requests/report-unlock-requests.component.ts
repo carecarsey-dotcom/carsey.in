@@ -1,37 +1,55 @@
 import {
+
   Component,
+
   OnInit,
+
   inject
+
 } from '@angular/core';
 
 import { CommonModule } from '@angular/common';
 
 import {
+
   ReportUnlockService,
+
   ReportUnlockRequest
+
 } from '../../services/report-unlock.service';
 
 
+
 @Component({
+
   selector: 'app-report-unlock-requests',
 
   standalone: true,
 
   imports: [
+
     CommonModule
+
   ],
 
   templateUrl:
+
     './report-unlock-requests.component.html',
 
   styleUrl:
+
     './report-unlock-requests.component.css'
+
 })
+
 export class ReportUnlockRequestsComponent
+
   implements OnInit {
 
   private reportUnlockService =
+
     inject(ReportUnlockService);
+
 
 
   requests: ReportUnlockRequest[] = [];
@@ -43,8 +61,11 @@ export class ReportUnlockRequestsComponent
   updatingRequestId: number | null = null;
 
 
+
   // ======================================================
+
   // INIT
+
   // ======================================================
 
   ngOnInit(): void {
@@ -54,8 +75,11 @@ export class ReportUnlockRequestsComponent
   }
 
 
+
   // ======================================================
+
   // LOAD REQUESTS
+
   // ======================================================
 
   loadRequests(): void {
@@ -65,30 +89,41 @@ export class ReportUnlockRequestsComponent
     this.errorMessage = '';
 
 
+
     this.reportUnlockService
+
       .getRequests()
+
       .subscribe({
 
         next: (response: any) => {
 
           console.log(
+
             'Report Unlock Response:',
+
             response
+
           );
+
 
 
           if (response.success) {
 
             this.requests =
+
               response.data?.requests ?? [];
 
           } else {
 
             this.errorMessage =
+
               response.message ||
+
               'Unable to load report unlock requests.';
 
           }
+
 
 
           this.loading = false;
@@ -96,17 +131,25 @@ export class ReportUnlockRequestsComponent
         },
 
 
+
         error: (error) => {
 
           console.error(
+
             'Report Unlock API Error:',
+
             error
+
           );
 
 
+
           this.errorMessage =
+
             error?.error?.message ||
+
             'Unable to load report unlock requests.';
+
 
 
           this.loading = false;
@@ -118,13 +161,19 @@ export class ReportUnlockRequestsComponent
   }
 
 
+
   // ======================================================
+
   // UPDATE STATUS
+
   // ======================================================
 
   updateStatus(
+
     requestId: number,
+
     status: 'Approved' | 'Rejected'
+
   ): void {
 
     if (this.updatingRequestId !== null) {
@@ -134,38 +183,57 @@ export class ReportUnlockRequestsComponent
     }
 
 
+
     this.updatingRequestId =
+
       requestId;
 
 
+
     this.reportUnlockService
+
       .updateStatus(
+
         requestId,
+
         status
+
       )
+
       .subscribe({
 
         next: (response: any) => {
 
           console.log(
+
             'Status Update Response:',
+
             response
+
           );
+
 
 
           if (response.success) {
 
             const request =
+
               this.requests.find(
+
                 item =>
+
                   item.request_id ===
+
                   requestId
+
               );
+
 
 
             if (request) {
 
               request.status =
+
                 status;
 
             }
@@ -173,34 +241,49 @@ export class ReportUnlockRequestsComponent
           } else {
 
             alert(
+
               response.message ||
+
               'Unable to update request status.'
+
             );
 
           }
 
 
+
           this.updatingRequestId =
+
             null;
 
         },
 
 
+
         error: (error) => {
 
           console.error(
+
             'Update Report Unlock Error:',
+
             error
+
           );
+
 
 
           alert(
+
             error?.error?.message ||
+
             'Unable to update request status.'
+
           );
 
 
+
           this.updatingRequestId =
+
             null;
 
         }
@@ -210,12 +293,50 @@ export class ReportUnlockRequestsComponent
   }
 
 
+
   // ======================================================
+
+  // BOOKING ID / MASTER ID
+  // ======================================================
+
+  getBookingCode(request: ReportUnlockRequest): string {
+
+    const bookingId = Number(
+
+      (request as any)?.booking_id ??
+
+      (request as any)?.bookingId ??
+
+      (request as any)?.master_booking_id
+
+    );
+
+
+
+    if (!Number.isInteger(bookingId) || bookingId <= 0) {
+
+      return '-';
+
+    }
+
+
+
+    return `CAR-${String(bookingId).padStart(6, '0')}`;
+
+  }
+
+
+
+  // ======================================================
+
   // STATUS CLASS
+
   // ======================================================
 
   getStatusClass(
+
     status: string
+
   ): string {
 
     if (status === 'Approved') {
@@ -225,11 +346,13 @@ export class ReportUnlockRequestsComponent
     }
 
 
+
     if (status === 'Rejected') {
 
       return 'bg-red-100 text-red-700';
 
     }
+
 
 
     return 'bg-yellow-100 text-yellow-700';

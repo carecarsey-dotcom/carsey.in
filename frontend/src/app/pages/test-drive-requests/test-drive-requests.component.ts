@@ -1,44 +1,67 @@
 import {
+
   Component,
+
   OnInit,
+
   inject
+
 } from '@angular/core';
 
 import {
+
   CommonModule
+
 } from '@angular/common';
 
 import {
+
   TestDriveRequest,
+
   TestDriveService
+
 } from '../../services/test-drive.service';
 
 
+
 @Component({
+
   selector: 'app-test-drive-requests',
 
   standalone: true,
 
   imports: [
+
     CommonModule
+
   ],
 
   templateUrl:
+
     './test-drive-requests.component.html',
 
   styleUrl:
+
     './test-drive-requests.component.css'
+
 })
+
 export class TestDriveRequestsComponent
+
   implements OnInit {
 
 
+
   private testDriveService =
+
     inject(TestDriveService);
 
 
+
   requests:
+
     TestDriveRequest[] = [];
+
 
 
   loading = false;
@@ -46,11 +69,15 @@ export class TestDriveRequestsComponent
   errorMessage = '';
 
   updatingRequestId:
+
     number | null = null;
 
 
+
   // ====================================================
+
   // INIT
+
   // ====================================================
 
   ngOnInit(): void {
@@ -60,8 +87,11 @@ export class TestDriveRequestsComponent
   }
 
 
+
   // ====================================================
+
   // LOAD REQUESTS
+
   // ====================================================
 
   loadRequests(): void {
@@ -71,30 +101,41 @@ export class TestDriveRequestsComponent
     this.errorMessage = '';
 
 
+
     this.testDriveService
+
       .getRequests()
+
       .subscribe({
 
         next: (response) => {
 
           console.log(
+
             'Test Drive Requests:',
+
             response
+
           );
+
 
 
           if (response.success) {
 
             this.requests =
+
               response.data?.requests ?? [];
 
           } else {
 
             this.errorMessage =
+
               response.message ||
+
               'Unable to load test drive requests.';
 
           }
+
 
 
           this.loading = false;
@@ -102,17 +143,25 @@ export class TestDriveRequestsComponent
         },
 
 
+
         error: (error) => {
 
           console.error(
+
             'Test Drive API Error:',
+
             error
+
           );
 
 
+
           this.errorMessage =
+
             error?.error?.message ||
+
             'Unable to load test drive requests.';
+
 
 
           this.loading = false;
@@ -124,59 +173,89 @@ export class TestDriveRequestsComponent
   }
 
 
+
   // ====================================================
+
   // APPROVE
+
   // ====================================================
 
   approve(
+
     request: TestDriveRequest
+
   ): void {
 
     this.updateStatus(
+
       request,
+
       'Approved'
+
     );
 
   }
 
 
+
   // ====================================================
+
   // REJECT
+
   // ====================================================
 
   reject(
+
     request: TestDriveRequest
+
   ): void {
 
     this.updateStatus(
+
       request,
+
       'Rejected'
+
     );
 
   }
 
 
+
   // ====================================================
+
   // UPDATE STATUS
+
   // ====================================================
 
   private updateStatus(
+
     request: TestDriveRequest,
 
     status:
+
       'Approved' |
+
       'Rejected'
+
   ): void {
 
     this.updatingRequestId =
+
       request.request_id;
 
 
+
     this.testDriveService
+
       .updateStatus(
+
         request.request_id,
+
         status
+
       )
+
       .subscribe({
 
         next: (response) => {
@@ -184,16 +263,21 @@ export class TestDriveRequestsComponent
           if (response.success) {
 
             request.status =
+
               status;
 
           } else {
 
             alert(
+
               response.message ||
+
               'Unable to update status.'
+
             );
 
           }
+
 
 
           this.updatingRequestId = null;
@@ -201,18 +285,27 @@ export class TestDriveRequestsComponent
         },
 
 
+
         error: (error) => {
 
           console.error(
+
             'Update Test Drive Error:',
+
             error
+
           );
+
 
 
           alert(
+
             error?.error?.message ||
+
             'Unable to update test drive status.'
+
           );
+
 
 
           this.updatingRequestId = null;
@@ -224,16 +317,67 @@ export class TestDriveRequestsComponent
   }
 
 
+
   // ====================================================
+
+  // MASTER BOOKING ID / ID CODE
+
+  // ====================================================
+
+  getBookingCode(
+
+    request: TestDriveRequest
+
+  ): string {
+
+    const bookingId = Number(
+
+      (request as any)?.booking_id ??
+
+      (request as any)?.bookingId ??
+
+      (request as any)?.master_booking_id
+
+    );
+
+
+
+    if (
+
+      !Number.isInteger(bookingId) ||
+
+      bookingId <= 0
+
+    ) {
+
+      return '-';
+
+    }
+
+
+
+    return `CAR-${String(bookingId).padStart(6, '0')}`;
+
+  }
+
+
+
+  // ====================================================
+
   // STATUS STYLE
+
   // ====================================================
 
   getStatusClass(
+
     status?: string
+
   ): string {
 
     if (
+
       status === 'Approved'
+
     ) {
 
       return 'bg-green-100 text-green-700';
@@ -241,13 +385,17 @@ export class TestDriveRequestsComponent
     }
 
 
+
     if (
+
       status === 'Rejected'
+
     ) {
 
       return 'bg-red-100 text-red-700';
 
     }
+
 
 
     return 'bg-yellow-100 text-yellow-700';

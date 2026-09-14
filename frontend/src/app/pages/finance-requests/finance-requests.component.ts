@@ -1,47 +1,69 @@
 import {
+
   Component,
+
   OnInit,
+
   inject
+
 } from '@angular/core';
 
 import {
+
   CommonModule
+
 } from '@angular/common';
 
 import {
+
   FinanceRequest,
+
   FinanceService
+
 } from '../../services/finance.service';
+
 
 
 @Component({
 
   selector:
+
     'app-finance-requests',
 
   standalone: true,
 
   imports: [
+
     CommonModule
+
   ],
 
   templateUrl:
+
     './finance-requests.component.html',
 
   styleUrl:
+
     './finance-requests.component.css'
 
 })
+
 export class FinanceRequestsComponent
+
   implements OnInit {
 
 
+
   private financeService =
+
     inject(FinanceService);
 
 
+
   requests:
+
     FinanceRequest[] = [];
+
 
 
   loading = false;
@@ -49,11 +71,15 @@ export class FinanceRequestsComponent
   errorMessage = '';
 
   updatingFinanceId:
+
     number | null = null;
 
 
+
   // ====================================================
+
   // INIT
+
   // ====================================================
 
   ngOnInit(): void {
@@ -63,8 +89,11 @@ export class FinanceRequestsComponent
   }
 
 
+
   // ====================================================
+
   // LOAD REQUESTS
+
   // ====================================================
 
   loadRequests(): void {
@@ -74,30 +103,41 @@ export class FinanceRequestsComponent
     this.errorMessage = '';
 
 
+
     this.financeService
+
       .getRequests()
+
       .subscribe({
 
         next: (response) => {
 
           console.log(
+
             'Finance Requests:',
+
             response
+
           );
+
 
 
           if (response.success) {
 
             this.requests =
+
               response.data?.requests ?? [];
 
           } else {
 
             this.errorMessage =
+
               response.message ||
+
               'Unable to load finance requests.';
 
           }
+
 
 
           this.loading = false;
@@ -105,17 +145,25 @@ export class FinanceRequestsComponent
         },
 
 
+
         error: (error) => {
 
           console.error(
+
             'Finance API Error:',
+
             error
+
           );
 
 
+
           this.errorMessage =
+
             error?.error?.message ||
+
             'Unable to load finance requests.';
+
 
 
           this.loading = false;
@@ -127,40 +175,59 @@ export class FinanceRequestsComponent
   }
 
 
+
   // ====================================================
+
   // APPROVE
+
   // ====================================================
 
   approve(
+
     request: FinanceRequest
+
   ): void {
 
     this.updateStatus(
+
       request,
+
       'Approved'
+
     );
 
   }
 
 
+
   // ====================================================
+
   // REJECT
+
   // ====================================================
 
   reject(
+
     request: FinanceRequest
+
   ): void {
 
     this.updateStatus(
+
       request,
+
       'Rejected'
+
     );
 
   }
 
 
+
   // ====================================================
+
   // UPDATE STATUS
+
   // ====================================================
 
   private updateStatus(
@@ -168,20 +235,29 @@ export class FinanceRequestsComponent
     request: FinanceRequest,
 
     status:
+
       'Approved' |
+
       'Rejected'
 
   ): void {
 
     this.updatingFinanceId =
+
       request.finance_id;
 
 
+
     this.financeService
+
       .updateStatus(
+
         request.finance_id,
+
         status
+
       )
+
       .subscribe({
 
         next: (response) => {
@@ -189,39 +265,55 @@ export class FinanceRequestsComponent
           if (response.success) {
 
             request.status =
+
               status;
 
           } else {
 
             alert(
+
               response.message ||
+
               'Unable to update finance status.'
+
             );
 
           }
 
 
+
           this.updatingFinanceId =
+
             null;
 
         },
 
 
+
         error: (error) => {
 
           console.error(
+
             'Update Finance Error:',
+
             error
+
           );
+
 
 
           alert(
+
             error?.error?.message ||
+
             'Unable to update finance status.'
+
           );
 
 
+
           this.updatingFinanceId =
+
             null;
 
         }
@@ -231,16 +323,67 @@ export class FinanceRequestsComponent
   }
 
 
+
   // ====================================================
+
+  // MASTER BOOKING ID / ID CODE
+
+  // ====================================================
+
+  getBookingCode(
+
+    request: FinanceRequest
+
+  ): string {
+
+    const bookingId = Number(
+
+      (request as any)?.booking_id ??
+
+      (request as any)?.bookingId ??
+
+      (request as any)?.master_booking_id
+
+    );
+
+
+
+    if (
+
+      !Number.isInteger(bookingId) ||
+
+      bookingId <= 0
+
+    ) {
+
+      return '-';
+
+    }
+
+
+
+    return `CAR-${String(bookingId).padStart(6, '0')}`;
+
+  }
+
+
+
+  // ====================================================
+
   // STATUS CLASS
+
   // ====================================================
 
   getStatusClass(
+
     status?: string
+
   ): string {
 
     if (
+
       status === 'Approved'
+
     ) {
 
       return 'bg-green-100 text-green-700';
@@ -248,13 +391,17 @@ export class FinanceRequestsComponent
     }
 
 
+
     if (
+
       status === 'Rejected'
+
     ) {
 
       return 'bg-red-100 text-red-700';
 
     }
+
 
 
     return 'bg-yellow-100 text-yellow-700';
