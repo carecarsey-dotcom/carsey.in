@@ -1,4 +1,4 @@
-const db = require("../config/db");
+﻿const db = require("../config/db");
 
 // ======================================================
 // SMALL HELPER FUNCTIONS
@@ -254,7 +254,7 @@ const getInspectionReportByCarId = (
                     overall_remark,
                     pdf_path,
                     ir.publish_status,
-                    created_at
+                    ir.created_at
                 FROM inspection_reports ir
                 LEFT JOIN cars c
                     ON c.car_id = ir.car_id
@@ -327,7 +327,7 @@ const getLatestInspectionReportByCarId = (
                     overall_remark,
                     pdf_path,
                     ir.publish_status,
-                    created_at
+                    ir.created_at
                 FROM inspection_reports ir
                 LEFT JOIN cars c
                     ON c.car_id = ir.car_id
@@ -387,7 +387,7 @@ const getAllInspectionReports = () => {
                     overall_remark,
                     pdf_path,
                     ir.publish_status,
-                    created_at
+                    ir.created_at
                 FROM inspection_reports ir
                 LEFT JOIN cars c
                     ON c.car_id = ir.car_id
@@ -442,7 +442,7 @@ const getInspectionReportById = (
                     overall_remark,
                     pdf_path,
                     ir.publish_status,
-                    created_at
+                    ir.created_at
                 FROM inspection_reports ir
                 LEFT JOIN cars c
                     ON c.car_id = ir.car_id
@@ -811,7 +811,7 @@ const getReportDeliveryData = (
                     overall_remark,
                     pdf_path,
                     ir.publish_status,
-                    created_at,
+                    ir.created_at,
 
                     c.*,
 
@@ -877,7 +877,7 @@ const getReportDeliveryData = (
                                 overall_remark,
                                 pdf_path,
                                 ir.publish_status,
-                                created_at,
+                                ir.created_at,
 
                                 o.owner_name,
                                 o.email AS owner_email,
