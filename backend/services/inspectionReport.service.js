@@ -52,9 +52,9 @@ const createInspectionReport = (
                 (
                     car_id,
                     overall_score,
-                    engine_remark,
-                    overall_remark,
-                    pdf_path,
+                    ir.engine_remark,
+                    ir.overall_remark,
+                    ir.pdf_path,
                     publish_status
                 )
                 VALUES (?, ?, ?, ?, ?, ?)
@@ -148,8 +148,8 @@ const getApprovedUnlockRequest = (
                     mobile,
                     email,
                     status,
-                    created_at
-                FROM report_unlock_requests rur
+                    ir.created_at
+FROM report_unlock_requests rur
                 LEFT JOIN cars c ON c.car_id = rur.car_id
                 WHERE rur.request_id = ?
                 AND rur.car_id = ?
@@ -218,12 +218,12 @@ const getInspectionReportByCarId = (
                     ir.car_id,
                     c.booking_id,
                     ir.overall_score,
-                    engine_remark,
-                    overall_remark,
-                    pdf_path,
+                    ir.engine_remark,
+                    ir.overall_remark,
+                    ir.pdf_path,
                     ir.publish_status,
-                    created_at
-                FROM inspection_reports ir
+                    ir.created_at
+FROM inspection_reports ir
                 LEFT JOIN cars c ON c.car_id = ir.car_id
                 WHERE ir.car_id = ?
                 ORDER BY
@@ -290,12 +290,12 @@ const getLatestInspectionReportByCarId = (
                     ir.car_id,
                     c.booking_id,
                     ir.overall_score,
-                    engine_remark,
-                    overall_remark,
-                    pdf_path,
+                    ir.engine_remark,
+                    ir.overall_remark,
+                    ir.pdf_path,
                     ir.publish_status,
-                    created_at
-                FROM inspection_reports ir
+                    ir.created_at
+FROM inspection_reports ir
                 LEFT JOIN cars c ON c.car_id = ir.car_id
                 WHERE ir.car_id = ?
                 ORDER BY ir.report_id DESC
@@ -349,12 +349,12 @@ const getAllInspectionReports = () => {
                     ir.car_id,
                     c.booking_id,
                     ir.overall_score,
-                    engine_remark,
-                    overall_remark,
-                    pdf_path,
+                    ir.engine_remark,
+                    ir.overall_remark,
+                    ir.pdf_path,
                     ir.publish_status,
-                    created_at
-                FROM inspection_reports ir
+                    ir.created_at
+FROM inspection_reports ir
                 LEFT JOIN cars c ON c.car_id = ir.car_id
                 ORDER BY ir.report_id DESC
             `;
@@ -403,12 +403,12 @@ const getInspectionReportById = (
                     ir.car_id,
                     c.booking_id,
                     ir.overall_score,
-                    engine_remark,
-                    overall_remark,
-                    pdf_path,
+                    ir.engine_remark,
+                    ir.overall_remark,
+                    ir.pdf_path,
                     ir.publish_status,
-                    created_at
-                FROM inspection_reports ir
+                    ir.created_at
+FROM inspection_reports ir
                 LEFT JOIN cars c ON c.car_id = ir.car_id
                 WHERE ir.report_id = ?
                 LIMIT 1
@@ -471,8 +471,8 @@ const getInspectionChecklist = (
                     checklist_data,
                     data,
                     inspection_data,
-                    created_at
-                FROM inspection_checklist
+                    ir.created_at
+FROM inspection_checklist
                 WHERE report_id = ?
                 ORDER BY checklist_id ASC
             `;
@@ -575,8 +575,8 @@ const getInspectionChecklistByCarId = (
                     checklist_data,
                     data,
                     inspection_data,
-                    created_at
-                FROM inspection_checklist
+                    ir.created_at
+FROM inspection_checklist
                 WHERE car_id = ?
                 ORDER BY checklist_id ASC
             `;
@@ -766,11 +766,12 @@ const getReportDeliveryData = (
                     ir.report_id,
                     ir.car_id,
                     ir.overall_score,
-                    engine_remark,
-                    overall_remark,
-                    pdf_path,
+                    ir.engine_remark,
+                    ir.overall_remark,
+                    ir.pdf_path,
                     ir.publish_status,
-                    created_at,
+                    ir.created_at
+,
 
                     c.*,
 
@@ -833,11 +834,12 @@ const getReportDeliveryData = (
                                 ir.car_id,
                                 c.booking_id,
                                 ir.overall_score,
-                                engine_remark,
-                                overall_remark,
-                                pdf_path,
+                    ir.engine_remark,
+                    ir.overall_remark,
+                    ir.pdf_path,
                                 ir.publish_status,
-                                created_at,
+                    ir.created_at
+,
 
                                 o.owner_name,
                                 o.email AS owner_email,
@@ -1527,3 +1529,4 @@ module.exports = {
     getInspectionChecklistByCarId
 
 };
+

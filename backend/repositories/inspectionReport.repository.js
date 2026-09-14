@@ -50,9 +50,9 @@ const createInspectionReport = (
                 (
                     car_id,
                     overall_score,
-                    engine_remark,
-                    overall_remark,
-                    pdf_path,
+                    ir.engine_remark,
+                    ir.overall_remark,
+                    ir.pdf_path,
                     publish_status
                 )
                 VALUES (?, ?, ?, ?, ?, ?)
@@ -250,9 +250,9 @@ const getInspectionReportByCarId = (
                     ir.car_id,
                     c.booking_id,
                     ir.overall_score,
-                    engine_remark,
-                    overall_remark,
-                    pdf_path,
+                    ir.engine_remark,
+                    ir.overall_remark,
+                    ir.pdf_path,
                     ir.publish_status,
                     ir.created_at
                 FROM inspection_reports ir
@@ -323,9 +323,9 @@ const getLatestInspectionReportByCarId = (
                     ir.car_id,
                     c.booking_id,
                     ir.overall_score,
-                    engine_remark,
-                    overall_remark,
-                    pdf_path,
+                    ir.engine_remark,
+                    ir.overall_remark,
+                    ir.pdf_path,
                     ir.publish_status,
                     ir.created_at
                 FROM inspection_reports ir
@@ -383,9 +383,9 @@ const getAllInspectionReports = () => {
                     ir.car_id,
                     c.booking_id,
                     ir.overall_score,
-                    engine_remark,
-                    overall_remark,
-                    pdf_path,
+                    ir.engine_remark,
+                    ir.overall_remark,
+                    ir.pdf_path,
                     ir.publish_status,
                     ir.created_at
                 FROM inspection_reports ir
@@ -438,9 +438,9 @@ const getInspectionReportById = (
                     ir.car_id,
                     c.booking_id,
                     ir.overall_score,
-                    engine_remark,
-                    overall_remark,
-                    pdf_path,
+                    ir.engine_remark,
+                    ir.overall_remark,
+                    ir.pdf_path,
                     ir.publish_status,
                     ir.created_at
                 FROM inspection_reports ir
@@ -507,7 +507,7 @@ const getInspectionChecklist = (
                     checklist_data,
                     data,
                     inspection_data,
-                    created_at
+                    ir.created_at
                 FROM inspection_checklist
                 WHERE report_id = ?
                 ORDER BY checklist_id ASC
@@ -611,7 +611,7 @@ const getInspectionChecklistByCarId = (
                     checklist_data,
                     data,
                     inspection_data,
-                    created_at
+                    ir.created_at
                 FROM inspection_checklist
                 WHERE car_id = ?
                 ORDER BY checklist_id ASC
@@ -807,9 +807,9 @@ const getReportDeliveryData = (
                     ir.report_id,
                     ir.car_id,
                     ir.overall_score,
-                    engine_remark,
-                    overall_remark,
-                    pdf_path,
+                    ir.engine_remark,
+                    ir.overall_remark,
+                    ir.pdf_path,
                     ir.publish_status,
                     ir.created_at,
 
@@ -873,9 +873,9 @@ const getReportDeliveryData = (
                                 ir.report_id,
                                 ir.car_id,
                                 ir.overall_score,
-                                engine_remark,
-                                overall_remark,
-                                pdf_path,
+                                ir.engine_remark,
+                                ir.overall_remark,
+                                ir.pdf_path,
                                 ir.publish_status,
                                 ir.created_at,
 
