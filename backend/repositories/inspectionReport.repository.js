@@ -50,9 +50,9 @@ const createInspectionReport = (
                 (
                     car_id,
                     overall_score,
-                    ir.engine_remark,
-                    ir.overall_remark,
-                    ir.pdf_path,
+                    engine_remark,
+                    overall_remark,
+                    pdf_path,
                     publish_status
                 )
                 VALUES (?, ?, ?, ?, ?, ?)
@@ -250,11 +250,11 @@ const getInspectionReportByCarId = (
                     ir.car_id,
                     c.booking_id,
                     ir.overall_score,
-                    ir.engine_remark,
-                    ir.overall_remark,
-                    ir.pdf_path,
+                    engine_remark,
+                    overall_remark,
+                    pdf_path,
                     ir.publish_status,
-                    ir.created_at
+                    created_at
                 FROM inspection_reports ir
                 LEFT JOIN cars c
                     ON c.car_id = ir.car_id
@@ -323,11 +323,11 @@ const getLatestInspectionReportByCarId = (
                     ir.car_id,
                     c.booking_id,
                     ir.overall_score,
-                    ir.engine_remark,
-                    ir.overall_remark,
-                    ir.pdf_path,
+                    engine_remark,
+                    overall_remark,
+                    pdf_path,
                     ir.publish_status,
-                    ir.created_at
+                    created_at
                 FROM inspection_reports ir
                 LEFT JOIN cars c
                     ON c.car_id = ir.car_id
@@ -383,11 +383,11 @@ const getAllInspectionReports = () => {
                     ir.car_id,
                     c.booking_id,
                     ir.overall_score,
-                    ir.engine_remark,
-                    ir.overall_remark,
-                    ir.pdf_path,
+                    engine_remark,
+                    overall_remark,
+                    pdf_path,
                     ir.publish_status,
-                    ir.created_at
+                    created_at
                 FROM inspection_reports ir
                 LEFT JOIN cars c
                     ON c.car_id = ir.car_id
@@ -438,11 +438,11 @@ const getInspectionReportById = (
                     ir.car_id,
                     c.booking_id,
                     ir.overall_score,
-                    ir.engine_remark,
-                    ir.overall_remark,
-                    ir.pdf_path,
+                    engine_remark,
+                    overall_remark,
+                    pdf_path,
                     ir.publish_status,
-                    ir.created_at
+                    created_at
                 FROM inspection_reports ir
                 LEFT JOIN cars c
                     ON c.car_id = ir.car_id
@@ -507,7 +507,7 @@ const getInspectionChecklist = (
                     checklist_data,
                     data,
                     inspection_data,
-                    ir.created_at
+                    created_at
                 FROM inspection_checklist
                 WHERE report_id = ?
                 ORDER BY checklist_id ASC
@@ -611,7 +611,7 @@ const getInspectionChecklistByCarId = (
                     checklist_data,
                     data,
                     inspection_data,
-                    ir.created_at
+                    created_at
                 FROM inspection_checklist
                 WHERE car_id = ?
                 ORDER BY checklist_id ASC
@@ -807,11 +807,11 @@ const getReportDeliveryData = (
                     ir.report_id,
                     ir.car_id,
                     ir.overall_score,
-                    ir.engine_remark,
-                    ir.overall_remark,
-                    ir.pdf_path,
+                    engine_remark,
+                    overall_remark,
+                    pdf_path,
                     ir.publish_status,
-                    ir.created_at,
+                    created_at,
 
                     c.*,
 
@@ -873,11 +873,11 @@ const getReportDeliveryData = (
                                 ir.report_id,
                                 ir.car_id,
                                 ir.overall_score,
-                                ir.engine_remark,
-                                ir.overall_remark,
-                                ir.pdf_path,
+                                engine_remark,
+                                overall_remark,
+                                pdf_path,
                                 ir.publish_status,
-                                ir.created_at,
+                                created_at,
 
                                 o.owner_name,
                                 o.email AS owner_email,

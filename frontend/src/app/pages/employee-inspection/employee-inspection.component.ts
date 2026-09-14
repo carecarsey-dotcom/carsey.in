@@ -356,24 +356,6 @@ export class EmployeeInspectionComponent
       'Repaired / Welded'
     ]],
 
-    ['Apron RHS', [
-      'Ok/No imperfection',
-      'Repaired / Welded',
-      'Repainted',
-      'Rusting',
-      'Dent',
-      'Crack / Hole'
-    ]],
-
-    ['Apron LHS', [
-      'Ok/No imperfection',
-      'Repaired / Welded',
-      'Repainted',
-      'Rusting',
-      'Dent',
-      'Crack / Hole'
-    ]],
-
 
     // ==================== RIGHT SIDE ====================
 
@@ -628,23 +610,36 @@ export class EmployeeInspectionComponent
     ]],
 
 
-    // ==================== INNER / ENGINE AREA ====================
-
-    ['Firewall', [
-      'Ok/No imperfection',
-      'Rusted',
-      'Cover Damage',
-      'Carpet Damage',
-      'Crack & Hole',
-      'Repaired / Welded'
-    ]]
-
   ]
 },
     {
       key: 'engine_bay',
       title: 'ENGINE + TRANSMISSION',
       rows: [
+        ['Apron RHS', [
+          'Ok/No imperfection',
+          'Repaired / Welded',
+          'Repainted',
+          'Rusting',
+          'Dent',
+          'Crack / Hole'
+        ]],
+        ['Apron LHS', [
+          'Ok/No imperfection',
+          'Repaired / Welded',
+          'Repainted',
+          'Rusting',
+          'Dent',
+          'Crack / Hole'
+        ]],
+        ['Firewall', [
+          'Ok/No imperfection',
+          'Rusted',
+          'Cover Damage',
+          'Carpet Damage',
+          'Crack & Hole',
+          'Repaired / Welded'
+        ]],
         ['Engine Oil', ['Ok/No imperfection','Level Low','Dirty','Replace Oil']],
         ['Cooling System', ['Ok/No imperfection','Mixed With Oil','Bottle Broken + Leakage','Coolant Dirty']],
         ['Engine', ['Ok/No imperfection','Leakage From Seal','Tappet Cover Loose','Engine Misfiring','Dipstick Missing / Broken','Exhaust Smoke','Air Filter Box Damage','RPM Fluctuate','Fuse Box Cover Missing']],
@@ -705,11 +700,12 @@ export class EmployeeInspectionComponent
       key: 'all_seats',
       title: 'ALL SEATS',
       rows: [
-        ['1st Row RHS', ['Ok/No imperfection','Seat Belt Damage','Dirty','Cover Torn','Seat Adjuster Not Working']],
-        ['1st Row LHS', ['Ok/No imperfection','Seat Belt Damage','Dirty','Cover Torn','Seat Adjuster Not Working']],
-        ['2nd Row RHS', ['Ok/No imperfection','Seat Belt Damage','Dirty','Cover Torn','Seat Adjuster Not Working']],
-        ['2nd Row LHS', ['Ok/No imperfection','Seat Belt Damage','Dirty','Cover Torn','Seat Adjuster Not Working']],
-        ['3rd Row Seat', ['Ok/No imperfection','Seat Belt Damage','Dirty','Cover Torn','Seat Adjuster Not Working']],
+        ['Seat 1st Row RHS', ['Ok/No imperfection','Seat Belt Damage','Dirty','Cover Torn','Seat Adjuster Not Working']],
+        ['Seat 1st Row LHS', ['Ok/No imperfection','Seat Belt Damage','Dirty','Cover Torn','Seat Adjuster Not Working']],
+        ['Seat 2nd Row RHS', ['Ok/No imperfection','Seat Belt Damage','Dirty','Cover Torn','Seat Adjuster Not Working']],
+        ['Seat 2nd Row LHS', ['Ok/No imperfection','Seat Belt Damage','Dirty','Cover Torn','Seat Adjuster Not Working']],
+        ['Seat 3rd Row RHS', ['Ok/No imperfection','Seat Belt Damage','Dirty','Cover Torn','Seat Adjuster Not Working']],
+        ['Seat 3rd Row LHS', ['Ok/No imperfection','Seat Belt Damage','Dirty','Cover Torn','Seat Adjuster Not Working']],
       ]
     },
     {
@@ -1421,6 +1417,43 @@ export class EmployeeInspectionComponent
       if (draft.detailedInspection) {
         this.detailedInspection = JSON.parse(JSON.stringify(draft.detailedInspection));
       }
+
+      // ----------------------------------------------------
+      // MIGRATE OLD CHECKLIST ROW NAMES / LOCATIONS
+      // Keeps existing local drafts usable after the checklist
+      // structure changes. No saved draft data is intentionally removed.
+      // ----------------------------------------------------
+      const oldExterior = this.detailedInspection['exterior'] || {};
+      const engineBay = this.detailedInspection['engine_bay'] || {};
+
+      for (const oldRow of ['Apron RHS', 'Apron LHS', 'Firewall']) {
+        if (
+          oldExterior[oldRow] &&
+          oldExterior[oldRow].length > 0 &&
+          (!engineBay[oldRow] || engineBay[oldRow].length === 0)
+        ) {
+          engineBay[oldRow] = [...oldExterior[oldRow]];
+        }
+        delete oldExterior[oldRow];
+      }
+
+      for (const oldRow of ['1st Row RHS', '1st Row LHS', '2nd Row RHS', '2nd Row LHS', '3rd Row Seat']) {
+        const oldSeats = this.detailedInspection['all_seats'] || {};
+        if (oldSeats[oldRow] && oldSeats[oldRow].length > 0) {
+          const newRow =
+            oldRow === '1st Row RHS' ? 'Seat 1st Row RHS' :
+            oldRow === '1st Row LHS' ? 'Seat 1st Row LHS' :
+            oldRow === '2nd Row RHS' ? 'Seat 2nd Row RHS' :
+            oldRow === '2nd Row LHS' ? 'Seat 2nd Row LHS' :
+            'Seat 3rd Row RHS';
+
+          if (!oldSeats[newRow] || oldSeats[newRow].length === 0) {
+            oldSeats[newRow] = [...oldSeats[oldRow]];
+          }
+          delete oldSeats[oldRow];
+        }
+      }
+
       if (draft.detailedRowRemarks) {
         this.detailedRowRemarks = JSON.parse(JSON.stringify(draft.detailedRowRemarks));
       }
@@ -1611,6 +1644,25 @@ export class EmployeeInspectionComponent
   ): string {
 
     return `${sectionKey}__${rowName}`;
+  }
+
+
+  // ======================================================
+  // OPTIONAL DETAILED ROWS
+  // Seat 3rd Row RHS and Seat 3rd Row LHS are optional.
+  // Every other detailed inspection row remains required.
+  // ======================================================
+  isDetailedRowOptional(
+    sectionKey: string,
+    rowName: string
+  ): boolean {
+    return (
+      sectionKey === 'all_seats' &&
+      (
+        rowName === 'Seat 3rd Row RHS' ||
+        rowName === 'Seat 3rd Row LHS'
+      )
+    );
   }
 
 
@@ -3422,12 +3474,19 @@ export class EmployeeInspectionComponent
             section.key
           ]?.[row[0]] || [];
 
+        // 3rd-row seats are optional because they may not exist in every vehicle.
+        if (
+          this.isDetailedRowOptional(section.key, row[0])
+        ) {
+          continue;
+        }
+
         if (
           selected.length === 0
         ) {
 
           this.errorMessage =
-            `${section.title} ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ ${row[0]}: Please select at least one inspection option.`;
+            `${section.title} - ${row[0]}: Please select at least one inspection option.`;
 
           return false;
         }

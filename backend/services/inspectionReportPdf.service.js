@@ -99,25 +99,6 @@ const DETAILED_CHECKLIST_OPTIONS = {
     "Repaired / Welded"
   ],
 
-  "Apron RHS": [
-    "Ok/No imperfection",
-    "Repaired / Welded",
-    "Repainted",
-    "Rusting",
-    "Dent",
-    "Crack / Hole"
-  ],
-
-  "Apron LHS": [
-    "Ok/No imperfection",
-    "Repaired / Welded",
-    "Repainted",
-    "Rusting",
-    "Dent",
-    "Crack / Hole"
-  ],
-
-
   // ==================== RIGHT SIDE ====================
 
   "RHS Fender": [
@@ -372,17 +353,32 @@ const DETAILED_CHECKLIST_OPTIONS = {
 
   // ==================== INNER / ENGINE AREA ====================
 
-  "Firewall": [
-    "Ok/No imperfection",
-    "Rusted",
-    "Cover Damage",
-    "Carpet Damage",
-    "Crack & Hole",
-    "Repaired / Welded"
-  ]
-
 },
     engine_bay: {
+        "Apron RHS": [
+            "Ok/No imperfection",
+            "Repaired / Welded",
+            "Repainted",
+            "Rusting",
+            "Dent",
+            "Crack / Hole"
+        ],
+        "Apron LHS": [
+            "Ok/No imperfection",
+            "Repaired / Welded",
+            "Repainted",
+            "Rusting",
+            "Dent",
+            "Crack / Hole"
+        ],
+        "Firewall": [
+            "Ok/No imperfection",
+            "Rusted",
+            "Cover Damage",
+            "Carpet Damage",
+            "Crack & Hole",
+            "Repaired / Welded"
+        ],
         "Engine Oil": ["Ok/No imperfection", "Level Low", "Dirty", "Replace Oil"],
         "Cooling System": ["Ok/No imperfection", "Mixed With Oil", "Bottle Broken + Leakage", "Coolant Dirty"],
         "Engine": ["Ok/No imperfection", "Leakage From Seal", "Tappet Cover Loose", "Engine Misfiring", "Dipstick Missing / Broken", "Exhaust Smoke", "Air Filter Box Damage", "RPM Fluctuate", "Fuse Box Cover Missing"],
@@ -441,6 +437,14 @@ const DETAILED_CHECKLIST_OPTIONS = {
     },
     documents_title: {
         "Documents / Title": ["Ok/No imperfection", "RC Available", "Insurance Available", "PUC Available", "Service History Available", "Duplicate Key Available", "Chassis / VIN Match", "Registration Details Match"]
+    },
+    all_seats: {
+        "Seat 1st Row RHS": ["Ok/No imperfection", "Seat Belt Damage", "Dirty", "Cover Torn", "Seat Adjuster Not Working"],
+        "Seat 1st Row LHS": ["Ok/No imperfection", "Seat Belt Damage", "Dirty", "Cover Torn", "Seat Adjuster Not Working"],
+        "Seat 2nd Row RHS": ["Ok/No imperfection", "Seat Belt Damage", "Dirty", "Cover Torn", "Seat Adjuster Not Working"],
+        "Seat 2nd Row LHS": ["Ok/No imperfection", "Seat Belt Damage", "Dirty", "Cover Torn", "Seat Adjuster Not Working"],
+        "Seat 3rd Row RHS": ["Ok/No imperfection", "Seat Belt Damage", "Dirty", "Cover Torn", "Seat Adjuster Not Working"],
+        "Seat 3rd Row LHS": ["Ok/No imperfection", "Seat Belt Damage", "Dirty", "Cover Torn", "Seat Adjuster Not Working"]
     }
 };
 
@@ -557,6 +561,33 @@ const getBookingId = (report) => {
         ["bookingId", "booking_id"],
         firstValue(vehicle, ["booking_id", "bookingId"], "-")
     );
+};
+
+const getBookingCode = (report) => {
+    const bookingId = getBookingId(report);
+
+    if (
+        bookingId === undefined ||
+        bookingId === null ||
+        bookingId === "" ||
+        bookingId === "-"
+    ) {
+        return "-";
+    }
+
+    const value = String(bookingId).trim();
+
+    if (/^CAR-\d{6}$/i.test(value)) {
+        return value.toUpperCase();
+    }
+
+    const numericId = Number(value);
+
+    if (Number.isFinite(numericId)) {
+        return `CAR-${String(Math.trunc(numericId)).padStart(6, "0")}`;
+    }
+
+    return value;
 };
 
 const normalizeImagePath = (image) => {
@@ -962,12 +993,71 @@ const expandChecklistArray = (checklist) => {
     return result;
 };
 
+const normalizeDetailedSectionKey = (sectionKey, rowName = "") => {
+    const normalizedSection = String(sectionKey || "").trim().toLowerCase();
+    const normalizedRow = String(rowName || "").trim().toLowerCase();
+
+    // Legacy/alternate payloads may keep these moved items under exterior.
+    if (
+        normalizedSection === "exterior" &&
+        ["apron rhs", "apron lhs", "firewall"].includes(normalizedRow)
+    ) {
+        return "engine_bay";
+    }
+
+    // Seat rows belong to ALL SEATS.
+    if (
+        [
+            "1st row rhs",
+            "1st row lhs",
+            "2nd row rhs",
+            "2nd row lhs",
+            "3rd row rhs",
+            "3rd row lhs",
+            "3rd row seat",
+            "seat 1st row rhs",
+            "seat 1st row lhs",
+            "seat 2nd row rhs",
+            "seat 2nd row lhs",
+            "seat 3rd row"
+        ].includes(normalizedRow)
+    ) {
+        return "all_seats";
+    }
+
+    return String(sectionKey || "").trim();
+};
+
+const normalizeDetailedRowName = (rowName = "") => {
+    const normalized = String(rowName || "").trim().toLowerCase();
+
+    const aliases = {
+        "1st row rhs": "Seat 1st Row RHS",
+        "1st row lhs": "Seat 1st Row LHS",
+        "2nd row rhs": "Seat 2nd Row RHS",
+        "2nd row lhs": "Seat 2nd Row LHS",
+        "3rd row rhs": "Seat 3rd Row RHS",
+        "3rd row lhs": "Seat 3rd Row LHS",
+        "3rd row seat": "Seat 3rd Row"
+    };
+
+    return aliases[normalized] || String(rowName || "").trim();
+};
+
 const getAvailableOptions = (
     sectionKey,
     rowName,
     selectedOptions = []
 ) => {
+    const normalizedRowName = normalizeDetailedRowName(rowName);
+    const normalizedSectionKey = normalizeDetailedSectionKey(
+        sectionKey,
+        normalizedRowName
+    );
+
     const section =
+        DETAILED_CHECKLIST_OPTIONS[String(normalizedSectionKey)] ||
+        DETAILED_CHECKLIST_OPTIONS[normalizedSectionKey] ||
         DETAILED_CHECKLIST_OPTIONS[String(sectionKey)] ||
         DETAILED_CHECKLIST_OPTIONS[sectionKey];
 
@@ -976,12 +1066,10 @@ const getAvailableOptions = (
             return [...section[String(rowName)]];
         }
 
-        const normalizedRowName = String(rowName || "")
-            .trim()
-            .toLowerCase();
+        const lookupRowName = normalizedRowName.trim().toLowerCase();
 
         const matchedKey = Object.keys(section).find(
-            (key) => key.trim().toLowerCase() === normalizedRowName
+            (key) => key.trim().toLowerCase() === lookupRowName
         );
 
         if (matchedKey && Array.isArray(section[matchedKey])) {
@@ -1211,7 +1299,7 @@ const normalizeDetailedChecklist = (report = {}) => {
             // SECTION
             // --------------------------------------------------
 
-            const sectionKey = String(
+            const rawSectionKey = String(
                 firstValue(
                     source,
                     [
@@ -1261,7 +1349,7 @@ const normalizeDetailedChecklist = (report = {}) => {
             // ROW / ITEM NAME
             // --------------------------------------------------
 
-            const rowName = String(
+            const rawRowName = String(
                 firstValue(
                     source,
                     [
@@ -1278,6 +1366,12 @@ const normalizeDetailedChecklist = (report = {}) => {
                     `Inspection Item ${index + 1}`
                 )
             ).trim();
+
+            const rowName = normalizeDetailedRowName(rawRowName);
+            const sectionKey = normalizeDetailedSectionKey(
+                rawSectionKey,
+                rowName
+            );
 
             // --------------------------------------------------
             // SELECTED OPTIONS
@@ -1461,9 +1555,10 @@ const normalizeDetailedChecklist = (report = {}) => {
         !Array.isArray(raw)
     ) {
         for (
-            const [sectionKey, sectionRowsValue]
+            const [rawSectionKey, sectionRowsValue]
             of Object.entries(raw)
         ) {
+            const sectionKey = normalizeDetailedSectionKey(rawSectionKey);
             if (
                 !sectionRowsValue ||
                 typeof sectionRowsValue !== "object"
@@ -1484,7 +1579,7 @@ const normalizeDetailedChecklist = (report = {}) => {
                             return;
                         }
 
-                        const rowName = String(
+                        const rawRowName = String(
                             firstValue(
                                 rowObject,
                                 [
@@ -1499,6 +1594,8 @@ const normalizeDetailedChecklist = (report = {}) => {
                                 `Inspection Item ${index + 1}`
                             )
                         ).trim();
+
+                        const rowName = normalizeDetailedRowName(rawRowName);
 
                         const selectedOptions =
                             normalizeSelectedOptions(
@@ -1579,9 +1676,10 @@ const normalizeDetailedChecklist = (report = {}) => {
                     .toUpperCase();
 
             for (
-                const [rowName, rawSelected]
+                const [rawRowName, rawSelected]
                 of Object.entries(sectionRowsValue)
             ) {
+                const rowName = normalizeDetailedRowName(rawRowName);
                 let selectedOptions = [];
                 let remark = "";
                 let status = "";
@@ -1769,7 +1867,7 @@ const drawFooter = (doc, reportId) => {
             align: "left"
         });
 
-    doc.text(`Report #${reportId} | Page ${doc.page.number}`, PAGE_WIDTH - 280, footerY, {
+    doc.text(`Page ${doc.page.number}`, PAGE_WIDTH - 280, footerY, {
         width: 250,
         align: "right"
     });
@@ -1791,8 +1889,7 @@ const ensureSpace = (doc, y, requiredHeight, reportId) => {
 };
 
 const drawHeader = (doc, report) => {
-    const reportId = getReportId(report);
-    const bookingId = getBookingId(report);
+    const bookingCode = getBookingCode(report);
 
     doc.roundedRect(MARGIN_LEFT, MARGIN_TOP, CONTENT_WIDTH, 64, 6)
         .fillAndStroke(COLORS.navy, COLORS.navy);
@@ -1803,13 +1900,9 @@ const drawHeader = (doc, report) => {
     doc.font("Helvetica").fontSize(9).fillColor(COLORS.white)
         .text("VEHICLE INSPECTION REPORT", MARGIN_LEFT + 14, MARGIN_TOP + 39);
 
-    doc.font("Helvetica-Bold").fontSize(8).fillColor(COLORS.white)
-        .text(`REPORT #${reportId}`, PAGE_WIDTH - 150, MARGIN_TOP + 18, {
-            width: 120,
-            align: "right"
-        })
-        .text(`BOOKING #${bookingId}`, PAGE_WIDTH - 150, MARGIN_TOP + 34, {
-            width: 120,
+    doc.font("Helvetica-Bold").fontSize(10).fillColor(COLORS.white)
+        .text(`ID ${bookingCode}`, PAGE_WIDTH - 190, MARGIN_TOP + 25, {
+            width: 160,
             align: "right"
         });
 
