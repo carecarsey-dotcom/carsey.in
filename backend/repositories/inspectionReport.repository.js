@@ -1,46 +1,38 @@
 const db = require("../config/db");
 
 // ======================================================
-// NORMALIZE INSPECTION SCORE
+// SMALL HELPER FUNCTIONS
 // ======================================================
-// 43 -> 4.3, 92 -> 9.2, 95 -> 9.5.
-// Scores already between 0 and 10 remain unchanged.
-const normalizeOverallScore = (value) => {
 
-    const number = Number(value);
-
-    if (!Number.isFinite(number)) {
-        return null;
+const firstValue = (...values) => {
+    for (const value of values) {
+        if (
+            value !== undefined &&
+            value !== null &&
+            String(value).trim() !== ""
+        ) {
+            return value;
+        }
     }
 
-    const normalized =
-        number > 10 && number <= 100
-            ? number / 10
-            : number;
-
-    return Number(
-        normalized.toFixed(1)
-    );
+    return null;
 };
 
-// ======================================================
-// NORMALIZED SCORE SQL
-// ======================================================
-// This also makes old rows (43, 92, 95...) display correctly
-// until the one-time database migration is executed.
-const normalizedScoreSql = (tableAlias = "") => {
-    const prefix = tableAlias
-        ? `${tableAlias}.`
-        : "";
 
-    return `
-        CASE
-            WHEN ${prefix}overall_score > 10
-                THEN ROUND(${prefix}overall_score / 10, 1)
-            ELSE ROUND(${prefix}overall_score, 1)
-        END AS overall_score
-    `;
+const normalizePublishStatus = (value) => {
+
+    if (
+        value === true ||
+        value === 1 ||
+        String(value).toLowerCase() === "yes" ||
+        String(value).toLowerCase() === "published"
+    ) {
+        return "Yes";
+    }
+
+    return "No";
 };
+
 
 // ======================================================
 // CREATE INSPECTION REPORT
@@ -58,9 +50,9 @@ const createInspectionReport = (
                 (
                     car_id,
                     overall_score,
-                    engine_remark,
-                    overall_remark,
-                    pdf_path,
+                    ir.engine_remark,
+                    ir.overall_remark,
+                    ir.pdf_path,
                     publish_status
                 )
                 VALUES (?, ?, ?, ?, ?, ?)
@@ -69,21 +61,39 @@ const createInspectionReport = (
 
             const values = [
 
-                reportData.carId,
-
-                normalizeOverallScore(
-                    reportData.overallScore
+                firstValue(
+                    reportData.carId,
+                    reportData.car_id
                 ),
 
-                reportData.engineRemark,
+                firstValue(
+                    reportData.overallScore,
+                    reportData.overall_score
+                ),
 
-                reportData.overallRemark,
+                firstValue(
+                    reportData.engineRemark,
+                    reportData.engine_remark
+                ),
 
-                reportData.pdfPath ||
-                    null,
+                firstValue(
+                    reportData.overallRemark,
+                    reportData.overall_remark
+                ),
 
-                reportData.publishStatus ||
-                    "No"
+                firstValue(
+                    reportData.pdfPath,
+                    reportData.pdf_path,
+                    null
+                ),
+
+                normalizePublishStatus(
+                    firstValue(
+                        reportData.publishStatus,
+                        reportData.publish_status,
+                        "No"
+                    )
+                )
 
             ];
 
@@ -99,12 +109,45 @@ const createInspectionReport = (
                     }
 
 
-                    resolve({
+                    const carId = firstValue(
+                        reportData.carId,
+                        reportData.car_id
+                    );
 
-                        reportId:
-                            result.insertId
+                    const bookingSql = `
+                        SELECT booking_id
+                        FROM cars
+                        WHERE car_id = ?
+                        LIMIT 1
+                    `;
 
-                    });
+                    db.query(
+                        bookingSql,
+                        [carId],
+                        (bookingErr, bookingRows) => {
+
+                            if (bookingErr) {
+                                return reject(bookingErr);
+                            }
+
+                            const bookingId =
+                                bookingRows && bookingRows.length
+                                    ? bookingRows[0].booking_id
+                                    : null;
+
+                            resolve({
+
+                                reportId:
+                                    result.insertId,
+
+                                bookingId,
+
+                                booking_id:
+                                    bookingId
+
+                            });
+                        }
+                    );
 
                 }
             );
@@ -180,7 +223,18 @@ const getApprovedUnlockRequest = (
 
 
 // ======================================================
-// GET PUBLISHED REPORT BY CAR
+// GET PUBLISHED / LATEST REPORT BY CAR
+//
+// IMPORTANT:
+// Existing code was checking only:
+//     publish_status = 'Yes'
+//
+// During PDF generation the latest report can still be
+// "No" before publishing. Therefore we now prefer a
+// published report, but fall back to the latest report.
+//
+// This keeps the old function name and behavior compatible
+// with existing code while preventing missing report data.
 // ======================================================
 
 const getInspectionReportByCarId = (
@@ -195,7 +249,7 @@ const getInspectionReportByCarId = (
                     ir.report_id,
                     ir.car_id,
                     c.booking_id,
-                    ${normalizedScoreSql("ir")},
+                    ir.overall_score,
                     ir.engine_remark,
                     ir.overall_remark,
                     ir.pdf_path,
@@ -205,7 +259,79 @@ const getInspectionReportByCarId = (
                 LEFT JOIN cars c
                     ON c.car_id = ir.car_id
                 WHERE ir.car_id = ?
-                AND ir.publish_status = 'Yes'
+                ORDER BY
+                    CASE
+                        WHEN ir.publish_status = 'Yes' THEN 0
+                        ELSE 1
+                    END,
+                    ir.report_id DESC
+                LIMIT 1
+            `;
+
+
+            db.query(
+                sql,
+
+                [
+                    carId
+                ],
+
+                (
+                    err,
+                    result
+                ) => {
+
+                    if (err) {
+                        return reject(err);
+                    }
+
+
+                    resolve(
+                        result[0] ||
+                        null
+                    );
+
+                }
+            );
+
+        }
+    );
+
+};
+
+
+// ======================================================
+// GET LATEST INSPECTION REPORT BY CAR
+//
+// IMPORTANT:
+// Use this function when generating the PDF immediately
+// after vehicle/inspection data has been saved.
+//
+// It intentionally does NOT require publish_status = Yes.
+// ======================================================
+
+const getLatestInspectionReportByCarId = (
+    carId
+) => {
+
+    return new Promise(
+        (resolve, reject) => {
+
+            const sql = `
+                SELECT
+                    ir.report_id,
+                    ir.car_id,
+                    c.booking_id,
+                    ir.overall_score,
+                    ir.engine_remark,
+                    ir.overall_remark,
+                    ir.pdf_path,
+                    ir.publish_status,
+                    ir.created_at
+                FROM inspection_reports ir
+                LEFT JOIN cars c
+                    ON c.car_id = ir.car_id
+                WHERE ir.car_id = ?
                 ORDER BY ir.report_id DESC
                 LIMIT 1
             `;
@@ -214,7 +340,9 @@ const getInspectionReportByCarId = (
             db.query(
                 sql,
 
-                [carId],
+                [
+                    carId
+                ],
 
                 (
                     err,
@@ -254,7 +382,7 @@ const getAllInspectionReports = () => {
                     ir.report_id,
                     ir.car_id,
                     c.booking_id,
-                    ${normalizedScoreSql("ir")},
+                    ir.overall_score,
                     ir.engine_remark,
                     ir.overall_remark,
                     ir.pdf_path,
@@ -280,7 +408,9 @@ const getAllInspectionReports = () => {
                     }
 
 
-                    resolve(result);
+                    resolve(
+                        result || []
+                    );
 
                 }
             );
@@ -307,7 +437,7 @@ const getInspectionReportById = (
                     ir.report_id,
                     ir.car_id,
                     c.booking_id,
-                    ${normalizedScoreSql("ir")},
+                    ir.overall_score,
                     ir.engine_remark,
                     ir.overall_remark,
                     ir.pdf_path,
@@ -324,7 +454,9 @@ const getInspectionReportById = (
             db.query(
                 sql,
 
-                [reportId],
+                [
+                    reportId
+                ],
 
                 (
                     err,
@@ -365,9 +497,17 @@ const getInspectionChecklist = (
                 SELECT
                     checklist_id,
                     report_id,
+                    car_id,
                     category,
                     status,
-                    remark
+                    remark,
+                    remarks,
+                    note,
+                    comment,
+                    checklist_data,
+                    data,
+                    inspection_data,
+                    ir.created_at
                 FROM inspection_checklist
                 WHERE report_id = ?
                 ORDER BY checklist_id ASC
@@ -377,7 +517,9 @@ const getInspectionChecklist = (
             db.query(
                 sql,
 
-                [reportId],
+                [
+                    reportId
+                ],
 
                 (
                     err,
@@ -385,7 +527,147 @@ const getInspectionChecklist = (
                 ) => {
 
                     if (err) {
-                        return reject(err);
+
+                        // --------------------------------------------------
+                        // Some databases may not have all optional columns.
+                        // Fall back to the original safe structure.
+                        // --------------------------------------------------
+
+                        const fallbackSql = `
+                            SELECT
+                                checklist_id,
+                                report_id,
+                                category,
+                                status,
+                                remark
+                            FROM inspection_checklist
+                            WHERE report_id = ?
+                            ORDER BY checklist_id ASC
+                        `;
+
+
+                        return db.query(
+                            fallbackSql,
+                            [reportId],
+
+                            (
+                                fallbackErr,
+                                fallbackResult
+                            ) => {
+
+                                if (fallbackErr) {
+                                    return reject(
+                                        fallbackErr
+                                    );
+                                }
+
+
+                                resolve(
+                                    fallbackResult || []
+                                );
+
+                            }
+                        );
+
+                    }
+
+
+                    resolve(
+                        result || []
+                    );
+
+                }
+            );
+
+        }
+    );
+
+};
+
+
+// ======================================================
+// GET CHECKLIST BY CAR ID
+// FALLBACK WHEN REPORT_ID IS NOT AVAILABLE
+// ======================================================
+
+const getInspectionChecklistByCarId = (
+    carId
+) => {
+
+    return new Promise(
+        (resolve, reject) => {
+
+            const sql = `
+                SELECT
+                    checklist_id,
+                    report_id,
+                    car_id,
+                    category,
+                    status,
+                    remark,
+                    remarks,
+                    note,
+                    comment,
+                    checklist_data,
+                    data,
+                    inspection_data,
+                    ir.created_at
+                FROM inspection_checklist
+                WHERE car_id = ?
+                ORDER BY checklist_id ASC
+            `;
+
+
+            db.query(
+                sql,
+
+                [
+                    carId
+                ],
+
+                (
+                    err,
+                    result
+                ) => {
+
+                    if (err) {
+
+                        const fallbackSql = `
+                            SELECT
+                                checklist_id,
+                                report_id,
+                                category,
+                                status,
+                                remark
+                            FROM inspection_checklist
+                            WHERE car_id = ?
+                            ORDER BY checklist_id ASC
+                        `;
+
+
+                        return db.query(
+                            fallbackSql,
+                            [carId],
+
+                            (
+                                fallbackErr,
+                                fallbackResult
+                            ) => {
+
+                                if (fallbackErr) {
+                                    return reject(
+                                        fallbackErr
+                                    );
+                                }
+
+
+                                resolve(
+                                    fallbackResult || []
+                                );
+
+                            }
+                        );
+
                     }
 
 
@@ -411,38 +693,88 @@ const getCompleteInspectionReport = (
 ) => {
 
     return new Promise(
-        (resolve, reject) => {
+        async (resolve, reject) => {
 
-            getInspectionReportById(
-                reportId
-            )
-                .then(async report => {
+            try {
 
-                    if (!report) {
-
-                        return resolve(
-                            null
-                        );
-
-                    }
+                const report =
+                    await getInspectionReportById(
+                        reportId
+                    );
 
 
-                    const checklist =
+                if (!report) {
+
+                    return resolve(
+                        null
+                    );
+
+                }
+
+
+                let checklist = [];
+
+
+                try {
+
+                    checklist =
                         await getInspectionChecklist(
                             reportId
                         );
 
+                } catch (checklistError) {
 
-                    resolve({
+                    console.error(
+                        "Checklist fetch error:",
+                        checklistError.message
+                    );
 
-                        report,
+                }
 
-                        checklist
 
-                    });
+                // --------------------------------------------------
+                // If report_id checklist is empty, try car_id.
+                // --------------------------------------------------
 
-                })
-                .catch(reject);
+                if (
+                    (!Array.isArray(checklist) ||
+                        checklist.length === 0) &&
+                    report.car_id
+                ) {
+
+                    try {
+
+                        checklist =
+                            await getInspectionChecklistByCarId(
+                                report.car_id
+                            );
+
+                    } catch (carChecklistError) {
+
+                        console.error(
+                            "Car checklist fallback error:",
+                            carChecklistError.message
+                        );
+
+                    }
+
+                }
+
+
+                resolve({
+
+                    report,
+
+                    checklist:
+                        checklist || []
+
+                });
+
+            } catch (error) {
+
+                reject(error);
+
+            }
 
         }
     );
@@ -453,6 +785,14 @@ const getCompleteInspectionReport = (
 // ======================================================
 // GET REPORT DELIVERY DATA
 // USED FOR EMAIL
+//
+// IMPORTANT:
+// Customer data can exist in:
+// 1. owners table
+// 2. cars table
+// 3. report_unlock_requests
+//
+// Therefore we fetch all useful fields.
 // ======================================================
 
 const getReportDeliveryData = (
@@ -460,27 +800,30 @@ const getReportDeliveryData = (
 ) => {
 
     return new Promise(
-        (resolve, reject) => {
+        async (resolve, reject) => {
 
             const sql = `
                 SELECT
                     ir.report_id,
                     ir.car_id,
-                    c.booking_id,
-                    CASE
-                        WHEN ir.overall_score > 10
-                            THEN ROUND(ir.overall_score / 10, 1)
-                        ELSE ROUND(ir.overall_score, 1)
-                    END AS overall_score,
+                    ir.overall_score,
                     ir.engine_remark,
                     ir.overall_remark,
                     ir.pdf_path,
                     ir.publish_status,
                     ir.created_at,
 
-                    o.owner_name,
-                    o.email AS owner_email,
-                    o.mobile AS owner_mobile
+                    c.*,
+
+                    o.owner_id AS joined_owner_id,
+                    o.owner_name AS joined_owner_name,
+                    o.email AS joined_owner_email,
+                    o.mobile AS joined_owner_mobile,
+                    o.address AS joined_owner_address,
+
+                    rur.name AS unlock_customer_name,
+                    rur.mobile AS unlock_customer_mobile,
+                    rur.email AS unlock_customer_email
 
                 FROM inspection_reports ir
 
@@ -490,7 +833,13 @@ const getReportDeliveryData = (
                 LEFT JOIN owners o
                     ON o.owner_id = c.owner_id
 
+                LEFT JOIN report_unlock_requests rur
+                    ON rur.car_id = ir.car_id
+                    AND rur.status = 'Approved'
+
                 WHERE ir.report_id = ?
+
+                ORDER BY rur.request_id DESC
 
                 LIMIT 1
             `;
@@ -499,21 +848,110 @@ const getReportDeliveryData = (
             db.query(
                 sql,
 
-                [reportId],
+                [
+                    reportId
+                ],
 
-                (
+                async (
                     err,
                     result
                 ) => {
 
                     if (err) {
-                        return reject(err);
+
+                        console.error(
+                            "getReportDeliveryData JOIN query error:",
+                            err.message
+                        );
+
+                        // --------------------------------------------------
+                        // Fallback to original minimal query.
+                        // --------------------------------------------------
+
+                        const fallbackSql = `
+                            SELECT
+                                ir.report_id,
+                                ir.car_id,
+                                ir.overall_score,
+                                ir.engine_remark,
+                                ir.overall_remark,
+                                ir.pdf_path,
+                                ir.publish_status,
+                                ir.created_at,
+
+                                o.owner_name,
+                                o.email AS owner_email,
+                                o.mobile AS owner_mobile,
+                                o.address AS owner_address
+
+                            FROM inspection_reports ir
+
+                            LEFT JOIN cars c
+                                ON c.car_id = ir.car_id
+
+                            LEFT JOIN owners o
+                                ON o.owner_id = c.owner_id
+
+                            WHERE ir.report_id = ?
+
+                            LIMIT 1
+                        `;
+
+
+                        return db.query(
+                            fallbackSql,
+                            [reportId],
+
+                            (
+                                fallbackErr,
+                                fallbackResult
+                            ) => {
+
+                                if (fallbackErr) {
+                                    return reject(
+                                        fallbackErr
+                                    );
+                                }
+
+
+                                const row =
+                                    fallbackResult[0] ||
+                                    null;
+
+
+                                if (!row) {
+                                    return resolve(
+                                        null
+                                    );
+                                }
+
+
+                                resolve(
+                                    normalizeDeliveryData(
+                                        row
+                                    )
+                                );
+
+                            }
+                        );
+
+                    }
+
+
+                    const row =
+                        result[0] ||
+                        null;
+
+
+                    if (!row) {
+                        return resolve(null);
                     }
 
 
                     resolve(
-                        result[0] ||
-                        null
+                        normalizeDeliveryData(
+                            row
+                        )
                     );
 
                 }
@@ -521,6 +959,298 @@ const getReportDeliveryData = (
 
         }
     );
+
+};
+
+
+// ======================================================
+// NORMALIZE REPORT DELIVERY DATA
+// ======================================================
+
+const normalizeDeliveryData = (
+    row
+) => {
+
+    const customerName =
+        firstValue(
+
+            row.customer_name,
+            row.customerName,
+
+            row.owner_name,
+            row.ownerName,
+
+            row.joined_owner_name,
+
+            row.unlock_customer_name,
+
+            row.name,
+
+            "-"
+        );
+
+
+    const customerMobile =
+        firstValue(
+
+            row.owner_mobile,
+            row.ownerMobile,
+
+            row.mobile,
+            row.phone,
+
+            row.joined_owner_mobile,
+
+            row.unlock_customer_mobile,
+
+            "-"
+        );
+
+
+    const customerEmail =
+        firstValue(
+
+            row.owner_email,
+            row.ownerEmail,
+
+            row.email,
+
+            row.joined_owner_email,
+
+            row.unlock_customer_email,
+
+            null
+        );
+
+
+    const customerAddress =
+        firstValue(
+
+            row.owner_address,
+            row.ownerAddress,
+
+            row.address,
+
+            row.city,
+
+            row.joined_owner_address,
+
+            "-"
+        );
+
+
+    const vehicle = {
+
+        ...row,
+
+        customer_name:
+            customerName,
+
+        customerName:
+            customerName,
+
+        owner_name:
+            customerName,
+
+        ownerName:
+            customerName,
+
+        owner_mobile:
+            customerMobile,
+
+        ownerMobile:
+            customerMobile,
+
+        owner_email:
+            customerEmail,
+
+        ownerEmail:
+            customerEmail,
+
+        owner_address:
+            customerAddress,
+
+        ownerAddress:
+            customerAddress
+
+    };
+
+
+    const owner = {
+
+        ...row,
+
+        ownerName:
+            customerName,
+
+        owner_name:
+            customerName,
+
+        name:
+            customerName,
+
+        fullName:
+            customerName,
+
+        mobile:
+            customerMobile,
+
+        phone:
+            customerMobile,
+
+        owner_mobile:
+            customerMobile,
+
+        ownerMobile:
+            customerMobile,
+
+        email:
+            customerEmail,
+
+        owner_email:
+            customerEmail,
+
+        ownerEmail:
+            customerEmail,
+
+        address:
+            customerAddress,
+
+        owner_address:
+            customerAddress,
+
+        ownerAddress:
+            customerAddress
+
+    };
+
+
+    const inspection = {
+
+        ...row,
+
+        report_id:
+            row.report_id,
+
+        reportId:
+            row.report_id,
+
+        car_id:
+            row.car_id,
+
+        carId:
+            row.car_id,
+
+        booking_id:
+            row.booking_id,
+
+        bookingId:
+            row.booking_id,
+
+        overall_score:
+            row.overall_score,
+
+        overallScore:
+            row.overall_score,
+
+        engine_remark:
+            row.engine_remark,
+
+        engineRemark:
+            row.engine_remark,
+
+        overall_remark:
+            row.overall_remark,
+
+        overallRemark:
+            row.overall_remark,
+
+        publish_status:
+            row.publish_status,
+
+        publishStatus:
+            row.publish_status,
+
+        pdf_path:
+            row.pdf_path,
+
+        pdfPath:
+            row.pdf_path
+
+    };
+
+
+    return {
+
+        ...row,
+
+        reportId:
+            row.report_id,
+
+        report_id:
+            row.report_id,
+
+        bookingId:
+            row.booking_id,
+
+        booking_id:
+            row.booking_id,
+
+        carId:
+            row.car_id,
+
+        car_id:
+            row.car_id,
+
+        vehicle,
+
+        owner,
+
+        inspection,
+
+        customer_name:
+            customerName,
+
+        customerName:
+            customerName,
+
+        owner_name:
+            customerName,
+
+        ownerName:
+            customerName,
+
+        owner_mobile:
+            customerMobile,
+
+        ownerMobile:
+            customerMobile,
+
+        owner_email:
+            customerEmail,
+
+        ownerEmail:
+            customerEmail,
+
+        owner_address:
+            customerAddress,
+
+        ownerAddress:
+            customerAddress,
+
+        pdf_path:
+            row.pdf_path,
+
+        pdfPath:
+            row.pdf_path,
+
+        publish_status:
+            row.publish_status,
+
+        publishStatus:
+            row.publish_status
+
+    };
 
 };
 
@@ -548,18 +1278,42 @@ const updateInspectionReport = (
             `;
 
 
+            const values = [
+
+                firstValue(
+                    reportData.overallScore,
+                    reportData.overall_score,
+                    null
+                ),
+
+                firstValue(
+                    reportData.engineRemark,
+                    reportData.engine_remark,
+                    null
+                ),
+
+                firstValue(
+                    reportData.overallRemark,
+                    reportData.overall_remark,
+                    null
+                ),
+
+                normalizePublishStatus(
+                    firstValue(
+                        reportData.publishStatus,
+                        reportData.publish_status,
+                        "No"
+                    )
+                ),
+
+                reportId
+
+            ];
+
+
             db.query(
                 sql,
-
-                [
-                    normalizeOverallScore(
-                        reportData.overallScore
-                    ),
-                    reportData.engineRemark,
-                    reportData.overallRemark,
-                    reportData.publishStatus,
-                    reportId
-                ],
+                values,
 
                 (
                     err,
@@ -629,6 +1383,57 @@ const updateInspectionReportPdfPath = (
 
 };
 
+// ======================================================
+// MARK INSPECTION REPORT AS PUBLISHED
+// ======================================================
+
+const markInspectionReportPublished = (
+    reportId
+) => {
+
+    return new Promise(
+        (resolve, reject) => {
+
+            const sql = `
+                UPDATE inspection_reports
+                SET publish_status = 'Yes'
+                WHERE report_id = ?
+            `;
+
+
+            db.query(
+                sql,
+
+                [
+                    reportId
+                ],
+
+                (
+                    err,
+                    result
+                ) => {
+
+                    if (err) {
+
+                        return reject(
+                            err
+                        );
+
+                    }
+
+
+                    resolve(
+                        result
+                    );
+
+                }
+            );
+
+        }
+    );
+
+};
+
 
 // ======================================================
 // EXPORT
@@ -642,6 +1447,8 @@ module.exports = {
 
     getInspectionReportByCarId,
 
+    getLatestInspectionReportByCarId,
+
     getAllInspectionReports,
 
     getInspectionReportById,
@@ -654,6 +1461,10 @@ module.exports = {
 
     updateInspectionReport,
 
-    updateInspectionReportPdfPath
+    updateInspectionReportPdfPath,
+
+    markInspectionReportPublished,
+
+    getInspectionChecklistByCarId
 
 };
