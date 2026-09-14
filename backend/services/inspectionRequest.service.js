@@ -508,7 +508,21 @@ const submitInspection = async (
         throw new Error("Inspection data is required");
     }
 
-    const vehicleData = { ...inspectionData };
+    // ==================================================
+    // MASTER BOOKING ID
+    // ==================================================
+    // The inspection request is the trusted source of booking_id.
+    // Employee/frontend input can never override it.
+    const bookingId = Number(request.booking_id);
+
+    if (!Number.isInteger(bookingId) || bookingId <= 0) {
+        throw new Error("Inspection request is not linked to a valid booking ID");
+    }
+
+    const vehicleData = {
+        ...inspectionData,
+        booking_id: bookingId
+    };
 
     // Employee can never set Admin price or publication state.
     delete vehicleData.price;
@@ -1065,6 +1079,8 @@ const submitInspection = async (
 
     return {
         request: finalRequest,
+        bookingId,
+        bookingCode: `CAR-${String(bookingId).padStart(6, "0")}`,
         vehicleId,
         carId: vehicleId,
         reportId,

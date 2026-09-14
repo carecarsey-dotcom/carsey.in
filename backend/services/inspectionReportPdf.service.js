@@ -546,6 +546,19 @@ const getCarId = (report) => {
     );
 };
 
+const getBookingId = (report) => {
+    const vehicle =
+        report && report.vehicle && typeof report.vehicle === "object"
+            ? report.vehicle
+            : {};
+
+    return firstValue(
+        report,
+        ["bookingId", "booking_id"],
+        firstValue(vehicle, ["booking_id", "bookingId"], "-")
+    );
+};
+
 const normalizeImagePath = (image) => {
     if (!image) return null;
 
@@ -1779,6 +1792,7 @@ const ensureSpace = (doc, y, requiredHeight, reportId) => {
 
 const drawHeader = (doc, report) => {
     const reportId = getReportId(report);
+    const bookingId = getBookingId(report);
 
     doc.roundedRect(MARGIN_LEFT, MARGIN_TOP, CONTENT_WIDTH, 64, 6)
         .fillAndStroke(COLORS.navy, COLORS.navy);
@@ -1790,7 +1804,11 @@ const drawHeader = (doc, report) => {
         .text("VEHICLE INSPECTION REPORT", MARGIN_LEFT + 14, MARGIN_TOP + 39);
 
     doc.font("Helvetica-Bold").fontSize(8).fillColor(COLORS.white)
-        .text(`REPORT #${reportId}`, PAGE_WIDTH - 150, MARGIN_TOP + 25, {
+        .text(`REPORT #${reportId}`, PAGE_WIDTH - 150, MARGIN_TOP + 18, {
+            width: 120,
+            align: "right"
+        })
+        .text(`BOOKING #${bookingId}`, PAGE_WIDTH - 150, MARGIN_TOP + 34, {
             width: 120,
             align: "right"
         });
@@ -2628,6 +2646,15 @@ const generateInspectionReportPdf = (report) => {
                 }
 
                 const normalizedReport = buildNormalizedReport(report);
+                const bookingId = getBookingId(normalizedReport);
+
+                if (bookingId === "-" || bookingId === null || bookingId === undefined) {
+                    throw new Error("Booking ID is missing.");
+                }
+
+                normalizedReport.bookingId = bookingId;
+                normalizedReport.booking_id = bookingId;
+
                 const detailedRows = mergeDetailedRemarks(
                     normalizeDetailedChecklist(normalizedReport),
                     normalizedReport

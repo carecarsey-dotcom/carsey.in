@@ -54,6 +54,8 @@ const addVehicle = async (vehicle) => {
     const reportId =
         Number(result.reportId);
 
+    const bookingId = Number(result.bookingId);
+
 
     if (
         !Number.isInteger(vehicleId) ||
@@ -101,6 +103,11 @@ const addVehicle = async (vehicle) => {
     return {
 
         ...result,
+
+        bookingId:
+            Number.isInteger(bookingId) && bookingId > 0
+                ? bookingId
+                : null,
 
         pdfGenerated:
             false,
@@ -920,6 +927,12 @@ const generateFinalVehicleInspectionReport = async (
         vehicleId:
             numericVehicleId,
 
+        carId:
+            numericVehicleId,
+
+        bookingId:
+            Number(vehicleData.booking_id) || null,
+
         reportId,
 
         pdfGenerated:
@@ -1159,6 +1172,9 @@ const publishVehicle = async (
             carId:
                 numericVehicleId,
 
+            bookingId:
+                Number(publishedVehicleObject.booking_id) || null,
+
             published:
                 true,
 
@@ -1206,6 +1222,11 @@ const publishVehicle = async (
 
         carId:
             numericVehicleId,
+
+        bookingId:
+            Number(publishedVehicleObject.booking_id) ||
+            Number(pdfResult?.bookingId) ||
+            null,
 
         published:
             true,

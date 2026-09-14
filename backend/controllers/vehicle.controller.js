@@ -49,6 +49,10 @@ const addVehicle = async (
                 vehicleId:
                     result.vehicleId,
 
+                bookingId:
+                    result.bookingId ??
+                    null,
+
                 reportId:
                     result.reportId,
 
@@ -511,6 +515,10 @@ const publishVehicle = async (
                 carId:
                     result.carId ??
                     carId,
+
+                bookingId:
+                    result.bookingId ??
+                    null,
 
                 published:
                     result.published ??

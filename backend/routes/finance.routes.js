@@ -2,7 +2,6 @@ const express = require("express");
 
 const router = express.Router();
 
-
 // ======================================================
 // CONTROLLER
 // ======================================================
@@ -10,7 +9,6 @@ const router = express.Router();
 const financeController = require(
     "../controllers/finance.controller"
 );
-
 
 // ======================================================
 // AUTH MIDDLEWARE
@@ -21,7 +19,6 @@ const {
 } = require(
     "../middlewares/auth.middleware"
 );
-
 
 // ======================================================
 // CUSTOMER
@@ -41,7 +38,6 @@ router.post(
     financeController.createFinanceRequest
 );
 
-
 // ======================================================
 // ADMIN
 // GET ALL FINANCE REQUESTS
@@ -55,7 +51,6 @@ router.get(
     verifyToken,
     financeController.getAllFinanceRequests
 );
-
 
 // ======================================================
 // ADMIN
@@ -71,7 +66,6 @@ router.get(
     financeController.getFinanceRequestById
 );
 
-
 // ======================================================
 // ADMIN
 // UPDATE FINANCE REQUEST STATUS
@@ -85,7 +79,6 @@ router.patch(
     verifyToken,
     financeController.updateFinanceRequestStatus
 );
-
 
 // ======================================================
 // EXPORT

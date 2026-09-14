@@ -1,6 +1,7 @@
 const db = require("../config/db");
 
 
+
 // ======================================================
 // CREATE REPORT UNLOCK REQUEST
 // ======================================================
@@ -9,51 +10,125 @@ const createReportUnlockRequest = (requestData) => {
 
     return new Promise((resolve, reject) => {
 
-        const sql = `
-            INSERT INTO report_unlock_requests
-            (
+        // ==================================================
+        // FIRST CHECK CAR + MASTER BOOKING ID
+        // ==================================================
+
+        const carSql = `
+            SELECT
                 car_id,
-                name,
-                mobile,
-                email
-            )
-            VALUES (?, ?, ?, ?)
+                booking_id
+            FROM cars
+            WHERE car_id = ?
+            LIMIT 1
         `;
 
-        const values = [
-            requestData.carId,
-            requestData.name,
-            requestData.mobile,
-            requestData.email
-        ];
-
         db.query(
-            sql,
-            values,
-            (err, result) => {
+            carSql,
+            [requestData.carId],
+            (carErr, carResult) => {
 
                 // ------------------------------------------
                 // Database Error
                 // ------------------------------------------
 
-                if (err) {
-                    return reject(err);
+                if (carErr) {
+                    return reject(carErr);
                 }
 
                 // ------------------------------------------
-                // Success
+                // Car Not Found
                 // ------------------------------------------
 
-                resolve({
-                    requestId: result.insertId
-                });
+                if (
+                    !carResult ||
+                    carResult.length === 0
+                ) {
+                    return reject(
+                        new Error(
+                            "Vehicle not found."
+                        )
+                    );
+                }
 
+                // ------------------------------------------
+                // Get Master Booking ID
+                // ------------------------------------------
+
+                const bookingId =
+                    Number(
+                        carResult[0].booking_id
+                    );
+
+                // ------------------------------------------
+                // Booking ID Must Exist
+                // ------------------------------------------
+
+                if (
+                    !Number.isInteger(
+                        bookingId
+                    ) ||
+                    bookingId <= 0
+                ) {
+                    return reject(
+                        new Error(
+                            "Vehicle is not linked to a valid booking ID."
+                        )
+                    );
+                }
+
+                // ==================================================
+                // INSERT REQUEST
+                // ==================================================
+
+                const sql = `
+                    INSERT INTO report_unlock_requests
+                    (
+                        car_id,
+                        name,
+                        mobile,
+                        email
+                    )
+                    VALUES (?, ?, ?, ?)
+                `;
+
+                const values = [
+                    requestData.carId,
+                    requestData.name,
+                    requestData.mobile,
+                    requestData.email
+                ];
+
+                db.query(
+                    sql,
+                    values,
+                    (err, result) => {
+
+                        // ------------------------------------------
+                        // Database Error
+                        // ------------------------------------------
+
+                        if (err) {
+                            return reject(err);
+                        }
+
+                        // ------------------------------------------
+                        // Success
+                        // ------------------------------------------
+
+                        resolve({
+                            requestId:
+                                result.insertId,
+
+                            bookingId
+                        });
+                    }
+                );
             }
         );
-
     });
-
 };
+
 
 
 // ======================================================
@@ -67,17 +142,29 @@ const getReportUnlockRequests = () => {
 
         const sql = `
             SELECT
-                request_id,
-                car_id,
-                name,
-                mobile,
-                email,
-                status,
-                created_at
 
-            FROM report_unlock_requests
+                rur.request_id,
 
-            ORDER BY request_id DESC
+                rur.car_id,
+
+                c.booking_id,
+
+                rur.name,
+
+                rur.mobile,
+
+                rur.email,
+
+                rur.status,
+
+                rur.created_at
+
+            FROM report_unlock_requests rur
+
+            LEFT JOIN cars c
+                ON c.car_id = rur.car_id
+
+            ORDER BY rur.request_id DESC
         `;
 
         db.query(
@@ -97,13 +184,11 @@ const getReportUnlockRequests = () => {
                 // ------------------------------------------
 
                 resolve(result);
-
             }
         );
-
     });
-
 };
+
 
 
 // ======================================================
@@ -119,57 +204,139 @@ const updateReportUnlockRequestStatus = (
     return new Promise((resolve, reject) => {
 
         const sql = `
-            UPDATE report_unlock_requests
+            SELECT
 
-            SET status = ?
+                rur.request_id,
 
-            WHERE request_id = ?
+                rur.car_id,
+
+                c.booking_id
+
+            FROM report_unlock_requests rur
+
+            LEFT JOIN cars c
+                ON c.car_id = rur.car_id
+
+            WHERE rur.request_id = ?
+
+            LIMIT 1
         `;
 
         db.query(
             sql,
-            [status, requestId],
-            (err, result) => {
+            [requestId],
+            (selectErr, selectResult) => {
 
                 // ------------------------------------------
                 // Database Error
                 // ------------------------------------------
 
-                if (err) {
-                    return reject(err);
+                if (selectErr) {
+                    return reject(selectErr);
                 }
-
 
                 // ------------------------------------------
                 // Request Not Found
                 // ------------------------------------------
 
-                if (result.affectedRows === 0) {
-
+                if (
+                    !selectResult ||
+                    selectResult.length === 0
+                ) {
                     return reject(
                         new Error(
                             "Report unlock request not found."
                         )
                     );
-
                 }
 
+                // ------------------------------------------
+                // Get Booking ID
+                // ------------------------------------------
+
+                const bookingId =
+                    Number(
+                        selectResult[0].booking_id
+                    );
 
                 // ------------------------------------------
-                // Success
+                // Validate Booking ID
                 // ------------------------------------------
 
-                resolve({
-                    requestId: Number(requestId),
-                    status
-                });
+                if (
+                    !Number.isInteger(
+                        bookingId
+                    ) ||
+                    bookingId <= 0
+                ) {
+                    return reject(
+                        new Error(
+                            "Vehicle is not linked to a valid booking ID."
+                        )
+                    );
+                }
 
+                // ==================================================
+                // UPDATE STATUS
+                // ==================================================
+
+                const updateSql = `
+                    UPDATE report_unlock_requests
+                    SET status = ?
+                    WHERE request_id = ?
+                `;
+
+                db.query(
+                    updateSql,
+                    [status, requestId],
+                    (err, result) => {
+
+                        // ------------------------------------------
+                        // Database Error
+                        // ------------------------------------------
+
+                        if (err) {
+                            return reject(err);
+                        }
+
+                        // ------------------------------------------
+                        // Request Not Found
+                        // ------------------------------------------
+
+                        if (
+                            result.affectedRows === 0
+                        ) {
+                            return reject(
+                                new Error(
+                                    "Report unlock request not found."
+                                )
+                            );
+                        }
+
+                        // ------------------------------------------
+                        // Success
+                        // ------------------------------------------
+
+                        resolve({
+                            requestId:
+                                Number(requestId),
+
+                            carId:
+                                Number(
+                                    selectResult[0].car_id
+                                ),
+
+                            bookingId,
+
+                            status
+                        });
+                    }
+                );
             }
         );
-
     });
-
 };
+
 
 
 // ======================================================

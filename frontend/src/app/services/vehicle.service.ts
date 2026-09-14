@@ -21,6 +21,11 @@ export interface Vehicle {
 
   car_id: number;
 
+  // ===================================================
+  // MASTER INSPECTION BOOKING ID
+  // ===================================================
+  booking_id?: number | null;
+
   owner_id?: number;
 
   brand: string;

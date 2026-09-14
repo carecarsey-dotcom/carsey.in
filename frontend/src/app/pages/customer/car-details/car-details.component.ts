@@ -73,6 +73,11 @@ interface Vehicle {
 
   car_id: number;
 
+  // ===================================================
+  // MASTER INSPECTION BOOKING ID
+  // ===================================================
+  booking_id?: number | null;
+
   brand: string;
 
   model: string;

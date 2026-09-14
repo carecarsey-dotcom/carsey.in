@@ -131,6 +131,15 @@
           </th>
 
 
+          <!-- BOOKING ID -->
+
+          <th
+            class="px-6 py-4 text-left text-sm font-semibold text-slate-600"
+          >
+            Booking ID
+          </th>
+
+
 
           <!-- MODEL -->
 
@@ -261,6 +270,17 @@
               {{ vehicle.brand || '-' }}
             </td>
 
+
+
+            <!-- ====================================== -->
+            <!-- BOOKING ID -->
+            <!-- ====================================== -->
+
+            <td
+              class="px-6 py-4 font-medium text-slate-700"
+            >
+              #{{ vehicle.booking_id ?? '-' }}
+            </td>
 
 
             <!-- ====================================== -->
@@ -477,7 +497,7 @@
           <tr>
 
             <td
-              colspan="10"
+              colspan="11"
               class="px-6 py-12 text-center text-slate-500"
             >
 

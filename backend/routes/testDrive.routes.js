@@ -2,7 +2,6 @@ const express = require("express");
 
 const router = express.Router();
 
-
 // ======================================================
 // CONTROLLER
 // ======================================================
@@ -10,7 +9,6 @@ const router = express.Router();
 const testDriveController = require(
     "../controllers/testDrive.controller"
 );
-
 
 // ======================================================
 // VALIDATOR
@@ -22,7 +20,6 @@ const {
     "../validators/testDrive.validator"
 );
 
-
 // ======================================================
 // AUTH MIDDLEWARE
 // ======================================================
@@ -33,7 +30,6 @@ const {
     "../middlewares/auth.middleware"
 );
 
-
 // ======================================================
 // CUSTOMER
 // CREATE TEST DRIVE REQUEST
@@ -43,15 +39,10 @@ const {
 // /api/vehicles/:carId/test-drive
 
 router.post(
-
     "/:carId/test-drive",
-
     validateTestDriveRequest,
-
     testDriveController.createTestDriveRequest
-
 );
-
 
 // ======================================================
 // ADMIN
@@ -62,15 +53,10 @@ router.post(
 // /api/admin/test-drive-requests
 
 router.get(
-
     "/test-drive-requests",
-
     verifyToken,
-
     testDriveController.getAllTestDriveRequests
-
 );
-
 
 // ======================================================
 // ADMIN
@@ -81,15 +67,10 @@ router.get(
 // /api/admin/test-drive-requests/:requestId
 
 router.get(
-
     "/test-drive-requests/:requestId",
-
     verifyToken,
-
     testDriveController.getTestDriveRequestById
-
 );
-
 
 // ======================================================
 // ADMIN
@@ -100,15 +81,10 @@ router.get(
 // /api/admin/test-drive-requests/:requestId/status
 
 router.patch(
-
     "/test-drive-requests/:requestId/status",
-
     verifyToken,
-
     testDriveController.updateTestDriveStatus
-
 );
-
 
 // ======================================================
 // EXPORT

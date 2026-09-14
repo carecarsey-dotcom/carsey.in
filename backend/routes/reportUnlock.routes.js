@@ -3,6 +3,7 @@ const express = require("express");
 const router = express.Router();
 
 
+
 // ======================================================
 // CONTROLLER
 // ======================================================
@@ -12,16 +13,21 @@ const reportUnlockController = require(
 );
 
 
+
 // ======================================================
 // VALIDATOR
 // ======================================================
 
 const {
+
     reportUnlockValidation,
+
     validateReportUnlock
+
 } = require(
     "../validators/reportUnlock.validator"
 );
+
 
 
 // ======================================================
@@ -29,10 +35,13 @@ const {
 // ======================================================
 
 const {
+
     verifyToken
+
 } = require(
     "../middlewares/auth.middleware"
 );
+
 
 
 // ======================================================
@@ -44,14 +53,18 @@ const {
 // /api/vehicles/:carId/unlock-report
 
 router.post(
+
     "/:carId/unlock-report",
 
     reportUnlockValidation,
 
     validateReportUnlock,
 
-    reportUnlockController.createReportUnlockRequest
+    reportUnlockController
+        .createReportUnlockRequest
+
 );
+
 
 
 // ======================================================
@@ -63,12 +76,16 @@ router.post(
 // /api/admin/report-unlock-requests
 
 router.get(
+
     "/report-unlock-requests",
 
     verifyToken,
 
-    reportUnlockController.getReportUnlockRequests
+    reportUnlockController
+        .getReportUnlockRequests
+
 );
+
 
 
 // ======================================================
@@ -80,12 +97,16 @@ router.get(
 // /api/admin/report-unlock-requests/:requestId/status
 
 router.patch(
+
     "/report-unlock-requests/:requestId/status",
 
     verifyToken,
 
-    reportUnlockController.updateReportUnlockRequestStatus
+    reportUnlockController
+        .updateReportUnlockRequestStatus
+
 );
+
 
 
 // ======================================================

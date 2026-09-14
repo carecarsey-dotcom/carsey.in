@@ -3,6 +3,7 @@ const reportUnlockRepository = require(
 );
 
 
+
 // ======================================================
 // CREATE REPORT UNLOCK REQUEST
 // ======================================================
@@ -18,17 +19,15 @@ const createReportUnlockRequest = async (
     const carId =
         Number(requestData.carId);
 
-
     if (
         !Number.isInteger(carId) ||
         carId <= 0
     ) {
-
         throw new Error(
             "Valid vehicle ID is required."
         );
-
     }
+
 
 
     // ==================================================
@@ -38,37 +37,29 @@ const createReportUnlockRequest = async (
     const name =
         requestData.name?.trim();
 
-
     if (!name) {
-
         throw new Error(
             "Name is required."
         );
-
     }
-
 
     if (
         !/^[A-Za-z ]+$/.test(name)
     ) {
-
         throw new Error(
             "Name must contain only letters."
         );
-
     }
-
 
     if (
         name.length < 2 ||
         name.length > 100
     ) {
-
         throw new Error(
             "Name must be between 2 and 100 characters."
         );
-
     }
+
 
 
     // ==================================================
@@ -81,18 +72,16 @@ const createReportUnlockRequest = async (
             requestData.mobile || ""
         ).trim();
 
-
     if (
         !/^[0-9]{10}$/.test(
             mobile
         )
     ) {
-
         throw new Error(
             "Mobile number must contain exactly 10 digits."
         );
-
     }
+
 
 
     // ==================================================
@@ -104,29 +93,22 @@ const createReportUnlockRequest = async (
             ?.trim()
             .toLowerCase();
 
-
-    if (
-        !email
-    ) {
-
+    if (!email) {
         throw new Error(
             "Email is required."
         );
-
     }
-
 
     if (
         !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(
             email
         )
     ) {
-
         throw new Error(
             "Please enter a valid email address."
         );
-
     }
+
 
 
     // ==================================================
@@ -146,6 +128,7 @@ const createReportUnlockRequest = async (
     };
 
 
+
     // ==================================================
     // SAVE DATABASE
     // ==================================================
@@ -157,6 +140,7 @@ const createReportUnlockRequest = async (
             );
 
 
+
     // ==================================================
     // RETURN
     // ==================================================
@@ -166,12 +150,15 @@ const createReportUnlockRequest = async (
         requestId:
             result.requestId,
 
+        bookingId:
+            result.bookingId,
+
         message:
             "Inspection report unlock request submitted successfully."
 
     };
-
 };
+
 
 
 // ======================================================
@@ -185,14 +172,13 @@ const getReportUnlockRequests =
             await reportUnlockRepository
                 .getReportUnlockRequests();
 
-
         return {
 
             requests
 
         };
-
     };
+
 
 
 // ======================================================
@@ -209,19 +195,27 @@ const updateReportUnlockRequestStatus =
             Number(requestId);
 
 
+
+        // ==================================================
+        // REQUEST ID
+        // ==================================================
+
         if (
             !Number.isInteger(
                 numericRequestId
             ) ||
             numericRequestId <= 0
         ) {
-
             throw new Error(
                 "Invalid report unlock request ID."
             );
-
         }
 
+
+
+        // ==================================================
+        // ALLOWED STATUS
+        // ==================================================
 
         const allowedStatuses = [
 
@@ -232,18 +226,22 @@ const updateReportUnlockRequestStatus =
         ];
 
 
+
         if (
             !allowedStatuses.includes(
                 status
             )
         ) {
-
             throw new Error(
                 "Status must be Approved or Rejected."
             );
-
         }
 
+
+
+        // ==================================================
+        // UPDATE
+        // ==================================================
 
         const result =
             await reportUnlockRepository
@@ -253,10 +251,21 @@ const updateReportUnlockRequestStatus =
                 );
 
 
+
+        // ==================================================
+        // RETURN
+        // ==================================================
+
         return {
 
             requestId:
                 result.requestId,
+
+            carId:
+                result.carId,
+
+            bookingId:
+                result.bookingId,
 
             status:
                 result.status,
@@ -265,8 +274,8 @@ const updateReportUnlockRequestStatus =
                 `Report unlock request ${status.toLowerCase()} successfully.`
 
         };
-
     };
+
 
 
 // ======================================================

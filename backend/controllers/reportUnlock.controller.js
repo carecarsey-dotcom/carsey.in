@@ -3,6 +3,7 @@ const reportUnlockService = require(
 );
 
 
+
 // ======================================================
 // CREATE REPORT UNLOCK REQUEST
 // Customer Public API
@@ -19,7 +20,9 @@ const createReportUnlockRequest = async (
         // Get Vehicle ID From URL
         // ------------------------------------------
 
-        const { carId } = req.params;
+        const { carId } =
+            req.params;
+
 
 
         // ------------------------------------------
@@ -27,10 +30,15 @@ const createReportUnlockRequest = async (
         // ------------------------------------------
 
         const {
+
             name,
+
             mobile,
+
             email
+
         } = req.body;
+
 
 
         // ------------------------------------------
@@ -39,7 +47,8 @@ const createReportUnlockRequest = async (
 
         const requestData = {
 
-            carId: Number(carId),
+            carId:
+                Number(carId),
 
             name,
 
@@ -50,14 +59,17 @@ const createReportUnlockRequest = async (
         };
 
 
+
         // ------------------------------------------
         // Service Call
         // ------------------------------------------
 
         const data =
-            await reportUnlockService.createReportUnlockRequest(
-                requestData
-            );
+            await reportUnlockService
+                .createReportUnlockRequest(
+                    requestData
+                );
+
 
 
         // ------------------------------------------
@@ -91,10 +103,9 @@ const createReportUnlockRequest = async (
                 "Internal Server Error"
 
         });
-
     }
-
 };
+
 
 
 // ======================================================
@@ -114,7 +125,9 @@ const getReportUnlockRequests = async (
         // ------------------------------------------
 
         const data =
-            await reportUnlockService.getReportUnlockRequests();
+            await reportUnlockService
+                .getReportUnlockRequests();
+
 
 
         // ------------------------------------------
@@ -148,10 +161,9 @@ const getReportUnlockRequests = async (
                 "Internal Server Error"
 
         });
-
     }
-
 };
+
 
 
 // ======================================================
@@ -170,14 +182,18 @@ const updateReportUnlockRequestStatus = async (
         // Get Request ID
         // ------------------------------------------
 
-        const { requestId } = req.params;
+        const { requestId } =
+            req.params;
+
 
 
         // ------------------------------------------
         // Get Status
         // ------------------------------------------
 
-        const { status } = req.body;
+        const { status } =
+            req.body;
+
 
 
         // ------------------------------------------
@@ -190,6 +206,7 @@ const updateReportUnlockRequestStatus = async (
                     requestId,
                     status
                 );
+
 
 
         // ------------------------------------------
@@ -223,10 +240,9 @@ const updateReportUnlockRequestStatus = async (
                 "Unable to update request status"
 
         });
-
     }
-
 };
+
 
 
 // ======================================================

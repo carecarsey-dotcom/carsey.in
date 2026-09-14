@@ -2,7 +2,6 @@ const testDriveService = require(
     "../services/testDrive.service"
 );
 
-
 // ======================================================
 // CREATE TEST DRIVE REQUEST
 // Customer
@@ -26,27 +25,18 @@ const createTestDriveRequest = async (
             carId
         } = req.params;
 
-
         // ------------------------------------------
         // Customer Data
         // ------------------------------------------
 
         const {
-
             name,
-
             mobile,
-
             email,
-
             city,
-
             preferredDate,
-
             preferredTime
-
         } = req.body;
-
 
         // ------------------------------------------
         // Prepare Data
@@ -55,21 +45,14 @@ const createTestDriveRequest = async (
         const requestData = {
 
             carId,
-
             name,
-
             mobile,
-
             email,
-
             city,
-
             preferredDate,
-
             preferredTime
 
         };
-
 
         // ------------------------------------------
         // Service
@@ -80,7 +63,6 @@ const createTestDriveRequest = async (
                 .createTestDriveRequest(
                     requestData
                 );
-
 
         // ------------------------------------------
         // Response
@@ -104,7 +86,6 @@ const createTestDriveRequest = async (
             error
         );
 
-
         return res.status(400).json({
 
             success: false,
@@ -114,11 +95,8 @@ const createTestDriveRequest = async (
                 "Unable to submit test drive request"
 
         });
-
     }
-
 };
-
 
 // ======================================================
 // GET ALL TEST DRIVE REQUESTS
@@ -139,7 +117,6 @@ const getAllTestDriveRequests = async (
             await testDriveService
                 .getAllTestDriveRequests();
 
-
         return res.status(200).json({
 
             success: true,
@@ -158,7 +135,6 @@ const getAllTestDriveRequests = async (
             error
         );
 
-
         return res.status(500).json({
 
             success: false,
@@ -168,11 +144,8 @@ const getAllTestDriveRequests = async (
                 "Unable to fetch test drive requests"
 
         });
-
     }
-
 };
-
 
 // ======================================================
 // GET TEST DRIVE REQUEST BY ID
@@ -193,13 +166,11 @@ const getTestDriveRequestById = async (
             requestId
         } = req.params;
 
-
         const data =
             await testDriveService
                 .getTestDriveRequestById(
                     requestId
                 );
-
 
         return res.status(200).json({
 
@@ -219,7 +190,6 @@ const getTestDriveRequestById = async (
             error
         );
 
-
         return res.status(404).json({
 
             success: false,
@@ -229,11 +199,8 @@ const getTestDriveRequestById = async (
                 "Test drive request not found"
 
         });
-
     }
-
 };
-
 
 // ======================================================
 // UPDATE TEST DRIVE STATUS
@@ -254,11 +221,9 @@ const updateTestDriveStatus = async (
             requestId
         } = req.params;
 
-
         const {
             status
         } = req.body;
-
 
         if (!status) {
 
@@ -270,9 +235,7 @@ const updateTestDriveStatus = async (
                     "Status is required."
 
             });
-
         }
-
 
         const data =
             await testDriveService
@@ -280,7 +243,6 @@ const updateTestDriveStatus = async (
                     requestId,
                     status
                 );
-
 
         return res.status(200).json({
 
@@ -300,7 +262,6 @@ const updateTestDriveStatus = async (
             error
         );
 
-
         return res.status(400).json({
 
             success: false,
@@ -310,11 +271,8 @@ const updateTestDriveStatus = async (
                 "Unable to update test drive request"
 
         });
-
     }
-
 };
-
 
 // ======================================================
 // EXPORT
@@ -323,11 +281,8 @@ const updateTestDriveStatus = async (
 module.exports = {
 
     createTestDriveRequest,
-
     getAllTestDriveRequests,
-
     getTestDriveRequestById,
-
     updateTestDriveStatus
 
 };

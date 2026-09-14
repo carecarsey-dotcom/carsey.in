@@ -109,12 +109,45 @@ const createInspectionReport = (
                     }
 
 
-                    resolve({
+                    const carId = firstValue(
+                        reportData.carId,
+                        reportData.car_id
+                    );
 
-                        reportId:
-                            result.insertId
+                    const bookingSql = `
+                        SELECT booking_id
+                        FROM cars
+                        WHERE car_id = ?
+                        LIMIT 1
+                    `;
 
-                    });
+                    db.query(
+                        bookingSql,
+                        [carId],
+                        (bookingErr, bookingRows) => {
+
+                            if (bookingErr) {
+                                return reject(bookingErr);
+                            }
+
+                            const bookingId =
+                                bookingRows && bookingRows.length
+                                    ? bookingRows[0].booking_id
+                                    : null;
+
+                            resolve({
+
+                                reportId:
+                                    result.insertId,
+
+                                bookingId,
+
+                                booking_id:
+                                    bookingId
+
+                            });
+                        }
+                    );
 
                 }
             );
@@ -139,17 +172,20 @@ const getApprovedUnlockRequest = (
 
             const sql = `
                 SELECT
-                    request_id,
-                    car_id,
-                    name,
-                    mobile,
-                    email,
-                    status,
-                    created_at
-                FROM report_unlock_requests
-                WHERE request_id = ?
-                AND car_id = ?
-                AND status = 'Approved'
+                    rur.request_id,
+                    rur.car_id,
+                    c.booking_id,
+                    rur.name,
+                    rur.mobile,
+                    rur.email,
+                    rur.status,
+                    rur.created_at
+                FROM report_unlock_requests rur
+                LEFT JOIN cars c
+                    ON c.car_id = rur.car_id
+                WHERE rur.request_id = ?
+                AND rur.car_id = ?
+                AND rur.status = 'Approved'
                 LIMIT 1
             `;
 
@@ -210,22 +246,25 @@ const getInspectionReportByCarId = (
 
             const sql = `
                 SELECT
-                    report_id,
-                    car_id,
-                    overall_score,
-                    engine_remark,
-                    overall_remark,
-                    pdf_path,
-                    publish_status,
-                    created_at
-                FROM inspection_reports
-                WHERE car_id = ?
+                    ir.report_id,
+                    ir.car_id,
+                    c.booking_id,
+                    ir.overall_score,
+                    ir.engine_remark,
+                    ir.overall_remark,
+                    ir.pdf_path,
+                    ir.publish_status,
+                    ir.created_at
+                FROM inspection_reports ir
+                LEFT JOIN cars c
+                    ON c.car_id = ir.car_id
+                WHERE ir.car_id = ?
                 ORDER BY
                     CASE
-                        WHEN publish_status = 'Yes' THEN 0
+                        WHEN ir.publish_status = 'Yes' THEN 0
                         ELSE 1
                     END,
-                    report_id DESC
+                    ir.report_id DESC
                 LIMIT 1
             `;
 
@@ -280,17 +319,20 @@ const getLatestInspectionReportByCarId = (
 
             const sql = `
                 SELECT
-                    report_id,
-                    car_id,
-                    overall_score,
-                    engine_remark,
-                    overall_remark,
-                    pdf_path,
-                    publish_status,
-                    created_at
-                FROM inspection_reports
-                WHERE car_id = ?
-                ORDER BY report_id DESC
+                    ir.report_id,
+                    ir.car_id,
+                    c.booking_id,
+                    ir.overall_score,
+                    ir.engine_remark,
+                    ir.overall_remark,
+                    ir.pdf_path,
+                    ir.publish_status,
+                    ir.created_at
+                FROM inspection_reports ir
+                LEFT JOIN cars c
+                    ON c.car_id = ir.car_id
+                WHERE ir.car_id = ?
+                ORDER BY ir.report_id DESC
                 LIMIT 1
             `;
 
@@ -337,16 +379,19 @@ const getAllInspectionReports = () => {
 
             const sql = `
                 SELECT
-                    report_id,
-                    car_id,
-                    overall_score,
-                    engine_remark,
-                    overall_remark,
-                    pdf_path,
-                    publish_status,
-                    created_at
-                FROM inspection_reports
-                ORDER BY report_id DESC
+                    ir.report_id,
+                    ir.car_id,
+                    c.booking_id,
+                    ir.overall_score,
+                    ir.engine_remark,
+                    ir.overall_remark,
+                    ir.pdf_path,
+                    ir.publish_status,
+                    ir.created_at
+                FROM inspection_reports ir
+                LEFT JOIN cars c
+                    ON c.car_id = ir.car_id
+                ORDER BY ir.report_id DESC
             `;
 
 
@@ -389,16 +434,19 @@ const getInspectionReportById = (
 
             const sql = `
                 SELECT
-                    report_id,
-                    car_id,
-                    overall_score,
-                    engine_remark,
-                    overall_remark,
-                    pdf_path,
-                    publish_status,
-                    created_at
-                FROM inspection_reports
-                WHERE report_id = ?
+                    ir.report_id,
+                    ir.car_id,
+                    c.booking_id,
+                    ir.overall_score,
+                    ir.engine_remark,
+                    ir.overall_remark,
+                    ir.pdf_path,
+                    ir.publish_status,
+                    ir.created_at
+                FROM inspection_reports ir
+                LEFT JOIN cars c
+                    ON c.car_id = ir.car_id
+                WHERE ir.report_id = ?
                 LIMIT 1
             `;
 
@@ -1093,6 +1141,12 @@ const normalizeDeliveryData = (
         carId:
             row.car_id,
 
+        booking_id:
+            row.booking_id,
+
+        bookingId:
+            row.booking_id,
+
         overall_score:
             row.overall_score,
 
@@ -1135,6 +1189,12 @@ const normalizeDeliveryData = (
 
         report_id:
             row.report_id,
+
+        bookingId:
+            row.booking_id,
+
+        booking_id:
+            row.booking_id,
 
         carId:
             row.car_id,

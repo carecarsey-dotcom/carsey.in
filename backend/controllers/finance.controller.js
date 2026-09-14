@@ -2,7 +2,6 @@ const financeService = require(
     "../services/finance.service"
 );
 
-
 // ======================================================
 // CREATE FINANCE REQUEST
 // Customer API
@@ -26,27 +25,18 @@ const createFinanceRequest = async (
             carId
         } = req.params;
 
-
         // ==================================================
         // GET BODY DATA
         // ==================================================
 
         const {
-
             name,
-
             mobile,
-
             email,
-
             occupation,
-
             monthlyIncome,
-
             downPayment
-
         } = req.body;
-
 
         // ==================================================
         // PREPARE DATA
@@ -70,7 +60,6 @@ const createFinanceRequest = async (
 
         };
 
-
         // ==================================================
         // SERVICE CALL
         // ==================================================
@@ -80,7 +69,6 @@ const createFinanceRequest = async (
                 .createFinanceRequest(
                     financeData
                 );
-
 
         // ==================================================
         // SUCCESS RESPONSE
@@ -108,7 +96,6 @@ const createFinanceRequest = async (
             error
         );
 
-
         // ==================================================
         // ERROR RESPONSE
         // ==================================================
@@ -122,11 +109,8 @@ const createFinanceRequest = async (
                 "Unable to submit finance request"
 
         });
-
     }
-
 };
-
 
 // ======================================================
 // GET ALL FINANCE REQUESTS
@@ -150,7 +134,6 @@ const getAllFinanceRequests = async (
         const data =
             await financeService
                 .getAllFinanceRequests();
-
 
         // ==================================================
         // SUCCESS RESPONSE
@@ -178,7 +161,6 @@ const getAllFinanceRequests = async (
             error
         );
 
-
         // ==================================================
         // ERROR RESPONSE
         // ==================================================
@@ -192,11 +174,8 @@ const getAllFinanceRequests = async (
                 "Unable to fetch finance requests"
 
         });
-
     }
-
 };
-
 
 // ======================================================
 // GET FINANCE REQUEST BY ID
@@ -221,7 +200,6 @@ const getFinanceRequestById = async (
             financeId
         } = req.params;
 
-
         // ==================================================
         // SERVICE CALL
         // ==================================================
@@ -231,7 +209,6 @@ const getFinanceRequestById = async (
                 .getFinanceRequestById(
                     financeId
                 );
-
 
         // ==================================================
         // SUCCESS RESPONSE
@@ -259,7 +236,6 @@ const getFinanceRequestById = async (
             error
         );
 
-
         // ==================================================
         // ERROR RESPONSE
         // ==================================================
@@ -273,11 +249,8 @@ const getFinanceRequestById = async (
                 "Finance request not found"
 
         });
-
     }
-
 };
-
 
 // ======================================================
 // UPDATE FINANCE REQUEST STATUS
@@ -302,7 +275,6 @@ const updateFinanceRequestStatus = async (
             financeId
         } = req.params;
 
-
         // ==================================================
         // GET STATUS
         // ==================================================
@@ -310,7 +282,6 @@ const updateFinanceRequestStatus = async (
         const {
             status
         } = req.body;
-
 
         // ==================================================
         // VALIDATE STATUS
@@ -326,9 +297,7 @@ const updateFinanceRequestStatus = async (
                     "Status is required."
 
             });
-
         }
-
 
         // ==================================================
         // SERVICE CALL
@@ -340,7 +309,6 @@ const updateFinanceRequestStatus = async (
                     financeId,
                     status
                 );
-
 
         // ==================================================
         // SUCCESS RESPONSE
@@ -368,7 +336,6 @@ const updateFinanceRequestStatus = async (
             error
         );
 
-
         // ==================================================
         // ERROR RESPONSE
         // ==================================================
@@ -382,11 +349,8 @@ const updateFinanceRequestStatus = async (
                 "Unable to update finance request status"
 
         });
-
     }
-
 };
-
 
 // ======================================================
 // EXPORT

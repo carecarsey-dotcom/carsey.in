@@ -412,6 +412,14 @@ const buildCarsData = async (
         ],
 
         // ==================================================
+        // MASTER BOOKING ID
+        // ==================================================
+        booking_id: [
+            "booking_id",
+            "bookingId"
+        ],
+
+        // ==================================================
         // OWNER / CUSTOMER DETAILS - FIX
         // ==================================================
 
@@ -1373,6 +1381,11 @@ const addVehicle = async (
 
         carId:
             vehicleId,
+
+        bookingId:
+            carsData.booking_id !== undefined
+                ? Number(carsData.booking_id)
+                : null,
 
         reportId,
 

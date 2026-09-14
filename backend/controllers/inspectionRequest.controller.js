@@ -424,6 +424,11 @@ const submitInspection = async (
                     result?.reportId ||
                     null,
 
+                bookingId:
+                    result?.bookingId ||
+                    result?.request?.booking_id ||
+                    null,
+
                 status:
                     result?.status ||
                     "Submitted"

@@ -2,7 +2,6 @@ const financeRepository = require(
     "../repositories/finance.repository"
 );
 
-
 // ======================================================
 // CREATE FINANCE REQUEST
 // Customer
@@ -19,18 +18,14 @@ const createFinanceRequest = async (
     const carId =
         Number(financeData.carId);
 
-
     if (
         !Number.isInteger(carId) ||
         carId <= 0
     ) {
-
         throw new Error(
             "Invalid car ID."
         );
-
     }
-
 
     // ==================================================
     // VALIDATE NAME
@@ -41,40 +36,30 @@ const createFinanceRequest = async (
         typeof financeData.name !== "string" ||
         !financeData.name.trim()
     ) {
-
         throw new Error(
             "Name is required."
         );
-
     }
-
 
     const name =
         financeData.name.trim();
 
-
     if (
         !/^[A-Za-z ]+$/.test(name)
     ) {
-
         throw new Error(
             "Name must contain only letters."
         );
-
     }
-
 
     if (
         name.length < 2 ||
         name.length > 100
     ) {
-
         throw new Error(
             "Name must be between 2 and 100 characters."
         );
-
     }
-
 
     // ==================================================
     // VALIDATE MOBILE
@@ -84,32 +69,25 @@ const createFinanceRequest = async (
     if (
         !financeData.mobile
     ) {
-
         throw new Error(
             "Mobile number is required."
         );
-
     }
-
 
     const mobile =
         String(
             financeData.mobile
         ).trim();
 
-
     if (
         !/^[0-9]{10}$/.test(
             mobile
         )
     ) {
-
         throw new Error(
             "Mobile number must contain exactly 10 digits."
         );
-
     }
-
 
     // ==================================================
     // VALIDATE EMAIL
@@ -120,32 +98,25 @@ const createFinanceRequest = async (
         typeof financeData.email !== "string" ||
         !financeData.email.trim()
     ) {
-
         throw new Error(
             "Email is required."
         );
-
     }
-
 
     const email =
         financeData.email
             .trim()
             .toLowerCase();
 
-
     if (
         !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(
             email
         )
     ) {
-
         throw new Error(
             "Invalid email address."
         );
-
     }
-
 
     // ==================================================
     // VALIDATE OCCUPATION
@@ -156,17 +127,13 @@ const createFinanceRequest = async (
         typeof financeData.occupation !== "string" ||
         !financeData.occupation.trim()
     ) {
-
         throw new Error(
             "Occupation is required."
         );
-
     }
-
 
     const occupation =
         financeData.occupation.trim();
-
 
     // ==================================================
     // VALIDATE MONTHLY INCOME
@@ -177,20 +144,16 @@ const createFinanceRequest = async (
             financeData.monthlyIncome
         );
 
-
     if (
         !Number.isFinite(
             monthlyIncome
         ) ||
         monthlyIncome <= 0
     ) {
-
         throw new Error(
             "Monthly income must be greater than 0."
         );
-
     }
-
 
     // ==================================================
     // VALIDATE DOWN PAYMENT
@@ -201,46 +164,31 @@ const createFinanceRequest = async (
             financeData.downPayment
         );
 
-
     if (
         !Number.isFinite(
             downPayment
         ) ||
         downPayment < 0
     ) {
-
         throw new Error(
             "Down payment cannot be negative."
         );
-
     }
-
 
     // ==================================================
     // PREPARE DATA
     // ==================================================
 
     const data = {
-
         carId,
-
         name,
-
         mobile,
-
         email,
-
         occupation,
-
         monthlyIncome,
-
         downPayment,
-
-        status:
-            "Pending"
-
+        status: "Pending"
     };
-
 
     // ==================================================
     // SAVE REQUEST
@@ -252,23 +200,24 @@ const createFinanceRequest = async (
                 data
             );
 
-
     // ==================================================
     // RETURN
     // ==================================================
 
     return {
-
         financeId:
             result.financeId,
 
+        bookingId:
+            result.bookingId !== null &&
+            result.bookingId !== undefined
+                ? Number(result.bookingId)
+                : null,
+
         message:
             "Finance request submitted successfully."
-
     };
-
 };
-
 
 // ======================================================
 // GET ALL FINANCE REQUESTS
@@ -282,15 +231,10 @@ const getAllFinanceRequests =
             await financeRepository
                 .getAllFinanceRequests();
 
-
         return {
-
             requests
-
         };
-
     };
-
 
 // ======================================================
 // GET FINANCE REQUEST BY ID
@@ -305,20 +249,16 @@ const getFinanceRequestById =
         const numericFinanceId =
             Number(financeId);
 
-
         if (
             !Number.isInteger(
                 numericFinanceId
             ) ||
             numericFinanceId <= 0
         ) {
-
             throw new Error(
                 "Invalid finance request ID."
             );
-
         }
-
 
         const request =
             await financeRepository
@@ -326,20 +266,21 @@ const getFinanceRequestById =
                     numericFinanceId
                 );
 
-
         if (!request) {
-
             throw new Error(
                 "Finance request not found."
             );
-
         }
 
-
         return {
-
             financeId:
                 request.finance_id,
+
+            bookingId:
+                request.booking_id !== null &&
+                request.booking_id !== undefined
+                    ? Number(request.booking_id)
+                    : null,
 
             carId:
                 request.car_id,
@@ -367,11 +308,8 @@ const getFinanceRequestById =
 
             createdAt:
                 request.created_at
-
         };
-
     };
-
 
 // ======================================================
 // UPDATE FINANCE REQUEST STATUS
@@ -387,33 +325,30 @@ const updateFinanceRequestStatus =
         const numericFinanceId =
             Number(financeId);
 
-
         if (
             !Number.isInteger(
                 numericFinanceId
             ) ||
             numericFinanceId <= 0
         ) {
-
             throw new Error(
                 "Invalid finance request ID."
             );
-
         }
-
 
         if (
             status !== "Pending" &&
             status !== "Approved" &&
             status !== "Rejected"
         ) {
-
             throw new Error(
                 "Status must be Pending, Approved or Rejected."
             );
-
         }
 
+        // ==================================================
+        // GET EXISTING REQUEST
+        // ==================================================
 
         const existingRequest =
             await financeRepository
@@ -421,15 +356,32 @@ const updateFinanceRequestStatus =
                     numericFinanceId
                 );
 
-
         if (!existingRequest) {
-
             throw new Error(
                 "Finance request not found."
             );
-
         }
 
+        // ==================================================
+        // VALIDATE MASTER BOOKING ID
+        // ==================================================
+
+        if (
+            existingRequest.booking_id === null ||
+            existingRequest.booking_id === undefined ||
+            !Number.isInteger(
+                Number(existingRequest.booking_id)
+            ) ||
+            Number(existingRequest.booking_id) <= 0
+        ) {
+            throw new Error(
+                "Finance request is not linked to a valid booking ID."
+            );
+        }
+
+        // ==================================================
+        // UPDATE STATUS
+        // ==================================================
 
         await financeRepository
             .updateFinanceRequestStatus(
@@ -437,34 +389,36 @@ const updateFinanceRequestStatus =
                 status
             );
 
+        // ==================================================
+        // RETURN
+        // ==================================================
 
         return {
-
             financeId:
                 numericFinanceId,
+
+            bookingId:
+                Number(
+                    existingRequest.booking_id
+                ),
+
+            carId:
+                existingRequest.car_id,
 
             status,
 
             message:
                 "Finance request status updated successfully."
-
         };
-
     };
-
 
 // ======================================================
 // EXPORT
 // ======================================================
 
 module.exports = {
-
     createFinanceRequest,
-
     getAllFinanceRequests,
-
     getFinanceRequestById,
-
     updateFinanceRequestStatus
-
 };
