@@ -1,4 +1,6 @@
 const db = require("../config/db");
+const emailService = require("./email.service");
+const env = require("../config/env");
 
 // ======================================================
 // SMALL HELPER FUNCTIONS
@@ -109,45 +111,12 @@ const createInspectionReport = (
                     }
 
 
-                    const carId = firstValue(
-                        reportData.carId,
-                        reportData.car_id
-                    );
+                    resolve({
 
-                    const bookingSql = `
-                        SELECT booking_id
-                        FROM cars
-                        WHERE car_id = ?
-                        LIMIT 1
-                    `;
+                        reportId:
+                            result.insertId
 
-                    db.query(
-                        bookingSql,
-                        [carId],
-                        (bookingErr, bookingRows) => {
-
-                            if (bookingErr) {
-                                return reject(bookingErr);
-                            }
-
-                            const bookingId =
-                                bookingRows && bookingRows.length
-                                    ? bookingRows[0].booking_id
-                                    : null;
-
-                            resolve({
-
-                                reportId:
-                                    result.insertId,
-
-                                bookingId,
-
-                                booking_id:
-                                    bookingId
-
-                            });
-                        }
-                    );
+                    });
 
                 }
             );
@@ -181,8 +150,7 @@ const getApprovedUnlockRequest = (
                     rur.status,
                     rur.created_at
                 FROM report_unlock_requests rur
-                LEFT JOIN cars c
-                    ON c.car_id = rur.car_id
+                LEFT JOIN cars c ON c.car_id = rur.car_id
                 WHERE rur.request_id = ?
                 AND rur.car_id = ?
                 AND rur.status = 'Approved'
@@ -256,8 +224,7 @@ const getInspectionReportByCarId = (
                     ir.publish_status,
                     ir.created_at
                 FROM inspection_reports ir
-                LEFT JOIN cars c
-                    ON c.car_id = ir.car_id
+                LEFT JOIN cars c ON c.car_id = ir.car_id
                 WHERE ir.car_id = ?
                 ORDER BY
                     CASE
@@ -329,8 +296,7 @@ const getLatestInspectionReportByCarId = (
                     ir.publish_status,
                     ir.created_at
                 FROM inspection_reports ir
-                LEFT JOIN cars c
-                    ON c.car_id = ir.car_id
+                LEFT JOIN cars c ON c.car_id = ir.car_id
                 WHERE ir.car_id = ?
                 ORDER BY ir.report_id DESC
                 LIMIT 1
@@ -389,8 +355,7 @@ const getAllInspectionReports = () => {
                     ir.publish_status,
                     ir.created_at
                 FROM inspection_reports ir
-                LEFT JOIN cars c
-                    ON c.car_id = ir.car_id
+                LEFT JOIN cars c ON c.car_id = ir.car_id
                 ORDER BY ir.report_id DESC
             `;
 
@@ -444,8 +409,7 @@ const getInspectionReportById = (
                     ir.publish_status,
                     ir.created_at
                 FROM inspection_reports ir
-                LEFT JOIN cars c
-                    ON c.car_id = ir.car_id
+                LEFT JOIN cars c ON c.car_id = ir.car_id
                 WHERE ir.report_id = ?
                 LIMIT 1
             `;
@@ -743,20 +707,15 @@ const getCompleteInspectionReport = (
                 ) {
 
                     try {
-
-                        checklist =
-                            await getInspectionChecklistByCarId(
-                                report.car_id
-                            );
-
-                    } catch (carChecklistError) {
-
-                        console.error(
-                            "Car checklist fallback error:",
-                            carChecklistError.message
-                        );
-
-                    }
+    checklist = await getInspectionChecklist(
+        report.report_id
+    );
+} catch (checklistError) {
+    console.error(
+        "Checklist fetch error:",
+        checklistError.message
+    );
+}
 
                 }
 
@@ -872,6 +831,7 @@ const getReportDeliveryData = (
                             SELECT
                                 ir.report_id,
                                 ir.car_id,
+                                c.booking_id,
                                 ir.overall_score,
                                 ir.engine_remark,
                                 ir.overall_remark,
@@ -1141,12 +1101,6 @@ const normalizeDeliveryData = (
         carId:
             row.car_id,
 
-        booking_id:
-            row.booking_id,
-
-        bookingId:
-            row.booking_id,
-
         overall_score:
             row.overall_score,
 
@@ -1190,17 +1144,17 @@ const normalizeDeliveryData = (
         report_id:
             row.report_id,
 
-        bookingId:
-            row.booking_id,
-
-        booking_id:
-            row.booking_id,
-
         carId:
             row.car_id,
 
         car_id:
             row.car_id,
+
+        bookingId:
+            row.booking_id,
+
+        booking_id:
+            row.booking_id,
 
         vehicle,
 
@@ -1436,6 +1390,106 @@ const markInspectionReportPublished = (
 
 
 // ======================================================
+// SEND INSPECTION REPORT TO CUSTOMER + ADMIN
+// ADMIN-ONLY MANUAL EMAIL FLOW
+// ======================================================
+
+const sendReportToCustomerEmail = async (
+    reportId,
+    customerEmail
+) => {
+
+    const id = Number(reportId);
+
+    if (!Number.isInteger(id) || id <= 0) {
+        throw new Error("Valid inspection report ID is required.");
+    }
+
+    const email = String(customerEmail || "")
+        .trim()
+        .toLowerCase();
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if (!email) {
+        throw new Error("Customer email is required.");
+    }
+
+    if (!emailRegex.test(email)) {
+        throw new Error("Invalid customer email address.");
+    }
+
+    const deliveryData =
+        await getReportDeliveryData(id);
+
+    if (!deliveryData) {
+        throw new Error("Inspection report not found.");
+    }
+
+    const pdfPath =
+        deliveryData.pdf_path ||
+        deliveryData.pdfPath ||
+        deliveryData.inspection?.pdf_path ||
+        deliveryData.inspection?.pdfPath ||
+        deliveryData.report?.pdf_path ||
+        deliveryData.report?.pdfPath;
+
+    if (!pdfPath) {
+        throw new Error("Inspection report PDF is not available.");
+    }
+
+    const customerName =
+        deliveryData.customer_name ||
+        deliveryData.customerName ||
+        deliveryData.owner_name ||
+        deliveryData.ownerName ||
+        deliveryData.owner?.ownerName ||
+        deliveryData.owner?.owner_name ||
+        "Customer";
+
+    const fileName =
+        `inspection-report-${id}.pdf`;
+
+    // --------------------------------------------------
+    // SEND TO CUSTOMER
+    // --------------------------------------------------
+    const customerResult =
+        await emailService.sendInspectionReportEmail({
+            to: email,
+            subject:
+                `Carsey.in - Vehicle Inspection Report #${id}`,
+            customerName,
+            pdfPath,
+            fileName
+        });
+
+    // --------------------------------------------------
+    // SEND TO ADMIN
+    // --------------------------------------------------
+    if (!env.ADMIN_EMAIL) {
+        throw new Error("ADMIN_EMAIL is not configured.");
+    }
+
+    const adminResult =
+        await emailService.sendInspectionReportToAdmin({
+            pdfPath,
+            fileName,
+            carId:
+                deliveryData.car_id ||
+                deliveryData.carId,
+            reportId: id
+        });
+
+    return {
+        reportId: id,
+        customerEmail: email,
+        adminEmail: env.ADMIN_EMAIL,
+        customer: customerResult,
+        admin: adminResult
+    };
+};
+
+// ======================================================
 // EXPORT
 // ======================================================
 
@@ -1454,6 +1508,9 @@ module.exports = {
     getInspectionReportById,
 
     getInspectionChecklist,
+    // Backward-compatible aliases used by PDF/report generation.
+    getInspectionChecklistByReportId: getInspectionChecklist,
+    getChecklistByReportId: getInspectionChecklist,
 
     getCompleteInspectionReport,
 
@@ -1464,6 +1521,8 @@ module.exports = {
     updateInspectionReportPdfPath,
 
     markInspectionReportPublished,
+
+    sendReportToCustomerEmail,
 
     getInspectionChecklistByCarId
 
