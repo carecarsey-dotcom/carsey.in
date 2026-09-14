@@ -38,6 +38,12 @@ interface Vehicle {
 
   car_id: number;
 
+  booking_id?: number;
+
+  bookingId?: number;
+
+  master_booking_id?: number;
+
   owner_id?: number;
 
   brand?: string;
@@ -164,6 +170,12 @@ interface ReportData {
 
   reportId?: number;
 
+  booking_id?: number;
+
+  bookingId?: number;
+
+  master_booking_id?: number;
+
   car_id?: number;
 
   carId?: number;
@@ -216,6 +228,12 @@ interface ReportData {
 interface ReportListItem {
 
   report_id: number;
+
+  booking_id?: number;
+
+  bookingId?: number;
+
+  master_booking_id?: number;
 
   car_id: number;
 
@@ -523,6 +541,35 @@ export class ReportsComponent
                       0
                     ),
 
+                  booking_id:
+                    Number(
+                      report?.booking_id ??
+                      report?.bookingId ??
+                      report?.master_booking_id ??
+                      report?.vehicle?.booking_id ??
+                      report?.vehicle?.bookingId ??
+                      0
+                    ),
+
+                  bookingId:
+                    Number(
+                      report?.bookingId ??
+                      report?.booking_id ??
+                      report?.master_booking_id ??
+                      report?.vehicle?.bookingId ??
+                      report?.vehicle?.booking_id ??
+                      0
+                    ),
+
+                  master_booking_id:
+                    Number(
+                      report?.master_booking_id ??
+                      report?.booking_id ??
+                      report?.bookingId ??
+                      report?.vehicle?.master_booking_id ??
+                      0
+                    ),
+
                   car_id:
                     Number(
                       report?.car_id ??
@@ -748,9 +795,24 @@ export class ReportsComponent
         // SEARCH
         // ===============================================
 
+        const bookingCode =
+          this.getBookingCode(report).toLowerCase();
+
+        const bookingId =
+          String(
+            report.booking_id ??
+            report.bookingId ??
+            report.master_booking_id ??
+            ''
+          ).toLowerCase();
+
         const matchesSearch =
 
           !search ||
+
+          bookingCode.includes(search) ||
+
+          bookingId.includes(search) ||
 
           String(
             report.report_id ?? ''
@@ -785,6 +847,35 @@ export class ReportsComponent
       }
     );
 
+  }
+
+
+  // =====================================================
+  // MASTER BOOKING ID / DISPLAY ID
+  // =====================================================
+
+  getBookingCode(
+    report: ReportListItem | ReportData
+  ): string {
+
+    const bookingId =
+      Number(
+        (report as any)?.booking_id ??
+        (report as any)?.bookingId ??
+        (report as any)?.master_booking_id ??
+        (report as any)?.vehicle?.booking_id ??
+        (report as any)?.vehicle?.bookingId ??
+        (report as any)?.vehicle?.master_booking_id
+      );
+
+    if (
+      !Number.isInteger(bookingId) ||
+      bookingId <= 0
+    ) {
+      return '-';
+    }
+
+    return `CAR-${String(bookingId).padStart(6, '0')}`;
   }
 
 
@@ -912,6 +1003,29 @@ export class ReportsComponent
             data?.vehicle ??
             data;
 
+          if (
+            vehicle &&
+            !vehicle.booking_id
+          ) {
+            const resolvedBookingId =
+              Number(
+                data?.booking_id ??
+                data?.bookingId ??
+                data?.master_booking_id ??
+                report.booking_id ??
+                report.bookingId ??
+                report.master_booking_id
+              );
+
+            if (
+              Number.isInteger(resolvedBookingId) &&
+              resolvedBookingId > 0
+            ) {
+              vehicle.booking_id = resolvedBookingId;
+              vehicle.bookingId = resolvedBookingId;
+            }
+          }
+
 
           // =================================================
           // OWNER
@@ -1021,6 +1135,44 @@ export class ReportsComponent
                 data?.reportId ??
                 data?.report_id ??
                 report.report_id
+              ),
+
+            booking_id:
+              Number(
+                data?.booking_id ??
+                data?.bookingId ??
+                data?.master_booking_id ??
+                vehicle?.booking_id ??
+                vehicle?.bookingId ??
+                report.booking_id ??
+                report.bookingId ??
+                report.master_booking_id ??
+                0
+              ),
+
+            bookingId:
+              Number(
+                data?.bookingId ??
+                data?.booking_id ??
+                data?.master_booking_id ??
+                vehicle?.bookingId ??
+                vehicle?.booking_id ??
+                report.bookingId ??
+                report.booking_id ??
+                report.master_booking_id ??
+                0
+              ),
+
+            master_booking_id:
+              Number(
+                data?.master_booking_id ??
+                data?.booking_id ??
+                data?.bookingId ??
+                vehicle?.master_booking_id ??
+                vehicle?.booking_id ??
+                vehicle?.bookingId ??
+                report.master_booking_id ??
+                0
               ),
 
             car_id:

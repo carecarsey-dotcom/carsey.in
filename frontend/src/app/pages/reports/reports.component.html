@@ -59,7 +59,7 @@
 
       <input
         type="text"
-        placeholder="Search Report ID or Car ID..."
+        placeholder="Search by ID..."
         [(ngModel)]="searchText"
       />
 
@@ -139,11 +139,7 @@
           <tr>
 
             <th>
-              Report ID
-            </th>
-
-            <th>
-              Car ID
+              ID
             </th>
 
             <th>
@@ -176,11 +172,7 @@
           >
 
             <td>
-              #{{ report.report_id }}
-            </td>
-
-            <td>
-              #{{ report.car_id }}
+              {{ getBookingCode(report) }}
             </td>
 
             <td>
