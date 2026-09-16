@@ -52,8 +52,8 @@ const createInspectionReport = (
                 (
                     car_id,
                     overall_score,
-                    ir.engine_remark,
-                    ir.overall_remark,
+                    engine_remark,
+                    overall_remark,
                     ir.pdf_path,
                     publish_status
                 )
@@ -147,9 +147,9 @@ const getApprovedUnlockRequest = (
                     rur.name,
                     mobile,
                     email,
-                    status,
-                    ir.created_at
-FROM report_unlock_requests rur
+                    rur.status,
+                    rur.created_at
+                FROM report_unlock_requests rur
                 LEFT JOIN cars c ON c.car_id = rur.car_id
                 WHERE rur.request_id = ?
                 AND rur.car_id = ?
@@ -471,8 +471,8 @@ const getInspectionChecklist = (
                     checklist_data,
                     data,
                     inspection_data,
-                    ir.created_at
-FROM inspection_checklist
+                    created_at AS checklist_created_at
+                FROM inspection_checklist
                 WHERE report_id = ?
                 ORDER BY checklist_id ASC
             `;
@@ -575,8 +575,8 @@ const getInspectionChecklistByCarId = (
                     checklist_data,
                     data,
                     inspection_data,
-                    ir.created_at
-FROM inspection_checklist
+                    created_at AS checklist_created_at
+                FROM inspection_checklist
                 WHERE car_id = ?
                 ORDER BY checklist_id ASC
             `;
@@ -707,8 +707,8 @@ const getCompleteInspectionReport = (
                 ) {
 
                     try {
-    checklist = await getInspectionChecklist(
-        report.report_id
+    checklist = await getInspectionChecklistByCarId(
+        report.car_id
     );
 } catch (checklistError) {
     console.error(

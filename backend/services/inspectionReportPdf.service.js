@@ -38,9 +38,11 @@ const DETAILED_SECTION_TITLES = {
     suspension_steering: "STEERING + SUSPENSION + BRAKE",
     interior_electricals: "ELECTRICAL + INTERIOR + FEATURES",
     electricals_ac: "AC + LIGHT",
-    transmission_system: "TRANSMISSION",
-    braking_system: "BRAKING",
-    tires_wheels: "TYRES + WHEELS",
+    // Legacy section keys retained for old saved reports.
+    // normalizeDetailedSectionKey() maps them into the consolidated sections.
+    transmission_system: "ENGINE + TRANSMISSION",
+    braking_system: "ELECTRICAL + INTERIOR + FEATURES",
+    tires_wheels: "EXTERIOR + TYRE",
     documents_title: "DOCUMENTS + TITLE"
 };
 
@@ -92,6 +94,7 @@ const DETAILED_CHECKLIST_OPTIONS = {
     "Sun Roof Not Working"
   ],
 
+  // Kept here for legacy exterior records; normalization renders it in ENGINE + TRANSMISSION.
   "Upper Cross Member": [
     "Ok/No imperfection",
     "Rusting",
@@ -350,6 +353,14 @@ const DETAILED_CHECKLIST_OPTIONS = {
     "Lug Missing"
   ],
 
+  "Tyres / Wheels Overall": [
+    "Ok/No imperfection",
+    "Tyre Crack",
+    "Rim Rusting",
+    "Wheel Cap Missing",
+    "Lug Nut Missing"
+  ],
+
 
   // ==================== INNER / ENGINE AREA ====================
 
@@ -381,6 +392,7 @@ const DETAILED_CHECKLIST_OPTIONS = {
         ],
         "Engine Oil": ["Ok/No imperfection", "Level Low", "Dirty", "Replace Oil"],
         "Cooling System": ["Ok/No imperfection", "Mixed With Oil", "Bottle Broken + Leakage", "Coolant Dirty"],
+        "Upper Cross Member": ["Ok/No imperfection", "Rusting", "Damage", "Repaired / Welded"],
         "Engine": ["Ok/No imperfection", "Leakage From Seal", "Tappet Cover Loose", "Engine Misfiring", "Dipstick Missing / Broken", "Exhaust Smoke", "Air Filter Box Damage", "RPM Fluctuate", "Fuse Box Cover Missing"],
         "UnderBody": ["Ok/No imperfection", "Rusted", "Repaired + Welded"],
         "Engine Blow By": ["Ok/No imperfection", "Engine Permissible Low Blow By", "Engine Blow By / Back Compressor"],
@@ -400,16 +412,14 @@ const DETAILED_CHECKLIST_OPTIONS = {
         "Brakes Rear RHS": ["Ok/No imperfection", "Brake Oil Cap Missing", "Brake Oil Level Low", "Brake Pad Worn Out", "Brake Disk Worn Out"],
         "Brakes Front LHS": ["Ok/No imperfection", "Brake Oil Cap Missing", "Brake Oil Level Low", "Brake Pad Worn Out", "Brake Disk Worn Out"],
         "Brakes Rear LHS": ["Ok/No imperfection", "Brake Oil Cap Missing", "Brake Oil Level Low", "Brake Pad Worn Out", "Brake Disk Worn Out"],
-        "Jumping Rod Bush Front RHS": ["Ok/No imperfection", "Rusting", "Assembly Noise"],
-        "Jumping Rod Bush Rear RHS": ["Ok/No imperfection", "Rusting", "Assembly Noise"],
-        "Jumping Rod Bush Rear LHS": ["Ok/No imperfection", "Rusting", "Assembly Noise"],
-        "Jumping Rod Bush Front LHS": ["Ok/No imperfection", "Rusting", "Assembly Noise"],
+        // Jumping Rod Bush rows are intentionally not part of the current UI.
+        // Old DB rows are ignored during PDF normalization; stored data is untouched.
         "Steering": ["Ok/No imperfection", "Rack Boot Damage", "Steering Pump Hard", "Power Steering Oil Dirty", "Steering Rack Noise"],
         "Brake Master Cylinder": ["Ok/No imperfection", "Leakage", "Hard Brake", "Spongy Brake"]
     },
     interior_electricals: {
         "Cabinette Switch": ["Ok/No imperfection", "Switch Broken", "Not Working"],
-        "All Window Switch": ["Ok/No imperfection", "Not Working", "Power Window Noise", "Switch Damage", "Broken"],
+        "ALL SIDE WINDOW": ["Ok/No imperfection", "Not Working", "Power Window Noise", "Switch Damage", "Broken"],
         "Dashboard": ["Ok/No imperfection", "Faded", "Glove Box Cover Damage", "Broken", "Bonnet Lever Not Working", "Scratches"],
         "Flooring": ["Ok/No imperfection", "Water On Floor", "Floor Rusting", "Mat Missing", "Crack & Hole"],
         "Ceiling": ["Ok/No imperfection", "Sun Visor Missing + Damage", "Roof Handle Missing + Broken", "Rear View Mirror Broken"],
@@ -418,7 +428,8 @@ const DETAILED_CHECKLIST_OPTIONS = {
         "Steering Handle": ["Ok/No imperfection", "Horn Not Working", "Steering Handle Faded", "Steering System Control Not Working"],
         "Gear Lever": ["Ok/No imperfection", "Boot Cover Torn", "Knob Torn", "Knob Broken"],
         "Infotainment System": ["Ok/No imperfection", "Not Applicable", "Music System Crack", "Speaker Not Working / Broken"],
-        "Instrument Cluster": ["Ok/No imperfection", "Odometer Not Working", "Glass Scratch / Minor / Major Deep", "Speedometer Not Working", "Tachometer Not Working", "Air Bag Deployed", "Air Bag Warning Light Glowing", "Fuel Low", "EPS", "Air Suspension", "Alternator + Battery", "Air Bag", "ABS", "Transmission Warning", "Oil Pressure Low", "Engine Warning", "Cruise Control", "Non-Critical Warning Light", "Trip Meter", "Idle Start / Stop Not Working"]
+        "Instrument Cluster": ["Ok/No imperfection", "Odometer Not Working", "Glass Scratch / Minor / Major Deep", "Speedometer Not Working", "Tachometer Not Working", "Air Bag Deployed", "Air Bag Warning Light Glowing", "Fuel Low", "EPS", "Air Suspension", "Alternator + Battery", "Air Bag", "ABS", "Transmission Warning", "Oil Pressure Low", "Engine Warning", "Cruise Control", "Non-Critical Warning Light", "Trip Meter", "Idle Start / Stop Not Working"],
+        "Brake Overall": ["Ok/No imperfection", "Brake Oil Cap Missing", "Brake Oil Level Low", "Brake Pad Worn Out", "Brake Disk Worn Out", "Hard Brake", "Spongy Brake"]
     },
     electricals_ac: {
         "AC Unit": ["Ok/No imperfection", "AC Cooling Not Working", "AC Vent Not Fixed / Broken", "Blower Motor Not Working", "Noise", "Heater Ineffective", "AC Not Cooling", "Cooling Fan Noise"],
@@ -443,8 +454,8 @@ const DETAILED_CHECKLIST_OPTIONS = {
         "Seat 1st Row LHS": ["Ok/No imperfection", "Seat Belt Damage", "Dirty", "Cover Torn", "Seat Adjuster Not Working"],
         "Seat 2nd Row RHS": ["Ok/No imperfection", "Seat Belt Damage", "Dirty", "Cover Torn", "Seat Adjuster Not Working"],
         "Seat 2nd Row LHS": ["Ok/No imperfection", "Seat Belt Damage", "Dirty", "Cover Torn", "Seat Adjuster Not Working"],
-        "Seat 3rd Row RHS": ["Ok/No imperfection", "Seat Belt Damage", "Dirty", "Cover Torn", "Seat Adjuster Not Working"],
-        "Seat 3rd Row LHS": ["Ok/No imperfection", "Seat Belt Damage", "Dirty", "Cover Torn", "Seat Adjuster Not Working"]
+        "Seat 3rd Row RHS": ["Ok/No imperfection", "Not Applicable", "Seat Belt Damage", "Dirty", "Cover Torn", "Seat Adjuster Not Working"],
+        "Seat 3rd Row LHS": ["Ok/No imperfection", "Not Applicable", "Seat Belt Damage", "Dirty", "Cover Torn", "Seat Adjuster Not Working"]
     }
 };
 
@@ -830,6 +841,31 @@ const isVideoImage = (image) => {
     );
 };
 
+const normalizeVehiclePhotoTitle = (title = "") => {
+    const normalized = String(title || "").trim().toLowerCase();
+
+    const aliases = {
+        "front view": "Front View",
+        "right side": "Right View",
+        "right view": "Right View",
+        "rear view": "Rear View",
+        "left side": "Left View",
+        "left view": "Left View",
+        "interior": "Interior Front Seat",
+        "interior front seat": "Interior Front Seat",
+        "interior seat rear": "Interior Seat Rear",
+        "seat": "Interior Seat Rear",
+        "engine": "Open Engine",
+        "open engine": "Open Engine",
+        "dicky": "Open Dicky",
+        "open dicky": "Open Dicky",
+        "odometer": "Odometer",
+        "dashboard": "Dashboard"
+    };
+
+    return aliases[normalized] || String(title || "").trim();
+};
+
 const isStandardVehiclePhoto = (image) => {
     if (!image) return false;
 
@@ -837,7 +873,7 @@ const isStandardVehiclePhoto = (image) => {
     // This is intentionally a strict whitelist so documents, test-drive photos,
     // inspection videos, test-drive videos, and any unknown media can NEVER
     // appear in the Vehicle Photos section.
-    const title = getImageTitle(image, "")
+    const title = normalizeVehiclePhotoTitle(getImageTitle(image, ""))
         .trim()
         .toLowerCase();
 
@@ -868,7 +904,17 @@ const getDetailedImageKey = (image) => {
                 .trim();
 
             if (sectionKey && rowName) {
-                return `${sectionKey}__${rowName}`;
+                const normalizedRowName = normalizeDetailedRowName(rowName);
+                const normalizedSectionKey = normalizeDetailedSectionKey(
+                    sectionKey,
+                    normalizedRowName
+                );
+
+                if (normalizedSectionKey === "__removed_jumping_rod_bush__") {
+                    return "";
+                }
+
+                return `${normalizedSectionKey}__${normalizedRowName}`;
             }
         }
     }
@@ -883,7 +929,17 @@ const getDetailedImageKey = (image) => {
         const rowName = String(match[2]).trim();
 
         if (sectionKey && rowName) {
-            return `${sectionKey}__${rowName}`;
+            const normalizedRowName = normalizeDetailedRowName(rowName);
+            const normalizedSectionKey = normalizeDetailedSectionKey(
+                sectionKey,
+                normalizedRowName
+            );
+
+            if (normalizedSectionKey === "__removed_jumping_rod_bush__") {
+                return "";
+            }
+
+            return `${normalizedSectionKey}__${normalizedRowName}`;
         }
     }
 
@@ -997,10 +1053,71 @@ const normalizeDetailedSectionKey = (sectionKey, rowName = "") => {
     const normalizedSection = String(sectionKey || "").trim().toLowerCase();
     const normalizedRow = String(rowName || "").trim().toLowerCase();
 
+    // --------------------------------------------------
+    // MOVED CHECKLIST ITEMS / LEGACY DATA COMPATIBILITY
+    // --------------------------------------------------
+    // Old saved inspection records may still contain these rows
+    // under their previous section. We normalize them only while
+    // reading/rendering the report; the stored DB data is untouched.
+
+    if (normalizedRow === "upper cross member") {
+        return "engine_bay";
+    }
+
+    if (normalizedRow === "brake overall") {
+        return "interior_electricals";
+    }
+
+    if (normalizedRow === "all window switch") {
+        return "interior_electricals";
+    }
+
+    if (normalizedRow === "tyres / wheels overall" || normalizedRow === "tyres + wheels overall") {
+        return "exterior";
+    }
+
+    if (normalizedRow === "transmission overall") {
+        return "engine_bay";
+    }
+
+    if (
+        [
+            "jumping rod bush front rhs",
+            "jumping rod bush rear rhs",
+            "jumping rod bush rear lhs",
+            "jumping rod bush front lhs"
+        ].includes(normalizedRow)
+    ) {
+        return "__removed_jumping_rod_bush__";
+    }
+
+    // Legacy/alternate AC + LIGHT section keys.
+    if (
+        normalizedSection === "lights_ac" ||
+        normalizedSection === "light_ac" ||
+        normalizedSection === "lights + ac"
+    ) {
+        return "electricals_ac";
+    }
+
+    // Legacy standalone section keys are now represented by the
+    // consolidated sections requested by the inspection form.
+    if (normalizedSection === "transmission_system") {
+        return "engine_bay";
+    }
+
+    if (normalizedSection === "braking_system") {
+        return "interior_electricals";
+    }
+
+    if (normalizedSection === "tires_wheels") {
+        return "exterior";
+    }
+
     // Legacy/alternate payloads may keep these moved items under exterior.
     if (
         normalizedSection === "exterior" &&
-        ["apron rhs", "apron lhs", "firewall"].includes(normalizedRow)
+        ["apron rhs", "apron lhs", "firewall", "upper cross member"].includes(normalizedRow)
     ) {
         return "engine_bay";
     }
@@ -1019,6 +1136,8 @@ const normalizeDetailedSectionKey = (sectionKey, rowName = "") => {
             "seat 1st row lhs",
             "seat 2nd row rhs",
             "seat 2nd row lhs",
+            "seat 3rd row rhs",
+            "seat 3rd row lhs",
             "seat 3rd row"
         ].includes(normalizedRow)
     ) {
@@ -1038,7 +1157,13 @@ const normalizeDetailedRowName = (rowName = "") => {
         "2nd row lhs": "Seat 2nd Row LHS",
         "3rd row rhs": "Seat 3rd Row RHS",
         "3rd row lhs": "Seat 3rd Row LHS",
-        "3rd row seat": "Seat 3rd Row"
+        "3rd row seat": "Seat 3rd Row",
+        "all window switch": "ALL SIDE WINDOW",
+        "all side window": "ALL SIDE WINDOW",
+        "tyres / wheels overall": "Tyres / Wheels Overall",
+        "tyres + wheels overall": "Tyres / Wheels Overall",
+        "transmission overall": "Transmission",
+        "upper cross member": "Upper Cross Member"
     };
 
     return aliases[normalized] || String(rowName || "").trim();
@@ -1329,22 +1454,6 @@ const normalizeDetailedChecklist = (report = {}) => {
             // SECTION TITLE
             // --------------------------------------------------
 
-            const sectionTitle = String(
-                firstValue(
-                    source,
-                    [
-                        "section_title",
-                        "sectionTitle",
-                        "section_name",
-                        "sectionName"
-                    ],
-                    DETAILED_SECTION_TITLES[sectionKey] ||
-                    String(sectionKey)
-                        .replace(/_/g, " ")
-                        .toUpperCase()
-                )
-            );
-
             // --------------------------------------------------
             // ROW / ITEM NAME
             // --------------------------------------------------
@@ -1371,6 +1480,28 @@ const normalizeDetailedChecklist = (report = {}) => {
             const sectionKey = normalizeDetailedSectionKey(
                 rawSectionKey,
                 rowName
+            );
+
+            // Do not display the four removed Jumping Rod Bush rows.
+            // Their historical DB records remain untouched.
+            if (sectionKey === "__removed_jumping_rod_bush__") {
+                return;
+            }
+
+            const sectionTitle = String(
+                DETAILED_SECTION_TITLES[sectionKey] ||
+                firstValue(
+                    source,
+                    [
+                        "section_title",
+                        "sectionTitle",
+                        "section_name",
+                        "sectionName"
+                    ],
+                    String(sectionKey)
+                        .replace(/_/g, " ")
+                        .toUpperCase()
+                )
             );
 
             // --------------------------------------------------
@@ -1596,6 +1727,14 @@ const normalizeDetailedChecklist = (report = {}) => {
                         ).trim();
 
                         const rowName = normalizeDetailedRowName(rawRowName);
+                        const normalizedRowSectionKey = normalizeDetailedSectionKey(
+                            rawSectionKey,
+                            rowName
+                        );
+
+                        if (normalizedRowSectionKey === "__removed_jumping_rod_bush__") {
+                            return;
+                        }
 
                         const selectedOptions =
                             normalizeSelectedOptions(
@@ -1629,7 +1768,7 @@ const normalizeDetailedChecklist = (report = {}) => {
 
                         const availableOptions =
                             getAvailableOptions(
-                                sectionKey,
+                                normalizedRowSectionKey,
                                 rowName,
                                 selectedOptions
                             );
@@ -1647,12 +1786,12 @@ const normalizeDetailedChecklist = (report = {}) => {
                                 : "Good";
 
                         result.push({
-                            sectionKey,
+                            sectionKey: normalizedRowSectionKey,
                             sectionTitle:
                                 DETAILED_SECTION_TITLES[
-                                    sectionKey
+                                    normalizedRowSectionKey
                                 ] ||
-                                String(sectionKey)
+                                String(normalizedRowSectionKey)
                                     .replace(/_/g, " ")
                                     .toUpperCase(),
                             rowName,
@@ -1680,6 +1819,15 @@ const normalizeDetailedChecklist = (report = {}) => {
                 of Object.entries(sectionRowsValue)
             ) {
                 const rowName = normalizeDetailedRowName(rawRowName);
+                const rowSectionKey = normalizeDetailedSectionKey(
+                    rawSectionKey,
+                    rowName
+                );
+
+                if (rowSectionKey === "__removed_jumping_rod_bush__") {
+                    continue;
+                }
+
                 let selectedOptions = [];
                 let remark = "";
                 let status = "";
@@ -1742,7 +1890,7 @@ const normalizeDetailedChecklist = (report = {}) => {
 
                 const availableOptions =
                     getAvailableOptions(
-                        sectionKey,
+                        rowSectionKey,
                         rowName,
                         selectedOptions
                     );
@@ -1762,8 +1910,12 @@ const normalizeDetailedChecklist = (report = {}) => {
                 }
 
                 result.push({
-                    sectionKey,
-                    sectionTitle,
+                    sectionKey: rowSectionKey,
+                    sectionTitle:
+                        DETAILED_SECTION_TITLES[rowSectionKey] ||
+                        String(rowSectionKey)
+                            .replace(/_/g, " ")
+                            .toUpperCase(),
                     rowName,
                     availableOptions,
                     selectedOptions,
@@ -2388,15 +2540,15 @@ const drawDetailedChecklist = (doc, rows, detailedImages, reportId) => {
 
 const VEHICLE_PHOTO_ORDER = [
     "Front View",
+    "Right View",
     "Rear View",
-    "Left Side",
-    "Right Side",
-    "Interior",
+    "Left View",
+    "Interior Seat Rear",
+    "Interior Front Seat",
+    "Open Engine",
+    "Open Dicky",
     "Odometer",
-    "Dashboard",
-    "Engine",
-    "Seat",
-    "Dicky"
+    "Dashboard"
 ];
 
 const DOCUMENT_PHOTO_ORDER = [
@@ -2510,7 +2662,7 @@ const orderImagesByTitle = (images, orderedTitles) => {
     for (const expectedTitle of orderedTitles) {
         const index = source.findIndex((image, i) =>
             !used.has(i) &&
-            getImageTitle(image, "").trim().toLowerCase() === expectedTitle.trim().toLowerCase()
+            normalizeVehiclePhotoTitle(getImageTitle(image, "")).trim().toLowerCase() === expectedTitle.trim().toLowerCase()
         );
 
         if (index !== -1) {
@@ -2609,12 +2761,6 @@ const drawInspectionSummary = (doc, report, y, reportId) => {
         firstValue(report.inspection, ["overall_remark", "overallRemark"], "-")
     );
 
-    const employeeRemark = firstValue(
-        report,
-        ["employeeRemark", "employee_remark"],
-        ""
-    );
-
     const score = firstValue(
         report,
         ["overall_score", "overallScore", "score"],
@@ -2661,25 +2807,6 @@ const drawInspectionSummary = (doc, report, y, reportId) => {
     drawRemarkBox(secondX, "OVERALL REMARK", overallRemark);
 
     y += boxHeight + 10;
-
-    if (employeeRemark) {
-        y = ensureSpace(doc, y, 65, reportId);
-
-        doc.roundedRect(MARGIN_LEFT, y, CONTENT_WIDTH, 58, 6)
-            .fillAndStroke(COLORS.white, COLORS.border);
-
-        doc.font("Helvetica-Bold").fontSize(6.5).fillColor(COLORS.gray)
-            .text("EMPLOYEE REMARK", MARGIN_LEFT + 9, y + 9);
-
-        doc.font("Helvetica").fontSize(8.5).fillColor(COLORS.dark)
-            .text(employeeRemark, MARGIN_LEFT + 9, y + 24, {
-                width: CONTENT_WIDTH - 18,
-                height: 27,
-                lineGap: 1.5
-            });
-
-        y += 68;
-    }
 
     return y;
 };

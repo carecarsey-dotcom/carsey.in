@@ -62,17 +62,6 @@
     </div>
 
     <!-- ================================================== -->
-    <!-- ERROR -->
-    <!-- ================================================== -->
-
-    <div
-      *ngIf="errorMessage"
-      class="rounded-xl border border-red-200 bg-red-50 px-5 py-4 text-sm font-medium text-red-700"
-    >
-      {{ errorMessage }}
-    </div>
-
-    <!-- ================================================== -->
     <!-- SUCCESS -->
     <!-- ================================================== -->
 
@@ -123,7 +112,7 @@
       <div class="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-4">
         <!-- BRAND -->
 
-        <div>
+        <div [attr.data-validation-key]="'vehicle.brand'">
           <label class="mb-1.5 block text-sm font-medium text-slate-700">
             Brand <span class="text-red-500">*</span>
           </label>
@@ -131,14 +120,17 @@
           <input
             type="text"
             [(ngModel)]="vehicle.brand"
+            (input)="validationErrors.delete('vehicle.brand')"
             placeholder="Vehicle brand"
+            [class.border-red-500]="hasValidationError('vehicle.brand')"
+            [class.bg-red-50]="hasValidationError('vehicle.brand')"
             class="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
           />
         </div>
 
         <!-- MODEL -->
 
-        <div>
+        <div [attr.data-validation-key]="'vehicle.model'">
           <label class="mb-1.5 block text-sm font-medium text-slate-700">
             Model <span class="text-red-500">*</span>
           </label>
@@ -146,7 +138,10 @@
           <input
             type="text"
             [(ngModel)]="vehicle.model"
+            (input)="validationErrors.delete('vehicle.model')"
             placeholder="Vehicle model"
+            [class.border-red-500]="hasValidationError('vehicle.model')"
+            [class.bg-red-50]="hasValidationError('vehicle.model')"
             class="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
           />
         </div>
@@ -168,7 +163,7 @@
 
         <!-- YEAR -->
 
-        <div>
+        <div [attr.data-validation-key]="'vehicle.manufacturing_year'">
           <label class="mb-1.5 block text-sm font-medium text-slate-700">
             Manufacturing Year <span class="text-red-500">*</span>
           </label>
@@ -176,13 +171,19 @@
           <input
             type="number"
             [(ngModel)]="vehicle.manufacturing_year"
+            (input)="validationErrors.delete('vehicle.manufacturing_year')"
+            [class.border-red-500]="hasValidationError('vehicle.manufacturing_year')"
+            [class.bg-red-50]="hasValidationError('vehicle.manufacturing_year')"
             class="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
           />
         </div>
 
         <!-- ODOMETER -->
 
-        <div>
+        <div
+          [attr.data-validation-key]="'vehicle.odometer'"
+          [ngClass]="hasValidationError('vehicle.odometer') ? 'rounded-lg border border-red-500 bg-red-50 p-2' : ''"
+        >
           <label class="mb-1.5 block text-sm font-medium text-slate-700">
             Odometer (KM) <span class="text-red-500">*</span>
           </label>
@@ -190,34 +191,13 @@
           <input
             type="number"
             [(ngModel)]="vehicle.odometer"
+            (input)="validationErrors.delete('vehicle.odometer')"
             placeholder="KM"
+            [class.border-red-500]="hasValidationError('vehicle.odometer')"
+            [class.bg-red-50]="hasValidationError('vehicle.odometer')"
             class="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
           />
         </div>
-
-        <!-- TRANSMISSION -->
-
-        <div>
-          <label class="mb-1.5 block text-sm font-medium text-slate-700">
-            Transmission
-          </label>
-
-          <select
-            [(ngModel)]="vehicle.transmission"
-            class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-          >
-            <option value="Manual">Manual</option>
-
-            <option value="Automatic">Automatic</option>
-
-            <option value="AMT">AMT</option>
-
-            <option value="CVT">CVT</option>
-
-            <option value="DCT">DCT</option>
-          </select>
-
-          </div>
 
         <!-- FUEL -->
 
@@ -267,7 +247,7 @@
 
         <!-- REGISTRATION -->
 
-        <div>
+        <div [attr.data-validation-key]="'vehicle.registration_number'">
           <label class="mb-1.5 block text-sm font-medium text-slate-700">
             Registration Number <span class="text-red-500">*</span>
           </label>
@@ -275,7 +255,10 @@
           <input
             type="text"
             [(ngModel)]="vehicle.registration_number"
+            (input)="validationErrors.delete('vehicle.registration_number')"
             placeholder="Registration number"
+            [class.border-red-500]="hasValidationError('vehicle.registration_number')"
+            [class.bg-red-50]="hasValidationError('vehicle.registration_number')"
             class="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm uppercase outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
           />
         </div>
@@ -386,6 +369,36 @@
     </section>
 
     <!-- ================================================== -->
+    <!-- DOCUMENT TITLE IMAGES -->
+    <!-- ================================================== -->
+
+    <section class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+      <div class="mb-5 border-b border-slate-200 pb-4">
+        <h2 class="text-lg font-bold text-slate-900">Documents / Title Images</h2>
+        <p class="mt-1 text-sm text-slate-500">RC, Insurance, PUC aur other document proof ke liye 1 image each upload/capture karein.</p>
+      </div>
+
+      <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div *ngFor="let photo of documentPhotos" class="rounded-xl border border-slate-200 bg-slate-50 p-3">
+          <div *ngIf="photo.preview" class="relative mb-2">
+            <img [src]="photo.preview" [alt]="photo.title" class="h-32 w-full rounded-lg border border-slate-200 bg-white object-contain" />
+            <button type="button" (click)="removeDocumentPhoto(photo.key)" class="absolute right-2 top-2 rounded-full bg-white px-2 py-1 text-xs font-medium text-red-600 shadow">Remove</button>
+          </div>
+
+          <div *ngIf="!photo.preview" class="mb-2 flex h-32 items-center justify-center rounded-lg border border-dashed border-slate-300 bg-white text-center text-xs text-slate-500">
+            <div><div class="mb-1 text-2xl">📄</div>Upload document image</div>
+          </div>
+
+          <div class="flex gap-2">
+            <button type="button" (click)="openDocumentCamera(photo.key)" class="flex flex-1 items-center justify-center rounded-lg border border-blue-200 bg-blue-50 px-2 py-2 text-xs font-semibold text-blue-700 hover:bg-blue-100">📷 Camera</button>
+            <label class="flex flex-1 cursor-pointer items-center justify-center rounded-lg border border-slate-300 bg-white px-2 py-2 text-xs font-semibold text-slate-700">🖼️ Gallery<input type="file" accept="image/*" class="hidden" (change)="onDocumentPhotoSelected($event, photo)" /></label>
+          </div>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ================================================== -->
     <!-- DETAILED VEHICLE INSPECTION CHECKLIST -->
     <!-- EXACT OPTIONS FROM ADD VEHICLE -->
     <!-- ================================================== -->
@@ -454,9 +467,52 @@
             *ngIf="openInspectionSections[section.key]"
             class="border-t border-slate-200"
           >
+            <!-- TEST DRIVE: optional, shown immediately above Suspension -->
+            <section
+              *ngIf="section.key === 'suspension_steering'"
+              class="border-b border-slate-200 bg-slate-50/50 p-4"
+            >
+              <div class="mb-4 border-b border-slate-200 pb-3">
+                <div class="flex items-center gap-2">
+                  <h4 class="font-semibold text-slate-800">Test Drive</h4>
+                  <span class="rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-slate-600">Optional</span>
+                </div>
+                <p class="mt-1 text-xs text-slate-500">Test drive photos and video can be added if available.</p>
+              </div>
+
+              <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <div *ngFor="let photo of testDrivePhotos" class="rounded-xl border border-slate-200 bg-white p-4">
+                  <div class="mb-3 text-sm font-semibold text-slate-800">{{ photo.title }}</div>
+                  <img *ngIf="photo.preview" [src]="photo.preview" [alt]="photo.title" class="mb-3 h-40 w-full rounded-lg bg-slate-100 object-contain" />
+                  <div *ngIf="!photo.preview" class="mb-3 flex h-40 items-center justify-center rounded-lg border border-dashed border-slate-300 bg-white text-center text-xs text-slate-500">
+                    <div><div class="mb-1 text-3xl">📷</div>No photo selected</div>
+                  </div>
+                  <div class="flex gap-2">
+                    <button type="button" (click)="openTestDrivePhotoCamera(photo.key)" class="flex flex-1 items-center justify-center rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-xs font-semibold text-blue-700 hover:bg-blue-100">📷 Camera</button>
+                    <label class="flex flex-1 cursor-pointer items-center justify-center rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-semibold text-slate-700">🖼️ Gallery<input type="file" accept="image/*" class="hidden" (change)="onTestDrivePhotoSelected($event, photo)" /></label>
+                    <button *ngIf="photo.file" type="button" (click)="removeTestDrivePhoto(photo.key)" class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs font-semibold text-red-700">Remove</button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="mt-4 rounded-xl border border-slate-200 bg-white p-4">
+                <div class="mb-3 text-sm font-semibold text-slate-800">Test Drive Video</div>
+                <video *ngIf="testDriveVideo.preview" [src]="testDriveVideo.preview" controls playsinline class="mb-3 h-48 w-full rounded-lg bg-black object-contain"></video>
+                <div *ngIf="!testDriveVideo.preview" class="mb-3 flex h-48 items-center justify-center rounded-lg border border-dashed border-slate-300 bg-white text-center text-xs text-slate-500"><div><div class="mb-1 text-3xl">🎥</div>No video selected</div></div>
+                <div *ngIf="testDriveVideo.processing" class="mb-3 rounded-lg bg-blue-50 px-3 py-2 text-xs font-semibold text-blue-700">Compressing video, please wait...</div>
+                <div class="flex flex-col gap-2 sm:flex-row">
+                  <button type="button" [disabled]="testDriveVideo.processing" (click)="openTestDriveVideoCamera()" class="flex flex-1 items-center justify-center rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-xs font-semibold text-blue-700 hover:bg-blue-100 disabled:opacity-50">📷 Record Video + Sound</button>
+                  <label class="flex flex-1 cursor-pointer items-center justify-center rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-semibold text-slate-700">🖼️ Upload Video<input type="file" accept="video/*" class="hidden" [disabled]="testDriveVideo.processing" (change)="onTestDriveVideoSelected($event)" /></label>
+                  <button *ngIf="testDriveVideo.file" type="button" (click)="removeTestDriveVideo()" class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs font-semibold text-red-700">Remove</button>
+                </div>
+              </div>
+            </section>
+
             <div
               *ngFor="let row of section.rows"
-              class="border-b border-slate-200 p-4 last:border-b-0"
+              [attr.data-validation-key]="'detail:' + getDetailedRowKey(section.key, row[0])"
+              [ngClass]="hasValidationError('detail:' + getDetailedRowKey(section.key, row[0])) ? 'border-red-500 bg-red-50/30' : 'border-slate-200'"
+              class="border-b p-4 last:border-b-0 rounded-lg"
             >
               <!-- ROW TITLE -->
               <div
@@ -490,10 +546,12 @@
                 <label
                   *ngFor="let option of row[1]"
                   class="flex cursor-pointer items-start gap-2 rounded-lg border border-slate-200 bg-white p-3 text-sm transition hover:border-blue-300 hover:bg-blue-50"
+                  [class.cursor-not-allowed]="isInspectionOptionDisabled(section.key, row[0], option)"
+                  [class.opacity-50]="isInspectionOptionDisabled(section.key, row[0], option)"
                   [ngClass]="
                     isInspectionOptionSelected(section.key, row[0], option)
                       ? 'border-blue-400 bg-blue-50'
-                      : ''
+                      : (hasValidationError('detail:' + getDetailedRowKey(section.key, row[0])) ? 'border-red-400 bg-red-50' : '')
                   "
                 >
                   <input
@@ -504,7 +562,8 @@
                     (change)="
                       toggleInspectionOption(section.key, row[0], option)
                     "
-                    class="mt-0.5 h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                    [disabled]="isInspectionOptionDisabled(section.key, row[0], option)"
+                    class="mt-0.5 h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 disabled:cursor-not-allowed"
                   />
 
                   <span class="leading-5 text-slate-700">
@@ -513,29 +572,24 @@
                 </label>
               </div>
 
-              <!-- TRANSMISSION STAR RATING -->
+              <!-- ENGINE VIDEOS: placed directly inside the matching inspection rows -->
               <div
-                *ngIf="row[0] === 'Transmission Overall'"
-                class="mt-4 rounded-lg border border-amber-200 bg-amber-50 p-3"
+                *ngIf="row[0] === 'Engine' || row[0] === 'Engine Blow By'"
+                [attr.data-validation-key]="'video:' + (row[0] === 'Engine' ? 'engine_video' : 'engine_blow_by_video')"
+                [ngClass]="hasValidationError('video:' + (row[0] === 'Engine' ? 'engine_video' : 'engine_blow_by_video')) ? 'border-red-500 bg-red-50' : 'border-slate-200 bg-slate-50'"
+                class="mt-4 rounded-xl border p-4"
               >
-                <label class="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-500">
-                  Transmission Star Rating
-                </label>
-                <div class="flex items-center gap-1">
-                  <button
-                    *ngFor="let star of [1, 2, 3, 4, 5]"
-                    type="button"
-                    (click)="selectTransmissionRating(star)"
-                    [attr.aria-label]="'Rate transmission ' + star + ' out of 5'"
-                    class="text-3xl leading-none transition"
-                    [ngClass]="star <= getTransmissionRating() ? 'text-amber-400' : 'text-slate-300'"
-                  >
-                    ★
-                  </button>
-                  <span class="ml-2 text-sm font-semibold text-slate-700">
-                    {{ getTransmissionRating() }}/5
-                  </span>
-                </div>
+                <ng-container *ngIf="getInspectionVideo(row[0] === 'Engine' ? 'engine_video' : 'engine_blow_by_video') as video">
+                  <div class="mb-3 text-sm font-semibold text-slate-800">{{ video.title }}</div>
+                  <video *ngIf="video.preview" [src]="video.preview" controls playsinline class="mb-3 h-48 w-full rounded-lg bg-black object-contain"></video>
+                  <div *ngIf="!video.preview" class="mb-3 flex h-40 items-center justify-center rounded-lg border border-dashed border-slate-300 bg-white text-center text-xs text-slate-500"><div><div class="mb-1 text-3xl">🎥</div>No video selected</div></div>
+                  <div *ngIf="video.processing" class="mb-3 rounded-lg bg-blue-50 px-3 py-2 text-xs font-semibold text-blue-700">Compressing video, please wait...</div>
+                  <div class="flex gap-2">
+                    <button type="button" [disabled]="video.processing" (click)="openInspectionVideoCamera(video.key)" class="flex flex-1 items-center justify-center rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-xs font-semibold text-blue-700 hover:bg-blue-100 disabled:opacity-50">📷 Record</button>
+                    <label class="flex flex-1 cursor-pointer items-center justify-center rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-semibold text-slate-700">🖼️ Gallery<input type="file" accept="video/*" class="hidden" [disabled]="video.processing" (change)="onInspectionVideoSelected($event, video.key)" /></label>
+                    <button *ngIf="video.file" type="button" (click)="removeInspectionVideo(video.key)" class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs font-semibold text-red-700">Remove</button>
+                  </div>
+                </ng-container>
               </div>
 
               <!-- ROW REMARK + IMAGE -->
@@ -648,7 +702,9 @@
             let i = index;
             trackBy: trackByVehiclePhoto
           "
-          class="rounded-xl border border-slate-200 bg-slate-50 p-3"
+          [attr.data-validation-key]="'photo:' + photo.key"
+          [ngClass]="hasValidationError('photo:' + photo.key) ? 'border-red-500 bg-red-50' : 'border-slate-200 bg-slate-50'"
+          class="rounded-xl border p-3"
         >
           <div class="mb-2 text-sm font-semibold text-slate-800">
             {{ i + 1 }}. {{ photo.title }}
@@ -715,106 +771,6 @@
     </section>
 
     <!-- ================================================== -->
-    <!-- INSPECTION VIDEOS -->
-    <!-- ================================================== -->
-
-    <section class="mt-5 rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-      <div class="mb-5 border-b border-slate-200 pb-4">
-        <h2 class="text-lg font-bold text-slate-900">Engine Videos</h2>
-        <!-- <p class="mt-1 text-sm text-slate-500">
-          Record or select videos. Videos are compressed before upload to save Railway storage.
-        </p> -->
-      </div>
-
-      <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-        <div *ngFor="let video of inspectionVideos" class="rounded-xl border border-slate-200 bg-slate-50 p-4">
-          <div class="mb-3 text-sm font-semibold text-slate-800">
-            {{ video.title }} <span class="text-red-500">*</span>
-          </div>
-
-          <video
-            *ngIf="video.preview"
-            [src]="video.preview"
-            controls
-            playsinline
-            class="mb-3 h-48 w-full rounded-lg bg-black object-contain"
-          ></video>
-
-          <div *ngIf="!video.preview" class="mb-3 flex h-48 items-center justify-center rounded-lg border border-dashed border-slate-300 bg-white text-center text-xs text-slate-500">
-            <div>
-              <div class="mb-1 text-3xl">🎥</div>
-              No video selected
-            </div>
-          </div>
-
-          <div *ngIf="video.processing" class="mb-3 rounded-lg bg-blue-50 px-3 py-2 text-xs font-semibold text-blue-700">
-            Compressing video, please wait...
-          </div>
-
-          <div class="flex gap-2">
-            <button
-              type="button"
-              [disabled]="video.processing"
-              (click)="openInspectionVideoCamera(video.key)"
-              class="flex flex-1 items-center justify-center rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-xs font-semibold text-blue-700 hover:bg-blue-100 disabled:opacity-50"
-            >
-              📷 Record
-            </button>
-
-            <label class="flex flex-1 cursor-pointer items-center justify-center rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-semibold text-slate-700">
-              🖼️ Gallery
-              <input
-                type="file"
-                accept="video/*"
-                class="hidden"
-                [disabled]="video.processing"
-                (change)="onInspectionVideoSelected($event, video.key)"
-              />
-            </label>
-
-            <button
-              *ngIf="video.file"
-              type="button"
-              (click)="removeInspectionVideo(video.key)"
-              class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs font-semibold text-red-700 hover:bg-red-100"
-            >
-              Remove
-            </button>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ================================================== -->
-    <!-- DOCUMENT TITLE IMAGES -->
-    <!-- ================================================== -->
-
-    <section class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-      <div class="mb-5 border-b border-slate-200 pb-4">
-        <h2 class="text-lg font-bold text-slate-900">Documents / Title Images</h2>
-        <p class="mt-1 text-sm text-slate-500">RC, Insurance, PUC aur other document proof ke liye 1 image each upload/capture karein.</p>
-      </div>
-
-      <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        <div *ngFor="let photo of documentPhotos" class="rounded-xl border border-slate-200 bg-slate-50 p-3">
-          <div *ngIf="photo.preview" class="relative mb-2">
-            <img [src]="photo.preview" [alt]="photo.title" class="h-32 w-full rounded-lg border border-slate-200 bg-white object-contain" />
-            <button type="button" (click)="removeDocumentPhoto(photo.key)" class="absolute right-2 top-2 rounded-full bg-white px-2 py-1 text-xs font-medium text-red-600 shadow">Remove</button>
-          </div>
-
-          <div *ngIf="!photo.preview" class="mb-2 flex h-32 items-center justify-center rounded-lg border border-dashed border-slate-300 bg-white text-center text-xs text-slate-500">
-            <div><div class="mb-1 text-2xl">📄</div>Upload document image</div>
-          </div>
-
-          <div class="flex gap-2">
-            <button type="button" (click)="openDocumentCamera(photo.key)" class="flex flex-1 items-center justify-center rounded-lg border border-blue-200 bg-blue-50 px-2 py-2 text-xs font-semibold text-blue-700 hover:bg-blue-100">📷 Camera</button>
-            <label class="flex flex-1 cursor-pointer items-center justify-center rounded-lg border border-slate-300 bg-white px-2 py-2 text-xs font-semibold text-slate-700">🖼️ Gallery<input type="file" accept="image/*" class="hidden" (change)="onDocumentPhotoSelected($event, photo)" /></label>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ================================================== -->
     <!-- INSPECTION SUMMARY -->
     <!-- ================================================== -->
 
@@ -832,7 +788,7 @@
 
         <div>
           <label class="mb-2 block text-sm font-semibold text-slate-700">
-            Engine Remark <span class="text-red-500">*</span>
+            Engine Remark
           </label>
 
           <textarea
@@ -847,7 +803,7 @@
 
         <div>
           <label class="mb-2 block text-sm font-semibold text-slate-700">
-            Overall Remark <span class="text-red-500">*</span>
+            Overall Remark
           </label>
 
           <textarea
@@ -860,7 +816,7 @@
 
         <!-- SCORE -->
 
-        <div>
+        <div [attr.data-validation-key]="'overall_score'" [ngClass]="hasValidationError('overall_score') ? 'rounded-lg border border-red-500 bg-red-50 p-3' : ''">
           <label class="mb-2 block text-sm font-semibold text-slate-700">
             Overall Score <span class="text-red-500">*</span>
           </label>
@@ -869,7 +825,7 @@
             <button
               *ngFor="let score of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]"
               type="button"
-              (click)="selectScore(score)"
+              (click)="selectScore(score); validationErrors.delete('overall_score')"
               [ngClass]="
                 overall_score === score
                   ? 'border-blue-600 bg-blue-600 text-white'
@@ -898,144 +854,8 @@
         </div>
       </div>
 
-      <!-- ================================================== -->
-      <!-- TEST DRIVE -->
-      <!-- ================================================== -->
 
-      <section class="mt-5 rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-        <div class="mb-5 border-b border-slate-200 pb-4">
-          <h2 class="text-lg font-bold text-slate-900">Test Drive</h2>
-          <p class="mt-1 text-sm text-slate-500">
-            Add 2 test drive photos and 1 test drive video. Camera recording includes microphone sound.
-          </p>
-        </div>
 
-        <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-          <div *ngFor="let photo of testDrivePhotos" class="rounded-xl border border-slate-200 bg-slate-50 p-4">
-            <div class="mb-3 text-sm font-semibold text-slate-800">
-              {{ photo.title }} <span class="text-red-500">*</span>
-            </div>
-
-            <img
-              *ngIf="photo.preview"
-              [src]="photo.preview"
-              [alt]="photo.title"
-              class="mb-3 h-48 w-full rounded-lg bg-slate-100 object-contain"
-            />
-
-            <div *ngIf="!photo.preview" class="mb-3 flex h-48 items-center justify-center rounded-lg border border-dashed border-slate-300 bg-white text-center text-xs text-slate-500">
-              <div>
-                <div class="mb-1 text-3xl">📷</div>
-                No photo selected
-              </div>
-            </div>
-
-            <div class="flex gap-2">
-              <button
-                type="button"
-                (click)="openTestDrivePhotoCamera(photo.key)"
-                class="flex flex-1 items-center justify-center rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-xs font-semibold text-blue-700 hover:bg-blue-100"
-              >
-                📷 Camera
-              </button>
-
-              <label class="flex flex-1 cursor-pointer items-center justify-center rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-semibold text-slate-700">
-                🖼️ Gallery
-                <input
-                  type="file"
-                  accept="image/*"
-                  class="hidden"
-                  (change)="onTestDrivePhotoSelected($event, photo)"
-                />
-              </label>
-
-              <button
-                *ngIf="photo.file"
-                type="button"
-                (click)="removeTestDrivePhoto(photo.key)"
-                class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs font-semibold text-red-700 hover:bg-red-100"
-              >
-                Remove
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <div class="mt-4 rounded-xl border border-slate-200 bg-slate-50 p-4">
-          <div class="mb-3 text-sm font-semibold text-slate-800">
-            Test Drive Video <span class="text-red-500">*</span>
-          </div>
-
-          <video
-            *ngIf="testDriveVideo.preview"
-            [src]="testDriveVideo.preview"
-            controls
-            playsinline
-            class="mb-3 h-56 w-full rounded-lg bg-black object-contain"
-          ></video>
-
-          <div *ngIf="!testDriveVideo.preview" class="mb-3 flex h-56 items-center justify-center rounded-lg border border-dashed border-slate-300 bg-white text-center text-xs text-slate-500">
-            <div>
-              <div class="mb-1 text-3xl">🎥</div>
-              No video selected
-            </div>
-          </div>
-
-          <div *ngIf="testDriveVideo.processing" class="mb-3 rounded-lg bg-blue-50 px-3 py-2 text-xs font-semibold text-blue-700">
-            Compressing video, please wait...
-          </div>
-
-          <div class="flex flex-col gap-2 sm:flex-row">
-            <button
-              type="button"
-              [disabled]="testDriveVideo.processing"
-              (click)="openTestDriveVideoCamera()"
-              class="flex flex-1 items-center justify-center rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-xs font-semibold text-blue-700 hover:bg-blue-100 disabled:opacity-50"
-            >
-              📷 Record Video + Sound
-            </button>
-
-            <label class="flex flex-1 cursor-pointer items-center justify-center rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-semibold text-slate-700">
-              🖼️ Upload Video
-              <input
-                type="file"
-                accept="video/*"
-                class="hidden"
-                [disabled]="testDriveVideo.processing"
-                (change)="onTestDriveVideoSelected($event)"
-              />
-            </label>
-
-            <button
-              *ngIf="testDriveVideo.file"
-              type="button"
-              (click)="removeTestDriveVideo()"
-              class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs font-semibold text-red-700 hover:bg-red-100"
-            >
-              Remove
-            </button>
-          </div>
-
-          <p class="mt-2 text-xs text-slate-500">
-            Camera recording uses the microphone, so the recorded Test Drive Video will contain sound when microphone permission is allowed.
-          </p>
-        </div>
-      </section>
-
-      <!-- EMPLOYEE REMARK -->
-
-      <div class="mt-5">
-        <label class="mb-2 block text-sm font-semibold text-slate-700">
-          Employee Remark
-        </label>
-
-        <textarea
-          [(ngModel)]="employee_remark"
-          rows="3"
-          placeholder="Additional employee remark..."
-          class="w-full resize-none rounded-lg border border-slate-300 px-3 py-3 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-        ></textarea>
-      </div>
     </section>
 
     <!-- ================================================== -->
