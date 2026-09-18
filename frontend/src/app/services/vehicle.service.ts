@@ -1477,6 +1477,57 @@ export class VehicleService {
 
 
   // =====================================================
+  // GET DELETED VEHICLES
+  //
+  // ADMIN - DELETED CARS
+  // =====================================================
+
+  getDeletedVehicles():
+    Observable<any> {
+
+    return this.http.get(
+      `${this.apiUrl}/admin/vehicles/deleted`
+    );
+
+  }
+
+
+
+  // =====================================================
+  // RESTORE VEHICLE
+  //
+  // ADMIN - RESTORE SOFT-DELETED CAR
+  // =====================================================
+
+  restoreVehicle(
+    carId: number
+  ):
+    Observable<any> {
+
+    const id =
+      Number(carId);
+
+    if (
+      !Number.isInteger(id) ||
+      id <= 0
+    ) {
+
+      throw new Error(
+        'Valid vehicle ID is required.'
+      );
+
+    }
+
+    return this.http.patch(
+      `${this.apiUrl}/admin/vehicles/${id}/restore`,
+      {}
+    );
+
+  }
+
+
+
+  // =====================================================
   // GET PUBLISHED VEHICLES
   //
   // CUSTOMER / PUBLIC HOME PAGE

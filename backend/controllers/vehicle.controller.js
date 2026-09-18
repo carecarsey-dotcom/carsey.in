@@ -788,6 +788,255 @@ const deleteVehicle = async (
 
 
 
+
+// ======================================================
+// GET DELETED VEHICLES
+// ADMIN
+// ======================================================
+//
+// GET
+// /api/admin/vehicles/deleted
+//
+// Returns all soft-deleted vehicles.
+//
+// ======================================================
+
+const getDeletedVehicles = async (
+    req,
+    res
+) => {
+
+    try {
+
+        const result =
+            await vehicleService
+                .getDeletedVehicles();
+
+
+        return res.status(200).json({
+
+            success:
+                true,
+
+            message:
+                "Deleted vehicles fetched successfully.",
+
+            data:
+                result
+
+        });
+
+    }
+
+    catch (error) {
+
+        console.error(
+            "Get Deleted Vehicles Error:",
+            error
+        );
+
+
+        return res.status(500).json({
+
+            success:
+                false,
+
+            message:
+                error.message ||
+                "Unable to load deleted vehicles."
+
+        });
+
+    }
+
+};
+
+
+// ======================================================
+// RESTORE VEHICLE
+// ADMIN
+// ======================================================
+//
+// PATCH /api/admin/vehicles/:carId/restore
+//
+// Restores a soft-deleted vehicle without changing its
+// existing vehicle data, images, inspection or publish state.
+//
+// ======================================================
+
+const restoreVehicle = async (
+    req,
+    res
+) => {
+
+    try {
+
+        // ==================================================
+        // GET VEHICLE ID
+        // ==================================================
+
+        const rawCarId =
+            req.params.carId;
+
+
+        const carId =
+            Number(rawCarId);
+
+
+        // ==================================================
+        // VALIDATE VEHICLE ID
+        // ==================================================
+
+        if (
+            !Number.isInteger(carId) ||
+            carId <= 0
+        ) {
+
+            return res.status(400).json({
+
+                success:
+                    false,
+
+                message:
+                    "Valid vehicle ID is required."
+
+            });
+
+        }
+
+
+        // ==================================================
+        // RESTORE VEHICLE
+        // ==================================================
+
+        const result =
+            await vehicleService
+                .restoreVehicle(
+                    carId
+                );
+
+
+        // ==================================================
+        // VEHICLE NOT FOUND / NOT RESTORED
+        // ==================================================
+
+        if (
+            !result ||
+            result.restored === false
+        ) {
+
+            return res.status(404).json({
+
+                success:
+                    false,
+
+                message:
+                    result?.message ||
+                    "Vehicle not found or could not be restored."
+
+            });
+
+        }
+
+
+        // ==================================================
+        // SUCCESS
+        // ==================================================
+
+        return res.status(200).json({
+
+            success:
+                true,
+
+            message:
+                result.message ||
+                "Vehicle restored successfully.",
+
+            data: {
+
+                vehicleId:
+                    carId,
+
+                carId:
+                    carId,
+
+                restored:
+                    true
+
+            }
+
+        });
+
+    }
+
+    catch (error) {
+
+        console.error(
+            "Restore Vehicle Error:",
+            error
+        );
+
+
+        const errorMessage =
+            error?.message ||
+            "Unable to restore vehicle.";
+
+
+        const normalizedMessage =
+            String(errorMessage)
+                .toLowerCase();
+
+
+        let statusCode =
+            500;
+
+
+        if (
+            normalizedMessage.includes(
+                "valid vehicle id"
+            ) ||
+            normalizedMessage.includes(
+                "invalid vehicle id"
+            )
+        ) {
+
+            statusCode =
+                400;
+
+        }
+
+        else if (
+            normalizedMessage.includes(
+                "not found"
+            )
+        ) {
+
+            statusCode =
+                404;
+
+        }
+
+
+        return res.status(statusCode).json({
+
+            success:
+                false,
+
+            message:
+                errorMessage,
+
+            error:
+                process.env.NODE_ENV === "development"
+                    ? error.stack
+                    : undefined
+
+        });
+
+    }
+
+};
+
+
 // ======================================================
 // EXPORT
 // ======================================================
@@ -804,6 +1053,10 @@ module.exports = {
 
     publishVehicle,
 
-    deleteVehicle
+    deleteVehicle,
+
+    getDeletedVehicles,
+
+    restoreVehicle
 
 };

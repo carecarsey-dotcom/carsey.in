@@ -1415,6 +1415,9 @@ const getAllAdminVehicles =
                 FROM
                     cars c
 
+                WHERE
+                    c.is_deleted = 0
+
                 ORDER BY
                     c.car_id DESC
                 `
@@ -1464,7 +1467,8 @@ const getPublishedVehicles =
                 )
 
             WHERE
-                (
+                c.is_deleted = 0
+                AND (
                     LOWER(
                         COALESCE(
                             c.status,
@@ -1863,17 +1867,21 @@ const getPublishedVehicles =
 
 // ======================================================
 // DELETE VEHICLE
-// ADMIN
+// ADMIN - SOFT DELETE
 // ======================================================
 //
-// Deletes vehicle and its related database records.
+// IMPORTANT:
+// Vehicle is NOT physically deleted.
+// Related records (inspection reports, checklist, images,
+// owners, etc.) are preserved so the vehicle can be restored.
 //
-// Delete order:
+// Soft delete:
+//   is_deleted = 1
+//   deleted_at = NOW()
 //
-// 1. inspection_checklist
-// 2. inspection_reports
-// 3. car_images
-// 4. cars
+// Restore:
+//   is_deleted = 0
+//   deleted_at = NULL
 //
 // ======================================================
 
@@ -1915,13 +1923,15 @@ const deleteVehicle = async (
         await executeQuery(
 
             `
-            SELECT
-                *
-            FROM
-                cars
-            WHERE
-                car_id = ?
-            LIMIT 1
+                SELECT
+                    car_id,
+                    is_deleted,
+                    deleted_at
+                FROM
+                    cars
+                WHERE
+                    car_id = ?
+                LIMIT 1
             `,
 
             [
@@ -1955,288 +1965,49 @@ const deleteVehicle = async (
 
 
     // ==================================================
-    // GET INSPECTION REPORT IDS
+    // ALREADY DELETED CHECK
     // ==================================================
 
-    let reportIds = [];
-
-
-    try {
-
-        const reportColumns =
-            await getInspectionReportColumns();
-
-
-        if (
-            reportColumns.includes(
-                "car_id"
-            ) &&
-            reportColumns.includes(
-                "report_id"
-            )
-        ) {
-
-            const reports =
-                await executeQuery(
-
-                    `
-                    SELECT
-                        report_id
-                    FROM
-                        inspection_reports
-                    WHERE
-                        car_id = ?
-                    `,
-
-                    [
-                        numericVehicleId
-                    ]
-
-                );
-
-
-            if (
-                Array.isArray(
-                    reports
-                )
-            ) {
-
-                reportIds =
-                    reports
-                        .map(
-                            report =>
-                                report.report_id
-                        )
-                        .filter(
-                            id =>
-                                id !== null &&
-                                id !== undefined
-                        );
-
-            }
-
-        }
-
-    }
-    catch (
-        reportFetchError
+    if (
+        Number(
+            vehicleRows[0].is_deleted
+        ) === 1
     ) {
 
-        console.error(
+        return {
 
-            "Delete Vehicle - Report ID Fetch Error:",
+            deleted:
+                false,
 
-            reportFetchError.message
+            alreadyDeleted:
+                true,
 
-        );
+            vehicleId:
+                numericVehicleId,
 
-    }
+            message:
+                "Vehicle is already in Deleted Cars."
 
-
-    // ==================================================
-    // DELETE INSPECTION CHECKLIST
-    // ==================================================
-
-    try {
-
-        const checklistColumns =
-            await getChecklistColumns();
-
-
-        // ------------------------------------------------
-        // DELETE USING REPORT ID
-        // ------------------------------------------------
-
-        if (
-            checklistColumns.includes(
-                "report_id"
-            ) &&
-            reportIds.length > 0
-        ) {
-
-            for (
-                const reportId
-                of reportIds
-            ) {
-
-                await executeQuery(
-
-                    `
-                    DELETE FROM
-                        inspection_checklist
-                    WHERE
-                        report_id = ?
-                    `,
-
-                    [
-                        reportId
-                    ]
-
-                );
-
-            }
-
-        }
-
-
-        // ------------------------------------------------
-        // FALLBACK: DELETE USING CAR ID
-        // ------------------------------------------------
-
-        if (
-            checklistColumns.includes(
-                "car_id"
-            )
-        ) {
-
-            await executeQuery(
-
-                `
-                DELETE FROM
-                    inspection_checklist
-                WHERE
-                    car_id = ?
-                `,
-
-                [
-                    numericVehicleId
-                ]
-
-            );
-
-        }
-
-    }
-    catch (
-        checklistDeleteError
-    ) {
-
-        console.error(
-
-            "Delete Vehicle - Checklist Delete Error:",
-
-            checklistDeleteError.message
-
-        );
-
-        throw checklistDeleteError;
+        };
 
     }
 
 
     // ==================================================
-    // DELETE INSPECTION REPORTS
-    // ==================================================
-
-    try {
-
-        const reportColumns =
-            await getInspectionReportColumns();
-
-
-        if (
-            reportColumns.includes(
-                "car_id"
-            )
-        ) {
-
-            await executeQuery(
-
-                `
-                DELETE FROM
-                    inspection_reports
-                WHERE
-                    car_id = ?
-                `,
-
-                [
-                    numericVehicleId
-                ]
-
-            );
-
-        }
-
-    }
-    catch (
-        reportDeleteError
-    ) {
-
-        console.error(
-
-            "Delete Vehicle - Inspection Report Delete Error:",
-
-            reportDeleteError.message
-
-        );
-
-        throw reportDeleteError;
-
-    }
-
-
-    // ==================================================
-    // DELETE CAR IMAGES
-    // ==================================================
-
-    try {
-
-        const imageColumns =
-            await getCarImagesColumns();
-
-
-        if (
-            imageColumns.includes(
-                "car_id"
-            )
-        ) {
-
-            await executeQuery(
-
-                `
-                DELETE FROM
-                    car_images
-                WHERE
-                    car_id = ?
-                `,
-
-                [
-                    numericVehicleId
-                ]
-
-            );
-
-        }
-
-    }
-    catch (
-        imageDeleteError
-    ) {
-
-        console.error(
-
-            "Delete Vehicle - Image Delete Error:",
-
-            imageDeleteError.message
-
-        );
-
-        throw imageDeleteError;
-
-    }
-
-
-    // ==================================================
-    // DELETE VEHICLE
+    // SOFT DELETE VEHICLE
     // ==================================================
 
     await executeQuery(
 
         `
-        DELETE FROM
-            cars
-        WHERE
-            car_id = ?
+            UPDATE
+                cars
+            SET
+                is_deleted = 1,
+                deleted_at = NOW()
+            WHERE
+                car_id = ?
+            LIMIT 1
         `,
 
         [
@@ -2244,6 +2015,49 @@ const deleteVehicle = async (
         ]
 
     );
+
+
+    // ==================================================
+    // VERIFY DATABASE STATE
+    // ==================================================
+
+    const deletedVehicleRows =
+        await executeQuery(
+
+            `
+                SELECT
+                    car_id,
+                    is_deleted,
+                    deleted_at
+                FROM
+                    cars
+                WHERE
+                    car_id = ?
+                LIMIT 1
+            `,
+
+            [
+                numericVehicleId
+            ]
+
+        );
+
+
+    if (
+        !Array.isArray(
+            deletedVehicleRows
+        ) ||
+        deletedVehicleRows.length === 0 ||
+        Number(
+            deletedVehicleRows[0].is_deleted
+        ) !== 1
+    ) {
+
+        throw new Error(
+            "Vehicle delete status could not be verified."
+        );
+
+    }
 
 
     // ==================================================
@@ -2258,8 +2072,254 @@ const deleteVehicle = async (
         vehicleId:
             numericVehicleId,
 
+        deletedAt:
+            deletedVehicleRows[0].deleted_at,
+
         message:
-            "Vehicle and all related records deleted successfully."
+            "Vehicle moved to Deleted Cars successfully."
+
+    };
+
+};
+
+
+// ======================================================
+// GET DELETED VEHICLES
+// ADMIN / DELETED CARS PAGE
+// ======================================================
+
+const getDeletedVehicles =
+    async () => {
+
+        const rows =
+            await executeQuery(
+
+                `
+                    SELECT
+                        c.*
+                    FROM
+                        cars c
+                    WHERE
+                        c.is_deleted = 1
+                    ORDER BY
+                        c.deleted_at DESC,
+                        c.car_id DESC
+                `
+
+            );
+
+
+        return Array.isArray(rows)
+            ? rows
+            : [];
+
+    };
+
+
+// ======================================================
+// RESTORE VEHICLE
+// ADMIN
+// ======================================================
+//
+// Restoring only changes the soft-delete flags.
+// The original vehicle status, publish state, images,
+// inspection report and checklist remain untouched.
+//
+// ======================================================
+
+const restoreVehicle = async (
+    vehicleId
+) => {
+
+    // ==================================================
+    // CONVERT VEHICLE ID TO NUMBER
+    // ==================================================
+
+    const numericVehicleId =
+        Number(vehicleId);
+
+
+    // ==================================================
+    // VALIDATE VEHICLE ID
+    // ==================================================
+
+    if (
+        !Number.isInteger(
+            numericVehicleId
+        ) ||
+        numericVehicleId <= 0
+    ) {
+
+        throw new Error(
+            "Valid vehicle ID is required."
+        );
+
+    }
+
+
+    // ==================================================
+    // CHECK VEHICLE EXISTS
+    // ==================================================
+
+    const vehicleRows =
+        await executeQuery(
+
+            `
+                SELECT
+                    car_id,
+                    is_deleted,
+                    deleted_at
+                FROM
+                    cars
+                WHERE
+                    car_id = ?
+                LIMIT 1
+            `,
+
+            [
+                numericVehicleId
+            ]
+
+        );
+
+
+    if (
+        !Array.isArray(
+            vehicleRows
+        ) ||
+        vehicleRows.length === 0
+    ) {
+
+        return {
+
+            restored:
+                false,
+
+            vehicleId:
+                numericVehicleId,
+
+            message:
+                "Vehicle not found."
+
+        };
+
+    }
+
+
+    // ==================================================
+    // CHECK WHETHER VEHICLE IS ACTUALLY DELETED
+    // ==================================================
+
+    if (
+        Number(
+            vehicleRows[0].is_deleted
+        ) !== 1
+    ) {
+
+        return {
+
+            restored:
+                false,
+
+            alreadyActive:
+                true,
+
+            vehicleId:
+                numericVehicleId,
+
+            message:
+                "Vehicle is already active."
+
+        };
+
+    }
+
+
+    // ==================================================
+    // RESTORE VEHICLE
+    // ==================================================
+
+    await executeQuery(
+
+        `
+            UPDATE
+                cars
+            SET
+                is_deleted = 0,
+                deleted_at = NULL
+            WHERE
+                car_id = ?
+            LIMIT 1
+        `,
+
+        [
+            numericVehicleId
+        ]
+
+    );
+
+
+    // ==================================================
+    // VERIFY RESTORE
+    // ==================================================
+
+    const restoredVehicleRows =
+        await executeQuery(
+
+            `
+                SELECT
+                    *
+                FROM
+                    cars
+                WHERE
+                    car_id = ?
+                LIMIT 1
+            `,
+
+            [
+                numericVehicleId
+            ]
+
+        );
+
+
+    if (
+        !Array.isArray(
+            restoredVehicleRows
+        ) ||
+        restoredVehicleRows.length === 0 ||
+        Number(
+            restoredVehicleRows[0].is_deleted
+        ) !== 0
+    ) {
+
+        throw new Error(
+            "Vehicle restore could not be verified."
+        );
+
+    }
+
+
+    // ==================================================
+    // FINAL RESPONSE
+    // ==================================================
+
+    return {
+
+        restored:
+            true,
+
+        vehicleId:
+            numericVehicleId,
+
+        carId:
+            numericVehicleId,
+
+        vehicle:
+            restoredVehicleRows[0],
+
+        message:
+            "Vehicle restored successfully."
 
     };
 
@@ -3310,6 +3370,8 @@ module.exports = {
 
     getPublishedVehicles,
 
+    getDeletedVehicles,
+
     getVehicleById,
 
     getCompleteVehicleData,
@@ -3325,9 +3387,11 @@ module.exports = {
 
 
     // --------------------------------------------------
-    // DELETE
+    // DELETE / RESTORE
     // --------------------------------------------------
 
-    deleteVehicle
+    deleteVehicle,
+
+    restoreVehicle
 
 };

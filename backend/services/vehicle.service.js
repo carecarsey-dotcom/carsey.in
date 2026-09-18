@@ -1666,6 +1666,164 @@ const deleteVehicle = async (
 };
 
 
+
+// ======================================================
+// GET DELETED VEHICLES
+// ADMIN
+// ======================================================
+//
+// Returns vehicles that were soft-deleted.
+// The repository handles the is_deleted = 1 filter.
+//
+// ======================================================
+
+const getDeletedVehicles = async () => {
+
+    if (
+        typeof vehicleRepository.getDeletedVehicles !==
+        "function"
+    ) {
+        throw new Error(
+            "vehicleRepository.getDeletedVehicles() is not available. Please use the updated vehicle.repository.js."
+        );
+    }
+
+    const result =
+        await vehicleRepository.getDeletedVehicles();
+
+    const vehicles =
+        Array.isArray(result)
+            ? result
+            : Array.isArray(result?.vehicles)
+                ? result.vehicles
+                : [];
+
+    return {
+        ...(Array.isArray(result) ? {} : result || {}),
+        vehicles
+    };
+};
+
+
+// ======================================================
+// RESTORE VEHICLE
+// ADMIN
+// ======================================================
+//
+// Restores a soft-deleted vehicle.
+//
+// is_deleted -> 0
+// deleted_at -> NULL
+//
+// All other vehicle fields remain unchanged.
+//
+// ======================================================
+
+const restoreVehicle = async (
+    vehicleId
+) => {
+
+    const numericVehicleId =
+        Number(vehicleId);
+
+    // ==================================================
+    // VALIDATE VEHICLE ID
+    // ==================================================
+
+    if (
+        !Number.isInteger(numericVehicleId) ||
+        numericVehicleId <= 0
+    ) {
+
+        throw new Error(
+            "Valid vehicle ID is required."
+        );
+
+    }
+
+
+    // ==================================================
+    // RESTORE VEHICLE FROM REPOSITORY
+    // ==================================================
+
+    if (
+        typeof vehicleRepository.restoreVehicle !==
+        "function"
+    ) {
+
+        throw new Error(
+            "vehicleRepository.restoreVehicle() is not available. Please use the updated vehicle.repository.js."
+        );
+
+    }
+
+
+    const result =
+        await vehicleRepository
+            .restoreVehicle(
+                numericVehicleId
+            );
+
+
+    // ==================================================
+    // VEHICLE NOT FOUND / NOT RESTORED
+    // ==================================================
+
+    if (!result) {
+
+        return {
+
+            restored: false,
+
+            vehicleId:
+                numericVehicleId,
+
+            message:
+                "Vehicle not found or could not be restored."
+
+        };
+
+    }
+
+
+    if (result.restored === false) {
+
+        return {
+
+            ...result,
+
+            restored: false,
+
+            vehicleId:
+                numericVehicleId
+
+        };
+
+    }
+
+
+    // ==================================================
+    // SUCCESS
+    // ==================================================
+
+    return {
+
+        ...result,
+
+        restored: true,
+
+        vehicleId:
+            numericVehicleId,
+
+        message:
+            result.message ||
+            "Vehicle restored successfully."
+
+    };
+
+};
+
+
 // ======================================================
 // EXPORT
 // ======================================================
@@ -1684,6 +1842,10 @@ module.exports = {
 
     getPublishedVehicles,
 
-    deleteVehicle
+    deleteVehicle,
+
+    getDeletedVehicles,
+
+    restoreVehicle
 
 };

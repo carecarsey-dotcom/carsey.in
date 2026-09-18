@@ -1,491 +1,263 @@
-import {
-
-  Component,
-
-  OnInit,
-
-  inject
-
-} from '@angular/core';
-
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-
 import { FormsModule } from '@angular/forms';
-
 import { RouterLink } from '@angular/router';
-
-import {
-
-  Vehicle,
-
-  VehicleService
-
-} from '../../services/vehicle.service';
+import { Vehicle, VehicleService } from '../../services/vehicle.service';
 
 @Component({
-
   selector: 'app-vehicles',
-
   standalone: true,
-
-  imports: [
-
-    CommonModule,
-
-    FormsModule,
-
-    RouterLink
-
-  ],
-
+  imports: [CommonModule, FormsModule, RouterLink],
   templateUrl: './vehicles.component.html',
-
   styleUrl: './vehicles.component.css'
-
 })
-
-export class VehiclesComponent
-
-  implements OnInit {
-
-  private vehicleService =
-
-    inject(VehicleService);
+export class VehiclesComponent implements OnInit {
+  private vehicleService = inject(VehicleService);
 
   vehicles: Vehicle[] = [];
+  deletedVehicles: Vehicle[] = [];
 
   searchText = '';
 
   loading = false;
+  loadingDeleted = false;
 
   errorMessage = '';
 
-  // ======================================================
-
-  // DELETE VEHICLE LOADING ID
-
-  // ======================================================
-
   deletingVehicleId: number | null = null;
+  restoringVehicleId: number | null = null;
 
-
-
-  // ======================================================
-
-  // INIT
-
-  // ======================================================
+  viewMode: 'active' | 'deleted' = 'active';
 
   ngOnInit(): void {
-
     this.loadVehicles();
-
   }
-
-
-
-  // ======================================================
-
-  // LOAD VEHICLES
-
-  // ======================================================
 
   loadVehicles(): void {
-
     this.loading = true;
-
     this.errorMessage = '';
 
-    this.vehicleService
-
-      .getVehicles()
-
-      .subscribe({
-
-        next: (response: any) => {
-
-          console.log(
-
-            'Vehicles Response:',
-
-            response
-
-          );
-
-          if (response?.success) {
-
-            this.vehicles =
-
-              response.data?.vehicles ?? [];
-
-          }
-
-          else {
-
-            this.errorMessage =
-
-              response?.message ||
-
-              'Unable to load vehicles.';
-
-          }
-
-          this.loading = false;
-
-        },
-
-        error: (error) => {
-
-          console.error(
-
-            'Vehicle API Error:',
-
-            error
-
-          );
-
+    this.vehicleService.getVehicles().subscribe({
+      next: (response: any) => {
+        if (response?.success) {
+          this.vehicles = response.data?.vehicles ?? [];
+        } else {
           this.errorMessage =
-
-            error?.error?.message ||
-
-            'Unable to load vehicles.';
-
-          this.loading = false;
-
+            response?.message || 'Unable to load vehicles.';
         }
 
-      });
-
+        this.loading = false;
+      },
+      error: (error) => {
+        this.errorMessage =
+          error?.error?.message || 'Unable to load vehicles.';
+        this.loading = false;
+      }
+    });
   }
 
+  loadDeletedVehicles(): void {
+    this.loadingDeleted = true;
+    this.errorMessage = '';
 
+    this.vehicleService.getDeletedVehicles().subscribe({
+      next: (response: any) => {
+        if (response?.success) {
+          this.deletedVehicles = response.data?.vehicles ?? [];
+        } else {
+          this.errorMessage =
+            response?.message || 'Unable to load deleted vehicles.';
+        }
 
-  // ======================================================
+        this.loadingDeleted = false;
+      },
+      error: (error) => {
+        this.errorMessage =
+          error?.error?.message || 'Unable to load deleted vehicles.';
+        this.loadingDeleted = false;
+      }
+    });
+  }
 
-  // MASTER BOOKING / INSPECTION ID
-  // ======================================================
-  // This is the single ID shown in the UI.
-  // Example:
-  // booking_id = 25 -> CAR-000025
-  //
-  // IMPORTANT:
-  // car_id is the physical vehicle ID.
-  // booking_id is the master inspection journey ID.
+  showActiveCars(): void {
+    this.viewMode = 'active';
+    this.searchText = '';
+    this.errorMessage = '';
+
+    if (!this.vehicles.length) {
+      this.loadVehicles();
+    }
+  }
+
+  showDeletedCars(): void {
+    this.viewMode = 'deleted';
+    this.searchText = '';
+    this.loadDeletedVehicles();
+  }
 
   getBookingCode(vehicle: Vehicle): string {
+    const rawBookingId =
+      vehicle?.booking_id !== undefined && vehicle?.booking_id !== null
+        ? String(vehicle.booking_id)
+        : '';
 
-    const bookingId = Number(
-
-      vehicle?.booking_id
-
-    );
-
-    if (
-
-      !Number.isInteger(bookingId) ||
-
-      bookingId <= 0
-
-    ) {
-
+    if (!rawBookingId) {
       return '-';
-
     }
 
-    return `CAR-${String(bookingId).padStart(6, '0')}`;
+    if (rawBookingId.startsWith('CAR-')) {
+      return rawBookingId;
+    }
 
+    const numericPart = Number(rawBookingId);
+
+    if (Number.isFinite(numericPart)) {
+      return `CAR-${String(numericPart).padStart(6, '0')}`;
+    }
+
+    return rawBookingId;
   }
-
-
-
-  // ======================================================
-
-  // FILTER VEHICLES
-
-  // ======================================================
 
   get filteredVehicles(): Vehicle[] {
-
-    const search =
-
-      this.searchText
-
-        .trim()
-
-        .toLowerCase();
+    const search = this.searchText.trim().toLowerCase();
 
     if (!search) {
-
       return this.vehicles;
-
     }
 
-    return this.vehicles.filter(
+    return this.vehicles.filter((vehicle: Vehicle) => {
+      const values = [
+        vehicle.car_id,
+        vehicle.booking_id,
+        vehicle.brand,
+        vehicle.model,
+        vehicle.variant,
+        vehicle.city,
+        vehicle.status,
+        vehicle.manufacturing_year,
+        vehicle.price,
+        vehicle.odometer
+      ];
 
-      vehicle =>
+      return values.some((value) =>
+        String(value ?? '').toLowerCase().includes(search)
+      );
+    });
+  }
 
-        vehicle.brand
+  get filteredDeletedVehicles(): Vehicle[] {
+    const search = this.searchText.trim().toLowerCase();
 
-          ?.toLowerCase()
+    if (!search) {
+      return this.deletedVehicles;
+    }
 
-          .includes(search)
+    return this.deletedVehicles.filter((vehicle: Vehicle) => {
+      const values = [
+        vehicle.car_id,
+        vehicle.booking_id,
+        vehicle.brand,
+        vehicle.model,
+        vehicle.variant,
+        vehicle.city,
+        vehicle.status,
+        vehicle.manufacturing_year,
+        vehicle.price,
+        vehicle.odometer
+      ];
 
-        ||
+      return values.some((value) =>
+        String(value ?? '').toLowerCase().includes(search)
+      );
+    });
+  }
 
-        vehicle.model
+  deleteVehicle(vehicle: Vehicle): void {
+    const carId = Number(vehicle?.car_id);
 
-          ?.toLowerCase()
+    if (!Number.isInteger(carId) || carId <= 0) {
+      this.errorMessage = 'Invalid vehicle ID.';
+      return;
+    }
 
-          .includes(search)
-
-        ||
-
-        vehicle.city
-
-          ?.toLowerCase()
-
-          .includes(search)
-
+    const confirmed = window.confirm(
+      'This will move the vehicle to Deleted Cars.\\n\\n' +
+      'The vehicle data, images and inspection records will be kept and ' +
+      'the vehicle can be restored later.\\n\\n' +
+      'Do you want to continue?'
     );
 
-  }
-
-
-
-  // ======================================================
-
-  // DELETE VEHICLE
-
-  // ======================================================
-
-  deleteVehicle(
-
-    vehicle: Vehicle
-
-  ): void {
-
-    // ----------------------------------------------------
-
-    // CHECK VEHICLE ID
-
-    // ----------------------------------------------------
-
-    if (
-
-      vehicle.car_id === null ||
-
-      vehicle.car_id === undefined ||
-
-      Number(vehicle.car_id) <= 0
-
-    ) {
-
-      console.error(
-
-        'Vehicle ID is missing.'
-
-      );
-
-      return;
-
-    }
-
-
-
-    // ----------------------------------------------------
-
-    // VEHICLE NAME
-
-    // ----------------------------------------------------
-
-    const vehicleName =
-
-      `${vehicle.brand || ''} ${vehicle.model || ''}`
-
-        .trim();
-
-
-
-    // ----------------------------------------------------
-
-    // CONFIRM DELETE
-
-    // ----------------------------------------------------
-
-    const confirmed =
-
-      window.confirm(
-
-        `Are you sure you want to delete ${
-
-          vehicleName || 'this vehicle'
-
-        }?\n\n` +
-
-        `Vehicle ID: ${vehicle.car_id}\n\n` +
-
-        `This action will permanently delete the vehicle.`
-
-      );
-
-
-
-    // ----------------------------------------------------
-
-    // USER CANCELLED
-
-    // ----------------------------------------------------
-
     if (!confirmed) {
-
       return;
-
     }
 
-
-
-    // ----------------------------------------------------
-
-    // SET DELETE LOADING
-
-    // ----------------------------------------------------
-
-    this.deletingVehicleId =
-
-      Number(vehicle.car_id);
-
+    this.deletingVehicleId = carId;
     this.errorMessage = '';
 
-
-
-    // ----------------------------------------------------
-
-    // CALL DELETE API
-
-    // ----------------------------------------------------
-
-    this.vehicleService
-
-      .deleteVehicle(
-
-        Number(vehicle.car_id)
-
-      )
-
-      .subscribe({
-
-        // ==================================================
-
-        // SUCCESS
-
-        // ==================================================
-
-        next: (response: any) => {
-
-          console.log(
-
-            'Delete Vehicle Response:',
-
-            response
-
+    this.vehicleService.deleteVehicle(carId).subscribe({
+      next: (response: any) => {
+        if (response?.success) {
+          this.vehicles = this.vehicles.filter(
+            (item) => Number(item.car_id) !== carId
           );
-
-          // ------------------------------------------------
-
-          // DELETE SUCCESS
-
-          // ------------------------------------------------
-
-          if (
-
-            response?.success
-
-          ) {
-
-            // ----------------------------------------------
-
-            // REMOVE VEHICLE FROM FRONTEND LIST
-
-            // ----------------------------------------------
-
-            this.vehicles =
-
-              this.vehicles.filter(
-
-                item =>
-
-                  Number(item.car_id) !==
-
-                  Number(vehicle.car_id)
-
-              );
-
-            console.log(
-
-              `Vehicle ${vehicle.car_id} deleted successfully.`
-
-            );
-
-          }
-
-          // ------------------------------------------------
-
-          // DELETE FAILED
-
-          // ------------------------------------------------
-
-          else {
-
-            this.errorMessage =
-
-              response?.message ||
-
-              'Unable to delete vehicle.';
-
-          }
-
-          // ------------------------------------------------
-
-          // REMOVE DELETE LOADING
-
-          // ------------------------------------------------
-
-          this.deletingVehicleId =
-
-            null;
-
-        },
-
-        // ==================================================
-
-        // ERROR
-
-        // ==================================================
-
-        error: (error) => {
-
-          console.error(
-
-            'Delete Vehicle API Error:',
-
-            error
-
-          );
-
+        } else {
           this.errorMessage =
-
-            error?.error?.message ||
-
-            'Unable to delete vehicle.';
-
-          this.deletingVehicleId =
-
-            null;
-
+            response?.message || 'Unable to delete vehicle.';
         }
 
-      });
-
+        this.deletingVehicleId = null;
+      },
+      error: (error) => {
+        this.errorMessage =
+          error?.error?.message || 'Unable to delete vehicle.';
+        this.deletingVehicleId = null;
+      }
+    });
   }
 
+  restoreVehicle(vehicle: Vehicle): void {
+    const carId = Number(vehicle?.car_id);
+
+    if (!Number.isInteger(carId) || carId <= 0) {
+      this.errorMessage = 'Invalid vehicle ID.';
+      return;
+    }
+
+    const confirmed = window.confirm(
+      'Restore this vehicle to Active Cars?\\n\\n' +
+      'The vehicle will be restored with its existing data, images and ' +
+      'previous status/publish state.'
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    this.restoringVehicleId = carId;
+    this.errorMessage = '';
+
+    this.vehicleService.restoreVehicle(carId).subscribe({
+      next: (response: any) => {
+        if (response?.success) {
+          this.deletedVehicles = this.deletedVehicles.filter(
+            (item) => Number(item.car_id) !== carId
+          );
+
+          // Refresh Active Cars so the restored vehicle appears immediately
+          // with its existing status/publish state.
+          this.loadVehicles();
+        } else {
+          this.errorMessage =
+            response?.message || 'Unable to restore vehicle.';
+        }
+
+        this.restoringVehicleId = null;
+      },
+      error: (error) => {
+        this.errorMessage =
+          error?.error?.message || 'Unable to restore vehicle.';
+        this.restoringVehicleId = null;
+      }
+    });
+  }
 }

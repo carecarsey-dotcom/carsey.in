@@ -157,6 +157,52 @@ router.get(
 
 
 // ======================================================
+// ADMIN - GET DELETED VEHICLES
+// ======================================================
+//
+// GET
+// /api/admin/vehicles/deleted
+//
+// IMPORTANT:
+// Ye route "/:carId" se PEHLE hona chahiye,
+// warna "deleted" ko carId samajh liya jayega.
+//
+// ======================================================
+
+router.get(
+    "/deleted",
+    (req, res, next) => {
+
+        if (
+            !checkController(
+                "getDeletedVehicles"
+            )
+        ) {
+
+            return res.status(500).json({
+
+                success: false,
+
+                message:
+                    "getDeletedVehicles controller function is missing."
+
+            });
+
+        }
+
+        return vehicleController
+            .getDeletedVehicles(
+                req,
+                res,
+                next
+            );
+
+    }
+);
+
+
+
+// ======================================================
 // CUSTOMER - GET VEHICLE INSPECTION REPORT
 // ======================================================
 //
@@ -499,6 +545,55 @@ router.post(
 
         return vehicleController
             .addVehicle(
+                req,
+                res,
+                next
+            );
+
+    }
+);
+
+
+
+// ======================================================
+// ADMIN - RESTORE VEHICLE
+// ======================================================
+//
+// PATCH
+// /api/admin/vehicles/:carId/restore
+//
+// Restore soft-deleted vehicle.
+// Same car ID, images, inspection data and existing
+// publish/status state will be preserved.
+//
+// IMPORTANT:
+// Ye route generic "/:carId" route se pehle hona chahiye.
+//
+// ======================================================
+
+router.patch(
+    "/:carId/restore",
+    (req, res, next) => {
+
+        if (
+            !checkController(
+                "restoreVehicle"
+            )
+        ) {
+
+            return res.status(500).json({
+
+                success: false,
+
+                message:
+                    "restoreVehicle controller function is missing."
+
+            });
+
+        }
+
+        return vehicleController
+            .restoreVehicle(
                 req,
                 res,
                 next
