@@ -1,6 +1,10 @@
 const db =
     require("../config/db");
 
+const {
+    triggerGoogleSheetsSync
+} = require("../services/googleSheetsSync.service");
+
 
 // ======================================================
 // HELPER
@@ -1777,6 +1781,17 @@ const updateVehicle = async (
 
     }
 
+
+    // ==================================================
+    // GOOGLE SHEETS SYNC
+    // ==================================================
+
+    // This repository updates multiple tables:
+    // cars, owners, inspection_reports and inspection_checklist.
+    // Trigger one debounced full sync after all DB writes succeed.
+    triggerGoogleSheetsSync(
+        `Vehicle updated: car_id ${carId}`
+    );
 
     // ==================================================
     // FINAL RESPONSE

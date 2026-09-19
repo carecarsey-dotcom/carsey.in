@@ -1,4 +1,7 @@
 const db = require("../config/db");
+const {
+    triggerGoogleSheetsSync
+} = require("./googleSheetsSync.service");
 const emailService = require("./email.service");
 const env = require("../config/env");
 
@@ -110,6 +113,10 @@ const createInspectionReport = (
                         return reject(err);
                     }
 
+
+                    triggerGoogleSheetsSync(
+                        `Inspection report created: report_id ${result.insertId}`
+                    );
 
                     resolve({
 
@@ -1281,6 +1288,10 @@ const updateInspectionReport = (
                     }
 
 
+                    triggerGoogleSheetsSync(
+                        `Inspection report updated: report_id ${reportId}`
+                    );
+
                     resolve(result);
 
                 }
@@ -1328,6 +1339,10 @@ const updateInspectionReportPdfPath = (
                         return reject(err);
                     }
 
+
+                    triggerGoogleSheetsSync(
+                        `Inspection report PDF path updated: report_id ${reportId}`
+                    );
 
                     resolve(result);
 
@@ -1377,6 +1392,10 @@ const markInspectionReportPublished = (
 
                     }
 
+
+                    triggerGoogleSheetsSync(
+                        `Inspection report published: report_id ${reportId}`
+                    );
 
                     resolve(
                         result

@@ -1,5 +1,9 @@
 const db = require("../config/db");
 
+const {
+    triggerGoogleSheetsSync
+} = require("../services/googleSheetsSync.service");
+
 // ======================================================
 // UNIVERSAL DATABASE QUERY HELPER
 // ======================================================
@@ -1372,6 +1376,15 @@ const addVehicle = async (
 
 
     // ==================================================
+    // GOOGLE SHEETS SYNC
+    // ==================================================
+
+    triggerGoogleSheetsSync(
+        `Vehicle created: car_id ${vehicleId}`
+    );
+
+
+    // ==================================================
     // FINAL RESULT
     // ==================================================
 
@@ -2061,6 +2074,15 @@ const deleteVehicle = async (
 
 
     // ==================================================
+    // GOOGLE SHEETS SYNC
+    // ==================================================
+
+    triggerGoogleSheetsSync(
+        `Vehicle deleted: car_id ${numericVehicleId}`
+    );
+
+
+    // ==================================================
     // FINAL RESPONSE
     // ==================================================
 
@@ -2298,6 +2320,15 @@ const restoreVehicle = async (
         );
 
     }
+
+
+    // ==================================================
+    // GOOGLE SHEETS SYNC
+    // ==================================================
+
+    triggerGoogleSheetsSync(
+        `Vehicle restored: car_id ${numericVehicleId}`
+    );
 
 
     // ==================================================
@@ -3304,6 +3335,15 @@ const publishVehicle = async (
         );
 
     }
+
+
+    // ==================================================
+    // GOOGLE SHEETS SYNC
+    // ==================================================
+
+    triggerGoogleSheetsSync(
+        `Vehicle published: car_id ${numericVehicleId}`
+    );
 
 
     // ==================================================

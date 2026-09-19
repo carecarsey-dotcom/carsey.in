@@ -83,7 +83,23 @@ const env = {
         process.env.RESEND_API_KEY,
 
     MAIL_FROM:
-        process.env.MAIL_FROM
+        process.env.MAIL_FROM,
+
+
+    // ==================================================
+    // GOOGLE SHEETS
+    // ==================================================
+
+    GOOGLE_SPREADSHEET_ID:
+        process.env.GOOGLE_SPREADSHEET_ID,
+
+    GOOGLE_SERVICE_ACCOUNT_EMAIL:
+        process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
+
+    GOOGLE_PRIVATE_KEY:
+        process.env.GOOGLE_PRIVATE_KEY
+            ? process.env.GOOGLE_PRIVATE_KEY.replace(/\\n/g, "\n")
+            : undefined
 };
 
 
@@ -144,6 +160,34 @@ console.log(
 console.log(
     "ADMIN_EMAIL:",
     env.ADMIN_EMAIL || "NOT SET"
+);
+
+console.log("======================================");
+
+
+// ======================================================
+// GOOGLE SHEETS CONFIGURATION CHECK
+// ======================================================
+
+console.log(
+    "GOOGLE_SPREADSHEET_ID:",
+    env.GOOGLE_SPREADSHEET_ID
+        ? "SET"
+        : "NOT SET"
+);
+
+console.log(
+    "GOOGLE_SERVICE_ACCOUNT_EMAIL:",
+    env.GOOGLE_SERVICE_ACCOUNT_EMAIL
+        ? "SET"
+        : "NOT SET"
+);
+
+console.log(
+    "GOOGLE_PRIVATE_KEY:",
+    env.GOOGLE_PRIVATE_KEY
+        ? "SET"
+        : "NOT SET"
 );
 
 console.log("======================================");

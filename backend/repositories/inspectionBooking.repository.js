@@ -1,5 +1,9 @@
 const db = require("../config/db");
 
+const {
+    triggerGoogleSheetsSync
+} = require("../services/googleSheetsSync.service");
+
 
 // ======================================================
 // HELPER
@@ -95,6 +99,10 @@ const createBooking = async (
             ]
         );
 
+
+    triggerGoogleSheetsSync(
+        `Inspection booking created: booking_id ${result.insertId}`
+    );
 
     return result;
 
@@ -284,6 +292,10 @@ const updateBookingStatus = async (
         );
 
 
+    triggerGoogleSheetsSync(
+        `Inspection booking status updated: booking_id ${bookingId}`
+    );
+
     return result;
 
 };
@@ -414,6 +426,10 @@ const createInspectionRequest = async (
         );
 
 
+    triggerGoogleSheetsSync(
+        `Inspection request created: request_id ${result.insertId}`
+    );
+
     return result;
 
 };
@@ -506,6 +522,10 @@ const reassignInspectionRequest = async (
             ]
         );
 
+
+    triggerGoogleSheetsSync(
+        `Inspection request reassigned: request_id ${result.insertId}`
+    );
 
     return result;
 

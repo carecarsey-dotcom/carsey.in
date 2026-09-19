@@ -1,5 +1,8 @@
 const db = require("../config/db");
 
+const {
+    triggerGoogleSheetsSync
+} = require("../services/googleSheetsSync.service");
 
 
 // ======================================================
@@ -15,17 +18,27 @@ const createReportUnlockRequest = (requestData) => {
         // ==================================================
 
         const carSql = `
+
             SELECT
+
                 car_id,
+
                 booking_id
+
             FROM cars
+
             WHERE car_id = ?
+
             LIMIT 1
+
         `;
 
         db.query(
+
             carSql,
+
             [requestData.carId],
+
             (carErr, carResult) => {
 
                 // ------------------------------------------
@@ -33,7 +46,9 @@ const createReportUnlockRequest = (requestData) => {
                 // ------------------------------------------
 
                 if (carErr) {
+
                     return reject(carErr);
+
                 }
 
                 // ------------------------------------------
@@ -41,14 +56,23 @@ const createReportUnlockRequest = (requestData) => {
                 // ------------------------------------------
 
                 if (
+
                     !carResult ||
+
                     carResult.length === 0
+
                 ) {
+
                     return reject(
+
                         new Error(
+
                             "Vehicle not found."
+
                         )
+
                     );
+
                 }
 
                 // ------------------------------------------
@@ -56,8 +80,11 @@ const createReportUnlockRequest = (requestData) => {
                 // ------------------------------------------
 
                 const bookingId =
+
                     Number(
+
                         carResult[0].booking_id
+
                     );
 
                 // ------------------------------------------
@@ -65,16 +92,27 @@ const createReportUnlockRequest = (requestData) => {
                 // ------------------------------------------
 
                 if (
+
                     !Number.isInteger(
+
                         bookingId
+
                     ) ||
+
                     bookingId <= 0
+
                 ) {
+
                     return reject(
+
                         new Error(
+
                             "Vehicle is not linked to a valid booking ID."
+
                         )
+
                     );
+
                 }
 
                 // ==================================================
@@ -82,26 +120,43 @@ const createReportUnlockRequest = (requestData) => {
                 // ==================================================
 
                 const sql = `
+
                     INSERT INTO report_unlock_requests
+
                     (
+
                         car_id,
+
                         name,
+
                         mobile,
+
                         email
+
                     )
+
                     VALUES (?, ?, ?, ?)
+
                 `;
 
                 const values = [
+
                     requestData.carId,
+
                     requestData.name,
+
                     requestData.mobile,
+
                     requestData.email
+
                 ];
 
                 db.query(
+
                     sql,
+
                     values,
+
                     (err, result) => {
 
                         // ------------------------------------------
@@ -109,26 +164,40 @@ const createReportUnlockRequest = (requestData) => {
                         // ------------------------------------------
 
                         if (err) {
+
                             return reject(err);
+
                         }
 
                         // ------------------------------------------
                         // Success
                         // ------------------------------------------
 
+                        triggerGoogleSheetsSync(
+                            `Report unlock request created: request_id ${result.insertId}`
+                        );
+
                         resolve({
+
                             requestId:
+
                                 result.insertId,
 
                             bookingId
-                        });
-                    }
-                );
-            }
-        );
-    });
-};
 
+                        });
+
+                    }
+
+                );
+
+            }
+
+        );
+
+    });
+
+};
 
 
 // ======================================================
@@ -141,6 +210,7 @@ const getReportUnlockRequests = () => {
     return new Promise((resolve, reject) => {
 
         const sql = `
+
             SELECT
 
                 rur.request_id,
@@ -162,13 +232,17 @@ const getReportUnlockRequests = () => {
             FROM report_unlock_requests rur
 
             LEFT JOIN cars c
+
                 ON c.car_id = rur.car_id
 
             ORDER BY rur.request_id DESC
+
         `;
 
         db.query(
+
             sql,
+
             (err, result) => {
 
                 // ------------------------------------------
@@ -176,7 +250,9 @@ const getReportUnlockRequests = () => {
                 // ------------------------------------------
 
                 if (err) {
+
                     return reject(err);
+
                 }
 
                 // ------------------------------------------
@@ -184,11 +260,14 @@ const getReportUnlockRequests = () => {
                 // ------------------------------------------
 
                 resolve(result);
-            }
-        );
-    });
-};
 
+            }
+
+        );
+
+    });
+
+};
 
 
 // ======================================================
@@ -197,13 +276,17 @@ const getReportUnlockRequests = () => {
 // ======================================================
 
 const updateReportUnlockRequestStatus = (
+
     requestId,
+
     status
+
 ) => {
 
     return new Promise((resolve, reject) => {
 
         const sql = `
+
             SELECT
 
                 rur.request_id,
@@ -215,16 +298,21 @@ const updateReportUnlockRequestStatus = (
             FROM report_unlock_requests rur
 
             LEFT JOIN cars c
+
                 ON c.car_id = rur.car_id
 
             WHERE rur.request_id = ?
 
             LIMIT 1
+
         `;
 
         db.query(
+
             sql,
+
             [requestId],
+
             (selectErr, selectResult) => {
 
                 // ------------------------------------------
@@ -232,7 +320,9 @@ const updateReportUnlockRequestStatus = (
                 // ------------------------------------------
 
                 if (selectErr) {
+
                     return reject(selectErr);
+
                 }
 
                 // ------------------------------------------
@@ -240,14 +330,23 @@ const updateReportUnlockRequestStatus = (
                 // ------------------------------------------
 
                 if (
+
                     !selectResult ||
+
                     selectResult.length === 0
+
                 ) {
+
                     return reject(
+
                         new Error(
+
                             "Report unlock request not found."
+
                         )
+
                     );
+
                 }
 
                 // ------------------------------------------
@@ -255,8 +354,11 @@ const updateReportUnlockRequestStatus = (
                 // ------------------------------------------
 
                 const bookingId =
+
                     Number(
+
                         selectResult[0].booking_id
+
                     );
 
                 // ------------------------------------------
@@ -264,16 +366,27 @@ const updateReportUnlockRequestStatus = (
                 // ------------------------------------------
 
                 if (
+
                     !Number.isInteger(
+
                         bookingId
+
                     ) ||
+
                     bookingId <= 0
+
                 ) {
+
                     return reject(
+
                         new Error(
+
                             "Vehicle is not linked to a valid booking ID."
+
                         )
+
                     );
+
                 }
 
                 // ==================================================
@@ -281,14 +394,21 @@ const updateReportUnlockRequestStatus = (
                 // ==================================================
 
                 const updateSql = `
+
                     UPDATE report_unlock_requests
+
                     SET status = ?
+
                     WHERE request_id = ?
+
                 `;
 
                 db.query(
+
                     updateSql,
+
                     [status, requestId],
+
                     (err, result) => {
 
                         // ------------------------------------------
@@ -296,7 +416,9 @@ const updateReportUnlockRequestStatus = (
                         // ------------------------------------------
 
                         if (err) {
+
                             return reject(err);
+
                         }
 
                         // ------------------------------------------
@@ -304,39 +426,62 @@ const updateReportUnlockRequestStatus = (
                         // ------------------------------------------
 
                         if (
+
                             result.affectedRows === 0
+
                         ) {
+
                             return reject(
+
                                 new Error(
+
                                     "Report unlock request not found."
+
                                 )
+
                             );
+
                         }
 
                         // ------------------------------------------
                         // Success
                         // ------------------------------------------
 
+                        triggerGoogleSheetsSync(
+                            `Report unlock request status updated: request_id ${requestId}`
+                        );
+
                         resolve({
+
                             requestId:
+
                                 Number(requestId),
 
                             carId:
+
                                 Number(
+
                                     selectResult[0].car_id
+
                                 ),
 
                             bookingId,
 
                             status
-                        });
-                    }
-                );
-            }
-        );
-    });
-};
 
+                        });
+
+                    }
+
+                );
+
+            }
+
+        );
+
+    });
+
+};
 
 
 // ======================================================

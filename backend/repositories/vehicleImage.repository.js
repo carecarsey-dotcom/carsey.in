@@ -1,5 +1,9 @@
 const db = require("../config/db");
 
+const {
+    triggerGoogleSheetsSync
+} = require("../services/googleSheetsSync.service");
+
 // ======================================================
 // ADD VEHICLE IMAGE
 // ======================================================
@@ -42,6 +46,10 @@ const addVehicleImage = (
 
                         return reject(error);
                     }
+
+                    triggerGoogleSheetsSync(
+                        `Vehicle image added: car_id ${carId}, image_id ${result.insertId}`
+                    );
 
                     resolve(result.insertId);
                 }
@@ -354,6 +362,10 @@ const updateVehicleImage = (
                         return reject(error);
                     }
 
+                    triggerGoogleSheetsSync(
+                        `Vehicle image updated: car_id ${carId}, image_id ${imageId}`
+                    );
+
                     resolve({
                         imageId,
                         carId,
@@ -445,6 +457,10 @@ const deleteVehicleImage = (
                     return reject(error);
                 }
 
+                triggerGoogleSheetsSync(
+                    `Vehicle image deleted: car_id ${carId}, image_id ${imageId}`
+                );
+
                 resolve({
                     imageId,
                     carId,
@@ -485,6 +501,10 @@ const deleteVehicleImages = (carId) => {
                     return reject(error);
                 }
 
+                triggerGoogleSheetsSync(
+                    `All vehicle images deleted: car_id ${carId}`
+                );
+
                 resolve({
                     carId,
                     affectedRows:
@@ -524,6 +544,10 @@ const clearPrimaryImage = (carId) => {
 
                     return reject(error);
                 }
+
+                triggerGoogleSheetsSync(
+                    `Primary vehicle image cleared: car_id ${carId}`
+                );
 
                 resolve(
                     result.affectedRows
@@ -643,6 +667,10 @@ const setPrimaryImage = (
                                         error
                                     );
                                 }
+
+                                triggerGoogleSheetsSync(
+                                    `Primary vehicle image set: car_id ${carId}, image_id ${imageId}`
+                                );
 
                                 resolve({
                                     imageId,

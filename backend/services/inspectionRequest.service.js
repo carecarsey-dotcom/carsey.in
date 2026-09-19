@@ -19,6 +19,10 @@ const emailService =
 const env =
     require("../config/env");
 
+const {
+    triggerGoogleSheetsSync
+} = require("../services/googleSheetsSync.service");
+
 
 // ======================================================
 // VALIDATE POSITIVE INTEGER
@@ -220,6 +224,30 @@ const acceptRequest = async (
             "Inspection request could not be accepted"
         );
     }
+
+    triggerGoogleSheetsSync(
+        `Inspection request accepted: request_id ${requestIdValue}`
+    );
+
+    triggerGoogleSheetsSync(
+        `Inspection request rejected: request_id ${requestIdValue}`
+    );
+
+    triggerGoogleSheetsSync(
+        `Inspection started: request_id ${requestIdValue}`
+    );
+
+    triggerGoogleSheetsSync(
+        `Inspection request approved: request_id ${requestIdValue}`
+    );
+
+    triggerGoogleSheetsSync(
+        `Inspection request admin rejected: request_id ${requestIdValue}`
+    );
+
+    triggerGoogleSheetsSync(
+        `Inspection request published: request_id ${requestIdValue}`
+    );
 
     return await inspectionRequestRepository
         .getRequestById(
@@ -921,6 +949,10 @@ const submitInspection = async (
     }
 
     const finalRequest = await inspectionRequestRepository.getRequestById(requestIdValue);
+
+    triggerGoogleSheetsSync(
+        `Inspection submitted: request_id ${requestIdValue}, car_id ${vehicleId}`
+    );
 
     // ==================================================
     // BACKGROUND PDF + EMAIL PROCESSING

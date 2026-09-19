@@ -1,4 +1,7 @@
 const db = require("../config/db");
+const {
+    triggerGoogleSheetsSync
+} = require("../services/googleSheetsSync.service");
 
 // ======================================================
 // GET ADMIN BY EMAIL
@@ -27,7 +30,6 @@ const findAdminByEmail = (email) => {
                 resolve(result[0]);
             }
         );
-
     });
 };
 
@@ -58,7 +60,6 @@ const findAdminById = (adminId) => {
                 resolve(result[0]);
             }
         );
-
     });
 };
 
@@ -91,10 +92,10 @@ const updatePassword = (
                     return reject(err);
                 }
 
+                // Password is intentionally not synced to Google Sheets.
                 resolve(result);
             }
         );
-
     });
 };
 
@@ -134,7 +135,6 @@ const findAccountByEmail = (
                 );
             }
         );
-
     });
 };
 
@@ -186,10 +186,13 @@ const createEmployee = (
                     return reject(err);
                 }
 
+                triggerGoogleSheetsSync(
+                    `Employee created: admin_id ${result.insertId}`
+                );
+
                 resolve(result);
             }
         );
-
     });
 };
 
@@ -227,7 +230,6 @@ const getAllEmployees = () => {
                 resolve(result);
             }
         );
-
     });
 };
 
@@ -270,7 +272,6 @@ const getEmployeeById = (
                 );
             }
         );
-
     });
 };
 
@@ -304,10 +305,13 @@ const updateEmployeeStatus = (
                     return reject(err);
                 }
 
+                triggerGoogleSheetsSync(
+                    `Employee status updated: admin_id ${employeeId}`
+                );
+
                 resolve(result);
             }
         );
-
     });
 };
 
@@ -319,20 +323,13 @@ module.exports = {
 
     // Existing
     findAdminByEmail,
-
     findAdminById,
-
     updatePassword,
 
     // Employee Management
     findAccountByEmail,
-
     createEmployee,
-
     getAllEmployees,
-
     getEmployeeById,
-
     updateEmployeeStatus
-
 };

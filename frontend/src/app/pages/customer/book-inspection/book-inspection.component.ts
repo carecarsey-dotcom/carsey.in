@@ -264,17 +264,7 @@ export class BookInspectionComponent {
 
       !this.form.city.trim() ||
 
-      !this.form.vehicleNumber.trim() ||
-
-      !this.form.brand.trim() ||
-
-      !this.form.model.trim() ||
-
-      !this.form.address.trim() ||
-
-      !this.form.bookingDate ||
-
-      !this.form.timeSlot
+      !this.form.address.trim()
 
     ) {
 
@@ -388,6 +378,7 @@ export class BookInspectionComponent {
 
     if (
 
+      this.form.bookingDate &&
       this.form.bookingDate < this.today
 
     ) {

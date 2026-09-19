@@ -1,5 +1,9 @@
 const db = require("../config/db");
 
+const {
+    triggerGoogleSheetsSync
+} = require("../services/googleSheetsSync.service");
+
 // ======================================================
 // HELPER - MYSQL2 CALLBACK POOL -> PROMISE
 // ======================================================
@@ -301,6 +305,10 @@ const acceptRequest = async (
         ]
     );
 
+    triggerGoogleSheetsSync(
+        `Inspection request accepted: request_id ${requestId}`
+    );
+
     return result;
 };
 
@@ -337,6 +345,10 @@ const rejectRequest = async (
         ]
     );
 
+    triggerGoogleSheetsSync(
+        `Inspection request rejected: request_id ${requestId}`
+    );
+
     return result;
 };
 
@@ -368,6 +380,10 @@ const startInspection = async (
             requestId,
             employeeId
         ]
+    );
+
+    triggerGoogleSheetsSync(
+        `Inspection started: request_id ${requestId}`
     );
 
     return result;
@@ -419,6 +435,10 @@ const submitInspection = async (
         ]
     );
 
+    triggerGoogleSheetsSync(
+        `Inspection submitted: request_id ${requestId}, report_id ${reportId}`
+    );
+
     return result;
 };
 
@@ -453,6 +473,10 @@ const approveRequest = async (
         ]
     );
 
+    triggerGoogleSheetsSync(
+        `Inspection request approved: request_id ${requestId}`
+    );
+
     return result;
 };
 
@@ -484,6 +508,10 @@ const adminRejectRequest = async (
             adminRemark,
             requestId
         ]
+    );
+
+    triggerGoogleSheetsSync(
+        `Inspection request admin-rejected: request_id ${requestId}`
     );
 
     return result;
@@ -711,6 +739,11 @@ const markRequestPublished = async (
                 }
             );
         });
+
+
+        triggerGoogleSheetsSync(
+            `Inspection request published: request_id ${requestId}, car_id ${carId}`
+        );
 
 
         return requestUpdateResult;

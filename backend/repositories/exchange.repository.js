@@ -1,5 +1,9 @@
 const db = require("../config/db");
 
+const {
+    triggerGoogleSheetsSync
+} = require("../services/googleSheetsSync.service");
+
 // ======================================================
 // CREATE EXCHANGE REQUEST
 // Customer
@@ -10,23 +14,41 @@ const createExchangeRequest = (exchangeData) => {
     return new Promise((resolve, reject) => {
 
         const sql = `
+
             INSERT INTO exchange_requests
+
             (
+
                 name,
+
                 mobile,
+
                 email,
+
                 current_brand,
+
                 current_model,
+
                 current_year,
+
                 current_vehicle_price,
+
                 preferred_brand,
+
                 preferred_model,
+
                 preferred_variant,
+
                 budget,
+
                 vehicle_image,
+
                 status
+
             )
+
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+
         `;
 
         const values = [
@@ -60,8 +82,11 @@ const createExchangeRequest = (exchangeData) => {
         ];
 
         db.query(
+
             sql,
+
             values,
+
             (err, result) => {
 
                 if (err) {
@@ -70,14 +95,20 @@ const createExchangeRequest = (exchangeData) => {
 
                 }
 
+                triggerGoogleSheetsSync(
+                    `Exchange request created: exchange_id ${result.insertId}`
+                );
+
                 resolve({
 
                     exchangeId:
+
                         result.insertId
 
                 });
 
             }
+
         );
 
     });
@@ -95,30 +126,49 @@ const getAllExchangeRequests = () => {
     return new Promise((resolve, reject) => {
 
         const sql = `
+
             SELECT
+
                 exchange_id,
+
                 name,
+
                 mobile,
+
                 email,
+
                 current_brand,
+
                 current_model,
+
                 current_year,
+
                 current_vehicle_price,
+
                 preferred_brand,
+
                 preferred_model,
+
                 preferred_variant,
+
                 budget,
+
                 vehicle_image,
+
                 status,
+
                 created_at
 
             FROM exchange_requests
 
             ORDER BY exchange_id DESC
+
         `;
 
         db.query(
+
             sql,
+
             (err, result) => {
 
                 if (err) {
@@ -130,6 +180,7 @@ const getAllExchangeRequests = () => {
                 resolve(result);
 
             }
+
         );
 
     });
@@ -143,27 +194,45 @@ const getAllExchangeRequests = () => {
 // ======================================================
 
 const getExchangeRequestById = (
+
     exchangeId
+
 ) => {
 
     return new Promise((resolve, reject) => {
 
         const sql = `
+
             SELECT
+
                 exchange_id,
+
                 name,
+
                 mobile,
+
                 email,
+
                 current_brand,
+
                 current_model,
+
                 current_year,
+
                 current_vehicle_price,
+
                 preferred_brand,
+
                 preferred_model,
+
                 preferred_variant,
+
                 budget,
+
                 vehicle_image,
+
                 status,
+
                 created_at
 
             FROM exchange_requests
@@ -171,11 +240,15 @@ const getExchangeRequestById = (
             WHERE exchange_id = ?
 
             LIMIT 1
+
         `;
 
         db.query(
+
             sql,
+
             [exchangeId],
+
             (err, result) => {
 
                 if (err) {
@@ -185,10 +258,13 @@ const getExchangeRequestById = (
                 }
 
                 resolve(
+
                     result[0] || null
+
                 );
 
             }
+
         );
 
     });
@@ -202,27 +278,39 @@ const getExchangeRequestById = (
 // ======================================================
 
 const updateExchangeRequestStatus = (
+
     exchangeId,
+
     status
+
 ) => {
 
     return new Promise((resolve, reject) => {
 
         const sql = `
+
             UPDATE exchange_requests
 
             SET
+
                 status = ?
 
             WHERE exchange_id = ?
+
         `;
 
         db.query(
+
             sql,
+
             [
+
                 status,
+
                 exchangeId
+
             ],
+
             (err, result) => {
 
                 if (err) {
@@ -231,9 +319,14 @@ const updateExchangeRequestStatus = (
 
                 }
 
+                triggerGoogleSheetsSync(
+                    `Exchange request status updated: exchange_id ${exchangeId}`
+                );
+
                 resolve(result);
 
             }
+
         );
 
     });

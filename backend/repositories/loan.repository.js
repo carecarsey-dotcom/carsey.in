@@ -1,5 +1,9 @@
 const db = require("../config/db");
 
+const {
+    triggerGoogleSheetsSync
+} = require("../services/googleSheetsSync.service");
+
 // ======================================================
 // CREATE LOAN REQUEST
 // Customer
@@ -10,19 +14,33 @@ const createLoanRequest = (loanData) => {
     return new Promise((resolve, reject) => {
 
         const sql = `
+
             INSERT INTO loan_requests
+
             (
+
                 name,
+
                 mobile,
+
                 email,
+
                 employment_type,
+
                 monthly_income,
+
                 vehicle_required,
+
                 budget,
+
                 car_model,
+
                 status
+
             )
+
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+
         `;
 
         const values = [
@@ -48,8 +66,11 @@ const createLoanRequest = (loanData) => {
         ];
 
         db.query(
+
             sql,
+
             values,
+
             (err, result) => {
 
                 if (err) {
@@ -58,14 +79,20 @@ const createLoanRequest = (loanData) => {
 
                 }
 
+                triggerGoogleSheetsSync(
+                    `Loan request created: loan_id ${result.insertId}`
+                );
+
                 resolve({
 
                     loanId:
+
                         result.insertId
 
                 });
 
             }
+
         );
 
     });
@@ -83,26 +110,41 @@ const getAllLoanRequests = () => {
     return new Promise((resolve, reject) => {
 
         const sql = `
+
             SELECT
+
                 loan_id,
+
                 name,
+
                 mobile,
+
                 email,
+
                 employment_type,
+
                 monthly_income,
+
                 vehicle_required,
+
                 budget,
+
                 car_model,
+
                 status,
+
                 created_at
 
             FROM loan_requests
 
             ORDER BY loan_id DESC
+
         `;
 
         db.query(
+
             sql,
+
             (err, result) => {
 
                 if (err) {
@@ -114,6 +156,7 @@ const getAllLoanRequests = () => {
                 resolve(result);
 
             }
+
         );
 
     });
@@ -127,23 +170,37 @@ const getAllLoanRequests = () => {
 // ======================================================
 
 const getLoanRequestById = (
+
     loanId
+
 ) => {
 
     return new Promise((resolve, reject) => {
 
         const sql = `
+
             SELECT
+
                 loan_id,
+
                 name,
+
                 mobile,
+
                 email,
+
                 employment_type,
+
                 monthly_income,
+
                 vehicle_required,
+
                 budget,
+
                 car_model,
+
                 status,
+
                 created_at
 
             FROM loan_requests
@@ -151,11 +208,15 @@ const getLoanRequestById = (
             WHERE loan_id = ?
 
             LIMIT 1
+
         `;
 
         db.query(
+
             sql,
+
             [loanId],
+
             (err, result) => {
 
                 if (err) {
@@ -165,10 +226,13 @@ const getLoanRequestById = (
                 }
 
                 resolve(
+
                     result[0] || null
+
                 );
 
             }
+
         );
 
     });
@@ -182,27 +246,39 @@ const getLoanRequestById = (
 // ======================================================
 
 const updateLoanRequestStatus = (
+
     loanId,
+
     status
+
 ) => {
 
     return new Promise((resolve, reject) => {
 
         const sql = `
+
             UPDATE loan_requests
 
             SET
+
                 status = ?
 
             WHERE loan_id = ?
+
         `;
 
         db.query(
+
             sql,
+
             [
+
                 status,
+
                 loanId
+
             ],
+
             (err, result) => {
 
                 if (err) {
@@ -211,9 +287,14 @@ const updateLoanRequestStatus = (
 
                 }
 
+                triggerGoogleSheetsSync(
+                    `Loan request status updated: loan_id ${loanId}`
+                );
+
                 resolve(result);
 
             }
+
         );
 
     });

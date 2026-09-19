@@ -1,5 +1,9 @@
 const db = require("../config/db");
 
+const {
+    triggerGoogleSheetsSync
+} = require("../services/googleSheetsSync.service");
+
 // ======================================================
 // CREATE SELL CAR REQUEST
 // Customer
@@ -10,26 +14,47 @@ const createSellCarRequest = (requestData) => {
     return new Promise((resolve, reject) => {
 
         const sql = `
+
             INSERT INTO sell_car_requests
+
             (
+
                 seller_name,
+
                 mobile,
+
                 email,
+
                 brand,
+
                 model,
+
                 variant,
+
                 manufacturing_year,
+
                 fuel_type,
+
                 transmission,
+
                 km_driven,
+
                 expected_price,
+
                 front_image,
+
                 back_image,
+
                 left_image,
+
                 right_image,
+
                 status
+
             )
+
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+
         `;
 
         const values = [
@@ -69,8 +94,11 @@ const createSellCarRequest = (requestData) => {
         ];
 
         db.query(
+
             sql,
+
             values,
+
             (err, result) => {
 
                 if (err) {
@@ -79,6 +107,10 @@ const createSellCarRequest = (requestData) => {
 
                 }
 
+                triggerGoogleSheetsSync(
+                    `Sell car request created: sell_id ${result.insertId}`
+                );
+
                 resolve({
 
                     sellId: result.insertId
@@ -86,6 +118,7 @@ const createSellCarRequest = (requestData) => {
                 });
 
             }
+
         );
 
     });
@@ -103,33 +136,55 @@ const getAllSellCarRequests = () => {
     return new Promise((resolve, reject) => {
 
         const sql = `
+
             SELECT
+
                 sell_id,
+
                 seller_name,
+
                 mobile,
+
                 email,
+
                 brand,
+
                 model,
+
                 variant,
+
                 manufacturing_year,
+
                 fuel_type,
+
                 transmission,
+
                 km_driven,
+
                 expected_price,
+
                 front_image,
+
                 back_image,
+
                 left_image,
+
                 right_image,
+
                 status,
+
                 created_at
 
             FROM sell_car_requests
 
             ORDER BY sell_id DESC
+
         `;
 
         db.query(
+
             sql,
+
             (err, result) => {
 
                 if (err) {
@@ -141,6 +196,7 @@ const getAllSellCarRequests = () => {
                 resolve(result);
 
             }
+
         );
 
     });
@@ -154,30 +210,51 @@ const getAllSellCarRequests = () => {
 // ======================================================
 
 const getSellCarRequestById = (
+
     sellId
+
 ) => {
 
     return new Promise((resolve, reject) => {
 
         const sql = `
+
             SELECT
+
                 sell_id,
+
                 seller_name,
+
                 mobile,
+
                 email,
+
                 brand,
+
                 model,
+
                 variant,
+
                 manufacturing_year,
+
                 fuel_type,
+
                 transmission,
+
                 km_driven,
+
                 expected_price,
+
                 front_image,
+
                 back_image,
+
                 left_image,
+
                 right_image,
+
                 status,
+
                 created_at
 
             FROM sell_car_requests
@@ -185,11 +262,15 @@ const getSellCarRequestById = (
             WHERE sell_id = ?
 
             LIMIT 1
+
         `;
 
         db.query(
+
             sql,
+
             [sellId],
+
             (err, result) => {
 
                 if (err) {
@@ -199,10 +280,13 @@ const getSellCarRequestById = (
                 }
 
                 resolve(
+
                     result[0] || null
+
                 );
 
             }
+
         );
 
     });
@@ -216,27 +300,39 @@ const getSellCarRequestById = (
 // ======================================================
 
 const updateSellCarRequestStatus = (
+
     sellId,
+
     status
+
 ) => {
 
     return new Promise((resolve, reject) => {
 
         const sql = `
+
             UPDATE sell_car_requests
 
             SET
+
                 status = ?
 
             WHERE sell_id = ?
+
         `;
 
         db.query(
+
             sql,
+
             [
+
                 status,
+
                 sellId
+
             ],
+
             (err, result) => {
 
                 if (err) {
@@ -245,9 +341,14 @@ const updateSellCarRequestStatus = (
 
                 }
 
+                triggerGoogleSheetsSync(
+                    `Sell car request status updated: sell_id ${sellId}`
+                );
+
                 resolve(result);
 
             }
+
         );
 
     });

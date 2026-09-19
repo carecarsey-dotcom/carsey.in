@@ -1,5 +1,9 @@
 ﻿const db = require("../config/db");
 
+const {
+    triggerGoogleSheetsSync
+} = require("../services/googleSheetsSync.service");
+
 // ======================================================
 // SMALL HELPER FUNCTIONS
 // ======================================================
@@ -134,6 +138,10 @@ const createInspectionReport = (
                                 bookingRows && bookingRows.length
                                     ? bookingRows[0].booking_id
                                     : null;
+
+                            triggerGoogleSheetsSync(
+                                `Inspection report created: report_id ${result.insertId}, car_id ${carId}`
+                            );
 
                             resolve({
 
@@ -1325,6 +1333,10 @@ const updateInspectionReport = (
                     }
 
 
+                    triggerGoogleSheetsSync(
+                        `Inspection report updated: report_id ${reportId}`
+                    );
+
                     resolve(result);
 
                 }
@@ -1372,6 +1384,10 @@ const updateInspectionReportPdfPath = (
                         return reject(err);
                     }
 
+
+                    triggerGoogleSheetsSync(
+                        `Inspection report PDF path updated: report_id ${reportId}`
+                    );
 
                     resolve(result);
 
@@ -1421,6 +1437,10 @@ const markInspectionReportPublished = (
 
                     }
 
+
+                    triggerGoogleSheetsSync(
+                        `Inspection report published: report_id ${reportId}`
+                    );
 
                     resolve(
                         result
