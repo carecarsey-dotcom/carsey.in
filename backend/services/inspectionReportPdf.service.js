@@ -1180,11 +1180,11 @@ const getAvailableOptions = (
         normalizedRowName
     );
 
-    const section =
-        DETAILED_CHECKLIST_OPTIONS[String(normalizedSectionKey)] ||
-        DETAILED_CHECKLIST_OPTIONS[normalizedSectionKey] ||
-        DETAILED_CHECKLIST_OPTIONS[String(sectionKey)] ||
-        DETAILED_CHECKLIST_OPTIONS[sectionKey];
+  const section =
+    DETAILED_CHECKLIST_OPTIONS[String(normalizedSectionKey)] ||
+    DETAILED_CHECKLIST_OPTIONS[normalizedSectionKey] ||
+    DETAILED_CHECKLIST_OPTIONS[String(sectionKey)] ||
+    DETAILED_CHECKLIST_OPTIONS[sectionKey];
 
     if (section && typeof section === "object") {
         if (Array.isArray(section[String(rowName)])) {
@@ -2684,14 +2684,45 @@ const orderImagesByTitle = (images, orderedTitles) => {
 // ======================================================
 
 const drawVehiclePhotos = (doc, images, reportId) => {
-    const vehicleImages = (Array.isArray(images) ? images : [])
-        .filter(isStandardVehiclePhoto);
+    const vehicleImages = Array.isArray(images) ? images : [];
 
-    const orderedImages = orderImagesByTitle(vehicleImages, VEHICLE_PHOTO_ORDER);
+    // Only these 10 vehicle photo types are allowed.
+    const allowedPhotos = new Map();
+
+    for (const image of vehicleImages) {
+        if (!isStandardVehiclePhoto(image)) {
+            continue;
+        }
+
+        const title = normalizeVehiclePhotoTitle(
+            getImageTitle(image, "")
+        ).trim();
+
+        if (!title) {
+            continue;
+        }
+
+        // Only ONE image per vehicle-photo slot.
+        // This prevents duplicate/extra images from appearing.
+        if (!allowedPhotos.has(title)) {
+            allowedPhotos.set(title, image);
+        }
+    }
+
+    // Always follow the exact form order.
+    const orderedImages = VEHICLE_PHOTO_ORDER
+        .map((title) => allowedPhotos.get(title))
+        .filter(Boolean);
+
+    // Maximum 10 images — never more.
+    const finalVehicleImages = orderedImages.slice(
+        0,
+        VEHICLE_PHOTO_ORDER.length
+    );
 
     drawImageGridSection(
         doc,
-        orderedImages,
+        finalVehicleImages,
         reportId,
         "Vehicle Photos",
         "No vehicle photos uploaded."
