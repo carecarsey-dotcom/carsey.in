@@ -69,23 +69,10 @@ const createBooking = async (
         );
     }
 
-    if (!vehicleNumber) {
-        throw new Error(
-            "Vehicle number is required."
-        );
-    }
-
-    if (!brand) {
-        throw new Error(
-            "Vehicle brand is required."
-        );
-    }
-
-    if (!model) {
-        throw new Error(
-            "Vehicle model is required."
-        );
-    }
+    // ==================================================
+    // VEHICLE DETAILS ARE OPTIONAL
+    // ==================================================
+    // vehicleNumber, brand and model can be empty.
 
     if (!address) {
         throw new Error(
