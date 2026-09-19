@@ -739,14 +739,49 @@ async function syncAllTables() {
         );
 
         console.error(
-            error.message ||
+            "Error message:",
+            error?.message || "No error message"
+        );
+
+        console.error(
+            "Error code:",
+            error?.code || "No error code"
+        );
+
+        console.error(
+            "Error status:",
+            error?.response?.status || "No HTTP status"
+        );
+
+        console.error(
+            "Error details:",
+            error?.response?.data || "No response details"
+        );
+
+        console.error(
+            "Full error:",
             error
+        );
+
+        console.error(
+            "Google Spreadsheet ID configured:",
+            Boolean(env.GOOGLE_SPREADSHEET_ID)
+        );
+
+        console.error(
+            "Google service account configured:",
+            Boolean(env.GOOGLE_SERVICE_ACCOUNT_EMAIL)
+        );
+
+        console.error(
+            "Google private key configured:",
+            Boolean(env.GOOGLE_PRIVATE_KEY)
         );
 
         return {
             success: false,
             error:
-                error.message ||
+                error?.message ||
                 String(error)
         };
     }
