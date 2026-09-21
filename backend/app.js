@@ -139,6 +139,17 @@ const inspectionBookingRoutes = require(
 
 
 // ======================================================
+// SHARE YOUR EXPERIENCE ROUTES
+// CUSTOMER
+// PUBLIC
+// ======================================================
+
+const shareYourExperienceRoutes = require(
+    "./routes/shareYourExperience.routes"
+);
+
+
+// ======================================================
 // INSPECTION REQUEST ROUTES
 // EMPLOYEE + ADMIN WORKFLOW
 // ======================================================
@@ -446,6 +457,18 @@ app.use(
 
 
 // ======================================================
+// SHARE YOUR EXPERIENCE
+// CUSTOMER
+// PUBLIC
+// ======================================================
+
+app.use(
+    "/api",
+    shareYourExperienceRoutes
+);
+
+
+// ======================================================
 // INSPECTION REQUEST WORKFLOW
 // EMPLOYEE + ADMIN
 // ======================================================
@@ -715,6 +738,7 @@ app.get(
 // ======================================================
 //
 // Automatically includes all currently published vehicles.
+//
 // New published car IDs are added automatically.
 //
 // Browser URL:

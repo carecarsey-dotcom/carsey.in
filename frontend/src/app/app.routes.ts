@@ -141,6 +141,24 @@ export const routes: Routes = [
 
 
       // =================================================
+      // SHARE YOUR EXPERIENCE
+      // /share-your-experience
+      // =================================================
+
+      {
+        path: 'share-your-experience',
+        title: 'Share Your Experience | Carsey.in',
+
+        loadComponent: () =>
+          import(
+            './pages/customer/share-your-experience/share-your-experience.component'
+          ).then(
+            m => m.ShareYourExperienceComponent
+          )
+      },
+
+
+      // =================================================
       // ABOUT
       // /about
       // =================================================

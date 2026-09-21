@@ -1,0 +1,683 @@
+<div class="min-h-screen bg-slate-50">
+
+  <!-- =========================================================
+       HERO / REVIEW FORM
+  ========================================================== -->
+  <section
+    class="relative overflow-hidden bg-slate-950 text-white"
+  >
+
+    <!-- Background decoration -->
+    <div
+      class="absolute inset-0 bg-[radial-gradient(circle_at_20%_30%,rgba(239,68,68,0.18),transparent_35%),radial-gradient(circle_at_80%_50%,rgba(30,64,175,0.20),transparent_40%)]"
+    ></div>
+
+    <div
+      class="absolute -left-40 top-20 h-96 w-96 rounded-full bg-red-600/10 blur-3xl"
+    ></div>
+
+    <div
+      class="absolute -right-40 bottom-0 h-96 w-96 rounded-full bg-blue-500/10 blur-3xl"
+    ></div>
+
+
+    <div
+      class="relative mx-auto grid max-w-7xl grid-cols-1 gap-10 px-5 py-16 sm:px-8 lg:grid-cols-2 lg:items-center lg:gap-16 lg:px-10 lg:py-24"
+    >
+
+      <!-- =====================================================
+           LEFT CONTENT
+      ====================================================== -->
+      <div>
+
+        <p
+          class="mb-4 text-sm font-semibold uppercase tracking-[0.28em] text-red-400"
+        >
+          Your Feedback Drives Us Forward
+        </p>
+
+        <h1
+          class="max-w-xl text-5xl font-extrabold leading-[1.05] tracking-tight sm:text-6xl"
+        >
+          Share Your
+          <span class="block text-red-500">
+            Experience
+          </span>
+        </h1>
+
+        <p
+          class="mt-7 max-w-xl text-base leading-7 text-slate-300 sm:text-lg"
+        >
+          Your feedback helps us improve and serve you better.
+          Tell us about your Carsey experience.
+        </p>
+
+
+        <!-- Feature Points -->
+        <div
+          class="mt-10 grid max-w-xl grid-cols-3 gap-4"
+        >
+
+          <!-- Trusted Service -->
+          <div class="text-center sm:text-left">
+
+            <div
+              class="mx-auto flex h-14 w-14 items-center justify-center rounded-full border border-white/30 bg-white/5 text-2xl sm:mx-0"
+            >
+              ✓
+            </div>
+
+            <p class="mt-3 text-sm font-semibold text-white">
+              Trusted
+            </p>
+
+            <p class="text-xs text-slate-400">
+              Service
+            </p>
+
+          </div>
+
+
+          <!-- Happy Customers -->
+          <div class="text-center sm:text-left">
+
+            <div
+              class="mx-auto flex h-14 w-14 items-center justify-center rounded-full border border-white/30 bg-white/5 text-2xl sm:mx-0"
+            >
+              ♡
+            </div>
+
+            <p class="mt-3 text-sm font-semibold text-white">
+              Happy
+            </p>
+
+            <p class="text-xs text-slate-400">
+              Customers
+            </p>
+
+          </div>
+
+
+          <!-- Better Tomorrow -->
+          <div class="text-center sm:text-left">
+
+            <div
+              class="mx-auto flex h-14 w-14 items-center justify-center rounded-full border border-white/30 bg-white/5 text-2xl sm:mx-0"
+            >
+              ↗
+            </div>
+
+            <p class="mt-3 text-sm font-semibold text-white">
+              Better
+            </p>
+
+            <p class="text-xs text-slate-400">
+              Tomorrow
+            </p>
+
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <!-- =====================================================
+           REVIEW FORM CARD
+      ====================================================== -->
+      <div
+        class="rounded-3xl bg-white p-6 text-slate-900 shadow-2xl sm:p-8"
+      >
+
+        <div class="mb-7">
+
+          <h2
+            class="text-2xl font-bold text-slate-900 sm:text-3xl"
+          >
+            Share Your Experience
+          </h2>
+
+          <p class="mt-2 text-sm text-slate-500">
+            We'd love to hear from you!
+          </p>
+
+        </div>
+
+
+        <!-- ===================================================
+             SUCCESS MESSAGE
+        ==================================================== -->
+        <div
+          *ngIf="submitted"
+          class="mb-6 rounded-2xl border border-green-200 bg-green-50 p-5"
+        >
+
+          <div class="flex gap-3">
+
+            <div
+              class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-green-100 text-green-700"
+            >
+              ✓
+            </div>
+
+            <div>
+
+              <h3 class="font-semibold text-green-800">
+                Thank you for your review!
+              </h3>
+
+              <p class="mt-1 text-sm leading-6 text-green-700">
+                Your review has been submitted and will be visible
+                after admin approval.
+              </p>
+
+            </div>
+
+          </div>
+
+
+          <button
+            type="button"
+            (click)="resetForm()"
+            class="mt-4 text-sm font-semibold text-green-800 underline"
+          >
+            Submit another review
+          </button>
+
+        </div>
+
+
+        <!-- ===================================================
+             FORM
+        ==================================================== -->
+        <form
+          *ngIf="!submitted"
+          (ngSubmit)="submitReview()"
+        >
+
+          <!-- =================================================
+               ERROR MESSAGE
+          ================================================== -->
+          <div
+            *ngIf="errorMessage"
+            class="mb-5 rounded-2xl border border-red-200 bg-red-50 p-4"
+          >
+
+            <div class="flex items-start gap-3">
+
+              <div
+                class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-red-100 text-red-600"
+              >
+                !
+              </div>
+
+              <div>
+
+                <p class="text-sm font-semibold text-red-800">
+                  Unable to submit review
+                </p>
+
+                <p class="mt-1 text-sm leading-5 text-red-700">
+                  {{ errorMessage }}
+                </p>
+
+              </div>
+
+            </div>
+
+          </div>
+
+
+          <!-- =================================================
+               NAME
+          ================================================== -->
+          <div class="mb-5">
+
+            <label
+              for="review-name"
+              class="mb-2 block text-sm font-semibold text-slate-700"
+            >
+              Your Name
+              <span class="text-red-500">*</span>
+            </label>
+
+            <input
+              id="review-name"
+              name="name"
+              type="text"
+              [(ngModel)]="form.name"
+              placeholder="Enter your name"
+              maxlength="100"
+              required
+              class="w-full rounded-xl border border-slate-200 bg-white px-4 py-3.5 text-sm outline-none transition focus:border-red-500 focus:ring-2 focus:ring-red-100"
+            />
+
+          </div>
+
+
+          <!-- =================================================
+               MOBILE
+          ================================================== -->
+          <div class="mb-5">
+
+            <label
+              for="review-mobile"
+              class="mb-2 block text-sm font-semibold text-slate-700"
+            >
+              Mobile Number
+
+              <span class="font-normal text-slate-400">
+                (Optional)
+              </span>
+            </label>
+
+            <input
+              id="review-mobile"
+              name="mobile"
+              type="tel"
+              [(ngModel)]="form.mobile"
+              placeholder="Enter 10 digit mobile number"
+              maxlength="10"
+              inputmode="numeric"
+              class="w-full rounded-xl border border-slate-200 bg-white px-4 py-3.5 text-sm outline-none transition focus:border-red-500 focus:ring-2 focus:ring-red-100"
+            />
+
+          </div>
+
+
+          <!-- =================================================
+               PHOTO UPLOAD - OPTIONAL
+          ================================================== -->
+          <div class="mb-5">
+
+            <label
+              for="review-photo"
+              class="mb-2 block text-sm font-semibold text-slate-700"
+            >
+              Your Photo
+
+              <span class="font-normal text-slate-400">
+                (Optional)
+              </span>
+            </label>
+
+
+            <!-- PHOTO PREVIEW -->
+            <div
+              *ngIf="photoPreview"
+              class="mb-4 flex items-center gap-4 rounded-2xl border border-slate-200 bg-slate-50 p-4"
+            >
+
+              <img
+                [src]="photoPreview"
+                alt="Selected customer photo"
+                class="h-20 w-20 rounded-xl object-cover ring-2 ring-white shadow"
+              />
+
+
+              <div class="min-w-0 flex-1">
+
+                <p
+                  class="truncate text-sm font-semibold text-slate-800"
+                >
+                  {{ form.photo?.name }}
+                </p>
+
+                <p class="mt-1 text-xs text-slate-500">
+                  Photo selected successfully
+                </p>
+
+                <button
+                  type="button"
+                  (click)="removePhoto()"
+                  class="mt-2 text-xs font-semibold text-red-600 hover:text-red-700"
+                >
+                  Remove Photo
+                </button>
+
+              </div>
+
+            </div>
+
+
+            <!-- UPLOAD BOX -->
+            <label
+              for="review-photo"
+              class="flex cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50 px-5 py-7 text-center transition hover:border-red-300 hover:bg-red-50/30"
+            >
+
+              <div
+                class="flex h-12 w-12 items-center justify-center rounded-full bg-white text-xl text-slate-500 shadow-sm"
+              >
+                📷
+              </div>
+
+              <p class="mt-3 text-sm font-semibold text-slate-700">
+                {{
+                  photoPreview
+                    ? 'Change Photo'
+                    : 'Upload Your Photo'
+                }}
+              </p>
+
+              <p class="mt-1 text-xs text-slate-400">
+                JPG, JPEG, PNG or WEBP • Max 5 MB
+              </p>
+
+              <input
+                id="review-photo"
+                name="photo"
+                type="file"
+                accept="image/jpeg,image/jpg,image/png,image/webp"
+                (change)="onPhotoSelected($event)"
+                class="hidden"
+              />
+
+            </label>
+
+          </div>
+
+
+          <!-- =================================================
+               RATING
+          ================================================== -->
+          <div class="mb-5">
+
+            <label
+              class="mb-2 block text-sm font-semibold text-slate-700"
+            >
+              Your Rating
+
+              <span class="text-red-500">
+                *
+              </span>
+            </label>
+
+            <div class="flex items-center gap-1">
+
+              <button
+                *ngFor="let star of [1, 2, 3, 4, 5]"
+                type="button"
+                (click)="setRating(star)"
+                class="text-4xl leading-none transition hover:scale-110"
+                [ngClass]="
+                  star <= form.rating
+                    ? 'text-yellow-400'
+                    : 'text-slate-200'
+                "
+                [attr.aria-label]="'Give ' + star + ' star rating'"
+              >
+                ★
+              </button>
+
+              <span
+                *ngIf="form.rating > 0"
+                class="ml-3 text-sm font-medium text-slate-500"
+              >
+                {{ form.rating }}/5
+              </span>
+
+            </div>
+
+          </div>
+
+
+          <!-- =================================================
+               REVIEW
+          ================================================== -->
+          <div class="mb-6">
+
+            <label
+              for="review-text"
+              class="mb-2 block text-sm font-semibold text-slate-700"
+            >
+              Your Review
+
+              <span class="text-red-500">
+                *
+              </span>
+            </label>
+
+            <textarea
+              id="review-text"
+              name="review"
+              [(ngModel)]="form.review"
+              placeholder="Write your review here..."
+              maxlength="500"
+              rows="5"
+              required
+              class="w-full resize-none rounded-xl border border-slate-200 bg-white px-4 py-3.5 text-sm outline-none transition focus:border-red-500 focus:ring-2 focus:ring-red-100"
+            ></textarea>
+
+            <div
+              class="mt-1 text-right text-xs text-slate-400"
+            >
+              {{ form.review.length }}/500
+            </div>
+
+          </div>
+
+
+          <!-- =================================================
+               SUBMIT
+          ================================================== -->
+          <button
+            type="submit"
+            [disabled]="submitting"
+            class="flex w-full items-center justify-center gap-2 rounded-xl bg-red-600 px-6 py-4 text-sm font-bold text-white shadow-lg shadow-red-600/20 transition hover:bg-red-700 hover:shadow-xl active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-70"
+          >
+
+            <!-- SUBMITTING -->
+            <ng-container *ngIf="submitting">
+
+              <span
+                class="h-5 w-5 animate-spin rounded-full border-2 border-white/30 border-t-white"
+              ></span>
+
+              <span>
+                Submitting...
+              </span>
+
+            </ng-container>
+
+
+            <!-- NORMAL -->
+            <ng-container *ngIf="!submitting">
+
+              <span>
+                Submit Review
+              </span>
+
+              <span class="text-lg">
+                →
+              </span>
+
+            </ng-container>
+
+          </button>
+
+
+          <!-- =================================================
+               APPROVAL NOTE
+          ================================================== -->
+          <div
+            class="mt-4 flex items-start gap-2 text-xs leading-5 text-slate-500"
+          >
+
+            <span class="mt-0.5 text-blue-600">
+              ●
+            </span>
+
+            <p>
+              Your review will be visible publicly after admin approval.
+            </p>
+
+          </div>
+
+        </form>
+
+      </div>
+
+    </div>
+
+  </section>
+
+
+  <!-- =========================================================
+       WHAT OUR CUSTOMERS SAY
+  ========================================================== -->
+  <section
+    class="bg-slate-50 px-5 py-16 sm:px-8 lg:px-10 lg:py-24"
+  >
+
+    <div class="mx-auto max-w-7xl">
+
+      <!-- SECTION HEADER -->
+      <div class="mx-auto max-w-2xl text-center">
+
+        <p
+          class="text-xs font-bold uppercase tracking-[0.3em] text-slate-400"
+        >
+          Testimonials
+        </p>
+
+        <h2
+          class="mt-3 text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl"
+        >
+          What Our Customers Say
+        </h2>
+
+        <div
+          class="mx-auto mt-5 h-1 w-12 rounded-full bg-red-600"
+        ></div>
+
+        <p
+          class="mt-5 text-sm leading-6 text-slate-500 sm:text-base"
+        >
+          Real experiences from real customers who trust Carsey.
+        </p>
+
+      </div>
+
+
+      <!-- EMPTY STATE FOR NOW -->
+      <!-- Backend connect hone ke baad yahan approved reviews aayenge -->
+
+      <div
+        class="mx-auto mt-12 max-w-2xl rounded-2xl border border-dashed border-slate-300 bg-white p-10 text-center"
+      >
+
+        <div
+          class="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-slate-100 text-2xl text-slate-400"
+        >
+          ★
+        </div>
+
+        <h3
+          class="mt-5 text-lg font-bold text-slate-800"
+        >
+          Customer Reviews
+        </h3>
+
+        <p
+          class="mt-2 text-sm leading-6 text-slate-500"
+        >
+          Approved customer experiences will appear here.
+        </p>
+
+      </div>
+
+    </div>
+
+  </section>
+
+
+  <!-- =========================================================
+       TRUST STRIP
+  ========================================================== -->
+  <section class="border-t border-slate-200 bg-white">
+
+    <div
+      class="mx-auto grid max-w-7xl grid-cols-2 divide-x divide-slate-200 sm:grid-cols-4"
+    >
+
+      <div class="px-4 py-8 text-center">
+
+        <div class="text-2xl font-bold text-slate-900">
+          1000+
+        </div>
+
+        <div class="mt-1 text-xs text-slate-500">
+          Happy Customers
+        </div>
+
+      </div>
+
+
+      <div class="px-4 py-8 text-center">
+
+        <div class="text-2xl font-bold text-slate-900">
+          ✓
+        </div>
+
+        <div class="mt-1 text-xs text-slate-500">
+          Trusted Process
+        </div>
+
+      </div>
+
+
+      <div class="px-4 py-8 text-center">
+
+        <div class="text-2xl font-bold text-slate-900">
+          ♡
+        </div>
+
+        <div class="mt-1 text-xs text-slate-500">
+          Real Reviews
+        </div>
+
+      </div>
+
+
+      <div class="px-4 py-8 text-center">
+
+        <div class="text-2xl font-bold text-slate-900">
+          ★
+        </div>
+
+        <div class="mt-1 text-xs text-slate-500">
+          Better Choices
+        </div>
+
+      </div>
+
+    </div>
+
+  </section>
+
+
+  <!-- =========================================================
+       BOTTOM CTA
+  ========================================================== -->
+  <section
+    class="bg-slate-950 px-5 py-14 text-center"
+  >
+
+    <h2
+      class="text-2xl font-bold text-white sm:text-3xl"
+    >
+      Together Towards Better Journeys
+    </h2>
+
+    <p class="mt-3 text-sm text-slate-400">
+      Your trust keeps us moving forward.
+    </p>
+
+    <div
+      class="mx-auto mt-5 h-1 w-12 rounded-full bg-red-600"
+    ></div>
+
+  </section>
+
+</div>
