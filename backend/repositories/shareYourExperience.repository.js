@@ -4,7 +4,6 @@
 
 const db = require("../config/db");
 
-
 // ======================================================
 // CREATE REVIEW
 // ======================================================
@@ -19,7 +18,6 @@ const createReview = async (reviewData) => {
         photo
     } = reviewData;
 
-
     const sql = `
         INSERT INTO share_you_exp
         (
@@ -33,7 +31,6 @@ const createReview = async (reviewData) => {
         VALUES (?, ?, ?, ?, ?, 'Pending')
     `;
 
-
     const values = [
         name,
         mobile,
@@ -42,16 +39,19 @@ const createReview = async (reviewData) => {
         photo
     ];
 
+    // ==================================================
+    // USE MYSQL2 PROMISE API
+    // ==================================================
 
-    const [result] = await db.execute(
-        sql,
-        values
-    );
-
+    const [result] = await db
+        .promise()
+        .execute(
+            sql,
+            values
+        );
 
     return result.insertId;
 };
-
 
 // ======================================================
 // EXPORT
