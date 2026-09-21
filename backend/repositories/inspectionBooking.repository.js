@@ -56,7 +56,8 @@ const createBooking = async (
         model,
         address,
         bookingDate,
-        timeSlot
+        timeSlot,
+        bookingType = "BOOK_INSPECTION"
     } = bookingData;
 
 
@@ -73,11 +74,12 @@ const createBooking = async (
             address,
             booking_date,
             time_slot,
+            booking_type,
             status
         )
         VALUES
         (
-            ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'Pending'
+            ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'Pending'
         )
     `;
 
@@ -95,7 +97,8 @@ const createBooking = async (
                 model,
                 address,
                 bookingDate,
-                timeSlot
+                timeSlot,
+                bookingType
             ]
         );
 

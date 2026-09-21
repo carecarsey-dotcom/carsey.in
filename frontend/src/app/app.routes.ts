@@ -123,6 +123,24 @@ export const routes: Routes = [
 
 
       // =================================================
+      // PDI
+      // /pdi
+      // =================================================
+
+      {
+        path: 'pdi',
+        title: 'PDI - Pre Delivery Inspection | Carsey.in',
+
+        loadComponent: () =>
+          import(
+            './pages/customer/pdi/pdi.component'
+          ).then(
+            m => m.PdiComponent
+          )
+      },
+
+
+      // =================================================
       // ABOUT
       // /about
       // =================================================
@@ -282,21 +300,21 @@ export const routes: Routes = [
 
 
       // ================================================
-// EMPLOYEE MANAGEMENT
-// /admin/employees
-// ================================================
+      // EMPLOYEE MANAGEMENT
+      // /admin/employees
+      // ================================================
 
-{
-  path: 'employees',
+      {
+        path: 'employees',
 
-  loadComponent: () =>
-    import(
-      './pages/employee-management/employee-management.component'
-    ).then(
-      m => m.EmployeeManagementComponent
-    )
+        loadComponent: () =>
+          import(
+            './pages/employee-management/employee-management.component'
+          ).then(
+            m => m.EmployeeManagementComponent
+          )
 
-},
+      },
 
 
       // ================================================
@@ -413,9 +431,9 @@ export const routes: Routes = [
 
         loadComponent: () =>
           import(
-            './pages/sell-car-requests/sell-car-requests.component'
+            './pages/admin-dashboard/admin-dashboard.component'
           ).then(
-            m => m.SellCarRequestsComponent
+            m => m.AdminDashboardComponent
           )
 
       },
