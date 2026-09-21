@@ -144,6 +144,8 @@ const getAllBookings = async () => {
                 ib.time_slot
             ) AS time_slot,
 
+            ib.booking_type,
+
             ib.status,
             ib.created_at,
 
@@ -212,6 +214,8 @@ const getBookingById = async (
             TRIM(
                 ib.time_slot
             ) AS time_slot,
+
+            ib.booking_type,
 
             ib.status,
             ib.created_at,
@@ -584,6 +588,8 @@ const getEmployeeAssignments = async (
                 ib.time_slot
             ) AS time_slot,
 
+            ib.booking_type,
+
             ib.status AS booking_status
 
         FROM inspection_requests ir
@@ -659,6 +665,8 @@ const getInspectionRequestById = async (
             TRIM(
                 ib.time_slot
             ) AS time_slot,
+
+            ib.booking_type,
 
             ib.status AS booking_status
 
