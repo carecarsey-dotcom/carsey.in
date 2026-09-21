@@ -46,6 +46,8 @@ interface InspectionBooking {
 
   time_slot: string;
 
+  booking_type?: 'PDI' | 'BOOK_INSPECTION' | string;
+
   status: 'Pending' | 'Approved' | 'Rejected' | string;
 
   created_at: string;
@@ -569,6 +571,12 @@ export class InspectionBookingsComponent
         '',
 
 
+      booking_type:
+        booking?.booking_type ??
+        booking?.bookingType ??
+        'BOOK_INSPECTION',
+
+
       status:
         booking?.status ??
         'Pending',
@@ -715,6 +723,14 @@ export class InspectionBookingsComponent
 
 
             booking.model
+              .toLowerCase()
+              .includes(search)
+
+
+            ||
+
+
+            (booking.booking_type || '')
               .toLowerCase()
               .includes(search)
 
@@ -865,6 +881,12 @@ Time Slot: ${
   booking?.time_slot ??
   booking?.timeSlot ??
   '-'
+}
+
+Booking Type: ${
+  booking?.booking_type ??
+  booking?.bookingType ??
+  'BOOK_INSPECTION'
 }
 
 Status: ${
