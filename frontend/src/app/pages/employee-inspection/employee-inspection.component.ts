@@ -151,6 +151,7 @@ interface InspectionDraft {
   detailedRowRemarks: Record<string, string>;
   checklistItems: Array<{ key: string; status: 'Good' | 'Need Attention' | 'Issue'; remark: string; file: StoredDraftFile | null; }>;
   vehiclePhotos: Array<{ key: string; file: StoredDraftFile | null; }>;
+  additionalVehiclePhotos: Array<{ key: string; title: string; file: StoredDraftFile | null; }>;
   documentPhotos: Array<{ key: string; file: StoredDraftFile | null; }>;
   detailedRowImages: Record<string, StoredDraftFile | null>;
   inspectionVideos: Array<{ key: string; file: StoredDraftFile | null; }>;
@@ -198,8 +199,18 @@ export class EmployeeInspectionComponent
 
   errorMessage = '';
 
-  /** Field/row level validation errors. The page-level validation banner is intentionally not used. */
+  // Template validation state.
+  // Kept as a Set because the HTML clears individual validation keys
+  // while the inspection form is being edited.
   validationErrors = new Set<string>();
+
+  // Inline validation state: errors are shown on the exact field/row.
+  invalidVehicleFields = new Set<string>();
+  invalidDetailedRows = new Set<string>();
+  invalidVehiclePhotos = new Set<string>();
+  invalidInspectionVideos = new Set<string>();
+  invalidOverallScore = false;
+  validationErrorActive = false;
 
   successMessage = '';
 
@@ -311,8 +322,7 @@ export class EmployeeInspectionComponent
       rows: [
         ['Documents / Title', ['Ok/No imperfection','RC Available','PUC Available','Insurance Available','Chassis Number Mismatch']],
       ]
-    }
-    ,
+    },
     {
   key: 'exterior',
 
@@ -612,13 +622,7 @@ export class EmployeeInspectionComponent
       'Lug Missing'
     ]],
 
-    ['Tyres / Wheels Overall', [
-      'Ok/No imperfection',
-      'Tyre Crack',
-      'Rim Rusting',
-      'Wheel Cap Missing',
-      'Lug Nut Missing'
-    ]],
+    ['Tyres / Wheels Overall', ['Ok/No imperfection','Tyre Crack','Rim Rusting','Wheel Cap Missing','Lug Nut Missing']],
 
   ]
 },
@@ -626,6 +630,12 @@ export class EmployeeInspectionComponent
       key: 'engine_bay',
       title: 'ENGINE + TRANSMISSION',
       rows: [
+        ['Upper Cross Member', [
+          'Ok/No imperfection',
+          'Rusting',
+          'Damage',
+          'Repaired / Welded'
+        ]],
         ['Apron RHS', [
           'Ok/No imperfection',
           'Repaired / Welded',
@@ -650,12 +660,6 @@ export class EmployeeInspectionComponent
           'Crack & Hole',
           'Repaired / Welded'
         ]],
-        ['Upper Cross Member', [
-          'Ok/No imperfection',
-          'Rusting',
-          'Damage',
-          'Repaired / Welded'
-        ]],
         ['Engine Oil', ['Ok/No imperfection','Level Low','Dirty','Replace Oil']],
         ['Cooling System', ['Ok/No imperfection','Mixed With Oil','Bottle Broken + Leakage','Coolant Dirty']],
         ['Engine', ['Ok/No imperfection','Leakage From Seal','Tappet Cover Loose','Engine Misfiring','Dipstick Missing / Broken','Exhaust Smoke','Air Filter Box Damage','RPM Fluctuate','Fuse Box Cover Missing']],
@@ -677,10 +681,8 @@ export class EmployeeInspectionComponent
       title: 'STEERING + SUSPENSION + BRAKE',
       rows: [
         ['Suspension', ['Ok/No imperfection','Lower + Upper Arm Noise','Major Leakage Noise','Boot Damage','Strut Noise','Shocker Mount Noise']],
-        
         ['Steering', ['Ok/No imperfection','Rack Boot Damage','Steering Pump Hard','Power Steering Oil Dirty','Steering Rack Noise']],
         ['Brake Master Cylinder', ['Ok/No imperfection','Leakage','Hard Brake','Spongy Brake']],
-    
       ]
     },
     {
@@ -697,17 +699,17 @@ export class EmployeeInspectionComponent
         ['Infotainment System', ['Ok/No imperfection','Not Applicable','Music System Crack','Speaker Not Working / Broken']],
         ['Instrument Cluster', ['Ok/No imperfection','Odometer Not Working','Glass Scratch / Minor / Major Deep','Speedometer Not Working','Tachometer Not Working','Air Bag Deployed','Air Bag Warning Light Glowing','Fuel Low','EPS','Air Suspension','Alternator + Battery','Air Bag','ABS','Transmission Warning','Oil Pressure Low','Engine Warning','Cruise Control','Non-Critical Warning Light','Trip Meter','Idle Start / Stop Not Working']],
         ['Brake Overall', ['Ok/No imperfection','Brake Oil Cap Missing','Brake Oil Level Low','Brake Pad Worn Out','Brake Disk Worn Out','Hard Brake','Spongy Brake']],
-          ]
+      ]
     },
     {
       key: 'all_side_window',
       title: 'ALL SIDE WINDOW',
       rows: [
+        ['All Window Switch', ['Ok/No imperfection','Not Working','Power Window Noise','Switch Damage','Broken']],
         ['Front RHS', ['Ok/No imperfection','Glass Crack','Glass Scratch','Window Not Working','Window Noise']],
         ['Front LHS', ['Ok/No imperfection','Glass Crack','Glass Scratch','Window Not Working','Window Noise']],
         ['Rear RHS', ['Ok/No imperfection','Glass Crack','Glass Scratch','Window Not Working','Window Noise']],
         ['Rear LHS', ['Ok/No imperfection','Glass Crack','Glass Scratch','Window Not Working','Window Noise']],
-        ['All Window Switch', ['Ok/No imperfection','Not Working','Power Window Noise','Switch Damage','Broken']],
       ]
     },
     {
@@ -723,7 +725,7 @@ export class EmployeeInspectionComponent
       ]
     },
     {
-      key: 'ac_light',
+      key: 'electricals_ac',
       title: 'AC + LIGHT',
       rows: [
         ['Head Light RHS', ['Ok/No imperfection','Fading','Broken','Crack','Moisture','Scratch','Light Not Working']],
@@ -733,6 +735,13 @@ export class EmployeeInspectionComponent
         ['Tail Light RHS', ['Ok/No imperfection','Fading','Broken','Crack','Moisture','Scratch','Light Not Working']],
         ['Tail Light LHS', ['Ok/No imperfection','Fading','Broken','Crack','Moisture','Scratch','Light Not Working']],
         ['AC Unit', ['Ok/No imperfection','AC Cooling Not Working','AC Vent Not Fixed / Broken','Blower Motor Not Working','Noise','Heater Ineffective','AC Not Cooling','Cooling Fan Noise']],
+      ]
+    },
+    {
+      key: 'transmission_system',
+      title: 'TRANSMISSION',
+      rows: [
+        ['Transmission Overall', ['Ok/No imperfection','Low Pickup','Clutch Noise','Bearing Damage','Spongy Clutch','Gear Shifting Hard']],
       ]
     },
   ];
@@ -1010,21 +1019,30 @@ export class EmployeeInspectionComponent
 
   // ======================================================
   // VEHICLE PHOTOS
-  // EXACTLY 10 OPTIONS
+  // EXACTLY 6 OPTIONS
   // ======================================================
 
   vehiclePhotos: VehiclePhoto[] = [
     { key: 'front_view', title: 'Front View', file: null, preview: '' },
-    { key: 'right_view', title: 'Right View', file: null, preview: '' },
+    { key: 'right_side', title: 'Right View', file: null, preview: '' },
     { key: 'rear_view', title: 'Rear View', file: null, preview: '' },
-    { key: 'left_view', title: 'Left View', file: null, preview: '' },
-    { key: 'interior_seat_rear', title: 'Interior Seat Rear', file: null, preview: '' },
-    { key: 'interior_front_seat', title: 'Interior Front Seat', file: null, preview: '' },
-    { key: 'open_engine', title: 'Open Engine', file: null, preview: '' },
-    { key: 'open_dicky', title: 'Open Dicky', file: null, preview: '' },
+    { key: 'left_side', title: 'Left View', file: null, preview: '' },
+    { key: 'interior', title: 'Interior Seat Rear', file: null, preview: '' },
+    { key: 'seat', title: 'Interior Front Seat', file: null, preview: '' },
+    { key: 'engine', title: 'Open Engine', file: null, preview: '' },
+    { key: 'dicky', title: 'Open Dicky', file: null, preview: '' },
     { key: 'odometer', title: 'Odometer', file: null, preview: '' },
     { key: 'dashboard', title: 'Dashboard', file: null, preview: '' }
   ];
+
+  // ======================================================
+  // ADDITIONAL VEHICLE PHOTOS
+  // OPTIONAL - MAXIMUM 6 PHOTOS
+  // ======================================================
+
+  additionalVehiclePhotos: VehiclePhoto[] = [];
+
+  readonly maxAdditionalVehiclePhotos = 6;
 
   // ======================================================
   // INSPECTION VIDEOS
@@ -1054,7 +1072,7 @@ export class EmployeeInspectionComponent
   ];
 
   testDriveVideo: InspectionVideo = {
-    key: 'test_drive_video',
+    key: 'engine_video',
     title: 'Test Drive Video',
     file: null,
     preview: '',
@@ -1305,6 +1323,11 @@ export class EmployeeInspectionComponent
           key: photo.key,
           file: this.fileToStoredFile(photo.file)
         })),
+        additionalVehiclePhotos: this.additionalVehiclePhotos.map(photo => ({
+          key: photo.key,
+          title: photo.title,
+          file: this.fileToStoredFile(photo.file)
+        })),
         documentPhotos: this.documentPhotos.map(photo => ({
           key: photo.key,
           file: this.fileToStoredFile(photo.file)
@@ -1406,39 +1429,14 @@ export class EmployeeInspectionComponent
       const oldExterior = this.detailedInspection['exterior'] || {};
       const engineBay = this.detailedInspection['engine_bay'] || {};
       const oldInterior = this.detailedInspection['interior_electricals'] || {};
-      const allSideWindow = this.detailedInspection['all_side_window'] || {};
-      const oldTires = this.detailedInspection['tires_wheels'] || {};
-      const oldBraking = this.detailedInspection['braking_system'] || {};
+      const oldAllSideWindow = this.detailedInspection['all_side_window'] || {};
       const oldLights = this.detailedInspection['lights_separate'] || {};
-      const oldAc = this.detailedInspection['electricals_ac'] || {};
-      const acLight = this.detailedInspection['ac_light'] || {};
+      const oldTyres = this.detailedInspection['tires_wheels'] || {};
+      const oldBrakes = this.detailedInspection['braking_system'] || {};
+      const newElectricalAc = this.detailedInspection['electricals_ac'] || {};
 
-      // Migrate moved checklist rows so existing drafts continue to open
-      // in the new section layout.
-      const movedRows: Array<[Record<string, string[]>, string, Record<string, string[]>, string]> = [
-        [oldExterior, 'Upper Cross Member', engineBay, 'Upper Cross Member'],
-        [oldTires, 'Tyres / Wheels Overall', oldExterior, 'Tyres / Wheels Overall'],
-        [oldBraking, 'Brake Overall', oldInterior, 'Brake Overall'],
-        [oldInterior, 'All Window Switch', allSideWindow, 'All Window Switch']
-      ];
-
-      for (const [from, oldKey, to, newKey] of movedRows) {
-        if (from[oldKey]?.length && !to[newKey]?.length) {
-          to[newKey] = [...from[oldKey]];
-        }
-      }
-
-      // Lights + AC are now one section.
-      for (const row of Object.keys(oldLights)) {
-        if (oldLights[row]?.length && !acLight[row]?.length) {
-          acLight[row] = [...oldLights[row]];
-        }
-      }
-      if (oldAc['AC Unit']?.length && !acLight['AC Unit']?.length) {
-        acLight['AC Unit'] = [...oldAc['AC Unit']];
-      }
-
-      for (const oldRow of ['Apron RHS', 'Apron LHS', 'Firewall']) {
+      // Preserve old saved draft data when checklist rows are moved.
+      for (const oldRow of ['Apron RHS', 'Apron LHS', 'Firewall', 'Upper Cross Member']) {
         if (
           oldExterior[oldRow] &&
           oldExterior[oldRow].length > 0 &&
@@ -1447,6 +1445,24 @@ export class EmployeeInspectionComponent
           engineBay[oldRow] = [...oldExterior[oldRow]];
         }
         delete oldExterior[oldRow];
+      }
+
+      if (oldTyres['Tyres / Wheels Overall'] && !oldExterior['Tyres / Wheels Overall']) {
+        oldExterior['Tyres / Wheels Overall'] = [...oldTyres['Tyres / Wheels Overall']];
+      }
+
+      if (oldBrakes['Brake Overall'] && !oldInterior['Brake Overall']) {
+        oldInterior['Brake Overall'] = [...oldBrakes['Brake Overall']];
+      }
+
+      if (oldInterior['All Window Switch'] && !oldAllSideWindow['All Window Switch']) {
+        oldAllSideWindow['All Window Switch'] = [...oldInterior['All Window Switch']];
+      }
+
+      for (const rowName of ['Head Light RHS', 'Head Light LHS', 'Fog Light RHS', 'Fog Light LHS', 'Tail Light RHS', 'Tail Light LHS']) {
+        if (oldLights[rowName] && !newElectricalAc[rowName]) {
+          newElectricalAc[rowName] = [...oldLights[rowName]];
+        }
       }
 
       for (const oldRow of ['1st Row RHS', '1st Row LHS', '2nd Row RHS', '2nd Row LHS', '3rd Row Seat']) {
@@ -1466,20 +1482,6 @@ export class EmployeeInspectionComponent
         }
       }
 
-      // Normalize the document row to the currently available options.
-      const documentAllowedOptions = new Set([
-        'Ok/No imperfection',
-        'RC Available',
-        'PUC Available',
-        'Insurance Available',
-        'Chassis Number Mismatch'
-      ]);
-      if (this.detailedInspection['documents_title']?.['Documents / Title']) {
-        this.detailedInspection['documents_title']['Documents / Title'] =
-          this.detailedInspection['documents_title']['Documents / Title']
-            .filter(option => documentAllowedOptions.has(option));
-      }
-
       if (draft.detailedRowRemarks) {
         this.detailedRowRemarks = JSON.parse(JSON.stringify(draft.detailedRowRemarks));
       }
@@ -1494,26 +1496,31 @@ export class EmployeeInspectionComponent
         item.preview = item.file ? URL.createObjectURL(item.file) : '';
       }
 
-      const oldVehiclePhotoKeyMap: Record<string, string> = {
-        front_view: 'front_view',
-        right_side: 'right_view',
-        rear_view: 'rear_view',
-        left_side: 'left_view',
-        interior: 'interior_front_seat',
-        seat: 'interior_seat_rear',
-        engine: 'open_engine',
-        dicky: 'open_dicky',
-        odometer: 'odometer',
-        dashboard: 'dashboard'
-      };
-
       for (const savedPhoto of draft.vehiclePhotos || []) {
-        const targetKey = oldVehiclePhotoKeyMap[savedPhoto.key] || savedPhoto.key;
-        const photo = this.vehiclePhotos.find(current => current.key === targetKey);
+        const photo = this.vehiclePhotos.find(current => current.key === savedPhoto.key);
         if (!photo) continue;
         if (photo.preview) URL.revokeObjectURL(photo.preview);
         photo.file = this.storedFileToFile(savedPhoto.file);
         photo.preview = photo.file ? URL.createObjectURL(photo.file) : '';
+      }
+
+      // Restore optional additional vehicle photos.
+      this.additionalVehiclePhotos = [];
+
+      for (const savedPhoto of draft.additionalVehiclePhotos || []) {
+        if (this.additionalVehiclePhotos.length >= this.maxAdditionalVehiclePhotos) {
+          break;
+        }
+
+        const photo: VehiclePhoto = {
+          key: savedPhoto.key,
+          title: savedPhoto.title || `Additional Photo ${this.additionalVehiclePhotos.length + 1}`,
+          file: this.storedFileToFile(savedPhoto.file),
+          preview: ''
+        };
+
+        photo.preview = photo.file ? URL.createObjectURL(photo.file) : '';
+        this.additionalVehiclePhotos.push(photo);
       }
 
       for (const savedPhoto of draft.documentPhotos || []) {
@@ -1715,76 +1722,34 @@ export class EmployeeInspectionComponent
     rowName: string,
     option: string
   ): void {
-    const current = [
-      ...(this.detailedInspection[sectionKey]?.[rowName] || [])
+
+    const current =
+      this.detailedInspection[
+        sectionKey
+      ]?.[rowName] || [];
+
+    const index =
+      current.indexOf(option);
+
+    if (index >= 0) {
+
+      current.splice(index, 1);
+
+    } else {
+
+      current.push(option);
+    }
+
+    this.detailedInspection[
+      sectionKey
+    ][rowName] = [
+      ...current
     ];
 
-    const isOkOption = option === 'Ok/No imperfection';
-    const okIndex = current.indexOf('Ok/No imperfection');
-    const optionIndex = current.indexOf(option);
-
-    if (isOkOption) {
-      if (okIndex >= 0) {
-        current.splice(okIndex, 1);
-      } else {
-        current.length = 0;
-        current.push('Ok/No imperfection');
-      }
-    } else {
-      if (okIndex >= 0) current.splice(okIndex, 1);
-      const selectedIndex = current.indexOf(option);
-      if (selectedIndex >= 0) current.splice(selectedIndex, 1);
-      else current.push(option);
-    }
-
-    if (!this.detailedInspection[sectionKey]) {
-      this.detailedInspection[sectionKey] = {};
-    }
-    this.detailedInspection[sectionKey][rowName] = [...current];
-    this.validationErrors.delete(`detail:${this.getDetailedRowKey(sectionKey, rowName)}`);
     this.syncDetailedInspectionToChecklist();
     this.scheduleDraftSave();
   }
 
-  // ======================================================
-  // CHECKBOX DISABLED STATE
-  // OK/No imperfection and issue options are mutually exclusive.
-  // ======================================================
-  isInspectionOptionDisabled(
-    sectionKey: string,
-    rowName: string,
-    option: string
-  ): boolean {
-    const selected = this.detailedInspection[sectionKey]?.[rowName] || [];
-    if (option === 'Ok/No imperfection') {
-      return selected.some(value => value !== 'Ok/No imperfection');
-    }
-    return selected.includes('Ok/No imperfection');
-  }
-
-  hasValidationError(key: string): boolean {
-    return this.validationErrors.has(key);
-  }
-
-  private failValidation(key: string, message: string): boolean {
-    this.validationErrors.add(key);
-    this.errorMessage = message;
-    return false;
-  }
-
-  private scrollToValidationError(key: string): void {
-    setTimeout(() => {
-      const escapedKey = (globalThis.CSS && typeof CSS.escape === 'function')
-        ? CSS.escape(key)
-        : key.replace(/([\\.#:[\],>+~*^$|=()])/g, '\\$1');
-      const element = document.querySelector(`[data-validation-key="${escapedKey}"]`) as HTMLElement | null;
-      if (element) {
-        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        return;
-      }
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }, 0);
-  }
 
   // ======================================================
   // CHECKBOX SELECTED
@@ -1801,6 +1766,50 @@ export class EmployeeInspectionComponent
         sectionKey
       ]?.[rowName] || []
     ).includes(option);
+  }
+
+
+  // ======================================================
+  // CHECKBOX DISABLED STATE
+  // OK/No imperfection and issue options are mutually exclusive.
+  // ======================================================
+
+  isInspectionOptionDisabled(
+    sectionKey: string,
+    rowName: string,
+    option: string
+  ): boolean {
+
+    const selected =
+      this.detailedInspection[
+        sectionKey
+      ]?.[rowName] || [];
+
+    if (
+      option ===
+      'Ok/No imperfection'
+    ) {
+      return selected.some(
+        value =>
+          value !==
+          'Ok/No imperfection'
+      );
+    }
+
+    return selected.includes(
+      'Ok/No imperfection'
+    );
+  }
+
+
+  // ======================================================
+  // TEMPLATE VALIDATION HELPER
+  // ======================================================
+
+  hasValidationError(
+    key: string
+  ): boolean {
+    return this.validationErrors.has(key);
   }
 
 
@@ -1841,7 +1850,9 @@ export class EmployeeInspectionComponent
         values.some(
           value =>
             value !==
-            'Ok/No imperfection'
+            'Ok/No imperfection' &&
+            value !==
+            'Not Applicable'
         )
     );
   }
@@ -3054,6 +3065,12 @@ export class EmployeeInspectionComponent
     return this.inspectionVideos.find(item => item.key === key);
   }
 
+  getInspectionVideoKeyForRow(rowName: string): 'engine_video' | 'engine_blow_by_video' | null {
+    if (rowName === 'Engine') return 'engine_video';
+    if (rowName === 'Engine Blow By') return 'engine_blow_by_video';
+    return null;
+  }
+
   // ======================================================
   // CLOSE CAMERA
   // ======================================================
@@ -3259,7 +3276,10 @@ export class EmployeeInspectionComponent
 
   private setVehiclePhoto(key: string, file: File): void {
 
-    const photo = this.vehiclePhotos.find(
+    const photo = [
+      ...this.vehiclePhotos,
+      ...this.additionalVehiclePhotos
+    ].find(
       item => item.key === key
     );
 
@@ -3282,7 +3302,10 @@ export class EmployeeInspectionComponent
 
     const photo =
       typeof photoOrKey === 'string'
-        ? this.vehiclePhotos.find(
+        ? [
+            ...this.vehiclePhotos,
+            ...this.additionalVehiclePhotos
+          ].find(
             item => item.key === photoOrKey
           )
         : photoOrKey;
@@ -3341,6 +3364,66 @@ export class EmployeeInspectionComponent
 
     this.errorMessage = '';
     input.value = '';
+    this.scheduleDraftSave();
+  }
+
+
+  // ======================================================
+  // ADD OPTIONAL VEHICLE PHOTO
+  // ======================================================
+
+  addAdditionalVehiclePhoto(): void {
+    if (
+      this.additionalVehiclePhotos.length >=
+      this.maxAdditionalVehiclePhotos
+    ) {
+      this.errorMessage =
+        `You can add maximum ${this.maxAdditionalVehiclePhotos} additional vehicle photos.`;
+      return;
+    }
+
+    const nextNumber =
+      this.additionalVehiclePhotos.length + 1;
+
+    this.additionalVehiclePhotos.push({
+      key: `additional_vehicle_photo_${nextNumber}`,
+      title: `Additional Photo ${nextNumber}`,
+      file: null,
+      preview: ''
+    });
+
+    this.errorMessage = '';
+    this.scheduleDraftSave();
+  }
+
+
+  // ======================================================
+  // REMOVE OPTIONAL VEHICLE PHOTO SLOT
+  // ======================================================
+
+  removeAdditionalVehiclePhoto(
+    photo: VehiclePhoto
+  ): void {
+    if (photo.preview) {
+      URL.revokeObjectURL(photo.preview);
+    }
+
+    const index =
+      this.additionalVehiclePhotos.indexOf(photo);
+
+    if (index === -1) return;
+
+    this.additionalVehiclePhotos.splice(index, 1);
+
+    // Keep the remaining additional photo labels/keys ordered.
+    this.additionalVehiclePhotos.forEach((item, itemIndex) => {
+      const number = itemIndex + 1;
+      item.key = `additional_vehicle_photo_${number}`;
+      item.title = `Additional Photo ${number}`;
+    });
+
+    this.errorMessage = '';
+    this.scheduleDraftSave();
   }
 
 
@@ -3414,6 +3497,7 @@ export class EmployeeInspectionComponent
 
       this.overall_score =
         score;
+      this.clearValidationState();
       this.scheduleDraftSave();
     }
   }
@@ -3439,83 +3523,210 @@ export class EmployeeInspectionComponent
   // VALIDATE
   // ======================================================
 
+  isVehicleFieldInvalid(field: string): boolean {
+    return this.invalidVehicleFields.has(field);
+  }
+
+  getDetailedRowValidationKey(sectionKey: string, rowName: string): string {
+    return this.getDetailedRowKey(sectionKey, rowName);
+  }
+
+  isDetailedRowInvalid(sectionKey: string, rowName: string): boolean {
+    return this.invalidDetailedRows.has(this.getDetailedRowValidationKey(sectionKey, rowName));
+  }
+
+  isVehiclePhotoInvalid(key: string): boolean {
+    return this.invalidVehiclePhotos.has(key);
+  }
+
+  isInspectionVideoInvalid(key: InspectionVideo['key']): boolean {
+    return this.invalidInspectionVideos.has(key);
+  }
+
+  clearValidationState(): void {
+    this.invalidVehicleFields.clear();
+    this.invalidDetailedRows.clear();
+    this.invalidVehiclePhotos.clear();
+    this.invalidInspectionVideos.clear();
+    this.invalidOverallScore = false;
+    this.validationErrorActive = false;
+  }
+
+  private focusFirstValidationError(): void {
+    const firstInvalid = document.querySelector('.inspection-invalid') as HTMLElement | null;
+    firstInvalid?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+
   validateForm(): boolean {
+
     this.errorMessage = '';
-    this.validationErrors.clear();
+    this.clearValidationState();
 
-    const vehicleChecks: Array<[string, boolean, string]> = [
-      ['vehicle.brand', !!this.vehicle.brand?.trim(), 'Vehicle brand is required.'],
-      ['vehicle.model', !!this.vehicle.model?.trim(), 'Vehicle model is required.'],
-      ['vehicle.registration_number', !!this.vehicle.registration_number?.trim(), 'Vehicle registration number is required.'],
-      ['vehicle.manufacturing_year', !!this.vehicle.manufacturing_year, 'Manufacturing year is required.'],
-      ['vehicle.odometer', this.vehicle.odometer !== null && this.vehicle.odometer !== undefined, 'Odometer reading is required.']
-    ];
 
-    for (const [key, valid, message] of vehicleChecks) {
-      if (!valid) {
-        this.failValidation(key, message);
-        this.scrollToValidationError(key);
-        return false;
-      }
+    // ----------------------------------------------------
+    // VEHICLE
+    // ----------------------------------------------------
+
+    if (!this.vehicle.brand.trim()) {
+      this.invalidVehicleFields.add('brand');
+      this.errorMessage = 'Vehicle brand is required.';
+      this.validationErrorActive = true;
+      return false;
     }
+
+
+    if (!this.vehicle.model.trim()) {
+      this.invalidVehicleFields.add('model');
+      this.errorMessage = 'Vehicle model is required.';
+      this.validationErrorActive = true;
+      return false;
+    }
+
+
+    if (!this.vehicle.registration_number.trim()) {
+      this.invalidVehicleFields.add('registration_number');
+      this.errorMessage = 'Vehicle registration number is required.';
+      this.validationErrorActive = true;
+      return false;
+    }
+
+
+    if (!this.vehicle.manufacturing_year) {
+      this.invalidVehicleFields.add('manufacturing_year');
+      this.errorMessage = 'Manufacturing year is required.';
+      this.validationErrorActive = true;
+      return false;
+    }
+
+
+    if (this.vehicle.odometer === null || this.vehicle.odometer === undefined) {
+      this.invalidVehicleFields.add('odometer');
+      this.errorMessage = 'Odometer reading is required.';
+      this.validationErrorActive = true;
+      return false;
+    }
+
+
+    // ----------------------------------------------------
+    // VEHICLE PHOTOS
+    // Every required vehicle photo must be captured/uploaded.
+    // ----------------------------------------------------
 
     for (const photo of this.vehiclePhotos) {
       if (!photo.file) {
-        const key = `photo:${photo.key}`;
-        this.failValidation(key, `${photo.title}: vehicle photo is required.`);
-        this.scrollToValidationError(key);
+        this.invalidVehiclePhotos.add(photo.key);
+        this.errorMessage = `${photo.title}: vehicle photo is required.`;
+        this.validationErrorActive = true;
         return false;
       }
     }
 
     for (const video of this.inspectionVideos) {
       if (!video.file) {
-        const key = `video:${video.key}`;
-        this.failValidation(key, `${video.title} is required.`);
-        this.scrollToValidationError(key);
+        this.invalidInspectionVideos.add(video.key);
+        this.errorMessage = `${video.title} is required.`;
+        this.validationErrorActive = true;
         return false;
       }
     }
 
-    // Test Drive is optional. Its photos/video are intentionally not validated.
+    // Test Drive media is optional.
 
-    for (const section of this.inspectionSections) {
-      for (const row of section.rows) {
-        const rowName = row[0];
-        const selected = this.detailedInspection[section.key]?.[rowName] || [];
-        if (this.isDetailedRowOptional(section.key, rowName)) continue;
-        if (selected.length === 0) {
-          const key = `detail:${this.getDetailedRowKey(section.key, rowName)}`;
-          this.failValidation(key, `${section.title} - ${rowName}: Please select at least one inspection option.`);
-          this.scrollToValidationError(key);
+
+
+    // DETAILED INSPECTION
+    // EVERY ROW NEEDS AT LEAST ONE TICK
+    // ----------------------------------------------------
+
+    for (
+      const section
+      of this.inspectionSections
+    ) {
+
+      for (
+        const row
+        of section.rows
+      ) {
+
+        const selected =
+          this.detailedInspection[
+            section.key
+          ]?.[row[0]] || [];
+
+        // 3rd-row seats are optional because they may not exist in every vehicle.
+        if (
+          this.isDetailedRowOptional(section.key, row[0])
+        ) {
+          continue;
+        }
+
+        const requiredVideoKey = this.getInspectionVideoKeyForRow(row[0]);
+
+        if (selected.length === 0 || (requiredVideoKey && !this.getInspectionVideo(requiredVideoKey)?.file)) {
+          this.invalidDetailedRows.add(
+            this.getDetailedRowValidationKey(section.key, row[0])
+          );
+          if (requiredVideoKey && !this.getInspectionVideo(requiredVideoKey)?.file) {
+            this.invalidInspectionVideos.add(requiredVideoKey);
+          }
+          this.errorMessage = selected.length === 0
+            ? `${section.title} - ${row[0]}: Please select at least one inspection option.`
+            : `${this.getInspectionVideo(requiredVideoKey!)?.title || 'Engine video'} is required.`;
+          this.validationErrorActive = true;
           return false;
         }
       }
     }
 
+
+    // ----------------------------------------------------
+    // SCORE
+    // ----------------------------------------------------
+
     if (this.overall_score === null || this.overall_score === undefined) {
-      this.failValidation('overall_score', 'Overall inspection score is required.');
-      this.scrollToValidationError('overall_score');
+      this.invalidOverallScore = true;
+      this.errorMessage = 'Overall inspection score is required.';
+      this.validationErrorActive = true;
       return false;
     }
 
-    if (this.overall_score < 1 || this.overall_score > 10) {
-      this.failValidation('overall_score', 'Overall score must be between 1 and 10.');
-      this.scrollToValidationError('overall_score');
+
+    if (
+      this.overall_score < 1 ||
+      this.overall_score > 10
+    ) {
+
+      this.invalidOverallScore = true;
+      this.errorMessage =
+        'Overall score must be between 1 and 10.';
+      this.validationErrorActive = true;
       return false;
     }
 
-    for (const item of this.checklistItems) {
-      if (!item.status) {
-        const key = `checklist:${item.key}`;
-        this.failValidation(key, `${item.title} status is required.`);
-        this.scrollToValidationError(key);
+    // ----------------------------------------------------
+    // CHECKLIST
+    // ----------------------------------------------------
+
+    for (
+      const item
+      of this.checklistItems
+    ) {
+
+      if (
+        !item.status
+      ) {
+
+        this.errorMessage =
+          `${item.title} status is required.`;
+
         return false;
       }
     }
 
+
     return true;
   }
+
 
   // ======================================================
   // PREPARE DETAILED CHECKLIST PAYLOAD FOR DATABASE + PDF
@@ -3626,6 +3837,7 @@ export class EmployeeInspectionComponent
 
 
     if (!this.validateForm()) {
+      setTimeout(() => this.focusFirstValidationError(), 0);
       return;
     }
 
@@ -3737,14 +3949,18 @@ export class EmployeeInspectionComponent
 
     // ----------------------------------------------------
     // UPLOAD FILES
-    // First 10 = Vehicle Photos.
+    // First 10 = required Vehicle Photos.
+    // Additional Vehicle Photos = optional extra photos (maximum 6).
     // Remaining = Detailed Vehicle Inspection row images.
     // The filename carries the exact section + row so the
     // backend can store and later place the image under the
     // correct checklist row in the PDF.
     // ----------------------------------------------------
 
-    const vehicleImages = this.vehiclePhotos.map(photo => ({
+    const vehicleImages = [
+      ...this.vehiclePhotos,
+      ...this.additionalVehiclePhotos
+    ].map(photo => ({
       type: photo.title,
       row: photo.key,
       file: photo.file
@@ -3885,6 +4101,10 @@ export class EmployeeInspectionComponent
             error?.error?.message ||
             'Unable to submit inspection.';
 
+          window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+          });
         }
       });
   }

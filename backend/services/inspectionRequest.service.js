@@ -1017,6 +1017,44 @@ const submitInspection = async (
 
 
         // ==================================================
+        // METADATA: ADDITIONAL VEHICLE PHOTO
+        // OPTIONAL - MAXIMUM 6 PHOTOS
+        // ==================================================
+
+        if (
+            /^Additional Photo [1-6]$/i.test(
+                declaredType
+            ) &&
+            /^additional_vehicle_photo_[1-6]$/i.test(
+                declaredRow
+            )
+        ) {
+
+            const additionalPhotoNumber =
+                declaredRow.replace(
+                    "additional_vehicle_photo_",
+                    ""
+                );
+
+            const imageType =
+                `Additional Vehicle Photo ${additionalPhotoNumber}`;
+
+            mediaSaveTasks.push(
+
+                vehicleImageRepository
+                    .addVehicleImage(
+                        vehicleId,
+                        imageType,
+                        imagePath,
+                        false
+                    )
+            );
+
+            continue;
+        }
+
+
+        // ==================================================
         // METADATA: DOCUMENT
         // ==================================================
 
