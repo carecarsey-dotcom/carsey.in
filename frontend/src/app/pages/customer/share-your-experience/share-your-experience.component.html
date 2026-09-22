@@ -25,9 +25,7 @@
       class="relative mx-auto grid max-w-7xl grid-cols-1 gap-10 px-5 py-16 sm:px-8 lg:grid-cols-2 lg:items-center lg:gap-16 lg:px-10 lg:py-24"
     >
 
-      <!-- =====================================================
-           LEFT CONTENT
-      ====================================================== -->
+      <!-- LEFT CONTENT -->
       <div>
 
         <p
@@ -40,9 +38,11 @@
           class="max-w-xl text-5xl font-extrabold leading-[1.05] tracking-tight sm:text-6xl"
         >
           Share Your
+
           <span class="block text-red-500">
             Experience
           </span>
+
         </h1>
 
         <p
@@ -53,12 +53,12 @@
         </p>
 
 
-        <!-- Feature Points -->
+        <!-- FEATURE POINTS -->
         <div
           class="mt-10 grid max-w-xl grid-cols-3 gap-4"
         >
 
-          <!-- Trusted Service -->
+          <!-- Trusted -->
           <div class="text-center sm:text-left">
 
             <div
@@ -78,7 +78,7 @@
           </div>
 
 
-          <!-- Happy Customers -->
+          <!-- Happy -->
           <div class="text-center sm:text-left">
 
             <div
@@ -98,7 +98,7 @@
           </div>
 
 
-          <!-- Better Tomorrow -->
+          <!-- Better -->
           <div class="text-center sm:text-left">
 
             <div
@@ -144,9 +144,7 @@
         </div>
 
 
-        <!-- ===================================================
-             SUCCESS MESSAGE
-        ==================================================== -->
+        <!-- SUCCESS -->
         <div
           *ngIf="submitted"
           class="mb-6 rounded-2xl border border-green-200 bg-green-50 p-5"
@@ -187,17 +185,13 @@
         </div>
 
 
-        <!-- ===================================================
-             FORM
-        ==================================================== -->
+        <!-- FORM -->
         <form
           *ngIf="!submitted"
           (ngSubmit)="submitReview()"
         >
 
-          <!-- =================================================
-               ERROR MESSAGE
-          ================================================== -->
+          <!-- ERROR -->
           <div
             *ngIf="errorMessage"
             class="mb-5 rounded-2xl border border-red-200 bg-red-50 p-4"
@@ -228,9 +222,7 @@
           </div>
 
 
-          <!-- =================================================
-               NAME
-          ================================================== -->
+          <!-- NAME -->
           <div class="mb-5">
 
             <label
@@ -238,7 +230,11 @@
               class="mb-2 block text-sm font-semibold text-slate-700"
             >
               Your Name
-              <span class="text-red-500">*</span>
+
+              <span class="text-red-500">
+                *
+              </span>
+
             </label>
 
             <input
@@ -255,9 +251,7 @@
           </div>
 
 
-          <!-- =================================================
-               MOBILE
-          ================================================== -->
+          <!-- MOBILE -->
           <div class="mb-5">
 
             <label
@@ -269,6 +263,7 @@
               <span class="font-normal text-slate-400">
                 (Optional)
               </span>
+
             </label>
 
             <input
@@ -286,7 +281,7 @@
 
 
           <!-- =================================================
-               PHOTO UPLOAD - OPTIONAL
+               PHOTO
           ================================================== -->
           <div class="mb-5">
 
@@ -294,11 +289,12 @@
               for="review-photo"
               class="mb-2 block text-sm font-semibold text-slate-700"
             >
-              Your Photo
+              Photo
 
               <span class="font-normal text-slate-400">
                 (Optional)
               </span>
+
             </label>
 
 
@@ -310,7 +306,7 @@
 
               <img
                 [src]="photoPreview"
-                alt="Selected customer photo"
+                alt="Selected photo"
                 class="h-20 w-20 rounded-xl object-cover ring-2 ring-white shadow"
               />
 
@@ -353,11 +349,13 @@
               </div>
 
               <p class="mt-3 text-sm font-semibold text-slate-700">
+
                 {{
                   photoPreview
                     ? 'Change Photo'
-                    : 'Upload Your Photo'
+                    : 'Upload Photo'
                 }}
+
               </p>
 
               <p class="mt-1 text-xs text-slate-400">
@@ -378,9 +376,7 @@
           </div>
 
 
-          <!-- =================================================
-               RATING
-          ================================================== -->
+          <!-- RATING -->
           <div class="mb-5">
 
             <label
@@ -391,6 +387,7 @@
               <span class="text-red-500">
                 *
               </span>
+
             </label>
 
             <div class="flex items-center gap-1">
@@ -422,9 +419,7 @@
           </div>
 
 
-          <!-- =================================================
-               REVIEW
-          ================================================== -->
+          <!-- REVIEW -->
           <div class="mb-6">
 
             <label
@@ -436,6 +431,7 @@
               <span class="text-red-500">
                 *
               </span>
+
             </label>
 
             <textarea
@@ -458,16 +454,13 @@
           </div>
 
 
-          <!-- =================================================
-               SUBMIT
-          ================================================== -->
+          <!-- SUBMIT -->
           <button
             type="submit"
             [disabled]="submitting"
             class="flex w-full items-center justify-center gap-2 rounded-xl bg-red-600 px-6 py-4 text-sm font-bold text-white shadow-lg shadow-red-600/20 transition hover:bg-red-700 hover:shadow-xl active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-70"
           >
 
-            <!-- SUBMITTING -->
             <ng-container *ngIf="submitting">
 
               <span
@@ -481,7 +474,6 @@
             </ng-container>
 
 
-            <!-- NORMAL -->
             <ng-container *ngIf="!submitting">
 
               <span>
@@ -497,9 +489,7 @@
           </button>
 
 
-          <!-- =================================================
-               APPROVAL NOTE
-          ================================================== -->
+          <!-- APPROVAL NOTE -->
           <div
             class="mt-4 flex items-start gap-2 text-xs leading-5 text-slate-500"
           >
@@ -561,7 +551,7 @@
 
 
       <!-- =====================================================
-           REVIEWS LOADING
+           LOADING
       ====================================================== -->
       <div
         *ngIf="reviewsLoading"
@@ -586,7 +576,7 @@
 
 
       <!-- =====================================================
-           REVIEWS ERROR
+           ERROR
       ====================================================== -->
       <div
         *ngIf="
@@ -642,68 +632,45 @@
           class="flex h-full flex-col rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-xl"
         >
 
-          <!-- CUSTOMER HEADER -->
-          <div
-            class="flex items-center gap-4"
-          >
+          <!-- =================================================
+               CUSTOMER NAME + RATING
+               NO PROFILE PHOTO
+          ================================================== -->
+          <div>
 
-            <!-- CUSTOMER PHOTO -->
+            <h3
+              class="text-base font-bold text-slate-900"
+            >
+              {{ review.name }}
+            </h3>
+
+
+            <!-- STARS -->
             <div
-              class="h-14 w-14 shrink-0 overflow-hidden rounded-full bg-slate-100"
+              class="mt-2 flex items-center gap-0.5"
+              aria-label="Customer rating"
             >
 
-              <img
-                *ngIf="review.photo"
-                [src]="getPhotoUrl(review.photo)"
-                [alt]="review.name"
-                class="h-full w-full object-cover"
-              />
-
-              <div
-                *ngIf="!review.photo"
-                class="flex h-full w-full items-center justify-center bg-slate-900 text-lg font-bold text-white"
+              <span
+                *ngFor="let star of [1, 2, 3, 4, 5]"
+                class="text-base"
+                [ngClass]="
+                  star <= review.rating
+                    ? 'text-yellow-400'
+                    : 'text-slate-200'
+                "
               >
-                {{ review.name.charAt(0).toUpperCase() }}
-              </div>
-
-            </div>
-
-
-            <!-- CUSTOMER NAME + RATING -->
-            <div class="min-w-0">
-
-              <h3
-                class="truncate text-base font-bold text-slate-900"
-              >
-                {{ review.name }}
-              </h3>
-
-              <!-- STARS -->
-              <div
-                class="mt-1 flex items-center gap-0.5"
-                aria-label="Customer rating"
-              >
-
-                <span
-                  *ngFor="let star of [1, 2, 3, 4, 5]"
-                  class="text-base"
-                  [ngClass]="
-                    star <= review.rating
-                      ? 'text-yellow-400'
-                      : 'text-slate-200'
-                  "
-                >
-                  ★
-                </span>
-
-              </div>
+                ★
+              </span>
 
             </div>
 
           </div>
 
 
-          <!-- REVIEW TEXT -->
+          <!-- =================================================
+               REVIEW TEXT
+          ================================================== -->
           <div class="mt-5 flex-1">
 
             <div
@@ -718,10 +685,30 @@
               {{ review.review }}
             </p>
 
+
+            <!-- =================================================
+                 CUSTOMER CAR PHOTO
+                 PHOTO IS BELOW REVIEW
+            ================================================== -->
+            <div
+              *ngIf="review.photo"
+              class="mt-5 overflow-hidden rounded-xl border border-slate-200 bg-slate-50"
+            >
+
+              <img
+                [src]="getPhotoUrl(review.photo)"
+                [alt]="'Car photo shared by ' + review.name"
+                class="h-48 w-full object-cover"
+              />
+
+            </div>
+
           </div>
 
 
-          <!-- VERIFIED LABEL -->
+          <!-- =================================================
+               VERIFIED
+          ================================================== -->
           <div
             class="mt-5 border-t border-slate-100 pt-4"
           >
@@ -789,7 +776,9 @@
   <!-- =========================================================
        TRUST STRIP
   ========================================================== -->
-  <section class="border-t border-slate-200 bg-white">
+  <section
+    class="border-t border-slate-200 bg-white"
+  >
 
     <div
       class="mx-auto grid max-w-7xl grid-cols-2 divide-x divide-slate-200 sm:grid-cols-4"
@@ -797,11 +786,15 @@
 
       <div class="px-4 py-8 text-center">
 
-        <div class="text-2xl font-bold text-slate-900">
+        <div
+          class="text-2xl font-bold text-slate-900"
+        >
           1000+
         </div>
 
-        <div class="mt-1 text-xs text-slate-500">
+        <div
+          class="mt-1 text-xs text-slate-500"
+        >
           Happy Customers
         </div>
 
@@ -810,11 +803,15 @@
 
       <div class="px-4 py-8 text-center">
 
-        <div class="text-2xl font-bold text-slate-900">
+        <div
+          class="text-2xl font-bold text-slate-900"
+        >
           ✓
         </div>
 
-        <div class="mt-1 text-xs text-slate-500">
+        <div
+          class="mt-1 text-xs text-slate-500"
+        >
           Trusted Process
         </div>
 
@@ -823,11 +820,15 @@
 
       <div class="px-4 py-8 text-center">
 
-        <div class="text-2xl font-bold text-slate-900">
+        <div
+          class="text-2xl font-bold text-slate-900"
+        >
           ♡
         </div>
 
-        <div class="mt-1 text-xs text-slate-500">
+        <div
+          class="mt-1 text-xs text-slate-500"
+        >
           Real Reviews
         </div>
 
@@ -836,11 +837,15 @@
 
       <div class="px-4 py-8 text-center">
 
-        <div class="text-2xl font-bold text-slate-900">
+        <div
+          class="text-2xl font-bold text-slate-900"
+        >
           ★
         </div>
 
-        <div class="mt-1 text-xs text-slate-500">
+        <div
+          class="mt-1 text-xs text-slate-500"
+        >
           Better Choices
         </div>
 
@@ -864,7 +869,9 @@
       Together Towards Better Journeys
     </h2>
 
-    <p class="mt-3 text-sm text-slate-400">
+    <p
+      class="mt-3 text-sm text-slate-400"
+    >
       Your trust keeps us moving forward.
     </p>
 
