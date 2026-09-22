@@ -46,7 +46,7 @@
           <span
             class="mt-1 hidden text-[10px] font-semibold tracking-[0.18em] text-slate-400 sm:block"
           >
-            BUY • SELL • EXCHANGE
+            • INSPECTION • PDI
           </span>
 
         </div>
@@ -361,13 +361,14 @@
 
 
         <!-- ================================================= -->
-        <!-- ABOUT -->
+        <!-- ABOUT — HIDDEN -->
+        <!-- CODE PRESERVED -->
         <!-- ================================================= -->
 
         <a
           routerLink="/about"
           routerLinkActive="!border-pink-400 !bg-pink-500 !text-white !shadow-[0_0_30px_rgba(236,72,153,0.45)]"
-          class="group flex min-h-[58px] items-center gap-3 rounded-2xl
+          class="!hidden group flex min-h-[58px] items-center gap-3 rounded-2xl
                  border border-slate-700/80
                  bg-[#0d111d]
                  px-5 py-2.5
@@ -493,8 +494,10 @@
                    px-4 py-3 font-extrabold text-white shadow-lg shadow-pink-500/20
                    transition hover:bg-pink-400"
           >
+
             <span>Buy Car</span>
             <span>→</span>
+
           </a>
 
 
@@ -507,8 +510,10 @@
                    px-4 py-3 font-extrabold text-white transition
                    hover:bg-pink-500"
           >
+
             <span>Sell Car</span>
             <span>→</span>
+
           </a>
 
 
@@ -603,12 +608,12 @@
           </a>
 
 
-          <!-- ABOUT -->
+          <!-- ABOUT — HIDDEN -->
 
           <a
             routerLink="/about"
             (click)="closeMobileMenu()"
-            class="rounded-xl border border-slate-700
+            class="!hidden rounded-xl border border-slate-700
                    bg-white/5 px-4 py-4
                    font-extrabold text-white
                    transition hover:border-pink-500 hover:bg-pink-500/10"

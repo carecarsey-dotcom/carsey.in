@@ -28,10 +28,14 @@ import {
     RouterLinkActive
   ],
 
-  templateUrl: './customer-layout.component.html',
+  templateUrl:
+    './customer-layout.component.html',
 
-  styleUrl: './customer-layout.component.css'
+  styleUrl:
+    './customer-layout.component.css'
 })
+
+
 export class CustomerLayoutComponent {
 
 
@@ -99,6 +103,7 @@ export class CustomerLayoutComponent {
   // =====================================================
 
   @HostListener('window:scroll')
+
   onWindowScroll(): void {
 
     if (window.scrollY > 30) {

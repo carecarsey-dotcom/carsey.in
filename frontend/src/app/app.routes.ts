@@ -30,12 +30,30 @@ export const routes: Routes = [
 
 
       // =================================================
-      // CUSTOMER HOME
+      // ABOUT SERVICE
       // /
       // =================================================
 
       {
         path: '',
+        title: 'Carsey.in - Car Inspection & PDI Services',
+
+        loadComponent: () =>
+          import(
+            './pages/customer/about-service/about-service.component'
+          ).then(
+            m => m.AboutServiceComponent
+          )
+      },
+
+
+      // =================================================
+      // CUSTOMER HOME
+      // /home
+      // =================================================
+
+      {
+        path: 'home',
         title: 'Carsey.in – Buy, Sell & Exchange Cars',
 
         loadComponent: () =>
