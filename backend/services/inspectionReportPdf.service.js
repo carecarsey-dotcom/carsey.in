@@ -27,14 +27,19 @@ const PDF_CONTACT_NUMBER =
 
 const resolvePdfLogoPath = () => {
     const candidates = [
+        // Actual backend logo location used by this project.
+        path.join(process.cwd(), "uploads", "favicon.png"),
+        path.join(__dirname, "..", "uploads", "favicon.png"),
+
+        // Existing/fallback logo locations are preserved.
+        path.join(process.cwd(), "uploads", "logo.png"),
+        path.join(__dirname, "..", "uploads", "logo.png"),
         path.join(process.cwd(), "public", "favicon.png"),
         path.join(process.cwd(), "public", "logo.png"),
         path.join(process.cwd(), "public", "images", "logo.png"),
-        path.join(process.cwd(), "uploads", "logo.png"),
         path.join(__dirname, "..", "public", "favicon.png"),
         path.join(__dirname, "..", "public", "logo.png"),
-        path.join(__dirname, "..", "public", "images", "logo.png"),
-        path.join(__dirname, "..", "uploads", "logo.png")
+        path.join(__dirname, "..", "public", "images", "logo.png")
     ];
 
     for (const candidate of candidates) {
@@ -2076,6 +2081,7 @@ const ensureSpace = (doc, y, requiredHeight, reportId) => {
 
 const drawHeader = (doc, report, heroImage = null) => {
     const bookingCode = getBookingCode(report);
+    // Logo is loaded from backend/uploads/favicon.png first.
     const logoPath = resolvePdfLogoPath();
 
     const headerHeight = 92;

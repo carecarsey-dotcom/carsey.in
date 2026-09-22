@@ -209,8 +209,13 @@ export class EmployeeInspectionComponent
   invalidDetailedRows = new Set<string>();
   invalidVehiclePhotos = new Set<string>();
   invalidInspectionVideos = new Set<string>();
+  invalidChecklistItems = new Set<string>();
   invalidOverallScore = false;
   validationErrorActive = false;
+
+  // Exact validation target used to scroll/highlight the section that failed.
+  private validationTargetText = '';
+  private validationTargetType: 'vehicle' | 'photo' | 'video' | 'detail' | 'score' | 'checklist' | '' = '';
 
   successMessage = '';
 
@@ -3158,6 +3163,12 @@ export class EmployeeInspectionComponent
     item: ChecklistItem
   ): void {
 
+    this.invalidChecklistItems.delete(item.key);
+    if (this.invalidChecklistItems.size === 0 && !this.invalidVehicleFields.size && !this.invalidDetailedRows.size && !this.invalidVehiclePhotos.size && !this.invalidInspectionVideos.size && !this.invalidOverallScore) {
+      this.validationErrorActive = false;
+      this.errorMessage = '';
+    }
+
     if (
       item.status === 'Good'
     ) {
@@ -3543,18 +3554,89 @@ export class EmployeeInspectionComponent
     return this.invalidInspectionVideos.has(key);
   }
 
+  isChecklistItemInvalid(key: string): boolean {
+    return this.invalidChecklistItems.has(key);
+  }
+
   clearValidationState(): void {
     this.invalidVehicleFields.clear();
     this.invalidDetailedRows.clear();
     this.invalidVehiclePhotos.clear();
     this.invalidInspectionVideos.clear();
+    this.invalidChecklistItems.clear();
     this.invalidOverallScore = false;
     this.validationErrorActive = false;
+    this.validationTargetText = '';
+    this.validationTargetType = '';
+  }
+
+  private setValidationError(
+    message: string,
+    targetText = '',
+    targetType: 'vehicle' | 'photo' | 'video' | 'detail' | 'score' | 'checklist' | '' = ''
+  ): false {
+    this.errorMessage = message;
+    this.validationErrorActive = true;
+    this.validationTargetText = targetText;
+    this.validationTargetType = targetType;
+    return false;
   }
 
   private focusFirstValidationError(): void {
+    // First preference: the exact element already marked by the template.
     const firstInvalid = document.querySelector('.inspection-invalid') as HTMLElement | null;
-    firstInvalid?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+    if (firstInvalid) {
+      firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
+
+    // Fallback: locate the exact section by its visible title/text. This makes
+    // validation work even when an older HTML template does not yet have the
+    // inspection-invalid class on that section.
+    const target = this.validationTargetText.trim().toLowerCase();
+
+    if (!target) {
+      return;
+    }
+
+    const candidates = Array.from(
+      document.querySelectorAll('h1, h2, h3, h4, h5, label, p, span, div')
+    ) as HTMLElement[];
+
+    const match = candidates.find(element => {
+      const text = (element.textContent || '').trim().toLowerCase();
+      return text === target || text.includes(target);
+    });
+
+    if (!match) {
+      return;
+    }
+
+    const container =
+      match.closest('section') as HTMLElement | null ||
+      match.closest('.rounded-xl') as HTMLElement | null ||
+      match.parentElement;
+
+    const targetElement = container || match;
+
+    targetElement.classList.add('inspection-invalid');
+    targetElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+    // Remove the temporary fallback highlight after a short delay.
+    window.setTimeout(() => {
+      targetElement.classList.remove('inspection-invalid');
+    }, 3500);
+  }
+
+  private showValidationAlert(): void {
+    if (
+      typeof window !== 'undefined' &&
+      typeof window.alert === 'function' &&
+      this.errorMessage
+    ) {
+      window.alert(this.errorMessage);
+    }
   }
 
   validateForm(): boolean {
@@ -3569,41 +3651,51 @@ export class EmployeeInspectionComponent
 
     if (!this.vehicle.brand.trim()) {
       this.invalidVehicleFields.add('brand');
-      this.errorMessage = 'Vehicle brand is required.';
-      this.validationErrorActive = true;
-      return false;
+      return this.setValidationError(
+        'Vehicle brand is required.',
+        'Brand',
+        'vehicle'
+      );
     }
 
 
     if (!this.vehicle.model.trim()) {
       this.invalidVehicleFields.add('model');
-      this.errorMessage = 'Vehicle model is required.';
-      this.validationErrorActive = true;
-      return false;
+      return this.setValidationError(
+        'Vehicle model is required.',
+        'Model',
+        'vehicle'
+      );
     }
 
 
     if (!this.vehicle.registration_number.trim()) {
       this.invalidVehicleFields.add('registration_number');
-      this.errorMessage = 'Vehicle registration number is required.';
-      this.validationErrorActive = true;
-      return false;
+      return this.setValidationError(
+        'Vehicle registration number is required.',
+        'Registration Number',
+        'vehicle'
+      );
     }
 
 
     if (!this.vehicle.manufacturing_year) {
       this.invalidVehicleFields.add('manufacturing_year');
-      this.errorMessage = 'Manufacturing year is required.';
-      this.validationErrorActive = true;
-      return false;
+      return this.setValidationError(
+        'Manufacturing year is required.',
+        'Manufacturing Year',
+        'vehicle'
+      );
     }
 
 
     if (this.vehicle.odometer === null || this.vehicle.odometer === undefined) {
       this.invalidVehicleFields.add('odometer');
-      this.errorMessage = 'Odometer reading is required.';
-      this.validationErrorActive = true;
-      return false;
+      return this.setValidationError(
+        'Odometer reading is required.',
+        'Odometer',
+        'vehicle'
+      );
     }
 
 
@@ -3615,18 +3707,22 @@ export class EmployeeInspectionComponent
     for (const photo of this.vehiclePhotos) {
       if (!photo.file) {
         this.invalidVehiclePhotos.add(photo.key);
-        this.errorMessage = `${photo.title}: vehicle photo is required.`;
-        this.validationErrorActive = true;
-        return false;
+        return this.setValidationError(
+          `${photo.title}: vehicle photo is required.`,
+          photo.title,
+          'photo'
+        );
       }
     }
 
     for (const video of this.inspectionVideos) {
       if (!video.file) {
         this.invalidInspectionVideos.add(video.key);
-        this.errorMessage = `${video.title} is required.`;
-        this.validationErrorActive = true;
-        return false;
+        return this.setValidationError(
+          `${video.title} is required.`,
+          video.title,
+          'video'
+        );
       }
     }
 
@@ -3669,11 +3765,15 @@ export class EmployeeInspectionComponent
           if (requiredVideoKey && !this.getInspectionVideo(requiredVideoKey)?.file) {
             this.invalidInspectionVideos.add(requiredVideoKey);
           }
-          this.errorMessage = selected.length === 0
-            ? `${section.title} - ${row[0]}: Please select at least one inspection option.`
-            : `${this.getInspectionVideo(requiredVideoKey!)?.title || 'Engine video'} is required.`;
-          this.validationErrorActive = true;
-          return false;
+          return this.setValidationError(
+            selected.length === 0
+              ? `${section.title} - ${row[0]}: Please select at least one inspection option.`
+              : `${this.getInspectionVideo(requiredVideoKey!)?.title || 'Engine video'} is required.`,
+            row[0],
+            requiredVideoKey && !this.getInspectionVideo(requiredVideoKey)?.file
+              ? 'video'
+              : 'detail'
+          );
         }
       }
     }
@@ -3685,9 +3785,11 @@ export class EmployeeInspectionComponent
 
     if (this.overall_score === null || this.overall_score === undefined) {
       this.invalidOverallScore = true;
-      this.errorMessage = 'Overall inspection score is required.';
-      this.validationErrorActive = true;
-      return false;
+      return this.setValidationError(
+        'Overall inspection score is required.',
+        'Overall Score',
+        'score'
+      );
     }
 
 
@@ -3697,10 +3799,11 @@ export class EmployeeInspectionComponent
     ) {
 
       this.invalidOverallScore = true;
-      this.errorMessage =
-        'Overall score must be between 1 and 10.';
-      this.validationErrorActive = true;
-      return false;
+      return this.setValidationError(
+        'Overall score must be between 1 and 10.',
+        'Overall Score',
+        'score'
+      );
     }
 
     // ----------------------------------------------------
@@ -3716,10 +3819,13 @@ export class EmployeeInspectionComponent
         !item.status
       ) {
 
-        this.errorMessage =
-          `${item.title} status is required.`;
+        this.invalidChecklistItems.add(item.key);
 
-        return false;
+        return this.setValidationError(
+          `${item.title} status is required.`,
+          item.title,
+          'checklist'
+        );
       }
     }
 
@@ -3837,7 +3943,10 @@ export class EmployeeInspectionComponent
 
 
     if (!this.validateForm()) {
-      setTimeout(() => this.focusFirstValidationError(), 0);
+      setTimeout(() => {
+        this.focusFirstValidationError();
+        this.showValidationAlert();
+      }, 50);
       return;
     }
 
