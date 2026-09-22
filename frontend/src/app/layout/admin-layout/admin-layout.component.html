@@ -4,19 +4,20 @@
   <!-- SIDEBAR -->
   <!-- ========================================= -->
 
- <aside
-  class="admin-sidebar fixed left-0 top-0 z-40 flex h-screen w-64 flex-col bg-slate-900 text-white shadow-xl"
-  [class.hidden]="!sidebarOpen"
->
+  <aside
+    class="admin-sidebar fixed left-0 top-0 z-40 flex h-screen w-64 flex-col bg-slate-900 text-white shadow-xl"
+    [class.hidden]="!sidebarOpen"
+  >
 
     <!-- ========================================= -->
     <!-- LOGO -->
     <!-- ========================================= -->
 
     <div
-  class="admin-logo flex shrink-0 items-center border-b border-slate-700 px-6"
->
+      class="admin-logo flex shrink-0 items-center border-b border-slate-700 px-6"
+    >
       <div>
+
         <h1 class="text-2xl font-bold">
           Carsey.in
         </h1>
@@ -24,6 +25,7 @@
         <p class="text-xs text-slate-400">
           Admin Panel
         </p>
+
       </div>
     </div>
 
@@ -33,8 +35,8 @@
     <!-- ========================================= -->
 
     <nav
-  class="admin-nav min-h-0 flex-1 space-y-1 overflow-y-auto"
->
+      class="admin-nav min-h-0 flex-1 space-y-1 overflow-y-auto"
+    >
 
       <!-- DASHBOARD -->
 
@@ -44,11 +46,13 @@
         [routerLinkActiveOptions]="{ exact: true }"
         class="flex w-full items-center rounded-lg px-4 py-3 text-slate-300 transition hover:bg-slate-800 hover:text-white"
       >
+
         <span>📊</span>
 
         <span class="ml-3">
           Dashboard
         </span>
+
       </a>
 
 
@@ -70,11 +74,13 @@
         routerLinkActive="bg-slate-700 text-white"
         class="flex w-full items-center rounded-lg px-4 py-3 text-slate-300 transition hover:bg-slate-800 hover:text-white"
       >
+
         <span>🚗</span>
 
         <span class="ml-3">
           All Vehicles
         </span>
+
       </a>
 
 
@@ -85,11 +91,13 @@
         routerLinkActive="bg-slate-700 text-white"
         class="flex w-full items-center rounded-lg px-4 py-3 text-slate-300 transition hover:bg-slate-800 hover:text-white"
       >
+
         <span>➕</span>
 
         <span class="ml-3">
           Add Vehicle
         </span>
+
       </a>
 
 
@@ -111,11 +119,13 @@
         routerLinkActive="bg-slate-700 text-white"
         class="flex w-full items-center rounded-lg px-4 py-3 text-slate-300 transition hover:bg-slate-800 hover:text-white"
       >
+
         <span>🔓</span>
 
         <span class="ml-3">
           Report Unlock
         </span>
+
       </a>
 
 
@@ -126,11 +136,13 @@
         routerLinkActive="bg-slate-700 text-white"
         class="flex w-full items-center rounded-lg px-4 py-3 text-slate-300 transition hover:bg-slate-800 hover:text-white"
       >
+
         <span>🚘</span>
 
         <span class="ml-3">
           Test Drive
         </span>
+
       </a>
 
 
@@ -141,11 +153,13 @@
         routerLinkActive="bg-slate-700 text-white"
         class="flex w-full items-center rounded-lg px-4 py-3 text-slate-300 transition hover:bg-slate-800 hover:text-white"
       >
+
         <span>💰</span>
 
         <span class="ml-3">
           Finance
         </span>
+
       </a>
 
 
@@ -156,11 +170,13 @@
         routerLinkActive="bg-slate-700 text-white"
         class="flex w-full items-center rounded-lg px-4 py-3 text-slate-300 transition hover:bg-slate-800 hover:text-white"
       >
+
         <span>🚙</span>
 
         <span class="ml-3">
           Sell Car
         </span>
+
       </a>
 
 
@@ -171,11 +187,13 @@
         routerLinkActive="bg-slate-700 text-white"
         class="flex w-full items-center rounded-lg px-4 py-3 text-slate-300 transition hover:bg-slate-800 hover:text-white"
       >
+
         <span>🔄</span>
 
         <span class="ml-3">
           Exchange
         </span>
+
       </a>
 
 
@@ -186,42 +204,71 @@
         routerLinkActive="bg-slate-700 text-white"
         class="flex w-full items-center rounded-lg px-4 py-3 text-slate-300 transition hover:bg-slate-800 hover:text-white"
       >
+
         <span>🏦</span>
 
         <span class="ml-3">
           Loan
         </span>
+
       </a>
 
 
+      <!-- ========================================= -->
+      <!-- CUSTOMER FEEDBACK -->
+      <!-- ========================================= -->
 
+      <div
+        class="mt-5 px-4 pb-2 text-xs font-semibold uppercase tracking-wider text-slate-500"
+      >
+        Customer Feedback
+      </div>
+
+
+      <!-- TESTIMONIALS -->
+
+      <a
+        routerLink="/admin/testimonials"
+        routerLinkActive="bg-slate-700 text-white"
+        class="flex w-full items-center rounded-lg px-4 py-3 text-slate-300 transition hover:bg-slate-800 hover:text-white"
+      >
+
+        <span>⭐</span>
+
+        <span class="ml-3">
+          Testimonials
+        </span>
+
+      </a>
 
 
       <!-- ========================================= -->
-<!-- TEAM -->
-<!-- ========================================= -->
+      <!-- TEAM -->
+      <!-- ========================================= -->
 
-<div
-  class="mt-5 px-4 pb-2 text-xs font-semibold uppercase tracking-wider text-slate-500"
->
-  Team
-</div>
+      <div
+        class="mt-5 px-4 pb-2 text-xs font-semibold uppercase tracking-wider text-slate-500"
+      >
+        Team
+      </div>
 
 
-<!-- EMPLOYEE MANAGEMENT -->
+      <!-- EMPLOYEE MANAGEMENT -->
 
-<a
-  routerLink="/admin/employees"
-  routerLinkActive="bg-slate-700 text-white"
-  [routerLinkActiveOptions]="{ exact: true }"
-  class="flex w-full items-center rounded-lg px-4 py-3 text-slate-300 transition hover:bg-slate-800 hover:text-white"
->
-  <span>👥</span>
+      <a
+        routerLink="/admin/employees"
+        routerLinkActive="bg-slate-700 text-white"
+        [routerLinkActiveOptions]="{ exact: true }"
+        class="flex w-full items-center rounded-lg px-4 py-3 text-slate-300 transition hover:bg-slate-800 hover:text-white"
+      >
 
-  <span class="ml-3">
-    Employees
-  </span>
-</a>
+        <span>👥</span>
+
+        <span class="ml-3">
+          Employees
+        </span>
+
+      </a>
 
 
       <!-- ========================================= -->
@@ -242,11 +289,13 @@
         routerLinkActive="bg-slate-700 text-white"
         class="flex w-full items-center rounded-lg px-4 py-3 text-slate-300 transition hover:bg-slate-800 hover:text-white"
       >
+
         <span>📅</span>
 
         <span class="ml-3">
           Bookings
         </span>
+
       </a>
 
 
@@ -257,11 +306,13 @@
         routerLinkActive="bg-slate-700 text-white"
         class="flex w-full items-center rounded-lg px-4 py-3 text-slate-300 transition hover:bg-slate-800 hover:text-white"
       >
+
         <span>📄</span>
 
         <span class="ml-3">
           Reports
         </span>
+
       </a>
 
     </nav>
@@ -274,17 +325,21 @@
     <div
       class="shrink-0 border-t border-slate-700 bg-slate-900 p-4"
     >
+
       <button
         type="button"
         (click)="logout()"
         class="flex w-full items-center rounded-lg px-4 py-3 text-slate-300 transition hover:bg-red-600 hover:text-white"
       >
+
         <span>🚪</span>
 
         <span class="ml-3">
           Logout
         </span>
+
       </button>
+
     </div>
 
   </aside>
@@ -294,10 +349,11 @@
   <!-- MAIN AREA -->
   <!-- ========================================= -->
 
-<div
-  class="main-area min-h-screen w-full min-w-0 transition-all"
-  [class.sidebar-open]="sidebarOpen"
->
+  <div
+    class="main-area min-h-screen w-full min-w-0 transition-all"
+    [class.sidebar-open]="sidebarOpen"
+  >
+
     <!-- ======================================= -->
     <!-- NAVBAR -->
     <!-- ======================================= -->

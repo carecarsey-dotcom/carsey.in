@@ -12,7 +12,6 @@ import {
 
 
 @Component({
-
   selector: 'app-admin-layout',
 
   standalone: true,
@@ -28,7 +27,6 @@ import {
 
   styleUrl:
     './admin-layout.component.css'
-
 })
 
 

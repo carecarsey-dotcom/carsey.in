@@ -266,7 +266,9 @@ export const routes: Routes = [
 
       {
         path: '',
+
         redirectTo: 'dashboard',
+
         pathMatch: 'full'
       }
 
@@ -449,9 +451,9 @@ export const routes: Routes = [
 
         loadComponent: () =>
           import(
-            './pages/admin-dashboard/admin-dashboard.component'
+            './pages/sell-car-requests/sell-car-requests.component'
           ).then(
-            m => m.AdminDashboardComponent
+            m => m.SellCarRequestsComponent
           )
 
       },
@@ -526,6 +528,24 @@ export const routes: Routes = [
 
 
       // ================================================
+      // CUSTOMER TESTIMONIALS
+      // /admin/testimonials
+      // ================================================
+
+      {
+        path: 'testimonials',
+
+        loadComponent: () =>
+          import(
+            './pages/testimonials/testimonials.component'
+          ).then(
+            m => m.TestimonialsComponent
+          )
+
+      },
+
+
+      // ================================================
       // ADMIN DEFAULT
       // /admin
       // ↓
@@ -542,7 +562,6 @@ export const routes: Routes = [
       }
 
     ]
-
   },
 
 
