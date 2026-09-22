@@ -7,16 +7,11 @@ const shareYourExperienceRepository =
         "../repositories/shareYourExperience.repository"
     );
 
-
 // ======================================================
 // CREATE REVIEW
 // ======================================================
 
 const createReview = async (reviewData) => {
-
-    // ==================================================
-    // VALIDATION
-    // ==================================================
 
     if (
         !reviewData.name ||
@@ -27,7 +22,6 @@ const createReview = async (reviewData) => {
         );
     }
 
-
     if (
         reviewData.name.trim().length < 2
     ) {
@@ -36,19 +30,16 @@ const createReview = async (reviewData) => {
         );
     }
 
-
     if (!reviewData.rating) {
         throw new Error(
             "Rating is required."
         );
     }
 
-
     const rating =
         Number(
             reviewData.rating
         );
-
 
     if (
         !Number.isInteger(rating) ||
@@ -60,7 +51,6 @@ const createReview = async (reviewData) => {
         );
     }
 
-
     if (
         !reviewData.review ||
         !reviewData.review.trim()
@@ -69,12 +59,6 @@ const createReview = async (reviewData) => {
             "Review is required."
         );
     }
-
-
-    // ==================================================
-    // MOBILE VALIDATION
-    // OPTIONAL
-    // ==================================================
 
     if (
         reviewData.mobile &&
@@ -89,13 +73,7 @@ const createReview = async (reviewData) => {
         );
     }
 
-
-    // ==================================================
-    // PREPARE DATA
-    // ==================================================
-
     const data = {
-
         name:
             reviewData.name.trim(),
 
@@ -113,31 +91,147 @@ const createReview = async (reviewData) => {
 
         photo:
             reviewData.photo || null
-
     };
-
-
-    // ==================================================
-    // SAVE REVIEW
-    // ==================================================
 
     const reviewId =
         await shareYourExperienceRepository.createReview(
             data
         );
 
-
     return reviewId;
-
 };
 
+// ======================================================
+// GET REVIEWS
+// ADMIN
+// ======================================================
+
+const getReviews = async (status = null) => {
+
+    const allowedStatuses = [
+        "Pending",
+        "Approved",
+        "Rejected"
+    ];
+
+    if (
+        status &&
+        !allowedStatuses.includes(status)
+    ) {
+        throw new Error(
+            "Invalid review status."
+        );
+    }
+
+    return await shareYourExperienceRepository.getReviews(
+        status
+    );
+};
+
+// ======================================================
+// GET SINGLE REVIEW
+// ADMIN
+// ======================================================
+
+const getReviewById = async (id) => {
+
+    const reviewId =
+        Number(id);
+
+    if (
+        !Number.isInteger(reviewId) ||
+        reviewId <= 0
+    ) {
+        throw new Error(
+            "Invalid review ID."
+        );
+    }
+
+    const review =
+        await shareYourExperienceRepository.getReviewById(
+            reviewId
+        );
+
+    if (!review) {
+        throw new Error(
+            "Review not found."
+        );
+    }
+
+    return review;
+};
+
+// ======================================================
+// UPDATE REVIEW STATUS
+// ADMIN
+// ======================================================
+
+const updateReviewStatus = async (
+    id,
+    status
+) => {
+
+    const reviewId =
+        Number(id);
+
+    if (
+        !Number.isInteger(reviewId) ||
+        reviewId <= 0
+    ) {
+        throw new Error(
+            "Invalid review ID."
+        );
+    }
+
+    const allowedStatuses = [
+        "Approved",
+        "Rejected"
+    ];
+
+    if (
+        !allowedStatuses.includes(status)
+    ) {
+        throw new Error(
+            "Status must be Approved or Rejected."
+        );
+    }
+
+    // --------------------------------------------------
+    // CHECK REVIEW EXISTS
+    // --------------------------------------------------
+
+    const existingReview =
+        await shareYourExperienceRepository.getReviewById(
+            reviewId
+        );
+
+    if (!existingReview) {
+        throw new Error(
+            "Review not found."
+        );
+    }
+
+    // --------------------------------------------------
+    // UPDATE STATUS
+    // --------------------------------------------------
+
+    await shareYourExperienceRepository.updateReviewStatus(
+        reviewId,
+        status
+    );
+
+    return await shareYourExperienceRepository.getReviewById(
+        reviewId
+    );
+};
 
 // ======================================================
 // EXPORT
 // ======================================================
 
 module.exports = {
-
-    createReview
-
+    createReview,
+    getReviews,
+    getReviewById,
+    updateReviewStatus
 };

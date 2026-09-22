@@ -39,10 +39,6 @@ const createReview = async (reviewData) => {
         photo
     ];
 
-    // ==================================================
-    // USE MYSQL2 PROMISE API
-    // ==================================================
-
     const [result] = await db
         .promise()
         .execute(
@@ -54,9 +50,132 @@ const createReview = async (reviewData) => {
 };
 
 // ======================================================
+// GET REVIEWS
+// ======================================================
+
+const getReviews = async (status = null) => {
+
+    let sql = `
+        SELECT
+            id,
+            name,
+            mobile,
+            rating,
+            review,
+            photo,
+            status,
+            created_at,
+            updated_at
+        FROM share_you_exp
+    `;
+
+    const values = [];
+
+    // --------------------------------------------------
+    // STATUS FILTER
+    // --------------------------------------------------
+
+    if (status) {
+
+        sql += `
+            WHERE status = ?
+        `;
+
+        values.push(status);
+    }
+
+    // --------------------------------------------------
+    // LATEST FIRST
+    // --------------------------------------------------
+
+    sql += `
+        ORDER BY created_at DESC
+    `;
+
+    const [rows] = await db
+        .promise()
+        .execute(
+            sql,
+            values
+        );
+
+    return rows;
+};
+
+// ======================================================
+// GET SINGLE REVIEW
+// ======================================================
+
+const getReviewById = async (id) => {
+
+    const sql = `
+        SELECT
+            id,
+            name,
+            mobile,
+            rating,
+            review,
+            photo,
+            status,
+            created_at,
+            updated_at
+        FROM share_you_exp
+        WHERE id = ?
+        LIMIT 1
+    `;
+
+    const values = [id];
+
+    const [rows] = await db
+        .promise()
+        .execute(
+            sql,
+            values
+        );
+
+    return rows.length > 0
+        ? rows[0]
+        : null;
+};
+
+// ======================================================
+// UPDATE REVIEW STATUS
+// ======================================================
+
+const updateReviewStatus = async (
+    id,
+    status
+) => {
+
+    const sql = `
+        UPDATE share_you_exp
+        SET
+            status = ?
+        WHERE id = ?
+    `;
+
+    const values = [
+        status,
+        id
+    ];
+
+    const [result] = await db
+        .promise()
+        .execute(
+            sql,
+            values
+        );
+
+    return result.affectedRows;
+};
+
+// ======================================================
 // EXPORT
 // ======================================================
 
 module.exports = {
-    createReview
+    createReview,
+    getReviews,
+    getReviewById,
+    updateReviewStatus
 };
