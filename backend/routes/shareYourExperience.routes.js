@@ -42,6 +42,22 @@ router.post(
 );
 
 
+// ------------------------------------------------------
+// GET APPROVED REVIEWS
+//
+// GET
+// /api/share-your-experience/approved
+//
+// PUBLIC
+// Only Approved reviews are returned.
+// ------------------------------------------------------
+
+router.get(
+    "/share-your-experience/approved",
+    shareYourExperienceController.getApprovedReviews
+);
+
+
 // ======================================================
 // SHARE YOUR EXPERIENCE
 // ADMIN

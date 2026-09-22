@@ -1,7 +1,25 @@
 import { CommonModule } from '@angular/common';
-import { HttpClient, HttpClientModule } from '@angular/common/http';
-import { Component } from '@angular/core';
+import {
+  HttpClient,
+  HttpClientModule
+} from '@angular/common/http';
+import {
+  Component,
+  OnInit
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
+
+interface Testimonial {
+  id: number;
+  name: string;
+  mobile?: string | null;
+  rating: number;
+  review: string;
+  photo?: string | null;
+  status: 'Pending' | 'Approved' | 'Rejected';
+  created_at: string;
+  updated_at?: string;
+}
 
 @Component({
   selector: 'app-share-your-experience',
@@ -11,9 +29,11 @@ import { FormsModule } from '@angular/forms';
     FormsModule,
     HttpClientModule
   ],
-  templateUrl: './share-your-experience.component.html'
+  templateUrl:
+    './share-your-experience.component.html'
 })
-export class ShareYourExperienceComponent {
+export class ShareYourExperienceComponent
+  implements OnInit {
 
   // ======================================================
   // API
@@ -22,6 +42,11 @@ export class ShareYourExperienceComponent {
   private apiUrl =
     'https://api.carsey.in/api/share-your-experience';
 
+  private approvedReviewsApiUrl =
+    'https://api.carsey.in/api/share-your-experience/approved';
+
+  readonly imageBaseUrl =
+    'https://api.carsey.in/uploads/share-your-experience/';
 
   // ======================================================
   // FORM
@@ -35,6 +60,15 @@ export class ShareYourExperienceComponent {
     photo: null as File | null
   };
 
+  // ======================================================
+  // APPROVED TESTIMONIALS
+  // ======================================================
+
+  approvedReviews: Testimonial[] = [];
+
+  reviewsLoading = false;
+
+  reviewsError = '';
 
   // ======================================================
   // UI STATES
@@ -48,7 +82,6 @@ export class ShareYourExperienceComponent {
 
   errorMessage = '';
 
-
   // ======================================================
   // CONSTRUCTOR
   // ======================================================
@@ -57,6 +90,55 @@ export class ShareYourExperienceComponent {
     private http: HttpClient
   ) {}
 
+  // ======================================================
+  // INIT
+  // ======================================================
+
+  ngOnInit(): void {
+    this.loadApprovedReviews();
+  }
+
+  // ======================================================
+  // LOAD APPROVED REVIEWS
+  // ======================================================
+
+  loadApprovedReviews(): void {
+    this.reviewsLoading = true;
+    this.reviewsError = '';
+
+    this.http
+      .get<{
+        success: boolean;
+        data: Testimonial[];
+      }>(this.approvedReviewsApiUrl)
+      .subscribe({
+        next: (response) => {
+          if (response?.success) {
+            this.approvedReviews =
+              response.data || [];
+          } else {
+            this.approvedReviews = [];
+          }
+
+          this.reviewsLoading = false;
+        },
+
+        error: (error) => {
+          console.error(
+            'Approved Reviews Error:',
+            error
+          );
+
+          this.approvedReviews = [];
+
+          this.reviewsLoading = false;
+
+          this.reviewsError =
+            error?.error?.message ||
+            'Unable to load customer reviews.';
+        }
+      });
+  }
 
   // ======================================================
   // SET RATING
@@ -65,12 +147,9 @@ export class ShareYourExperienceComponent {
   setRating(
     rating: number
   ): void {
-
     this.form.rating = rating;
-
     this.errorMessage = '';
   }
-
 
   // ======================================================
   // PHOTO SELECT
@@ -79,27 +158,20 @@ export class ShareYourExperienceComponent {
   onPhotoSelected(
     event: Event
   ): void {
-
     const input =
       event.target as HTMLInputElement;
-
 
     if (
       !input.files ||
       input.files.length === 0
     ) {
-
       this.form.photo = null;
-
       this.photoPreview = null;
-
       return;
     }
 
-
     const file =
       input.files[0];
-
 
     // ----------------------------------------------------
     // ALLOWED FILE TYPES
@@ -112,13 +184,11 @@ export class ShareYourExperienceComponent {
       'image/webp'
     ];
 
-
     if (
       !allowedTypes.includes(
         file.type
       )
     ) {
-
       alert(
         'Please upload JPG, JPEG, PNG or WEBP image.'
       );
@@ -132,7 +202,6 @@ export class ShareYourExperienceComponent {
       return;
     }
 
-
     // ----------------------------------------------------
     // MAX FILE SIZE
     // ----------------------------------------------------
@@ -141,7 +210,6 @@ export class ShareYourExperienceComponent {
       file.size >
       5 * 1024 * 1024
     ) {
-
       alert(
         'Photo size should not be more than 5 MB.'
       );
@@ -155,13 +223,11 @@ export class ShareYourExperienceComponent {
       return;
     }
 
-
     // ----------------------------------------------------
     // SAVE FILE
     // ----------------------------------------------------
 
     this.form.photo = file;
-
 
     // ----------------------------------------------------
     // PREVIEW
@@ -170,46 +236,34 @@ export class ShareYourExperienceComponent {
     const reader =
       new FileReader();
 
-
     reader.onload = () => {
-
       this.photoPreview =
         reader.result as string;
-
     };
-
 
     reader.readAsDataURL(file);
 
-
     this.errorMessage = '';
   }
-
 
   // ======================================================
   // REMOVE PHOTO
   // ======================================================
 
   removePhoto(): void {
-
     this.form.photo = null;
 
     this.photoPreview = null;
-
 
     const input =
       document.getElementById(
         'review-photo'
       ) as HTMLInputElement | null;
 
-
     if (input) {
-
       input.value = '';
-
     }
   }
-
 
   // ======================================================
   // SUBMIT REVIEW
@@ -225,9 +279,7 @@ export class ShareYourExperienceComponent {
       return;
     }
 
-
     this.errorMessage = '';
-
 
     // ----------------------------------------------------
     // NAME VALIDATION
@@ -237,24 +289,20 @@ export class ShareYourExperienceComponent {
       !this.form.name ||
       !this.form.name.trim()
     ) {
-
       this.errorMessage =
         'Please enter your name.';
 
       return;
     }
 
-
     if (
       this.form.name.trim().length < 2
     ) {
-
       this.errorMessage =
         'Please enter a valid name.';
 
       return;
     }
-
 
     // ----------------------------------------------------
     // RATING VALIDATION
@@ -263,13 +311,11 @@ export class ShareYourExperienceComponent {
     if (
       !this.form.rating
     ) {
-
       this.errorMessage =
         'Please select a rating.';
 
       return;
     }
-
 
     // ----------------------------------------------------
     // REVIEW VALIDATION
@@ -279,13 +325,11 @@ export class ShareYourExperienceComponent {
       !this.form.review ||
       !this.form.review.trim()
     ) {
-
       this.errorMessage =
         'Please write your review.';
 
       return;
     }
-
 
     // ----------------------------------------------------
     // MOBILE VALIDATION
@@ -297,13 +341,11 @@ export class ShareYourExperienceComponent {
         this.form.mobile.trim()
       )
     ) {
-
       this.errorMessage =
         'Please enter a valid 10 digit mobile number.';
 
       return;
     }
-
 
     // ====================================================
     // FORM DATA
@@ -312,12 +354,10 @@ export class ShareYourExperienceComponent {
     const formData =
       new FormData();
 
-
     formData.append(
       'name',
       this.form.name.trim()
     );
-
 
     formData.append(
       'mobile',
@@ -326,18 +366,15 @@ export class ShareYourExperienceComponent {
         : ''
     );
 
-
     formData.append(
       'rating',
       String(this.form.rating)
     );
 
-
     formData.append(
       'review',
       this.form.review.trim()
     );
-
 
     // ----------------------------------------------------
     // OPTIONAL PHOTO
@@ -346,21 +383,17 @@ export class ShareYourExperienceComponent {
     if (
       this.form.photo
     ) {
-
       formData.append(
         'photo',
         this.form.photo
       );
-
     }
-
 
     // ====================================================
     // START SUBMISSION
     // ====================================================
 
     this.submitting = true;
-
 
     // ====================================================
     // API REQUEST
@@ -378,69 +411,87 @@ export class ShareYourExperienceComponent {
         formData
       )
       .subscribe({
-
         // ------------------------------------------------
         // SUCCESS
         // ------------------------------------------------
 
         next: (response) => {
-
           console.log(
             'Share Your Experience Response:',
             response
           );
-
 
           this.submitting = false;
 
           this.submitted = true;
 
           this.errorMessage = '';
-
         },
-
 
         // ------------------------------------------------
         // ERROR
         // ------------------------------------------------
 
         error: (error) => {
-
           console.error(
             'Share Your Experience Error:',
             error
           );
 
-
           this.submitting = false;
-
 
           if (
             error?.error?.message
           ) {
-
             this.errorMessage =
               error.error.message;
-
           } else {
-
             this.errorMessage =
               'Unable to submit your review. Please try again later.';
-
           }
-
         }
-
       });
   }
 
+  // ======================================================
+  // GET STARS
+  // ======================================================
+
+  getStars(
+    rating: number
+  ): number[] {
+    return Array.from(
+      { length: rating },
+      (_, index) => index + 1
+    );
+  }
+
+  // ======================================================
+  // GET PHOTO URL
+  // ======================================================
+
+  getPhotoUrl(
+    photo: string | null | undefined
+  ): string {
+    if (!photo) {
+      return '';
+    }
+
+    if (
+      photo.startsWith('http://') ||
+      photo.startsWith('https://')
+    ) {
+      return photo;
+    }
+
+    return this.imageBaseUrl + photo;
+  }
 
   // ======================================================
   // RESET FORM
   // ======================================================
 
   resetForm(): void {
-
     this.form = {
       name: '',
       mobile: '',
@@ -448,7 +499,6 @@ export class ShareYourExperienceComponent {
       review: '',
       photo: null
     };
-
 
     this.photoPreview = null;
 
@@ -458,17 +508,13 @@ export class ShareYourExperienceComponent {
 
     this.errorMessage = '';
 
-
     const input =
       document.getElementById(
         'review-photo'
       ) as HTMLInputElement | null;
 
-
     if (input) {
-
       input.value = '';
-
     }
   }
 }

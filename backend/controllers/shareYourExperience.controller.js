@@ -16,11 +16,8 @@ const createReview = async (
     req,
     res
 ) => {
-
     try {
-
         const reviewData = {
-
             name:
                 req.body.name,
 
@@ -45,7 +42,6 @@ const createReview = async (
             );
 
         return res.status(201).json({
-
             success: true,
 
             message:
@@ -54,7 +50,6 @@ const createReview = async (
             data: {
                 reviewId
             }
-
         });
 
     } catch (error) {
@@ -65,12 +60,10 @@ const createReview = async (
         );
 
         return res.status(400).json({
-
             success: false,
 
             message:
                 error.message
-
         });
     }
 };
@@ -84,7 +77,6 @@ const getReviews = async (
     req,
     res
 ) => {
-
     try {
 
         const status =
@@ -96,11 +88,8 @@ const getReviews = async (
             );
 
         return res.status(200).json({
-
             success: true,
-
             data: reviews
-
         });
 
     } catch (error) {
@@ -111,12 +100,47 @@ const getReviews = async (
         );
 
         return res.status(400).json({
-
             success: false,
 
             message:
                 error.message
+        });
+    }
+};
 
+// ======================================================
+// GET APPROVED REVIEWS
+// PUBLIC
+// ======================================================
+
+const getApprovedReviews = async (
+    req,
+    res
+) => {
+    try {
+
+        const reviews =
+            await shareYourExperienceService.getReviews(
+                "Approved"
+            );
+
+        return res.status(200).json({
+            success: true,
+            data: reviews
+        });
+
+    } catch (error) {
+
+        console.error(
+            "Get Approved Share Your Experience Reviews Error:",
+            error
+        );
+
+        return res.status(400).json({
+            success: false,
+
+            message:
+                error.message
         });
     }
 };
@@ -130,7 +154,6 @@ const getReviewById = async (
     req,
     res
 ) => {
-
     try {
 
         const review =
@@ -139,11 +162,8 @@ const getReviewById = async (
             );
 
         return res.status(200).json({
-
             success: true,
-
             data: review
-
         });
 
     } catch (error) {
@@ -154,12 +174,10 @@ const getReviewById = async (
         );
 
         return res.status(404).json({
-
             success: false,
 
             message:
                 error.message
-
         });
     }
 };
@@ -173,7 +191,6 @@ const updateReviewStatus = async (
     req,
     res
 ) => {
-
     try {
 
         const {
@@ -187,14 +204,12 @@ const updateReviewStatus = async (
             );
 
         return res.status(200).json({
-
             success: true,
 
             message:
                 `Review ${status.toLowerCase()} successfully.`,
 
             data: review
-
         });
 
     } catch (error) {
@@ -205,12 +220,10 @@ const updateReviewStatus = async (
         );
 
         return res.status(400).json({
-
             success: false,
 
             message:
                 error.message
-
         });
     }
 };
@@ -220,13 +233,9 @@ const updateReviewStatus = async (
 // ======================================================
 
 module.exports = {
-
     createReview,
-
     getReviews,
-
+    getApprovedReviews,
     getReviewById,
-
     updateReviewStatus
-
 };

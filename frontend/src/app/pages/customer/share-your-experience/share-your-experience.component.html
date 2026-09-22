@@ -560,10 +560,204 @@
       </div>
 
 
-      <!-- EMPTY STATE FOR NOW -->
-      <!-- Backend connect hone ke baad yahan approved reviews aayenge -->
-
+      <!-- =====================================================
+           REVIEWS LOADING
+      ====================================================== -->
       <div
+        *ngIf="reviewsLoading"
+        class="mx-auto mt-12 flex max-w-2xl items-center justify-center"
+      >
+
+        <div
+          class="flex items-center gap-3 rounded-xl bg-white px-6 py-4 shadow-sm"
+        >
+
+          <div
+            class="h-5 w-5 animate-spin rounded-full border-2 border-slate-200 border-t-red-600"
+          ></div>
+
+          <span class="text-sm font-medium text-slate-600">
+            Loading customer reviews...
+          </span>
+
+        </div>
+
+      </div>
+
+
+      <!-- =====================================================
+           REVIEWS ERROR
+      ====================================================== -->
+      <div
+        *ngIf="
+          !reviewsLoading &&
+          reviewsError &&
+          approvedReviews.length === 0
+        "
+        class="mx-auto mt-12 max-w-2xl rounded-2xl border border-red-100 bg-red-50 p-8 text-center"
+      >
+
+        <div
+          class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-red-100 text-xl font-bold text-red-600"
+        >
+          !
+        </div>
+
+        <h3
+          class="mt-4 text-lg font-bold text-slate-800"
+        >
+          Unable to Load Reviews
+        </h3>
+
+        <p
+          class="mt-2 text-sm leading-6 text-slate-500"
+        >
+          {{ reviewsError }}
+        </p>
+
+        <button
+          type="button"
+          (click)="loadApprovedReviews()"
+          class="mt-5 rounded-lg bg-red-600 px-5 py-2.5 text-sm font-bold text-white transition hover:bg-red-700"
+        >
+          Try Again
+        </button>
+
+      </div>
+
+
+      <!-- =====================================================
+           APPROVED REVIEWS
+      ====================================================== -->
+      <div
+        *ngIf="
+          !reviewsLoading &&
+          approvedReviews.length > 0
+        "
+        class="mt-12 grid gap-6 md:grid-cols-2 lg:grid-cols-3"
+      >
+
+        <article
+          *ngFor="let review of approvedReviews"
+          class="flex h-full flex-col rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-xl"
+        >
+
+          <!-- CUSTOMER HEADER -->
+          <div
+            class="flex items-center gap-4"
+          >
+
+            <!-- CUSTOMER PHOTO -->
+            <div
+              class="h-14 w-14 shrink-0 overflow-hidden rounded-full bg-slate-100"
+            >
+
+              <img
+                *ngIf="review.photo"
+                [src]="getPhotoUrl(review.photo)"
+                [alt]="review.name"
+                class="h-full w-full object-cover"
+              />
+
+              <div
+                *ngIf="!review.photo"
+                class="flex h-full w-full items-center justify-center bg-slate-900 text-lg font-bold text-white"
+              >
+                {{ review.name.charAt(0).toUpperCase() }}
+              </div>
+
+            </div>
+
+
+            <!-- CUSTOMER NAME + RATING -->
+            <div class="min-w-0">
+
+              <h3
+                class="truncate text-base font-bold text-slate-900"
+              >
+                {{ review.name }}
+              </h3>
+
+              <!-- STARS -->
+              <div
+                class="mt-1 flex items-center gap-0.5"
+                aria-label="Customer rating"
+              >
+
+                <span
+                  *ngFor="let star of [1, 2, 3, 4, 5]"
+                  class="text-base"
+                  [ngClass]="
+                    star <= review.rating
+                      ? 'text-yellow-400'
+                      : 'text-slate-200'
+                  "
+                >
+                  ★
+                </span>
+
+              </div>
+
+            </div>
+
+          </div>
+
+
+          <!-- REVIEW TEXT -->
+          <div class="mt-5 flex-1">
+
+            <div
+              class="mb-3 text-3xl leading-none text-red-500"
+            >
+              “
+            </div>
+
+            <p
+              class="text-sm leading-7 text-slate-600"
+            >
+              {{ review.review }}
+            </p>
+
+          </div>
+
+
+          <!-- VERIFIED LABEL -->
+          <div
+            class="mt-5 border-t border-slate-100 pt-4"
+          >
+
+            <div class="flex items-center gap-2">
+
+              <span
+                class="flex h-5 w-5 items-center justify-center rounded-full bg-green-100 text-xs font-bold text-green-600"
+              >
+                ✓
+              </span>
+
+              <p
+                class="text-xs font-medium text-slate-400"
+              >
+                Verified customer experience
+              </p>
+
+            </div>
+
+          </div>
+
+        </article>
+
+      </div>
+
+
+      <!-- =====================================================
+           NO REVIEWS
+      ====================================================== -->
+      <div
+        *ngIf="
+          !reviewsLoading &&
+          !reviewsError &&
+          approvedReviews.length === 0
+        "
         class="mx-auto mt-12 max-w-2xl rounded-2xl border border-dashed border-slate-300 bg-white p-10 text-center"
       >
 
