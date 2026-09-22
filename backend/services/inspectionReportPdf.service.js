@@ -37,6 +37,12 @@ const resolvePdfLogoPath = () => {
         path.join(process.cwd(), "public", "favicon.png"),
         path.join(process.cwd(), "public", "logo.png"),
         path.join(process.cwd(), "public", "images", "logo.png"),
+
+        // Angular frontend logo fallback.
+        path.join(process.cwd(), "frontend", "src", "assets", "images", "carsey-logo.png"),
+        path.join(__dirname, "..", "..", "frontend", "src", "assets", "images", "carsey-logo.png"),
+        path.join(__dirname, "..", "..", "frontend", "public", "images", "carsey-logo.png"),
+
         path.join(__dirname, "..", "public", "favicon.png"),
         path.join(__dirname, "..", "public", "logo.png"),
         path.join(__dirname, "..", "public", "images", "logo.png")
@@ -2081,11 +2087,16 @@ const ensureSpace = (doc, y, requiredHeight, reportId) => {
 
 const drawHeader = (doc, report, heroImage = null) => {
     const bookingCode = getBookingCode(report);
-    // Logo is loaded from backend/uploads/favicon.png first.
     const logoPath = resolvePdfLogoPath();
-
     const headerHeight = 92;
 
+    // ==================================================
+    // TOP HEADER
+    // Logo       : TOP LEFT
+    // ID         : DIRECTLY BELOW LOGO
+    // Address    : TOP RIGHT
+    // Contact No : RIGHT
+    // ==================================================
     doc.roundedRect(
         MARGIN_LEFT,
         MARGIN_TOP,
@@ -2099,9 +2110,9 @@ const drawHeader = (doc, report, heroImage = null) => {
             doc.image(
                 logoPath,
                 MARGIN_LEFT + 12,
-                MARGIN_TOP + 10,
+                MARGIN_TOP + 8,
                 {
-                    fit: [170, 68],
+                    fit: [155, 55],
                     align: "left",
                     valign: "center"
                 }
@@ -2110,86 +2121,53 @@ const drawHeader = (doc, report, heroImage = null) => {
             doc.font("Helvetica-Bold")
                 .fontSize(19)
                 .fillColor(COLORS.navy)
-                .text(
-                    "CARSEY.IN",
-                    MARGIN_LEFT + 14,
-                    MARGIN_TOP + 19
-                );
+                .text("CARSEY.IN", MARGIN_LEFT + 14, MARGIN_TOP + 17);
         }
     } else {
         doc.font("Helvetica-Bold")
             .fontSize(19)
             .fillColor(COLORS.navy)
-            .text(
-                "CARSEY.IN",
-                MARGIN_LEFT + 14,
-                MARGIN_TOP + 19
-            );
+            .text("CARSEY.IN", MARGIN_LEFT + 14, MARGIN_TOP + 17);
     }
 
-    doc.font("Helvetica-Bold")
-        .fontSize(9)
-        .fillColor(COLORS.gray)
-        .text(
-            "VEHICLE INSPECTION REPORT",
-            MARGIN_LEFT + 190,
-            MARGIN_TOP + 13,
-            {
-                width: 145
-            }
-        );
-
-    doc.font("Helvetica-Bold")
-        .fontSize(7.4)
-        .fillColor(COLORS.dark)
-        .text(
-            "Office Address",
-            MARGIN_LEFT + 190,
-            MARGIN_TOP + 30,
-            {
-                width: 155
-            }
-        );
-
-    doc.font("Helvetica")
-        .fontSize(7.1)
-        .fillColor(COLORS.gray)
-        .text(
-            PDF_OFFICE_ADDRESS,
-            MARGIN_LEFT + 190,
-            MARGIN_TOP + 42,
-            {
-                width: 155,
-                height: 30,
-                lineGap: 1
-            }
-        );
-
-    doc.font("Helvetica-Bold")
-        .fontSize(7.4)
-        .fillColor(COLORS.dark)
-        .text(
-            `Contact No - ${PDF_CONTACT_NUMBER}`,
-            PAGE_WIDTH - 165,
-            MARGIN_TOP + 30,
-            {
-                width: 125,
-                align: "right"
-            }
-        );
-
+    // ID directly below logo.
     doc.font("Helvetica-Bold")
         .fontSize(8.5)
         .fillColor(COLORS.navy)
-        .text(
-            `ID ${bookingCode}`,
-            PAGE_WIDTH - 165,
-            MARGIN_TOP + 52,
-            {
-                width: 125,
-                align: "right"
-            }
-        );
+        .text(`ID ${bookingCode}`, MARGIN_LEFT + 14, MARGIN_TOP + 66, {
+            width: 155,
+            align: "left"
+        });
+
+    // Office address and contact on the right.
+    const rightX = PAGE_WIDTH - MARGIN_RIGHT - 250;
+    const rightWidth = 250;
+
+    doc.font("Helvetica-Bold")
+        .fontSize(8)
+        .fillColor(COLORS.dark)
+        .text("Office Address", rightX, MARGIN_TOP + 12, {
+            width: rightWidth,
+            align: "right"
+        });
+
+    doc.font("Helvetica")
+        .fontSize(7.2)
+        .fillColor(COLORS.gray)
+        .text(PDF_OFFICE_ADDRESS, rightX, MARGIN_TOP + 25, {
+            width: rightWidth,
+            height: 30,
+            align: "right",
+            lineGap: 1
+        });
+
+    doc.font("Helvetica-Bold")
+        .fontSize(8)
+        .fillColor(COLORS.dark)
+        .text(`Contact No - ${PDF_CONTACT_NUMBER}`, rightX, MARGIN_TOP + 61, {
+            width: rightWidth,
+            align: "right"
+        });
 
     let y = MARGIN_TOP + headerHeight + 10;
 
@@ -2215,35 +2193,11 @@ const drawHeader = (doc, report, heroImage = null) => {
                 heroX + 6,
                 heroY + 6,
                 {
-                    fit: [
-                        CONTENT_WIDTH - 12,
-                        heroHeight - 12
-                    ],
+                    fit: [CONTENT_WIDTH - 12, heroHeight - 12],
                     align: "center",
                     valign: "center"
                 }
             );
-
-            doc.roundedRect(
-                heroX + 16,
-                heroY + 16,
-                150,
-                28,
-                4
-            ).fill(COLORS.navy);
-
-            doc.font("Helvetica-Bold")
-                .fontSize(10)
-                .fillColor(COLORS.white)
-                .text(
-                    "VEHICLE INSPECTION REPORT",
-                    heroX + 25,
-                    heroY + 25,
-                    {
-                        width: 132,
-                        align: "center"
-                    }
-                );
         } catch (error) {
             doc.font("Helvetica")
                 .fontSize(9)
