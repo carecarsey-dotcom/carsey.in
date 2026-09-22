@@ -2149,7 +2149,7 @@ const drawHeader = (doc, report, heroImage = null) => {
         .fontSize(8.2)
         .fillColor(COLORS.gray)
         .text(
-            "LGC-11, Galaxy Diamond Plaza \n Lower Ground Floor, Plot C-1A,\n Sector 4,Greater Noida West",
+            "LGC-11, Galaxy Diamond Plaza \nLower Ground Floor, Plot C-1A,\n Sector 4,Greater Noida West",
             MARGIN_LEFT + 190,
             MARGIN_TOP + 27,
             {
