@@ -3564,6 +3564,7 @@ export class EmployeeInspectionComponent
     this.invalidVehiclePhotos.clear();
     this.invalidInspectionVideos.clear();
     this.invalidChecklistItems.clear();
+    this.validationErrors.clear();
     this.invalidOverallScore = false;
     this.validationErrorActive = false;
     this.validationTargetText = '';
@@ -3579,26 +3580,128 @@ export class EmployeeInspectionComponent
     this.validationErrorActive = true;
     this.validationTargetText = targetText;
     this.validationTargetType = targetType;
+
+    // Keep the existing template validation bindings in sync with the
+    // dedicated validation sets above. This makes the exact field/card
+    // turn red without changing any validation/business rules.
+    if (targetType === 'vehicle') {
+      const vehicleKeyMap: Record<string, string> = {
+        'Brand': 'vehicle.brand',
+        'Model': 'vehicle.model',
+        'Registration Number': 'vehicle.registration_number',
+        'Manufacturing Year': 'vehicle.manufacturing_year',
+        'Odometer': 'vehicle.odometer'
+      };
+
+      const key = vehicleKeyMap[targetText];
+      if (key) this.validationErrors.add(key);
+    }
+
+    if (targetType === 'photo') {
+      const photo = this.vehiclePhotos.find(item => item.title === targetText);
+      if (photo) this.validationErrors.add(`photo:${photo.key}`);
+    }
+
+    if (targetType === 'video') {
+      const video = this.inspectionVideos.find(item => item.title === targetText);
+      if (video) this.validationErrors.add(`video:${video.key}`);
+    }
+
+    if (targetType === 'detail') {
+      for (const key of this.invalidDetailedRows) {
+        this.validationErrors.add(`detail:${key}`);
+      }
+    }
+
+    if (targetType === 'score') {
+      this.validationErrors.add('overall_score');
+    }
+
+    if (targetType === 'checklist') {
+      for (const key of this.invalidChecklistItems) {
+        this.validationErrors.add(`checklist:${key}`);
+      }
+    }
+
     return false;
   }
 
+  private getValidationDomKey(): string {
+    if (this.validationTargetType === 'vehicle') {
+      const map: Record<string, string> = {
+        'Brand': 'vehicle.brand',
+        'Model': 'vehicle.model',
+        'Registration Number': 'vehicle.registration_number',
+        'Manufacturing Year': 'vehicle.manufacturing_year',
+        'Odometer': 'vehicle.odometer'
+      };
+      return map[this.validationTargetText] || '';
+    }
+
+    if (this.validationTargetType === 'photo') {
+      const photo = this.vehiclePhotos.find(item => item.title === this.validationTargetText);
+      return photo ? `photo:${photo.key}` : '';
+    }
+
+    if (this.validationTargetType === 'video') {
+      const video = this.inspectionVideos.find(item => item.title === this.validationTargetText);
+      return video ? `video:${video.key}` : '';
+    }
+
+    if (this.validationTargetType === 'detail') {
+      for (const key of this.invalidDetailedRows) {
+        return `detail:${key}`;
+      }
+    }
+
+    if (this.validationTargetType === 'score') {
+      return 'overall_score';
+    }
+
+    if (this.validationTargetType === 'checklist') {
+      for (const key of this.invalidChecklistItems) {
+        return `checklist:${key}`;
+      }
+    }
+
+    return '';
+  }
+
   private focusFirstValidationError(): void {
-    // First preference: the exact element already marked by the template.
-    const firstInvalid = document.querySelector('.inspection-invalid') as HTMLElement | null;
+    const validationKey = this.getValidationDomKey();
 
-    if (firstInvalid) {
-      firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      return;
+    if (validationKey) {
+      const exactElement = document.querySelector(
+        `[data-validation-key=\"${CSS.escape(validationKey)}\"]`
+      ) as HTMLElement | null;
+
+      if (exactElement) {
+        exactElement.classList.add('inspection-invalid');
+        exactElement.scrollIntoView({
+          behavior: 'smooth',
+          block: 'center'
+        });
+
+        // Focus the actual input/button when possible.
+        const focusable = exactElement.querySelector(
+          'input:not([type=\"file\"]), select, textarea, button'
+        ) as HTMLElement | null;
+
+        if (focusable) {
+          window.setTimeout(() => focusable.focus(), 250);
+        }
+
+        window.setTimeout(() => {
+          exactElement.classList.remove('inspection-invalid');
+        }, 3500);
+
+        return;
+      }
     }
 
-    // Fallback: locate the exact section by its visible title/text. This makes
-    // validation work even when an older HTML template does not yet have the
-    // inspection-invalid class on that section.
+    // Fallback for any validation target that does not have a data key.
     const target = this.validationTargetText.trim().toLowerCase();
-
-    if (!target) {
-      return;
-    }
+    if (!target) return;
 
     const candidates = Array.from(
       document.querySelectorAll('h1, h2, h3, h4, h5, label, p, span, div')
@@ -3609,9 +3712,7 @@ export class EmployeeInspectionComponent
       return text === target || text.includes(target);
     });
 
-    if (!match) {
-      return;
-    }
+    if (!match) return;
 
     const container =
       match.closest('section') as HTMLElement | null ||
@@ -3619,24 +3720,12 @@ export class EmployeeInspectionComponent
       match.parentElement;
 
     const targetElement = container || match;
-
     targetElement.classList.add('inspection-invalid');
     targetElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
 
-    // Remove the temporary fallback highlight after a short delay.
     window.setTimeout(() => {
       targetElement.classList.remove('inspection-invalid');
     }, 3500);
-  }
-
-  private showValidationAlert(): void {
-    if (
-      typeof window !== 'undefined' &&
-      typeof window.alert === 'function' &&
-      this.errorMessage
-    ) {
-      window.alert(this.errorMessage);
-    }
   }
 
   validateForm(): boolean {
@@ -3945,7 +4034,6 @@ export class EmployeeInspectionComponent
     if (!this.validateForm()) {
       setTimeout(() => {
         this.focusFirstValidationError();
-        this.showValidationAlert();
       }, 50);
       return;
     }

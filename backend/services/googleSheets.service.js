@@ -43,8 +43,101 @@ const TABLES = [
 let syncTimer = null;
 let syncRunning = false;
 let syncQueued = false;
+let lastSyncCompletedAt = 0;
+
+// Do not start another full 14-table sync immediately after one finishes.
+// This protects the service-account user quota when many DB writes happen together.
+const MIN_SYNC_INTERVAL = 60000;
 
 const SYNC_DELAY = 3000;
+
+// Google Sheets has per-minute write quotas.
+// Keep retries bounded and use exponential backoff for 429/5xx errors.
+const GOOGLE_RETRY_LIMIT = 5;
+const GOOGLE_MAX_BACKOFF = 32000;
+
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+function isRetryableGoogleError(error) {
+
+    const status =
+        Number(
+            error?.response?.status ||
+            error?.code ||
+            0
+        );
+
+    const message = String(
+        error?.message ||
+        error ||
+        ""
+    ).toLowerCase();
+
+    return (
+        status === 429 ||
+        status === 500 ||
+        status === 502 ||
+        status === 503 ||
+        status === 504 ||
+        message.includes("quota exceeded") ||
+        message.includes("too many requests") ||
+        message.includes("rate limit") ||
+        message.includes("resource exhausted")
+    );
+}
+
+async function executeGoogleRequest(
+    operation,
+    label = "Google Sheets request"
+) {
+
+    let lastError = null;
+
+    for (
+        let attempt = 0;
+        attempt <= GOOGLE_RETRY_LIMIT;
+        attempt++
+    ) {
+
+        try {
+            return await operation();
+        } catch (error) {
+
+            lastError = error;
+
+            if (
+                !isRetryableGoogleError(error) ||
+                attempt >= GOOGLE_RETRY_LIMIT
+            ) {
+                throw error;
+            }
+
+            const baseDelay = Math.min(
+                1000 * Math.pow(2, attempt),
+                GOOGLE_MAX_BACKOFF
+            );
+
+            const jitter =
+                Math.floor(Math.random() * 1000);
+
+            const delay = Math.min(
+                baseDelay + jitter,
+                GOOGLE_MAX_BACKOFF
+            );
+
+            console.warn(
+                `Google Sheets ${label} hit a temporary quota/rate limit. ` +
+                `Retry ${attempt + 1}/${GOOGLE_RETRY_LIMIT} in ${delay}ms.`
+            );
+
+            await sleep(delay);
+        }
+    }
+
+    throw lastError;
+}
 
 // ======================================================
 // GOOGLE AUTHENTICATION
@@ -382,14 +475,18 @@ async function createMissingSheets(
         return;
     }
 
-    await sheets.spreadsheets.batchUpdate({
-        spreadsheetId:
-            env.GOOGLE_SPREADSHEET_ID,
+    await executeGoogleRequest(
+        () =>
+            sheets.spreadsheets.batchUpdate({
+                spreadsheetId:
+                    env.GOOGLE_SPREADSHEET_ID,
 
-        requestBody: {
-            requests
-        }
-    });
+                requestBody: {
+                    requests
+                }
+            }),
+        "batch update"
+    );
 
     console.log(
         `Created ${requests.length} Google Sheet tab(s).`
@@ -397,11 +494,10 @@ async function createMissingSheets(
 }
 
 // ======================================================
-// SYNC ONE TABLE
+// BUILD ONE TABLE SYNC DATA
 // ======================================================
 
-async function syncTable(
-    sheets,
+async function buildTableSyncData(
     tableName
 ) {
 
@@ -409,10 +505,6 @@ async function syncTable(
         getSafeSheetName(
             tableName
         );
-
-    console.log(
-        `Syncing table: ${tableName}`
-    );
 
     const columns =
         await getTableColumns(
@@ -450,45 +542,174 @@ async function syncTable(
         values.push(rowValues);
     }
 
+    return {
+        tableName,
+        sheetName,
+        columns,
+        rows,
+        values
+    };
+}
+
+
+// ======================================================
+// SYNC ONE TABLE
+// ======================================================
+
+async function syncTable(
+    sheets,
+    tableName
+) {
+
+    console.log(
+        `Syncing table: ${tableName}`
+    );
+
+    const tableData =
+        await buildTableSyncData(
+            tableName
+        );
+
     // --------------------------------------------------
     // CLEAR OLD DATA
     // --------------------------------------------------
 
-    await sheets.spreadsheets.values.clear({
-        spreadsheetId:
-            env.GOOGLE_SPREADSHEET_ID,
+    await executeGoogleRequest(
+        () =>
+            sheets.spreadsheets.values.clear({
+                spreadsheetId:
+                    env.GOOGLE_SPREADSHEET_ID,
 
-        range:
-            `${sheetName}!A:ZZ`
-    });
+                range:
+                    `${tableData.sheetName}!A:ZZ`
+            }),
+        `${tableName} clear`
+    );
 
     // --------------------------------------------------
     // WRITE NEW DATA
     // --------------------------------------------------
 
-    if (values.length > 0) {
+    if (tableData.values.length > 0) {
 
-        await sheets.spreadsheets.values.update({
+        await executeGoogleRequest(
+            () =>
+                sheets.spreadsheets.values.update({
 
-            spreadsheetId:
-                env.GOOGLE_SPREADSHEET_ID,
+                    spreadsheetId:
+                        env.GOOGLE_SPREADSHEET_ID,
 
-            range:
-                `${sheetName}!A1`,
+                    range:
+                        `${tableData.sheetName}!A1`,
 
-            valueInputOption:
-                "RAW",
+                    valueInputOption:
+                        "RAW",
 
-            requestBody: {
-                values
-            }
-        });
+                    requestBody: {
+                        values:
+                            tableData.values
+                    }
+                }),
+            `${tableName} update`
+        );
     }
 
     console.log(
-        `✓ ${tableName}: ${rows.length} row(s) synced.`
+        `✓ ${tableName}: ${tableData.rows.length} row(s) synced.`
     );
+
+    return tableData;
 }
+
+
+// ======================================================
+// BATCH SYNC TABLE DATA
+// ======================================================
+
+async function batchSyncTableData(
+    sheets,
+    tableDataList
+) {
+
+    if (
+        !Array.isArray(tableDataList) ||
+        tableDataList.length === 0
+    ) {
+        return;
+    }
+
+    // --------------------------------------------------
+    // CLEAR ALL TABLES IN ONE API REQUEST
+    // --------------------------------------------------
+
+    const ranges =
+        tableDataList.map(
+            tableData =>
+                `${tableData.sheetName}!A:ZZ`
+        );
+
+    await executeGoogleRequest(
+        () =>
+            sheets.spreadsheets.values.batchClear({
+                spreadsheetId:
+                    env.GOOGLE_SPREADSHEET_ID,
+
+                requestBody: {
+                    ranges
+                }
+            }),
+        "batch clear"
+    );
+
+    // --------------------------------------------------
+    // WRITE ALL TABLES IN ONE API REQUEST
+    // --------------------------------------------------
+
+    const data =
+        tableDataList
+            .filter(
+                tableData =>
+                    tableData.values.length > 0
+            )
+            .map(
+                tableData => ({
+                    range:
+                        `${tableData.sheetName}!A1`,
+
+                    values:
+                        tableData.values
+                })
+            );
+
+    if (data.length === 0) {
+        return;
+    }
+
+    await executeGoogleRequest(
+        () =>
+            sheets.spreadsheets.values.batchUpdate({
+                spreadsheetId:
+                    env.GOOGLE_SPREADSHEET_ID,
+
+                requestBody: {
+                    valueInputOption:
+                        "RAW",
+
+                    data
+                }
+            }),
+        "batch data update"
+    );
+
+    for (const tableData of tableDataList) {
+
+        console.log(
+            `✓ ${tableData.tableName}: ` +
+            `${tableData.rows.length} row(s) synced.`
+        );
+    }
+}
+
 
 // ======================================================
 // FORMAT SHEETS
@@ -610,15 +831,18 @@ async function formatSheets(
         return;
     }
 
-    await sheets.spreadsheets.batchUpdate({
+    await executeGoogleRequest(
+        () =>
+            sheets.spreadsheets.batchUpdate({
+                spreadsheetId:
+                    env.GOOGLE_SPREADSHEET_ID,
 
-        spreadsheetId:
-            env.GOOGLE_SPREADSHEET_ID,
-
-        requestBody: {
-            requests
-        }
-    });
+                requestBody: {
+                    requests
+                }
+            }),
+        "batch update"
+    );
 }
 
 // ======================================================
@@ -654,8 +878,10 @@ async function syncAllTables() {
         );
 
         // ------------------------------------------------
-        // SYNC EACH TABLE
+        // PREPARE EACH TABLE
         // ------------------------------------------------
+
+        const tableDataList = [];
 
         for (
             const tableName
@@ -664,15 +890,19 @@ async function syncAllTables() {
 
             try {
 
-                await syncTable(
-                    sheets,
-                    tableName
+                const tableData =
+                    await buildTableSyncData(
+                        tableName
+                    );
+
+                tableDataList.push(
+                    tableData
                 );
 
             } catch (error) {
 
                 console.error(
-                    `❌ Failed to sync ${tableName}`
+                    `❌ Failed to prepare ${tableName}`
                 );
 
                 console.error(
@@ -680,6 +910,29 @@ async function syncAllTables() {
                     error
                 );
             }
+        }
+
+        // ------------------------------------------------
+        // BATCH WRITE ALL TABLES
+        // ------------------------------------------------
+
+        try {
+
+            await batchSyncTableData(
+                sheets,
+                tableDataList
+            );
+
+        } catch (error) {
+
+            console.error(
+                "❌ Failed to batch sync Google Sheets data"
+            );
+
+            console.error(
+                error.message ||
+                error
+            );
         }
 
         // ------------------------------------------------
@@ -813,8 +1066,27 @@ function scheduleGoogleSheetsSync(
         clearTimeout(syncTimer);
     }
 
-    // Wait a few seconds so multiple DB
-    // operations can be grouped together.
+    // Keep at least one minute between complete automatic
+    // full-table syncs. This prevents a burst of DB changes
+    // from repeatedly consuming the Sheets write quota.
+    const elapsed =
+        Date.now() -
+        lastSyncCompletedAt;
+
+    const cooldown =
+        lastSyncCompletedAt > 0
+            ? Math.max(
+                MIN_SYNC_INTERVAL - elapsed,
+                0
+            )
+            : 0;
+
+    const delay =
+        Math.max(
+            SYNC_DELAY,
+            cooldown
+        );
+
     syncTimer = setTimeout(
         async () => {
 
@@ -848,8 +1120,12 @@ function scheduleGoogleSheetsSync(
 
                 syncRunning = false;
 
+                lastSyncCompletedAt =
+                    Date.now();
+
                 // If another DB operation happened
-                // while syncing, run one more sync.
+                // while syncing, schedule only after the
+                // automatic cooldown instead of immediately.
                 if (syncQueued) {
 
                     syncQueued = false;
@@ -861,9 +1137,10 @@ function scheduleGoogleSheetsSync(
             }
 
         },
-        SYNC_DELAY
+        delay
     );
 }
+
 
 // ======================================================
 // IMMEDIATE SYNC
@@ -905,6 +1182,7 @@ async function syncGoogleSheetsNow(
     } finally {
 
         syncRunning = false;
+        lastSyncCompletedAt = Date.now();
 
         if (syncQueued) {
 
@@ -926,7 +1204,9 @@ function getGoogleSheetsSyncStatus() {
     return {
         running: syncRunning,
         queued: syncQueued,
-        scheduled: Boolean(syncTimer)
+        scheduled: Boolean(syncTimer),
+        lastSyncCompletedAt,
+        minSyncInterval: MIN_SYNC_INTERVAL
     };
 }
 
@@ -939,6 +1219,10 @@ module.exports = {
     syncAllTables,
 
     syncTable,
+
+    buildTableSyncData,
+
+    batchSyncTableData,
 
     getTableData,
 
