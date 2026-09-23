@@ -244,9 +244,10 @@ export class EmployeeInspectionComponent
     model: '',
 
     variant: '',
-
-    manufacturing_year:
-      new Date().getFullYear(),
+manufacturing_year:
+  `${new Date().getFullYear()}-${String(
+    new Date().getMonth() + 1
+  ).padStart(2, '0')}`,
 
     odometer:
       null as number | null,

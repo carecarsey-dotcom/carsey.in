@@ -548,6 +548,26 @@ const formatDate = (value) => {
     });
 };
 
+const formatManufacturingMonthYear = (value) => {
+    if (!value) return "-";
+
+    const str = String(value).trim();
+
+    // YYYY-MM → MM/YYYY
+    if (/^\d{4}-\d{2}$/.test(str)) {
+        const [year, month] = str.split("-");
+        return `${month}/${year}`;
+    }
+
+    // MM/YYYY → MM/YYYY
+    if (/^\d{1,2}\/\d{4}$/.test(str)) {
+        const [month, year] = str.split("/");
+        return `${month.padStart(2, "0")}/${year}`;
+    }
+
+    return str;
+};
+
 const formatScore = (value) => {
     if (value === undefined || value === null || value === "") {
         return "-";
@@ -2354,7 +2374,16 @@ const drawVehicleDetails = (doc, report, y, reportId) => {
         ["Brand", vehicleValue(report, ["brand", "make", "vehicleBrand"])],
         ["Model", vehicleValue(report, ["model", "vehicleModel"])],
         ["Variant", vehicleValue(report, ["variant", "vehicleVariant"])],
-        ["Manufacturing Year", vehicleValue(report, ["manufacturing_year", "manufacturingYear", "year"])],
+        [
+    "Manufacturing Year",
+    formatManufacturingMonthYear(
+        vehicleValue(report, [
+            "manufacturing_year",
+            "manufacturingYear",
+            "year"
+        ])
+    )
+],
         ["Odometer", formatOdometer(vehicleValue(report, ["odometer", "kmDriven", "km_driven", "mileage"], "-"))],
         ["City", vehicleValue(report, ["city", "location", "vehicleCity"])],
         ["Transmission", vehicleValue(report, ["transmission"])],
