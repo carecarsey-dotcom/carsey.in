@@ -3010,7 +3010,7 @@ const drawAdditionalVehiclePhotos = (doc, images, reportId) => {
 // DOCUMENT / TITLE IMAGES
 // ======================================================
 
-const drawDocumentPhotos = (doc, images, reportId, startY = null) => {
+const drawDocumentPhotos = (doc, images, reportId) => {
     const documentImages = (Array.isArray(images) ? images : [])
         .filter(isDocumentImage);
 
@@ -3019,13 +3019,18 @@ const drawDocumentPhotos = (doc, images, reportId, startY = null) => {
         DOCUMENT_PHOTO_ORDER
     );
 
+    // ==================================================
+    // DOCUMENTS MUST ALWAYS START ON A NEW PAGE
+    // ==================================================
+    doc.addPage();
+
     drawImageGridSection(
         doc,
         orderedImages,
         reportId,
         "Documents",
         "No document images uploaded.",
-        startY,
+        MARGIN_TOP,
         false
     );
 };
@@ -3272,7 +3277,7 @@ const generateInspectionReportPdf = (report) => {
                     doc,
                     allImages,
                     reportId,
-                    y
+                    
                 );
 
                 // The document grid may continue onto additional pages.
