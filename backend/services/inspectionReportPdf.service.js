@@ -17,43 +17,32 @@ const CONTENT_WIDTH = PAGE_WIDTH - MARGIN_LEFT - MARGIN_RIGHT;
 const PAGE_BOTTOM = PAGE_HEIGHT - MARGIN_BOTTOM;
 
 // ======================================================
-// CARSEY.IN PDF BRANDING
+// PDF BRANDING / HEADER ASSETS
 // ======================================================
+// Keep the office address here so it can be changed in one place.
+// Replace the placeholder with the exact Carsey.in office address.
 const PDF_OFFICE_ADDRESS =
     "LGC-11, Galaxy Diamond Plaza, Lower Ground Floor, Plot C-1A, Sector 4, Greater Noida West";
 
 const PDF_CONTACT_NUMBER =
     "9329833404";
 
-const resolvePdfLogoPath = () => {
-    const candidates = [
-        // Actual backend logo location used by this project.
-        path.join(process.cwd(), "uploads", "favicon.png"),
-        path.join(__dirname, "..", "uploads", "favicon.png"),
+const PDF_LOGO_CANDIDATES = [
+    // Primary permanent PDF logo. This file is committed to Git.
+    path.join(__dirname, "..", "pdf", "carsey-logo.png"),
+    path.join(process.cwd(), "backend", "pdf", "carsey-logo.png"),
+    path.join(process.cwd(), "pdf", "carsey-logo.png"),
 
-        // Existing/fallback logo locations are preserved.
-        path.join(process.cwd(), "uploads", "logo.png"),
-        path.join(__dirname, "..", "uploads", "logo.png"),
-        path.join(process.cwd(), "public", "favicon.png"),
-        path.join(process.cwd(), "public", "logo.png"),
-        path.join(process.cwd(), "public", "images", "logo.png"),
-        path.join(__dirname, "..", "public", "favicon.png"),
-        path.join(__dirname, "..", "public", "logo.png"),
-        path.join(__dirname, "..", "public", "images", "logo.png")
-    ];
-
-    for (const candidate of candidates) {
-        try {
-            if (fs.existsSync(candidate)) {
-                return candidate;
-            }
-        } catch (error) {
-            // Continue.
-        }
-    }
-
-    return null;
-};
+    // Existing project/upload fallbacks are preserved.
+    path.join(process.cwd(), "public", "favicon.png"),
+    path.join(process.cwd(), "public", "logo.png"),
+    path.join(process.cwd(), "uploads", "favicon.png"),
+    path.join(process.cwd(), "uploads", "logo.png"),
+    path.join(__dirname, "..", "public", "favicon.png"),
+    path.join(__dirname, "..", "public", "logo.png"),
+    path.join(__dirname, "..", "uploads", "favicon.png"),
+    path.join(__dirname, "..", "uploads", "logo.png")
+];
 
 const COLORS = {
     navy: "#111827",
@@ -713,6 +702,20 @@ const resolveImagePath = (imagePath) => {
     return null;
 };
 
+const resolvePdfLogoPath = () => {
+    for (const candidate of PDF_LOGO_CANDIDATES) {
+        try {
+            if (fs.existsSync(candidate)) {
+                return candidate;
+            }
+        } catch (error) {
+            // Continue to the next candidate.
+        }
+    }
+
+    return null;
+};
+
 const loadVehicleImages = async (report) => {
     let images = [];
 
@@ -919,6 +922,29 @@ const isStandardVehiclePhoto = (image) => {
     return VEHICLE_PHOTO_ORDER.some(
         (expectedTitle) => expectedTitle.trim().toLowerCase() === title
     );
+};
+
+const isAdditionalVehiclePhoto = (image) => {
+    const type = getImageType(image).trim();
+    const title = getImageTitle(image, "").trim();
+
+    return (
+        /^Additional Vehicle Photo [1-6]$/i.test(type) ||
+        /^Additional Photo [1-6]$/i.test(type) ||
+        /^Additional Photo [1-6]$/i.test(title)
+    );
+};
+
+const getAdditionalVehiclePhotoNumber = (image) => {
+    const type = getImageType(image).trim();
+    const title = getImageTitle(image, "").trim();
+
+    const match =
+        type.match(/Additional Vehicle Photo\s+([1-6])/i) ||
+        type.match(/Additional Photo\s+([1-6])/i) ||
+        title.match(/Additional Photo\s+([1-6])/i);
+
+    return match ? Number(match[1]) : 999;
 };
 
 const getDetailedImageKey = (image) => {
@@ -2079,190 +2105,215 @@ const ensureSpace = (doc, y, requiredHeight, reportId) => {
     return y;
 };
 
-const drawHeader = (doc, report, heroImage = null) => {
+const drawHeader = (doc, report) => {
     const bookingCode = getBookingCode(report);
-    // Logo is loaded from backend/uploads/favicon.png first.
+    const headerHeight = 112;
     const logoPath = resolvePdfLogoPath();
 
-    const headerHeight = 92;
-
+    // =========================================================
+    // HEADER BOX
+    // =========================================================
     doc.roundedRect(
         MARGIN_LEFT,
         MARGIN_TOP,
         CONTENT_WIDTH,
         headerHeight,
-        6
-    ).fillAndStroke(COLORS.white, COLORS.border);
+        7
+    )
+        .fillAndStroke(COLORS.white, COLORS.border);
 
+    // =========================================================
+    // LEFT SIDE
+    // CARSEY.IN TEXT ABOVE LOGO
+    // =========================================================
+    doc.font("Helvetica-Bold")
+        .fontSize(15)
+        .fillColor(COLORS.navy)
+        .text(
+            "CARSEY.IN",
+            MARGIN_LEFT + 14,
+            MARGIN_TOP + 12,
+            {
+                width: 125,
+                align: "center"
+            }
+        );
+
+    // =========================================================
+    // CARSEY LOGO BELOW CARSEY.IN
+    // =========================================================
     if (logoPath) {
         try {
+            console.log("✅ PDF Logo Found:", logoPath);
+
             doc.image(
                 logoPath,
-                MARGIN_LEFT + 12,
-                MARGIN_TOP + 10,
+                MARGIN_LEFT + 18,
+                MARGIN_TOP + 34,
                 {
-                    fit: [170, 68],
-                    align: "left",
+                    fit: [115, 58],
+                    align: "center",
                     valign: "center"
                 }
             );
         } catch (error) {
-            doc.font("Helvetica-Bold")
-                .fontSize(19)
-                .fillColor(COLORS.navy)
-                .text(
-                    "CARSEY.IN",
-                    MARGIN_LEFT + 14,
-                    MARGIN_TOP + 19
-                );
-        }
-    } else {
-        doc.font("Helvetica-Bold")
-            .fontSize(19)
-            .fillColor(COLORS.navy)
-            .text(
-                "CARSEY.IN",
-                MARGIN_LEFT + 14,
-                MARGIN_TOP + 19
+            console.error(
+                "❌ Failed to draw PDF logo:",
+                error.message
             );
+        }
     }
 
-    // ==================================================
-    // OFFICE ADDRESS - RIGHT SIDE
-    // Keep the address deliberately split into 3 lines so
-    // it remains readable and does not run into the contact
-    // number on the right.
-    // ==================================================
+    // =========================================================
+    // CENTER
+    // INSPECTION REPORT
+    // =========================================================
     doc.font("Helvetica-Bold")
-        .fontSize(9)
+        .fontSize(17)
+        .fillColor(COLORS.navy)
+        .text(
+            "INSPECTION REPORT",
+            MARGIN_LEFT + 145,
+            MARGIN_TOP + 28,
+            {
+                width: 245,
+                align: "center"
+            }
+        );
+
+    // =========================================================
+    // CENTER
+    // ID BELOW INSPECTION REPORT
+    // =========================================================
+    doc.font("Helvetica-Bold")
+        .fontSize(10)
+        .fillColor(COLORS.navy)
+        .text(
+            `ID ${bookingCode}`,
+            MARGIN_LEFT + 145,
+            MARGIN_TOP + 59,
+            {
+                width: 245,
+                align: "center"
+            }
+        );
+
+    // =========================================================
+    // RIGHT SIDE
+    // OFFICE ADDRESS
+    // =========================================================
+    const rightStartX = MARGIN_LEFT + 405;
+    const rightWidth = CONTENT_WIDTH - 420;
+
+    doc.font("Helvetica-Bold")
+        .fontSize(8.5)
         .fillColor(COLORS.dark)
         .text(
             "Office Address",
-            MARGIN_LEFT + 190,
+            rightStartX,
             MARGIN_TOP + 12,
             {
-                width: 175
+                width: rightWidth,
+                align: "left"
             }
         );
 
+    // EXACTLY 3 LINES
     doc.font("Helvetica")
-        .fontSize(8.2)
+        .fontSize(8)
         .fillColor(COLORS.gray)
         .text(
-            "LGC-11, Galaxy Diamond Plaza \nLower Ground Floor, Plot C-1A,\n Sector 4,Greater Noida West",
-            MARGIN_LEFT + 190,
+            "LGC-11, Galaxy Diamond Plaza\n" +
+            "Lower Ground Floor, Plot C-1A, Sector 4,\n" +
+            "Greater Noida West",
+            rightStartX,
             MARGIN_TOP + 27,
             {
-                width: 205,
-                height: 50,
-                lineGap: 2
+                width: rightWidth,
+                lineGap: 2,
+                align: "left"
             }
         );
 
-    // ==================================================
-    // CONTACT NUMBER - FAR RIGHT
-    // ==================================================
+    // =========================================================
+    // RIGHT SIDE
+    // CONTACT NUMBER
+    // =========================================================
     doc.font("Helvetica-Bold")
         .fontSize(8.5)
         .fillColor(COLORS.dark)
         .text(
             `Contact No - ${PDF_CONTACT_NUMBER}`,
-            PAGE_WIDTH - 185,
-            MARGIN_TOP + 62,
+            rightStartX,
+            MARGIN_TOP + 82,
             {
-                width: 155,
-                align: "right"
-            }
-        );
-
-    // ==================================================
-    // BOOKING / CAR ID - BELOW LOGO
-    // ==================================================
-    doc.font("Helvetica-Bold")
-        .fontSize(8.5)
-        .fillColor(COLORS.navy)
-        .text(
-            `ID ${bookingCode}`,
-            MARGIN_LEFT + 14,
-            MARGIN_TOP + 76,
-            {
-                width: 170,
+                width: rightWidth,
                 align: "left"
             }
         );
 
-    let y = MARGIN_TOP + headerHeight + 10;
+    return MARGIN_TOP + headerHeight + 10;
+};
 
-    // ==================================================
-    // HERO IMAGE - FRONT VIEW
-    // ==================================================
-    if (heroImage?.filePath) {
-        const heroHeight = 205;
-        const heroX = MARGIN_LEFT;
-        const heroY = y;
+const drawHeroVehicleImage = (doc, images, reportId, y) => {
+    const frontImage = (Array.isArray(images) ? images : []).find(
+        (image) =>
+            isStandardVehiclePhoto(image) &&
+            normalizeVehiclePhotoTitle(
+                getImageTitle(image, "")
+            ).trim().toLowerCase() === "front view"
+    );
 
-        doc.roundedRect(
-            heroX,
-            heroY,
-            CONTENT_WIDTH,
-            heroHeight,
-            6
-        ).fillAndStroke(COLORS.white, COLORS.border);
-
-        try {
-            doc.image(
-                heroImage.filePath,
-                heroX + 6,
-                heroY + 6,
-                {
-                    fit: [
-                        CONTENT_WIDTH - 12,
-                        heroHeight - 12
-                    ],
-                    align: "center",
-                    valign: "center"
-                }
-            );
-
-            doc.roundedRect(
-                heroX + 16,
-                heroY + 16,
-                150,
-                28,
-                4
-            ).fill(COLORS.navy);
-
-            doc.font("Helvetica-Bold")
-                .fontSize(10)
-                .fillColor(COLORS.white)
-                .text(
-                    "VEHICLE INSPECTION REPORT",
-                    heroX + 25,
-                    heroY + 25,
-                    {
-                        width: 132,
-                        align: "center"
-                    }
-                );
-        } catch (error) {
-            doc.font("Helvetica")
-                .fontSize(9)
-                .fillColor(COLORS.gray)
-                .text(
-                    "Front View image could not be loaded.",
-                    heroX + 10,
-                    heroY + heroHeight / 2 - 5,
-                    {
-                        width: CONTENT_WIDTH - 20,
-                        align: "center"
-                    }
-                );
-        }
-
-        y += heroHeight + 12;
+    if (!frontImage?.filePath) {
+        return y;
     }
 
-    return y;
+    const heroHeight = 225;
+    y = ensureSpace(doc, y, heroHeight + 35, reportId);
+
+    doc.roundedRect(
+        MARGIN_LEFT,
+        y,
+        CONTENT_WIDTH,
+        heroHeight,
+        7
+    ).fillAndStroke(COLORS.white, COLORS.border);
+
+    doc.font("Helvetica-Bold")
+        .fontSize(8)
+        .fillColor(COLORS.gray)
+        .text("VEHICLE FRONT VIEW", MARGIN_LEFT + 10, y + 9, {
+            width: CONTENT_WIDTH - 20,
+            align: "center"
+        });
+
+    try {
+        doc.image(
+            frontImage.filePath,
+            MARGIN_LEFT + 10,
+            y + 24,
+            {
+                fit: [CONTENT_WIDTH - 20, heroHeight - 34],
+                align: "center",
+                valign: "center"
+            }
+        );
+    } catch (error) {
+        doc.font("Helvetica")
+            .fontSize(8)
+            .fillColor(COLORS.gray)
+            .text(
+                "Front vehicle image could not be loaded",
+                MARGIN_LEFT + 20,
+                y + heroHeight / 2,
+                {
+                    width: CONTENT_WIDTH - 40,
+                    align: "center"
+                }
+            );
+    }
+
+    return y + heroHeight + 10;
 };
 
 const drawSectionHeader = (doc, title, y) => {
@@ -2935,185 +2986,24 @@ const drawVehiclePhotos = (doc, images, reportId) => {
 
 // ======================================================
 // ADDITIONAL VEHICLE PHOTOS
-// Optional photos uploaded from Employee Inspection.
-// Maximum supported by the frontend: 6.
 // ======================================================
 
-const isAdditionalVehiclePhoto = (image) => {
-    const type = getImageType(image).trim();
-    const title = getImageTitle(image, "").trim();
-
-    return (
-        /^Additional Vehicle Photo [1-6]$/i.test(type) ||
-        /^Additional Photo [1-6]$/i.test(type) ||
-        /^additional_vehicle_photo_[1-6]$/i.test(type) ||
-        /^Additional Vehicle Photo [1-6]$/i.test(title) ||
-        /^Additional Photo [1-6]$/i.test(title)
-    );
-};
-
-const getAdditionalVehiclePhotoNumber = (image) => {
-    const values = [
-        getImageType(image),
-        getImageTitle(image, "")
-    ];
-
-    for (const value of values) {
-        const match = String(value || "").match(
-            /(?:Photo|photo)[ _-]*([1-6])$/i
+const drawAdditionalVehiclePhotos = (doc, images, reportId) => {
+    const additionalImages = (Array.isArray(images) ? images : [])
+        .filter(isAdditionalVehiclePhoto)
+        .sort(
+            (a, b) =>
+                getAdditionalVehiclePhotoNumber(a) -
+                getAdditionalVehiclePhotoNumber(b)
         );
 
-        if (match) {
-            return Number(match[1]);
-        }
-
-        const keyMatch = String(value || "").match(
-            /additional_vehicle_photo_([1-6])/i
-        );
-
-        if (keyMatch) {
-            return Number(keyMatch[1]);
-        }
-    }
-
-    return 99;
-};
-
-const drawAdditionalVehiclePhotos = (
-    doc,
-    images,
-    reportId
-) => {
-    const source =
-        Array.isArray(images)
-            ? images
-            : [];
-
-    const additionalImages =
-        source
-            .filter(
-                (image) =>
-                    image?.filePath &&
-                    isAdditionalVehiclePhoto(image)
-            )
-            .sort(
-                (a, b) =>
-                    getAdditionalVehiclePhotoNumber(a) -
-                    getAdditionalVehiclePhotoNumber(b)
-            )
-            .slice(0, 6);
-
-    if (!additionalImages.length) {
-        return;
-    }
-
-    doc.addPage();
-
-    let y = MARGIN_TOP;
-
-    y = drawSectionHeader(
+    return drawImageGridSection(
         doc,
+        additionalImages.slice(0, 6),
+        reportId,
         "Additional Vehicle Photos",
-        y
-    ) + 8;
-
-    const gap = 8;
-    const columns = 3;
-    const cardWidth =
-        (CONTENT_WIDTH - gap * (columns - 1)) /
-        columns;
-    const cardHeight = 170;
-
-    for (
-        let i = 0;
-        i < additionalImages.length;
-        i++
-    ) {
-        const col = i % columns;
-
-        if (col === 0 && i > 0) {
-            y += cardHeight + gap;
-        }
-
-        if (y + cardHeight > PAGE_BOTTOM) {
-            y = newPage(doc, reportId);
-
-            y = drawSectionHeader(
-                doc,
-                "Additional Vehicle Photos - Continued",
-                y
-            ) + 8;
-        }
-
-        const x =
-            MARGIN_LEFT +
-            col * (cardWidth + gap);
-
-        const image =
-            additionalImages[i];
-
-        const number =
-            getAdditionalVehiclePhotoNumber(
-                image
-            );
-
-        const title =
-            `Additional Vehicle Photo ${number}`;
-
-        doc.roundedRect(
-            x,
-            y,
-            cardWidth,
-            cardHeight,
-            5
-        ).fillAndStroke(
-            COLORS.white,
-            COLORS.border
-        );
-
-        try {
-            doc.image(
-                image.filePath,
-                x + 6,
-                y + 6,
-                {
-                    fit: [
-                        cardWidth - 12,
-                        cardHeight - 34
-                    ],
-                    align: "center",
-                    valign: "center"
-                }
-            );
-        } catch (error) {
-            doc.font("Helvetica")
-                .fontSize(7.5)
-                .fillColor(COLORS.gray)
-                .text(
-                    "Image could not be loaded",
-                    x + 6,
-                    y + cardHeight / 2 - 5,
-                    {
-                        width: cardWidth - 12,
-                        align: "center"
-                    }
-                );
-        }
-
-        doc.font("Helvetica-Bold")
-            .fontSize(7.5)
-            .fillColor(COLORS.dark)
-            .text(
-                title,
-                x + 6,
-                y + cardHeight - 22,
-                {
-                    width: cardWidth - 12,
-                    align: "center",
-                    ellipsis: true
-                }
-            );
-    }
+        "No additional vehicle photos uploaded."
+    );
 };
 
 // ======================================================
@@ -3133,7 +3023,7 @@ const drawDocumentPhotos = (doc, images, reportId, startY = null) => {
         doc,
         orderedImages,
         reportId,
-        "Documents / Title Images",
+        "Documents",
         "No document images uploaded.",
         startY,
         false
@@ -3346,30 +3236,23 @@ const generateInspectionReportPdf = (report) => {
                 doc.pipe(stream);
 
                 // ==================================================
-                // PAGE 1+ : BRANDED HEADER + FRONT VIEW HERO
-                // ==================================================
-
-                const frontViewImage =
-                    allImages.find((image) => {
-                        if (!isStandardVehiclePhoto(image)) {
-                            return false;
-                        }
-
-                        return normalizeVehiclePhotoTitle(
-                            getImageTitle(image, "")
-                        ).trim().toLowerCase() === "front view";
-                    }) || null;
-
-                let y = drawHeader(
-                    doc,
-                    normalizedReport,
-                    frontViewImage
-                );
-
-                // ==================================================
-                // VEHICLE DETAILS
+                // PAGE 1+ : VEHICLE DETAILS ONLY
                 // No customer name, mobile, email or address.
                 // ==================================================
+
+                let y = drawHeader(doc, normalizedReport);
+
+                // ==================================================
+                // HERO IMAGE
+                // Uses the standard "Front View" vehicle photo.
+                // ==================================================
+
+                y = drawHeroVehicleImage(
+                    doc,
+                    allImages,
+                    reportId,
+                    y
+                );
 
                 y = drawVehicleDetails(
                     doc,
@@ -3419,6 +3302,8 @@ const generateInspectionReportPdf = (report) => {
 
                 // ==================================================
                 // ADDITIONAL VEHICLE PHOTOS - SEPARATE SECTION
+                // Maximum 6 photos. These never enter the standard
+                // 10-photo Vehicle Photos section.
                 // ==================================================
 
                 drawAdditionalVehiclePhotos(
