@@ -1,6 +1,13 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+
+import {
+  AfterViewInit,
+  Component
+} from '@angular/core';
+
 import { RouterLink } from '@angular/router';
+
+import AOS from 'aos';
 
 @Component({
   selector: 'app-about-service',
@@ -11,4 +18,22 @@ import { RouterLink } from '@angular/router';
   ],
   templateUrl: './about-service.component.html'
 })
-export class AboutServiceComponent {}
+export class AboutServiceComponent
+  implements AfterViewInit {
+
+  ngAfterViewInit(): void {
+
+    AOS.init({
+      once: true,
+      duration: 800,
+      easing: 'ease-out-cubic',
+      offset: 80,
+      mirror: false,
+      disable: false
+    });
+
+    setTimeout(() => {
+      AOS.refreshHard();
+    }, 100);
+  }
+}

@@ -46,7 +46,7 @@
           <span
             class="mt-1 hidden text-[10px] font-semibold tracking-[0.18em] text-slate-400 sm:block"
           >
-            • INSPECTION • PDI
+            •SELL • INSPECTION • PDI
           </span>
 
         </div>
@@ -98,40 +98,7 @@
         </a>
 
 
-        <!-- ================================================= -->
-        <!-- SELL CAR — HIDDEN -->
-        <!-- CODE PRESERVED -->
-        <!-- ================================================= -->
 
-        <a
-          routerLink="/sell-car"
-          routerLinkActive="bg-pink-500 text-white shadow-[0_8px_24px_rgba(236,72,153,0.35)]"
-          class="!hidden group flex min-h-[56px] items-center gap-3 rounded-full
-                 border-2 border-pink-500 bg-transparent px-7 py-3
-                 text-[17px] font-extrabold text-white
-                 transition-all duration-200
-                 hover:-translate-y-0.5 hover:bg-pink-500
-                 hover:shadow-[0_10px_28px_rgba(236,72,153,0.35)]"
-        >
-
-          <svg
-            class="h-6 w-6 shrink-0"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            aria-hidden="true"
-          >
-            <path d="M12 3v12" />
-            <path d="M8 7l4-4 4 4" />
-            <path d="M5 12h14" />
-            <path d="M7 17h10" />
-            <path d="M9 21h6" />
-          </svg>
-
-          <span>Sell Car</span>
-
-        </a>
 
 
         <!-- ================================================= -->
@@ -162,6 +129,67 @@
           </svg>
 
           <span>Upgrade / Exchange</span>
+
+        </a>
+
+
+        <!-- ================================================= -->
+        <!-- SELL CAR -->
+        <!-- CODE PRESERVED -->
+        <!-- ================================================= -->
+        <a
+          routerLink="/sell-car"
+          routerLinkActive="!border-pink-400 !bg-pink-500 !text-white !shadow-[0_0_30px_rgba(236,72,153,0.45)]"
+          class="group flex min-h-[58px] items-center gap-3 rounded-2xl
+                 border border-pink-500/60
+                 bg-pink-500/10
+                 px-5 py-2.5
+                 text-white
+                 shadow-[0_0_18px_rgba(236,72,153,0.15)]
+                 transition-all duration-300
+                 hover:-translate-y-0.5
+                 hover:border-pink-400
+                 hover:bg-pink-500
+                 hover:shadow-[0_0_30px_rgba(236,72,153,0.45)]"
+        >
+
+          <span
+            class="flex h-10 w-10 shrink-0 items-center justify-center
+                   rounded-xl bg-pink-500/20
+                   text-pink-400
+                   transition-all duration-300
+                   group-hover:bg-white/20
+                   group-hover:text-white"
+          >
+
+            <svg
+              class="h-5 w-5"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.2"
+              aria-hidden="true"
+            >
+              <rect x="4" y="5" width="16" height="15" rx="2" />
+              <path d="M8 3v4M16 3v4M4 10h16" />
+            </svg>
+
+          </span>
+
+          <span
+            class="text-[15px] font-extrabold tracking-tight"
+          >
+            Sell Car
+          </span>
+
+          <span
+            class="ml-1 text-xl font-black text-pink-400
+                   transition-transform duration-300
+                   group-hover:translate-x-1
+                   group-hover:text-white"
+          >
+            ›
+          </span>
 
         </a>
 
@@ -235,10 +263,11 @@
           routerLink="/pdi"
           routerLinkActive="!border-pink-400 !bg-pink-500 !text-white !shadow-[0_0_30px_rgba(236,72,153,0.45)]"
           class="group flex min-h-[58px] items-center gap-3 rounded-2xl
-                 border border-slate-700/80
-                 bg-[#0d111d]
+                 border border-pink-500/60
+                 bg-pink-500/10
                  px-5 py-2.5
                  text-white
+                 shadow-[0_0_18px_rgba(236,72,153,0.15)]
                  transition-all duration-300
                  hover:-translate-y-0.5
                  hover:border-pink-400
@@ -248,7 +277,7 @@
 
           <span
             class="flex h-10 w-10 shrink-0 items-center justify-center
-                   rounded-xl bg-pink-500/15
+                   rounded-xl bg-pink-500/20
                    text-pink-400
                    transition-all duration-300
                    group-hover:bg-white/20
@@ -263,13 +292,8 @@
               stroke-width="2.2"
               aria-hidden="true"
             >
-              <path d="M9 3h6" />
-
-              <path
-                d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"
-              />
-
-              <path d="M8 12l2.5 2.5L16 9" />
+              <rect x="4" y="5" width="16" height="15" rx="2" />
+              <path d="M8 3v4M16 3v4M4 10h16" />
             </svg>
 
           </span>
@@ -501,18 +525,30 @@
           </a>
 
 
-          <!-- SELL CAR — HIDDEN -->
+          <!-- SELL CAR -->
 
+          
           <a
             routerLink="/sell-car"
             (click)="closeMobileMenu()"
-            class="!hidden flex items-center justify-between rounded-xl border border-pink-500
-                   px-4 py-3 font-extrabold text-white transition
-                   hover:bg-pink-500"
+            class="rounded-xl border border-pink-500/50
+                   bg-pink-500/10 px-4 py-4
+                   font-extrabold text-white
+                   shadow-[0_0_20px_rgba(236,72,153,0.15)]
+                   transition hover:bg-pink-500"
           >
 
-            <span>Sell Car</span>
-            <span>→</span>
+            <div class="flex items-center justify-between">
+
+              <span class="text-[16px]">
+                Sell Car
+              </span>
+
+              <span class="text-xl text-pink-400">
+                →
+              </span>
+
+            </div>
 
           </a>
 
@@ -561,10 +597,11 @@
           <a
             routerLink="/pdi"
             (click)="closeMobileMenu()"
-            class="rounded-xl border border-slate-700
-                   bg-white/5 px-4 py-4
+            class="rounded-xl border border-pink-500/50
+                   bg-pink-500/10 px-4 py-4
                    font-extrabold text-white
-                   transition hover:border-pink-500 hover:bg-pink-500/10"
+                   shadow-[0_0_20px_rgba(236,72,153,0.15)]
+                   transition hover:bg-pink-500"
           >
 
             <div class="flex items-center justify-between">
