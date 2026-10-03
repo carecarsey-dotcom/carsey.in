@@ -1,19 +1,19 @@
-<div class="sell-page min-h-screen bg-slate-50 px-4 py-8 sm:px-6 lg:px-8">
+<div class="sell-page">
 
-  <div class="sell-container mx-auto w-full max-w-6xl md:col-span-2">
+  <div class="sell-container">
 
 
     <!-- ================================================= -->
     <!-- HEADER -->
     <!-- ================================================= -->
 
-    <div class="page-header mb-8 text-center sm:mb-10">
+    <div class="page-header">
 
-      <h1 class="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
+      <h1>
         Sell Your Car
       </h1>
 
-      <p class="mx-auto mt-2 max-w-2xl text-sm leading-6 text-slate-500 sm:text-base">
+      <p>
         Enter your car details and get the best value for your car.
       </p>
 
@@ -24,7 +24,7 @@
     <!-- FORM CARD -->
     <!-- ================================================= -->
 
-    <div class="form-card overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+    <div class="form-card">
 
 
       <form
@@ -37,25 +37,25 @@
         <!-- SELLER DETAILS -->
         <!-- ================================================= -->
 
-        <div class="section border-b border-slate-100 p-5 sm:p-7 lg:p-8">
+        <div class="section">
 
-          <h2 class="mb-5 text-xl font-bold text-slate-800 sm:text-2xl">
+          <h2>
             Seller Details
           </h2>
 
 
-          <div class="form-grid grid grid-cols-1 gap-5 md:grid-cols-2">
+          <div class="form-grid">
 
 
             <!-- NAME -->
 
-            <div class="form-group flex flex-col gap-2">
+            <div class="form-group">
 
-              <label class="text-sm font-semibold text-slate-700">
+              <label>
                 Name *
               </label>
 
-              <input class="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-red-500 focus:ring-2 focus:ring-red-100"
+              <input
                 type="text"
                 name="sellerName"
                 [(ngModel)]="sellerName"
@@ -65,7 +65,7 @@
                 required
               />
 
-              <small class="text-xs text-slate-400">
+              <small>
                 Only letters and spaces are allowed.
               </small>
 
@@ -74,13 +74,13 @@
 
             <!-- MOBILE -->
 
-            <div class="form-group flex flex-col gap-2">
+            <div class="form-group">
 
-              <label class="text-sm font-semibold text-slate-700">
+              <label>
                 Mobile Number *
               </label>
 
-              <input class="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-red-500 focus:ring-2 focus:ring-red-100"
+              <input
                 type="tel"
                 name="mobile"
                 [(ngModel)]="mobile"
@@ -91,7 +91,7 @@
                 required
               />
 
-              <small class="text-xs text-slate-400">
+              <small>
                 Enter exactly 10 digits.
               </small>
 
@@ -100,13 +100,13 @@
 
             <!-- EMAIL -->
 
-            <div class="form-group full flex flex-col gap-2 md:col-span-2">
+            <div class="form-group full">
 
-              <label class="text-sm font-semibold text-slate-700">
+              <label>
                 Email
               </label>
 
-              <input class="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-red-500 focus:ring-2 focus:ring-red-100"
+              <input
                 type="email"
                 name="email"
                 [(ngModel)]="email"
@@ -125,25 +125,25 @@
         <!-- CAR DETAILS -->
         <!-- ================================================= -->
 
-        <div class="section border-b border-slate-100 p-5 sm:p-7 lg:p-8">
+        <div class="section">
 
-          <h2 class="mb-5 text-xl font-bold text-slate-800 sm:text-2xl">
+          <h2>
             Car Details
           </h2>
 
 
-          <div class="form-grid grid grid-cols-1 gap-5 md:grid-cols-2">
+          <div class="form-grid">
 
 
             <!-- BRAND -->
 
-            <div class="form-group flex flex-col gap-2">
+            <div class="form-group">
 
-              <label class="text-sm font-semibold text-slate-700">
+              <label>
                 Brand *
               </label>
 
-              <input class="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-red-500 focus:ring-2 focus:ring-red-100"
+              <input
                 type="text"
                 name="brand"
                 [(ngModel)]="brand"
@@ -156,13 +156,13 @@
 
             <!-- MODEL -->
 
-            <div class="form-group flex flex-col gap-2">
+            <div class="form-group">
 
-              <label class="text-sm font-semibold text-slate-700">
+              <label>
                 Model *
               </label>
 
-              <input class="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-red-500 focus:ring-2 focus:ring-red-100"
+              <input
                 type="text"
                 name="model"
                 [(ngModel)]="model"
@@ -175,13 +175,13 @@
 
             <!-- VARIANT -->
 
-            <div class="form-group flex flex-col gap-2">
+            <div class="form-group">
 
-              <label class="text-sm font-semibold text-slate-700">
+              <label>
                 Variant
               </label>
 
-              <input class="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-red-500 focus:ring-2 focus:ring-red-100"
+              <input
                 type="text"
                 name="variant"
                 [(ngModel)]="variant"
@@ -193,13 +193,13 @@
 
             <!-- VEHICLE NUMBER -->
 
-            <div class="form-group flex flex-col gap-2">
+            <div class="form-group">
 
-              <label class="text-sm font-semibold text-slate-700">
+              <label>
                 Vehicle Number *
               </label>
 
-              <input class="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-red-500 focus:ring-2 focus:ring-red-100"
+              <input
                 type="text"
                 name="vehicleNumber"
                 [(ngModel)]="vehicleNumber"
@@ -210,7 +210,7 @@
                 required
               />
 
-              <small class="text-xs text-slate-400">
+              <small>
                 Enter your vehicle registration number.
               </small>
 
@@ -219,13 +219,13 @@
 
             <!-- YEAR -->
 
-            <div class="form-group flex flex-col gap-2">
+            <div class="form-group">
 
-              <label class="text-sm font-semibold text-slate-700">
+              <label>
                 Manufacturing Year *
               </label>
 
-              <input class="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-red-500 focus:ring-2 focus:ring-red-100"
+              <input
                 type="number"
                 name="manufacturingYear"
                 [(ngModel)]="manufacturingYear"
@@ -240,13 +240,13 @@
 
             <!-- FUEL -->
 
-            <div class="form-group flex flex-col gap-2">
+            <div class="form-group">
 
-              <label class="text-sm font-semibold text-slate-700">
+              <label>
                 Fuel Type *
               </label>
 
-              <select class="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-800 outline-none transition focus:border-red-500 focus:ring-2 focus:ring-red-100"
+              <select
                 name="fuelType"
                 [(ngModel)]="fuelType"
                 required
@@ -283,13 +283,13 @@
 
             <!-- TRANSMISSION -->
 
-            <div class="form-group flex flex-col gap-2">
+            <div class="form-group">
 
-              <label class="text-sm font-semibold text-slate-700">
+              <label>
                 Transmission *
               </label>
 
-              <select class="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-800 outline-none transition focus:border-red-500 focus:ring-2 focus:ring-red-100"
+              <select
                 name="transmission"
                 [(ngModel)]="transmission"
                 required
@@ -314,13 +314,13 @@
 
             <!-- KM -->
 
-            <div class="form-group flex flex-col gap-2">
+            <div class="form-group">
 
-              <label class="text-sm font-semibold text-slate-700">
+              <label>
                 KM Driven
               </label>
 
-              <input class="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-red-500 focus:ring-2 focus:ring-red-100"
+              <input
                 type="number"
                 name="kmDriven"
                 [(ngModel)]="kmDriven"
@@ -333,13 +333,13 @@
 
             <!-- EXPECTED PRICE -->
 
-            <div class="form-group flex flex-col gap-2">
+            <div class="form-group">
 
-              <label class="text-sm font-semibold text-slate-700">
+              <label>
                 Expected Price
               </label>
 
-              <input class="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-red-500 focus:ring-2 focus:ring-red-100"
+              <input
                 type="number"
                 name="expectedPrice"
                 [(ngModel)]="expectedPrice"
@@ -358,44 +358,43 @@
         <!-- CAR IMAGES -->
         <!-- ================================================= -->
 
-        <div class="section border-b border-slate-100 p-5 sm:p-7 lg:p-8">
+        <div class="section">
 
-          <h2 class="mb-5 text-xl font-bold text-slate-800 sm:text-2xl">
+          <h2>
             Car Images
           </h2>
 
-          <p class="section-description border-b border-slate-100 p-5 sm:p-7 lg:p-8 mt-1 text-sm text-slate-500">
+          <p class="section-description">
             Upload front, back, left and right side images.
           </p>
 
 
-          <div class="image-grid grid grid-cols-1 gap-5 sm:grid-cols-2">
+          <div class="image-grid">
 
 
             <!-- ================================================= -->
             <!-- FRONT IMAGE -->
             <!-- ================================================= -->
 
-            <div class="image-upload-card rounded-xl border border-slate-200 bg-slate-50 p-4">
+            <div class="image-upload-card">
 
-              <h3 class="mb-3 text-base font-semibold text-slate-800">
+              <h3>
                 Front Image
               </h3>
 
 
               @if (frontPreview) {
 
-                <div class="image-preview relative overflow-hidden rounded-xl">
+                <div class="image-preview">
 
                   <img
                     [src]="frontPreview"
                     alt="Front vehicle"
-                    class="h-56 w-full rounded-xl object-cover"
                   />
 
                   <button
                     type="button"
-                    class="remove-button mt-3 w-full rounded-lg border border-red-200 bg-white px-3 py-2 text-sm font-semibold text-red-600 transition hover:bg-red-50"
+                    class="remove-button"
                     (click)="removeImage('front')"
                   >
                     Remove
@@ -405,23 +404,23 @@
 
               } @else {
 
-                <label class="upload-box flex min-h-48 cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-slate-300 bg-white p-6 text-center transition hover:border-red-400 hover:bg-red-50/30">
+                <label class="upload-box">
 
                   <input
                     type="file"
                     accept="image/jpeg,image/jpg,image/png,image/webp"
                     (change)="onFileSelected($event, 'front')"
-                  class="hidden" />
+                  />
 
-                  <div class="camera-icon mb-3 text-3xl">
+                  <div class="camera-icon">
                     📷
                   </div>
 
-                  <div class="upload-title text-sm font-semibold text-slate-700">
+                  <div class="upload-title">
                     Click to upload image
                   </div>
 
-                  <div class="upload-info mt-1 text-xs text-slate-400">
+                  <div class="upload-info">
                     JPG, JPEG, PNG — Maximum 5 MB
                   </div>
 
@@ -436,26 +435,25 @@
             <!-- BACK IMAGE -->
             <!-- ================================================= -->
 
-            <div class="image-upload-card rounded-xl border border-slate-200 bg-slate-50 p-4">
+            <div class="image-upload-card">
 
-              <h3 class="mb-3 text-base font-semibold text-slate-800">
+              <h3>
                 Back Image
               </h3>
 
 
               @if (backPreview) {
 
-                <div class="image-preview relative overflow-hidden rounded-xl">
+                <div class="image-preview">
 
                   <img
                     [src]="backPreview"
                     alt="Back vehicle"
-                    class="h-56 w-full rounded-xl object-cover"
                   />
 
                   <button
                     type="button"
-                    class="remove-button mt-3 w-full rounded-lg border border-red-200 bg-white px-3 py-2 text-sm font-semibold text-red-600 transition hover:bg-red-50"
+                    class="remove-button"
                     (click)="removeImage('back')"
                   >
                     Remove
@@ -465,23 +463,23 @@
 
               } @else {
 
-                <label class="upload-box flex min-h-48 cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-slate-300 bg-white p-6 text-center transition hover:border-red-400 hover:bg-red-50/30">
+                <label class="upload-box">
 
                   <input
                     type="file"
                     accept="image/jpeg,image/jpg,image/png,image/webp"
                     (change)="onFileSelected($event, 'back')"
-                  class="hidden" />
+                  />
 
-                  <div class="camera-icon mb-3 text-3xl">
+                  <div class="camera-icon">
                     📷
                   </div>
 
-                  <div class="upload-title text-sm font-semibold text-slate-700">
+                  <div class="upload-title">
                     Click to upload image
                   </div>
 
-                  <div class="upload-info mt-1 text-xs text-slate-400">
+                  <div class="upload-info">
                     JPG, JPEG, PNG — Maximum 5 MB
                   </div>
 
@@ -496,26 +494,25 @@
             <!-- LEFT IMAGE -->
             <!-- ================================================= -->
 
-            <div class="image-upload-card rounded-xl border border-slate-200 bg-slate-50 p-4">
+            <div class="image-upload-card">
 
-              <h3 class="mb-3 text-base font-semibold text-slate-800">
+              <h3>
                 Left Side Image
               </h3>
 
 
               @if (leftPreview) {
 
-                <div class="image-preview relative overflow-hidden rounded-xl">
+                <div class="image-preview">
 
                   <img
                     [src]="leftPreview"
                     alt="Left vehicle"
-                    class="h-56 w-full rounded-xl object-cover"
                   />
 
                   <button
                     type="button"
-                    class="remove-button mt-3 w-full rounded-lg border border-red-200 bg-white px-3 py-2 text-sm font-semibold text-red-600 transition hover:bg-red-50"
+                    class="remove-button"
                     (click)="removeImage('left')"
                   >
                     Remove
@@ -525,23 +522,23 @@
 
               } @else {
 
-                <label class="upload-box flex min-h-48 cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-slate-300 bg-white p-6 text-center transition hover:border-red-400 hover:bg-red-50/30">
+                <label class="upload-box">
 
                   <input
                     type="file"
                     accept="image/jpeg,image/jpg,image/png,image/webp"
                     (change)="onFileSelected($event, 'left')"
-                  class="hidden" />
+                  />
 
-                  <div class="camera-icon mb-3 text-3xl">
+                  <div class="camera-icon">
                     📷
                   </div>
 
-                  <div class="upload-title text-sm font-semibold text-slate-700">
+                  <div class="upload-title">
                     Click to upload image
                   </div>
 
-                  <div class="upload-info mt-1 text-xs text-slate-400">
+                  <div class="upload-info">
                     JPG, JPEG, PNG — Maximum 5 MB
                   </div>
 
@@ -556,26 +553,25 @@
             <!-- RIGHT IMAGE -->
             <!-- ================================================= -->
 
-            <div class="image-upload-card rounded-xl border border-slate-200 bg-slate-50 p-4">
+            <div class="image-upload-card">
 
-              <h3 class="mb-3 text-base font-semibold text-slate-800">
+              <h3>
                 Right Side Image
               </h3>
 
 
               @if (rightPreview) {
 
-                <div class="image-preview relative overflow-hidden rounded-xl">
+                <div class="image-preview">
 
                   <img
                     [src]="rightPreview"
                     alt="Right vehicle"
-                    class="h-56 w-full rounded-xl object-cover"
                   />
 
                   <button
                     type="button"
-                    class="remove-button mt-3 w-full rounded-lg border border-red-200 bg-white px-3 py-2 text-sm font-semibold text-red-600 transition hover:bg-red-50"
+                    class="remove-button"
                     (click)="removeImage('right')"
                   >
                     Remove
@@ -585,23 +581,23 @@
 
               } @else {
 
-                <label class="upload-box flex min-h-48 cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-slate-300 bg-white p-6 text-center transition hover:border-red-400 hover:bg-red-50/30">
+                <label class="upload-box">
 
                   <input
                     type="file"
                     accept="image/jpeg,image/jpg,image/png,image/webp"
                     (change)="onFileSelected($event, 'right')"
-                  class="hidden" />
+                  />
 
-                  <div class="camera-icon mb-3 text-3xl">
+                  <div class="camera-icon">
                     📷
                   </div>
 
-                  <div class="upload-title text-sm font-semibold text-slate-700">
+                  <div class="upload-title">
                     Click to upload image
                   </div>
 
-                  <div class="upload-info mt-1 text-xs text-slate-400">
+                  <div class="upload-info">
                     JPG, JPEG, PNG — Maximum 5 MB
                   </div>
 
@@ -620,11 +616,11 @@
         <!-- SUBMIT -->
         <!-- ================================================= -->
 
-        <div class="submit-section border-b border-slate-100 p-5 sm:p-7 lg:p-8 text-center">
+        <div class="submit-section">
 
           <button
             type="submit"
-            class="submit-button w-full rounded-xl bg-red-600 px-6 py-3.5 text-sm font-bold text-white shadow-sm transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto sm:min-w-64"
+            class="submit-button"
             [disabled]="submitting"
           >
 
@@ -641,7 +637,7 @@
           </button>
 
 
-          <p class="submit-note mt-3 text-xs text-slate-500">
+          <p class="submit-note">
             Our team will contact you after reviewing your sell car request.
           </p>
 
