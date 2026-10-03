@@ -38,7 +38,6 @@ const {
 // CUSTOMER
 // CREATE SELL CAR REQUEST
 // ======================================================
-
 // POST
 // /api/vehicles/sell-car
 //
@@ -59,23 +58,35 @@ router.post(
     uploadSellCarImages.fields([
 
         {
+
             name: "frontImage",
+
             maxCount: 1
+
         },
 
         {
+
             name: "backImage",
+
             maxCount: 1
+
         },
 
         {
+
             name: "leftImage",
+
             maxCount: 1
+
         },
 
         {
+
             name: "rightImage",
+
             maxCount: 1
+
         }
 
     ]),
@@ -89,7 +100,6 @@ router.post(
 // ADMIN
 // GET ALL SELL CAR REQUESTS
 // ======================================================
-
 // GET
 // /api/admin/sell-car-requests
 
@@ -108,7 +118,6 @@ router.get(
 // ADMIN
 // GET SELL CAR REQUEST BY ID
 // ======================================================
-
 // GET
 // /api/admin/sell-car-requests/:sellId
 
@@ -127,7 +136,6 @@ router.get(
 // ADMIN
 // UPDATE SELL CAR REQUEST STATUS
 // ======================================================
-
 // PATCH
 // /api/admin/sell-car-requests/:sellId/status
 

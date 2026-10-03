@@ -140,6 +140,44 @@ const createSellCarRequest = async (
 
 
     // ==================================================
+    // VEHICLE NUMBER
+    // ==================================================
+
+    if (
+        !requestData.vehicleNumber ||
+        !requestData.vehicleNumber.trim()
+    ) {
+
+        throw new Error(
+            "Vehicle number is required."
+        );
+
+    }
+
+
+    const vehicleNumber =
+        requestData.vehicleNumber
+            .trim()
+            .toUpperCase()
+            .replace(/\s+/g, "");
+
+
+    // ==================================================
+    // VALIDATE VEHICLE NUMBER
+    // ==================================================
+
+    if (
+        !/^[A-Z0-9-]{4,20}$/.test(vehicleNumber)
+    ) {
+
+        throw new Error(
+            "Invalid vehicle number."
+        );
+
+    }
+
+
+    // ==================================================
     // MANUFACTURING YEAR
     // ==================================================
 
@@ -265,6 +303,8 @@ const createSellCarRequest = async (
 
         variant:
             requestData.variant.trim(),
+
+        vehicleNumber,
 
         manufacturingYear,
 
@@ -420,6 +460,9 @@ const getSellCarRequestById = async (
 
         variant:
             request.variant,
+
+        vehicleNumber:
+            request.vehicle_number,
 
         manufacturingYear:
             request.manufacturing_year,

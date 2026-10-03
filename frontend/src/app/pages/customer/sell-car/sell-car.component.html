@@ -191,6 +191,32 @@
             </div>
 
 
+            <!-- VEHICLE NUMBER -->
+
+            <div class="form-group">
+
+              <label>
+                Vehicle Number *
+              </label>
+
+              <input
+                type="text"
+                name="vehicleNumber"
+                [(ngModel)]="vehicleNumber"
+                (input)="onVehicleNumberInput($event)"
+                placeholder="e.g. MP04AB1234"
+                maxlength="20"
+                autocomplete="off"
+                required
+              />
+
+              <small>
+                Enter your vehicle registration number.
+              </small>
+
+            </div>
+
+
             <!-- YEAR -->
 
             <div class="form-group">

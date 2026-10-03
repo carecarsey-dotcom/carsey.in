@@ -7,7 +7,6 @@ const sellCarService = require(
 // CREATE SELL CAR REQUEST
 // Customer
 // ======================================================
-
 // POST
 // /api/vehicles/sell-car
 
@@ -35,6 +34,8 @@ const createSellCarRequest = async (
             model,
 
             variant,
+
+            vehicleNumber,
 
             manufacturingYear,
 
@@ -106,6 +107,8 @@ const createSellCarRequest = async (
             model,
 
             variant,
+
+            vehicleNumber,
 
             manufacturingYear,
 
@@ -181,6 +184,8 @@ const createSellCarRequest = async (
 // GET ALL SELL CAR REQUESTS
 // Admin
 // ======================================================
+// GET
+// /api/admin/sell-car-requests
 
 const getAllSellCarRequests = async (
     req,
@@ -232,6 +237,8 @@ const getAllSellCarRequests = async (
 // GET SELL CAR REQUEST BY ID
 // Admin
 // ======================================================
+// GET
+// /api/admin/sell-car-requests/:sellId
 
 const getSellCarRequestById = async (
     req,
@@ -290,6 +297,8 @@ const getSellCarRequestById = async (
 // UPDATE SELL CAR REQUEST STATUS
 // Admin
 // ======================================================
+// PATCH
+// /api/admin/sell-car-requests/:sellId/status
 
 const updateSellCarRequestStatus = async (
     req,

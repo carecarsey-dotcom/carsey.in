@@ -28,6 +28,7 @@ export class SellCarComponent {
   brand = '';
   model = '';
   variant = '';
+  vehicleNumber = '';
 
   manufacturingYear: number | null = null;
 
@@ -94,6 +95,24 @@ export class SellCarComponent {
       input.value
         .replace(/\D/g, '')
         .slice(0, 10);
+
+  }
+
+
+  // =====================================================
+  // VEHICLE NUMBER INPUT
+  // =====================================================
+
+  onVehicleNumberInput(event: Event): void {
+
+    const input =
+      event.target as HTMLInputElement;
+
+    this.vehicleNumber =
+      input.value
+        .toUpperCase()
+        .replace(/[^A-Z0-9-]/g, '')
+        .slice(0, 20);
 
   }
 
@@ -360,6 +379,33 @@ export class SellCarComponent {
 
 
     // ===================================================
+    // VEHICLE NUMBER
+    // ===================================================
+
+    if (!this.vehicleNumber.trim()) {
+
+      alert('Vehicle number is required.');
+
+      return;
+
+    }
+
+    const normalizedVehicleNumber =
+      this.vehicleNumber
+        .trim()
+        .toUpperCase()
+        .replace(/\s+/g, '');
+
+    if (!/^[A-Z0-9-]{4,20}$/.test(normalizedVehicleNumber)) {
+
+      alert('Please enter a valid vehicle number.');
+
+      return;
+
+    }
+
+
+    // ===================================================
     // MANUFACTURING YEAR
     // ===================================================
 
@@ -443,6 +489,12 @@ export class SellCarComponent {
     formData.append(
       'variant',
       this.variant.trim()
+    );
+
+
+    formData.append(
+      'vehicleNumber',
+      normalizedVehicleNumber
     );
 
 
@@ -602,6 +654,7 @@ this.http.post<any>(
     this.brand = '';
     this.model = '';
     this.variant = '';
+    this.vehicleNumber = '';
 
     this.manufacturingYear = null;
 

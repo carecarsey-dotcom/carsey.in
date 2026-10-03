@@ -4,6 +4,7 @@ const {
     triggerGoogleSheetsSync
 } = require("../services/googleSheetsSync.service");
 
+
 // ======================================================
 // CREATE SELL CAR REQUEST
 // Customer
@@ -31,6 +32,8 @@ const createSellCarRequest = (requestData) => {
 
                 variant,
 
+                vehicle_number,
+
                 manufacturing_year,
 
                 fuel_type,
@@ -53,9 +56,10 @@ const createSellCarRequest = (requestData) => {
 
             )
 
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 
         `;
+
 
         const values = [
 
@@ -70,6 +74,8 @@ const createSellCarRequest = (requestData) => {
             requestData.model,
 
             requestData.variant,
+
+            requestData.vehicleNumber,
 
             requestData.manufacturingYear,
 
@@ -93,6 +99,7 @@ const createSellCarRequest = (requestData) => {
 
         ];
 
+
         db.query(
 
             sql,
@@ -107,9 +114,13 @@ const createSellCarRequest = (requestData) => {
 
                 }
 
+
                 triggerGoogleSheetsSync(
+
                     `Sell car request created: sell_id ${result.insertId}`
+
                 );
+
 
                 resolve({
 
@@ -153,6 +164,8 @@ const getAllSellCarRequests = () => {
 
                 variant,
 
+                vehicle_number,
+
                 manufacturing_year,
 
                 fuel_type,
@@ -181,6 +194,7 @@ const getAllSellCarRequests = () => {
 
         `;
 
+
         db.query(
 
             sql,
@@ -192,6 +206,7 @@ const getAllSellCarRequests = () => {
                     return reject(err);
 
                 }
+
 
                 resolve(result);
 
@@ -210,9 +225,7 @@ const getAllSellCarRequests = () => {
 // ======================================================
 
 const getSellCarRequestById = (
-
     sellId
-
 ) => {
 
     return new Promise((resolve, reject) => {
@@ -234,6 +247,8 @@ const getSellCarRequestById = (
                 model,
 
                 variant,
+
+                vehicle_number,
 
                 manufacturing_year,
 
@@ -265,6 +280,7 @@ const getSellCarRequestById = (
 
         `;
 
+
         db.query(
 
             sql,
@@ -279,10 +295,9 @@ const getSellCarRequestById = (
 
                 }
 
+
                 resolve(
-
                     result[0] || null
-
                 );
 
             }
@@ -300,11 +315,8 @@ const getSellCarRequestById = (
 // ======================================================
 
 const updateSellCarRequestStatus = (
-
     sellId,
-
     status
-
 ) => {
 
     return new Promise((resolve, reject) => {
@@ -320,6 +332,7 @@ const updateSellCarRequestStatus = (
             WHERE sell_id = ?
 
         `;
+
 
         db.query(
 
@@ -341,9 +354,13 @@ const updateSellCarRequestStatus = (
 
                 }
 
+
                 triggerGoogleSheetsSync(
+
                     `Sell car request status updated: sell_id ${sellId}`
+
                 );
+
 
                 resolve(result);
 

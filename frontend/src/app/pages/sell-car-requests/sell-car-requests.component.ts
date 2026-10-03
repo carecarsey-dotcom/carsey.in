@@ -16,16 +16,12 @@ import {
 @Component({
   selector:
     'app-sell-car-requests',
-
   standalone: true,
-
   imports: [
     CommonModule
   ],
-
   templateUrl:
     './sell-car-requests.component.html',
-
   styleUrl:
     './sell-car-requests.component.css'
 })
@@ -58,29 +54,22 @@ export class SellCarRequestsComponent
   // ====================================================
 
   loadRequests(): void {
-
     this.loading = true;
-
     this.errorMessage = '';
 
     this.sellCarService
       .getRequests()
       .subscribe({
-
         next: (response) => {
-
           console.log(
             'Sell Car Requests:',
             response
           );
 
           if (response.success) {
-
             this.requests =
               response.data?.requests ?? [];
-
           } else {
-
             this.errorMessage =
               response.message ||
               'Unable to load sell car requests.';
@@ -90,7 +79,6 @@ export class SellCarRequestsComponent
         },
 
         error: (error) => {
-
           console.error(
             'Sell Car API Error:',
             error
@@ -102,7 +90,6 @@ export class SellCarRequestsComponent
 
           this.loading = false;
         }
-
       });
   }
 
@@ -113,7 +100,6 @@ export class SellCarRequestsComponent
   approve(
     request: SellCarRequest
   ): void {
-
     this.updateStatus(
       request,
       'Approved'
@@ -127,7 +113,6 @@ export class SellCarRequestsComponent
   reject(
     request: SellCarRequest
   ): void {
-
     this.updateStatus(
       request,
       'Rejected'
@@ -154,16 +139,12 @@ export class SellCarRequestsComponent
         status
       )
       .subscribe({
-
         next: (response) => {
 
           if (response.success) {
-
             request.status =
               status;
-
           } else {
-
             alert(
               response.message ||
               'Unable to update sell car status.'
@@ -175,7 +156,6 @@ export class SellCarRequestsComponent
         },
 
         error: (error) => {
-
           console.error(
             'Update Sell Car Error:',
             error
@@ -189,7 +169,6 @@ export class SellCarRequestsComponent
           this.updatingSellId =
             null;
         }
-
       });
   }
 
@@ -204,14 +183,12 @@ export class SellCarRequestsComponent
     if (
       status === 'Approved'
     ) {
-
       return 'bg-green-100 text-green-700';
     }
 
     if (
       status === 'Rejected'
     ) {
-
       return 'bg-red-100 text-red-700';
     }
 
@@ -222,22 +199,22 @@ export class SellCarRequestsComponent
   // IMAGE URL
   // ====================================================
 
-  // ====================================================
-// IMAGE URL
-// ====================================================
-getImageUrl(image?: string): string {
-  if (!image) {
-    return '';
+  getImageUrl(
+    image?: string
+  ): string {
+
+    if (!image) {
+      return '';
+    }
+
+    if (image.startsWith('http')) {
+      return image;
+    }
+
+    const cleanPath = image.startsWith('/')
+      ? image
+      : `/${image}`;
+
+    return `https://api.carsey.in${cleanPath}`;
   }
-
-  if (image.startsWith('http')) {
-    return image;
-  }
-
-  const cleanPath = image.startsWith('/')
-    ? image
-    : `/${image}`;
-
-  return `https://api.carsey.in${cleanPath}`;
-}
 }
