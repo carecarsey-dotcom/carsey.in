@@ -3,11 +3,17 @@ const sellCarService = require(
 );
 
 
+
 // ======================================================
+
 // CREATE SELL CAR REQUEST
+
 // Customer
+
 // ======================================================
+
 // POST
+
 // /api/vehicles/sell-car
 
 const createSellCarRequest = async (
@@ -22,32 +28,21 @@ const createSellCarRequest = async (
         // ==================================================
 
         const {
-
             sellerName,
-
             mobile,
-
             email,
-
+            city,
             brand,
-
             model,
-
             variant,
-
             vehicleNumber,
-
             manufacturingYear,
-
             fuelType,
-
             transmission,
-
             kmDriven,
-
             expectedPrice
-
         } = req.body;
+
 
 
         // ==================================================
@@ -56,6 +51,7 @@ const createSellCarRequest = async (
 
         const files =
             req.files || {};
+
 
 
         // ==================================================
@@ -69,11 +65,13 @@ const createSellCarRequest = async (
                 : null;
 
 
+
         const backImage =
             files.backImage &&
             files.backImage[0]
                 ? `/uploads/sell-cars/${files.backImage[0].filename}`
                 : null;
+
 
 
         const leftImage =
@@ -83,11 +81,13 @@ const createSellCarRequest = async (
                 : null;
 
 
+
         const rightImage =
             files.rightImage &&
             files.rightImage[0]
                 ? `/uploads/sell-cars/${files.rightImage[0].filename}`
                 : null;
+
 
 
         // ==================================================
@@ -101,6 +101,8 @@ const createSellCarRequest = async (
             mobile,
 
             email,
+
+            city,
 
             brand,
 
@@ -131,6 +133,7 @@ const createSellCarRequest = async (
         };
 
 
+
         // ==================================================
         // SERVICE
         // ==================================================
@@ -140,6 +143,7 @@ const createSellCarRequest = async (
                 .createSellCarRequest(
                     requestData
                 );
+
 
 
         // ==================================================
@@ -165,6 +169,7 @@ const createSellCarRequest = async (
         );
 
 
+
         return res.status(400).json({
 
             success: false,
@@ -180,11 +185,17 @@ const createSellCarRequest = async (
 };
 
 
+
 // ======================================================
+
 // GET ALL SELL CAR REQUESTS
+
 // Admin
+
 // ======================================================
+
 // GET
+
 // /api/admin/sell-car-requests
 
 const getAllSellCarRequests = async (
@@ -197,6 +208,7 @@ const getAllSellCarRequests = async (
         const data =
             await sellCarService
                 .getAllSellCarRequests();
+
 
 
         return res.status(200).json({
@@ -218,6 +230,7 @@ const getAllSellCarRequests = async (
         );
 
 
+
         return res.status(500).json({
 
             success: false,
@@ -233,11 +246,17 @@ const getAllSellCarRequests = async (
 };
 
 
+
 // ======================================================
+
 // GET SELL CAR REQUEST BY ID
+
 // Admin
+
 // ======================================================
+
 // GET
+
 // /api/admin/sell-car-requests/:sellId
 
 const getSellCarRequestById = async (
@@ -252,11 +271,13 @@ const getSellCarRequestById = async (
         } = req.params;
 
 
+
         const data =
             await sellCarService
                 .getSellCarRequestById(
                     sellId
                 );
+
 
 
         return res.status(200).json({
@@ -278,6 +299,7 @@ const getSellCarRequestById = async (
         );
 
 
+
         return res.status(404).json({
 
             success: false,
@@ -293,11 +315,17 @@ const getSellCarRequestById = async (
 };
 
 
+
 // ======================================================
+
 // UPDATE SELL CAR REQUEST STATUS
+
 // Admin
+
 // ======================================================
+
 // PATCH
+
 // /api/admin/sell-car-requests/:sellId/status
 
 const updateSellCarRequestStatus = async (
@@ -312,9 +340,11 @@ const updateSellCarRequestStatus = async (
         } = req.params;
 
 
+
         const {
             status
         } = req.body;
+
 
 
         const data =
@@ -323,6 +353,7 @@ const updateSellCarRequestStatus = async (
                     sellId,
                     status
                 );
+
 
 
         return res.status(200).json({
@@ -344,6 +375,7 @@ const updateSellCarRequestStatus = async (
         );
 
 
+
         return res.status(400).json({
 
             success: false,
@@ -359,8 +391,11 @@ const updateSellCarRequestStatus = async (
 };
 
 
+
 // ======================================================
+
 // EXPORT
+
 // ======================================================
 
 module.exports = {

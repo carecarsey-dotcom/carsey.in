@@ -92,6 +92,24 @@ const createSellCarRequest = async (
 
 
     // ==================================================
+    // CITY
+    // ==================================================
+
+    if (
+        !requestData.city ||
+        !requestData.city.trim()
+    ) {
+
+        throw new Error(
+            "City is required."
+        );
+
+    }
+
+    const city =
+        requestData.city.trim();
+
+    // ==================================================
     // BRAND
     // ==================================================
 
@@ -295,6 +313,8 @@ const createSellCarRequest = async (
 
         email,
 
+        city,
+
         brand:
             requestData.brand.trim(),
 
@@ -451,6 +471,9 @@ const getSellCarRequestById = async (
 
         email:
             request.email,
+
+        city:
+            request.city,
 
         brand:
             request.brand,

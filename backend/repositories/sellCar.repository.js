@@ -5,9 +5,13 @@ const {
 } = require("../services/googleSheetsSync.service");
 
 
+
 // ======================================================
+
 // CREATE SELL CAR REQUEST
+
 // Customer
+
 // ======================================================
 
 const createSellCarRequest = (requestData) => {
@@ -25,6 +29,8 @@ const createSellCarRequest = (requestData) => {
                 mobile,
 
                 email,
+
+                city,
 
                 brand,
 
@@ -56,9 +62,10 @@ const createSellCarRequest = (requestData) => {
 
             )
 
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 
         `;
+
 
 
         const values = [
@@ -68,6 +75,8 @@ const createSellCarRequest = (requestData) => {
             requestData.mobile,
 
             requestData.email,
+
+            requestData.city,
 
             requestData.brand,
 
@@ -100,6 +109,7 @@ const createSellCarRequest = (requestData) => {
         ];
 
 
+
         db.query(
 
             sql,
@@ -115,11 +125,13 @@ const createSellCarRequest = (requestData) => {
                 }
 
 
+
                 triggerGoogleSheetsSync(
 
                     `Sell car request created: sell_id ${result.insertId}`
 
                 );
+
 
 
                 resolve({
@@ -137,9 +149,13 @@ const createSellCarRequest = (requestData) => {
 };
 
 
+
 // ======================================================
+
 // GET ALL SELL CAR REQUESTS
+
 // Admin
+
 // ======================================================
 
 const getAllSellCarRequests = () => {
@@ -157,6 +173,8 @@ const getAllSellCarRequests = () => {
                 mobile,
 
                 email,
+
+                city,
 
                 brand,
 
@@ -195,6 +213,7 @@ const getAllSellCarRequests = () => {
         `;
 
 
+
         db.query(
 
             sql,
@@ -208,6 +227,7 @@ const getAllSellCarRequests = () => {
                 }
 
 
+
                 resolve(result);
 
             }
@@ -219,13 +239,19 @@ const getAllSellCarRequests = () => {
 };
 
 
+
 // ======================================================
+
 // GET SELL CAR REQUEST BY ID
+
 // Admin
+
 // ======================================================
 
 const getSellCarRequestById = (
+
     sellId
+
 ) => {
 
     return new Promise((resolve, reject) => {
@@ -241,6 +267,8 @@ const getSellCarRequestById = (
                 mobile,
 
                 email,
+
+                city,
 
                 brand,
 
@@ -281,6 +309,7 @@ const getSellCarRequestById = (
         `;
 
 
+
         db.query(
 
             sql,
@@ -296,8 +325,11 @@ const getSellCarRequestById = (
                 }
 
 
+
                 resolve(
+
                     result[0] || null
+
                 );
 
             }
@@ -309,14 +341,21 @@ const getSellCarRequestById = (
 };
 
 
+
 // ======================================================
+
 // UPDATE SELL CAR REQUEST STATUS
+
 // Admin
+
 // ======================================================
 
 const updateSellCarRequestStatus = (
+
     sellId,
+
     status
+
 ) => {
 
     return new Promise((resolve, reject) => {
@@ -332,6 +371,7 @@ const updateSellCarRequestStatus = (
             WHERE sell_id = ?
 
         `;
+
 
 
         db.query(
@@ -355,11 +395,13 @@ const updateSellCarRequestStatus = (
                 }
 
 
+
                 triggerGoogleSheetsSync(
 
                     `Sell car request status updated: sell_id ${sellId}`
 
                 );
+
 
 
                 resolve(result);
@@ -373,8 +415,11 @@ const updateSellCarRequestStatus = (
 };
 
 
+
 // ======================================================
+
 // EXPORT
+
 // ======================================================
 
 module.exports = {

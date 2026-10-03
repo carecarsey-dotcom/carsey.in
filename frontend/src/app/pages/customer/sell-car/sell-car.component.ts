@@ -1,3 +1,9 @@
+/*
+  ORIGINAL CODE PRESERVED:
+  This file keeps the existing Sell Car TypeScript logic and adds only the
+  requested City field, validation, FormData value, and reset handling.
+*/
+
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -24,6 +30,7 @@ export class SellCarComponent {
   sellerName = '';
   mobile = '';
   email = '';
+  city = '';
 
   brand = '';
   model = '';
@@ -353,6 +360,19 @@ export class SellCarComponent {
 
 
     // ===================================================
+    // CITY
+    // ===================================================
+
+    if (!this.city.trim()) {
+
+      alert('City is required.');
+
+      return;
+
+    }
+
+
+    // ===================================================
     // BRAND
     // ===================================================
 
@@ -471,6 +491,12 @@ export class SellCarComponent {
     formData.append(
       'email',
       this.email.trim()
+    );
+
+
+    formData.append(
+      'city',
+      this.city.trim()
     );
 
 
@@ -650,6 +676,7 @@ this.http.post<any>(
     this.sellerName = '';
     this.mobile = '';
     this.email = '';
+    this.city = '';
 
     this.brand = '';
     this.model = '';

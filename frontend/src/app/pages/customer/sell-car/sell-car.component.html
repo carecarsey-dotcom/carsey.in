@@ -1,3 +1,9 @@
+<!--
+  ORIGINAL CODE PRESERVED:
+  This file is the original Sell Car HTML with only the requested City
+  field and CNG + Petrol option added. Existing markup and design are retained.
+-->
+
 <div class="sell-page">
 
   <div class="sell-container">
@@ -113,6 +119,29 @@
                 placeholder="Enter your email"
                 autocomplete="email"
               />
+
+            </div>
+
+            <!-- CITY -->
+
+            <div class="form-group full">
+
+              <label>
+                City *
+              </label>
+
+              <input
+                type="text"
+                name="city"
+                [(ngModel)]="city"
+                placeholder="Enter your city"
+                autocomplete="address-level2"
+                required
+              />
+
+              <small>
+                Enter the city where the car is located.
+              </small>
 
             </div>
 
@@ -266,6 +295,10 @@
 
                 <option value="CNG">
                   CNG
+                </option>
+
+                <option value="CNG + Petrol">
+                  CNG + Petrol
                 </option>
 
                 <option value="Electric">
