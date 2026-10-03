@@ -11,6 +11,14 @@ const app = require("./app");
 const emailService = require("./services/email.service");
 
 // ======================================================
+// GOOGLE SHEETS WATCHER
+// ======================================================
+
+const {
+    startGoogleSheetsWatcher
+} = require("./services/googleSheetsWatcher");
+
+// ======================================================
 // PORT
 // ======================================================
 
@@ -27,6 +35,7 @@ const server = app.listen(
     PORT,
     "0.0.0.0",
     () => {
+
         console.log(
             `Carsey backend running on port ${PORT}`
         );
@@ -49,16 +58,20 @@ const server = app.listen(
             typeof emailService.verifyMailConfiguration ===
                 "function"
         ) {
+
             Promise
                 .resolve(
                     emailService.verifyMailConfiguration()
                 )
                 .then(() => {
+
                     console.log(
                         "Email configuration check completed."
                     );
+
                 })
                 .catch((error) => {
+
                     console.error(
                         "Email configuration check failed:"
                     );
@@ -70,12 +83,64 @@ const server = app.listen(
                     console.warn(
                         "Server will continue running without email verification."
                     );
+
                 });
+
         } else {
+
             console.warn(
                 "verifyMailConfiguration() is not available in email.service."
             );
+
         }
+
+        // ==================================================
+        // GOOGLE SHEETS DATABASE WATCHER
+        // ==================================================
+
+        // MySQL me direct INSERT / UPDATE / DELETE hone par
+        // MySQL triggers google_sheets_sync_state ko update karte hain.
+        //
+        // Watcher us change ko detect karke
+        // Google Sheets ka automatic sync start karega.
+
+        try {
+
+            if (
+                typeof startGoogleSheetsWatcher ===
+                "function"
+            ) {
+
+                startGoogleSheetsWatcher();
+
+                console.log(
+                    "Google Sheets database watcher started."
+                );
+
+            } else {
+
+                console.warn(
+                    "startGoogleSheetsWatcher() is not available."
+                );
+
+            }
+
+        } catch (error) {
+
+            console.error(
+                "Google Sheets watcher failed to start:"
+            );
+
+            console.error(
+                error.message || error
+            );
+
+            console.warn(
+                "Server will continue running without the Google Sheets watcher."
+            );
+
+        }
+
     }
 );
 
@@ -84,8 +149,11 @@ const server = app.listen(
 // ======================================================
 
 server.on("error", (error) => {
+
     console.error("Server error:");
+
     console.error(error);
+
 });
 
 // ======================================================
@@ -93,8 +161,11 @@ server.on("error", (error) => {
 // ======================================================
 
 process.on("unhandledRejection", (reason) => {
+
     console.error("Unhandled Promise Rejection:");
+
     console.error(reason);
+
 });
 
 // ======================================================
@@ -102,8 +173,11 @@ process.on("unhandledRejection", (reason) => {
 // ======================================================
 
 process.on("uncaughtException", (error) => {
+
     console.error("Uncaught Exception:");
+
     console.error(error);
+
 });
 
 // ======================================================
@@ -111,14 +185,21 @@ process.on("uncaughtException", (error) => {
 // ======================================================
 
 process.on("SIGTERM", () => {
+
     console.log(
         "SIGTERM received. Server is shutting down..."
     );
 
     server.close(() => {
-        console.log("Carsey backend server closed.");
+
+        console.log(
+            "Carsey backend server closed."
+        );
+
         process.exit(0);
+
     });
+
 });
 
 // ======================================================
@@ -126,12 +207,19 @@ process.on("SIGTERM", () => {
 // ======================================================
 
 process.on("SIGINT", () => {
+
     console.log(
         "SIGINT received. Server is shutting down..."
     );
 
     server.close(() => {
-        console.log("Carsey backend server closed.");
+
+        console.log(
+            "Carsey backend server closed."
+        );
+
         process.exit(0);
+
     });
+
 });
