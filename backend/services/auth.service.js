@@ -211,6 +211,7 @@ const createEmployeeAccount = async (
     name,
     email,
     mobile,
+    city,
     password
 ) => {
 
@@ -236,6 +237,12 @@ const createEmployeeAccount = async (
         );
     }
 
+    if (!city || !city.trim()) {
+        throw new Error(
+            "Employee city is required."
+        );
+    }
+
     if (!password) {
         throw new Error(
             "Employee password is required."
@@ -258,6 +265,14 @@ const createEmployeeAccount = async (
     mobile =
         mobile
             .replace(/\D/g, '')
+            .trim();
+
+    // ==================================================
+    // NORMALIZE CITY
+    // ==================================================
+
+    city =
+        city
             .trim();
 
     // ==================================================
@@ -315,6 +330,7 @@ const createEmployeeAccount = async (
             name.trim(),
             email,
             mobile,
+            city,
             hashedPassword
         );
 
@@ -333,6 +349,8 @@ const createEmployeeAccount = async (
             email,
 
             mobile,
+
+            city,
 
             role:
                 "Employee",
@@ -431,7 +449,6 @@ const changeEmployeeStatus = async (
     return {
         employeeId,
         status,
-
         message:
             "Employee status updated successfully."
     };

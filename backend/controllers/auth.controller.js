@@ -8,6 +8,7 @@ const login = async (
     req,
     res
 ) => {
+
     try {
 
         const {
@@ -23,11 +24,16 @@ const login = async (
             !email ||
             !password
         ) {
+
             return res.status(400).json({
+
                 success: false,
+
                 message:
                     "Email and Password are required."
+
             });
+
         }
 
         // ==================================================
@@ -41,10 +47,14 @@ const login = async (
             );
 
         return res.status(200).json({
+
             success: true,
+
             message:
                 "Login Successful",
+
             data
+
         });
 
     } catch (error) {
@@ -55,10 +65,14 @@ const login = async (
         );
 
         return res.status(401).json({
+
             success: false,
+
             message:
                 error.message
+
         });
+
     }
 };
 
@@ -70,23 +84,32 @@ const profile = async (
     req,
     res
 ) => {
+
     try {
 
         return res.status(200).json({
+
             success: true,
+
             message:
                 "Admin Profile",
+
             data:
                 req.admin
+
         });
 
     } catch (error) {
 
         return res.status(500).json({
+
             success: false,
+
             message:
                 error.message
+
         });
+
     }
 };
 
@@ -98,6 +121,7 @@ const changePassword = async (
     req,
     res
 ) => {
+
     try {
 
         const adminId =
@@ -116,19 +140,27 @@ const changePassword = async (
             );
 
         return res.status(200).json({
+
             success: true,
+
             message:
                 "Password Changed Successfully",
+
             data
+
         });
 
     } catch (error) {
 
         return res.status(400).json({
+
             success: false,
+
             message:
                 error.message
+
         });
+
     }
 };
 
@@ -141,12 +173,14 @@ const createEmployee = async (
     req,
     res
 ) => {
+
     try {
 
         const {
             name,
             email,
             mobile,
+            city,
             password
         } = req.body;
 
@@ -159,14 +193,19 @@ const createEmployee = async (
                 name,
                 email,
                 mobile,
+                city,
                 password
             );
 
         return res.status(201).json({
+
             success: true,
+
             message:
                 "Employee Account Created Successfully",
+
             data
+
         });
 
     } catch (error) {
@@ -177,10 +216,14 @@ const createEmployee = async (
         );
 
         return res.status(400).json({
+
             success: false,
+
             message:
                 error.message
+
         });
+
     }
 };
 
@@ -193,18 +236,25 @@ const getEmployees = async (
     req,
     res
 ) => {
+
     try {
 
         const employees =
             await authService.getEmployees();
 
         return res.status(200).json({
+
             success: true,
+
             message:
                 "Employees Retrieved Successfully",
+
             data: {
+
                 employees
+
             }
+
         });
 
     } catch (error) {
@@ -215,10 +265,14 @@ const getEmployees = async (
         );
 
         return res.status(500).json({
+
             success: false,
+
             message:
                 error.message
+
         });
+
     }
 };
 
@@ -231,6 +285,7 @@ const getEmployee = async (
     req,
     res
 ) => {
+
     try {
 
         const {
@@ -243,12 +298,18 @@ const getEmployee = async (
             );
 
         return res.status(200).json({
+
             success: true,
+
             message:
                 "Employee Retrieved Successfully",
+
             data: {
+
                 employee
+
             }
+
         });
 
     } catch (error) {
@@ -259,10 +320,14 @@ const getEmployee = async (
         );
 
         return res.status(404).json({
+
             success: false,
+
             message:
                 error.message
+
         });
+
     }
 };
 
@@ -275,6 +340,7 @@ const updateEmployeeStatus = async (
     req,
     res
 ) => {
+
     try {
 
         const {
@@ -292,10 +358,14 @@ const updateEmployeeStatus = async (
             );
 
         return res.status(200).json({
+
             success: true,
+
             message:
                 "Employee Status Updated Successfully",
+
             data
+
         });
 
     } catch (error) {
@@ -306,10 +376,14 @@ const updateEmployeeStatus = async (
         );
 
         return res.status(400).json({
+
             success: false,
+
             message:
                 error.message
+
         });
+
     }
 };
 

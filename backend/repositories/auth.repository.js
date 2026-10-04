@@ -1,4 +1,5 @@
 const db = require("../config/db");
+
 const {
     triggerGoogleSheetsSync
 } = require("../services/googleSheetsSync.service");
@@ -30,6 +31,7 @@ const findAdminByEmail = (email) => {
                 resolve(result[0]);
             }
         );
+
     });
 };
 
@@ -60,6 +62,7 @@ const findAdminById = (adminId) => {
                 resolve(result[0]);
             }
         );
+
     });
 };
 
@@ -93,9 +96,11 @@ const updatePassword = (
                 }
 
                 // Password is intentionally not synced to Google Sheets.
+
                 resolve(result);
             }
         );
+
     });
 };
 
@@ -135,6 +140,7 @@ const findAccountByEmail = (
                 );
             }
         );
+
     });
 };
 
@@ -146,6 +152,7 @@ const createEmployee = (
     name,
     email,
     mobile,
+    city,
     password
 ) => {
 
@@ -157,12 +164,14 @@ const createEmployee = (
                 name,
                 email,
                 mobile,
+                city,
                 password,
                 role,
                 status
             )
             VALUES
             (
+                ?,
                 ?,
                 ?,
                 ?,
@@ -178,6 +187,7 @@ const createEmployee = (
                 name,
                 email,
                 mobile,
+                city,
                 password
             ],
             (err, result) => {
@@ -193,6 +203,7 @@ const createEmployee = (
                 resolve(result);
             }
         );
+
     });
 };
 
@@ -210,6 +221,7 @@ const getAllEmployees = () => {
                 name,
                 email,
                 mobile,
+                city,
                 role,
                 status,
                 created_at
@@ -230,6 +242,7 @@ const getAllEmployees = () => {
                 resolve(result);
             }
         );
+
     });
 };
 
@@ -249,6 +262,7 @@ const getEmployeeById = (
                 name,
                 email,
                 mobile,
+                city,
                 role,
                 status,
                 created_at
@@ -272,6 +286,7 @@ const getEmployeeById = (
                 );
             }
         );
+
     });
 };
 
@@ -312,6 +327,7 @@ const updateEmployeeStatus = (
                 resolve(result);
             }
         );
+
     });
 };
 
@@ -332,4 +348,5 @@ module.exports = {
     getAllEmployees,
     getEmployeeById,
     updateEmployeeStatus
+
 };

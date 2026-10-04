@@ -95,7 +95,13 @@ export class EmployeeManagementComponent {
   // Employee mobile number
   employeeMobile = '';
 
+  // Employee city
+  employeeCity = '';
+
   employeePassword = '';
+
+  // Password visibility
+  showEmployeePassword = false;
 
 
   // ======================================================
@@ -325,7 +331,11 @@ export class EmployeeManagementComponent {
 
     this.employeeMobile = '';
 
+    this.employeeCity = '';
+
     this.employeePassword = '';
+
+    this.showEmployeePassword = false;
 
   }
 
@@ -350,9 +360,12 @@ export class EmployeeManagementComponent {
   // ======================================================
 
   onEmployeeMobileInput(): void {
-    this.employeeMobile = this.employeeMobile
-      .replace(/\\D/g, '')
-      .slice(0, 10);
+
+    this.employeeMobile =
+      this.employeeMobile
+        .replace(/\D/g, '')
+        .slice(0, 10);
+
   }
 
 
@@ -437,6 +450,7 @@ export class EmployeeManagementComponent {
         'Employee mobile number is required.';
 
       return;
+
     }
 
 
@@ -446,6 +460,25 @@ export class EmployeeManagementComponent {
         'Please enter a valid 10 digit mobile number.';
 
       return;
+
+    }
+
+
+    // ==================================================
+    // CITY VALIDATION
+    // ==================================================
+
+    const city =
+      this.employeeCity.trim();
+
+
+    if (!city) {
+
+      this.formError =
+        'Employee city is required.';
+
+      return;
+
     }
 
 
@@ -492,6 +525,8 @@ export class EmployeeManagementComponent {
 
       mobile,
 
+      city,
+
       password
 
     };
@@ -502,7 +537,8 @@ export class EmployeeManagementComponent {
       {
         name,
         email,
-        mobile
+        mobile,
+        city
       }
     );
 
@@ -780,10 +816,36 @@ export class EmployeeManagementComponent {
   ): string {
 
     return (
+
       employee?.mobile ||
+
       employee?.phone ||
+
       employee?.mobile_number ||
+
       '—'
+
+    );
+
+  }
+
+
+  // ======================================================
+  // GET EMPLOYEE CITY
+  // ======================================================
+
+  getEmployeeCity(
+    employee: any
+  ): string {
+
+    return (
+
+      employee?.city ||
+
+      employee?.employee_city ||
+
+      '—'
+
     );
 
   }

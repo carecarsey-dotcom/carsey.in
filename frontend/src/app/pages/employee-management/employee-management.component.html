@@ -160,6 +160,7 @@
           <input
             type="text"
             [(ngModel)]="employeeName"
+            name="employeeName"
             placeholder="Enter employee name"
             autocomplete="name"
             class="w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-slate-900 focus:ring-2 focus:ring-slate-200"
@@ -184,6 +185,7 @@
           <input
             type="email"
             [(ngModel)]="employeeEmail"
+            name="employeeEmail"
             placeholder="Enter employee email"
             autocomplete="email"
             class="w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-slate-900 focus:ring-2 focus:ring-slate-200"
@@ -196,8 +198,9 @@
         <!-- MOBILE NUMBER -->
 
         <div
-          class="w-full md:col-span-2"
+          class="w-full"
         >
+
           <label
             class="mb-2 block text-sm font-semibold text-slate-700"
           >
@@ -223,6 +226,32 @@
           >
             Enter a valid 10 digit Indian mobile number.
           </p>
+
+        </div>
+
+
+        <!-- CITY -->
+
+        <div
+          class="w-full"
+        >
+
+          <label
+            class="mb-2 block text-sm font-semibold text-slate-700"
+          >
+            Employee City
+          </label>
+
+          <input
+            type="text"
+            [(ngModel)]="employeeCity"
+            name="employeeCity"
+            placeholder="Enter employee city"
+            autocomplete="address-level2"
+            class="w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-slate-900 focus:ring-2 focus:ring-slate-200"
+            [disabled]="saving"
+          />
+
         </div>
 
 
@@ -238,14 +267,43 @@
             Employee Password
           </label>
 
-          <input
-            type="password"
-            [(ngModel)]="employeePassword"
-            placeholder="Create employee password"
-            autocomplete="new-password"
-            class="w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-slate-900 focus:ring-2 focus:ring-slate-200"
-            [disabled]="saving"
-          />
+          <div
+            class="relative"
+          >
+
+            <input
+              [type]="showEmployeePassword ? 'text' : 'password'"
+              [(ngModel)]="employeePassword"
+              name="employeePassword"
+              placeholder="Create employee password"
+              autocomplete="new-password"
+              class="w-full rounded-lg border border-slate-300 bg-white px-4 py-3 pr-12 text-sm text-slate-900 outline-none transition focus:border-slate-900 focus:ring-2 focus:ring-slate-200"
+              [disabled]="saving"
+            />
+
+
+            <button
+              type="button"
+              (click)="showEmployeePassword = !showEmployeePassword"
+              [disabled]="saving"
+              class="absolute right-3 top-1/2 -translate-y-1/2 rounded-md px-2 py-1 text-slate-500 transition hover:bg-slate-100 hover:text-slate-900 disabled:cursor-not-allowed disabled:opacity-50"
+              [attr.aria-label]="showEmployeePassword ? 'Hide password' : 'Show password'"
+            >
+
+              @if (showEmployeePassword) {
+
+                👁️
+
+              } @else {
+
+                👁️‍🗨️
+
+              }
+
+            </button>
+
+          </div>
+
 
           <p
             class="mt-2 text-xs text-slate-500"
@@ -282,9 +340,13 @@
         >
 
           @if (saving) {
+
             Creating Employee...
+
           } @else {
+
             Create Employee
+
           }
 
         </button>
@@ -421,7 +483,7 @@
       >
 
         <table
-          class="w-full min-w-[700px] text-left"
+          class="w-full min-w-[900px] text-left"
         >
 
           <thead
@@ -452,6 +514,12 @@
                 class="px-6 py-4 text-xs font-bold uppercase tracking-wide text-slate-500"
               >
                 Mobile
+              </th>
+
+              <th
+                class="px-6 py-4 text-xs font-bold uppercase tracking-wide text-slate-500"
+              >
+                City
               </th>
 
               <th
@@ -529,6 +597,15 @@
                   class="px-6 py-5 text-sm text-slate-600"
                 >
                   {{ getEmployeeMobile(employee) }}
+                </td>
+
+
+                <!-- CITY -->
+
+                <td
+                  class="px-6 py-5 text-sm text-slate-600"
+                >
+                  {{ getEmployeeCity(employee) }}
                 </td>
 
 
@@ -668,6 +745,13 @@
                 >
                   Mobile:
                   {{ getEmployeeMobile(employee) }}
+                </p>
+
+                <p
+                  class="mt-1 text-sm font-medium text-slate-600"
+                >
+                  City:
+                  {{ getEmployeeCity(employee) }}
                 </p>
 
                 <p
