@@ -3,24 +3,14 @@ const sellCarService = require(
 );
 
 
-
 // ======================================================
-
 // CREATE SELL CAR REQUEST
-
 // Customer
-
 // ======================================================
-
 // POST
-
 // /api/vehicles/sell-car
 
-const createSellCarRequest = async (
-    req,
-    res
-) => {
-
+const createSellCarRequest = async (req, res) => {
     try {
 
         // ==================================================
@@ -40,54 +30,93 @@ const createSellCarRequest = async (
             fuelType,
             transmission,
             kmDriven,
-            expectedPrice
-        } = req.body;
+            expectedPrice,
 
+            // NEW FIELD
+            ownerName
+
+        } = req.body;
 
 
         // ==================================================
         // GET UPLOADED FILES
         // ==================================================
 
-        const files =
-            req.files || {};
-
+        const files = req.files || {};
 
 
         // ==================================================
-        // IMAGE PATHS
+        // EXISTING IMAGE PATHS
         // ==================================================
 
         const frontImage =
-            files.frontImage &&
-            files.frontImage[0]
+            files.frontImage && files.frontImage[0]
                 ? `/uploads/sell-cars/${files.frontImage[0].filename}`
                 : null;
 
 
-
         const backImage =
-            files.backImage &&
-            files.backImage[0]
+            files.backImage && files.backImage[0]
                 ? `/uploads/sell-cars/${files.backImage[0].filename}`
                 : null;
 
 
-
         const leftImage =
-            files.leftImage &&
-            files.leftImage[0]
+            files.leftImage && files.leftImage[0]
                 ? `/uploads/sell-cars/${files.leftImage[0].filename}`
                 : null;
 
 
-
         const rightImage =
-            files.rightImage &&
-            files.rightImage[0]
+            files.rightImage && files.rightImage[0]
                 ? `/uploads/sell-cars/${files.rightImage[0].filename}`
                 : null;
 
+
+        // ==================================================
+        // NEW IMAGE PATHS
+        // ==================================================
+
+        const interiorFrontImage =
+            files.interiorFrontImage &&
+            files.interiorFrontImage[0]
+                ? `/uploads/sell-cars/${files.interiorFrontImage[0].filename}`
+                : null;
+
+
+        const interiorRearImage =
+            files.interiorRearImage &&
+            files.interiorRearImage[0]
+                ? `/uploads/sell-cars/${files.interiorRearImage[0].filename}`
+                : null;
+
+
+        const openDickyImage =
+            files.openDickyImage &&
+            files.openDickyImage[0]
+                ? `/uploads/sell-cars/${files.openDickyImage[0].filename}`
+                : null;
+
+
+        const openBonnetImage =
+            files.openBonnetImage &&
+            files.openBonnetImage[0]
+                ? `/uploads/sell-cars/${files.openBonnetImage[0].filename}`
+                : null;
+
+
+        const odometerImage =
+            files.odometerImage &&
+            files.odometerImage[0]
+                ? `/uploads/sell-cars/${files.odometerImage[0].filename}`
+                : null;
+
+
+        const dashboardImage =
+            files.dashboardImage &&
+            files.dashboardImage[0]
+                ? `/uploads/sell-cars/${files.dashboardImage[0].filename}`
+                : null;
 
 
         // ==================================================
@@ -97,41 +126,38 @@ const createSellCarRequest = async (
         const requestData = {
 
             sellerName,
-
             mobile,
-
             email,
-
             city,
 
             brand,
-
             model,
-
             variant,
-
             vehicleNumber,
-
             manufacturingYear,
-
             fuelType,
-
             transmission,
-
             kmDriven,
-
             expectedPrice,
 
+            // NEW FIELD
+            ownerName,
+
+            // EXISTING IMAGES
             frontImage,
-
             backImage,
-
             leftImage,
+            rightImage,
 
-            rightImage
+            // NEW IMAGES
+            interiorFrontImage,
+            interiorRearImage,
+            openDickyImage,
+            openBonnetImage,
+            odometerImage,
+            dashboardImage
 
         };
-
 
 
         // ==================================================
@@ -139,11 +165,9 @@ const createSellCarRequest = async (
         // ==================================================
 
         const data =
-            await sellCarService
-                .createSellCarRequest(
-                    requestData
-                );
-
+            await sellCarService.createSellCarRequest(
+                requestData
+            );
 
 
         // ==================================================
@@ -169,7 +193,6 @@ const createSellCarRequest = async (
         );
 
 
-
         return res.status(400).json({
 
             success: false,
@@ -181,34 +204,22 @@ const createSellCarRequest = async (
         });
 
     }
-
 };
 
 
-
 // ======================================================
-
 // GET ALL SELL CAR REQUESTS
-
 // Admin
-
 // ======================================================
-
 // GET
-
 // /api/admin/sell-car-requests
 
-const getAllSellCarRequests = async (
-    req,
-    res
-) => {
+const getAllSellCarRequests = async (req, res) => {
 
     try {
 
         const data =
-            await sellCarService
-                .getAllSellCarRequests();
-
+            await sellCarService.getAllSellCarRequests();
 
 
         return res.status(200).json({
@@ -230,7 +241,6 @@ const getAllSellCarRequests = async (
         );
 
 
-
         return res.status(500).json({
 
             success: false,
@@ -246,38 +256,24 @@ const getAllSellCarRequests = async (
 };
 
 
-
 // ======================================================
-
 // GET SELL CAR REQUEST BY ID
-
 // Admin
-
 // ======================================================
-
 // GET
-
 // /api/admin/sell-car-requests/:sellId
 
-const getSellCarRequestById = async (
-    req,
-    res
-) => {
+const getSellCarRequestById = async (req, res) => {
 
     try {
 
-        const {
-            sellId
-        } = req.params;
-
+        const { sellId } = req.params;
 
 
         const data =
-            await sellCarService
-                .getSellCarRequestById(
-                    sellId
-                );
-
+            await sellCarService.getSellCarRequestById(
+                sellId
+            );
 
 
         return res.status(200).json({
@@ -299,7 +295,6 @@ const getSellCarRequestById = async (
         );
 
 
-
         return res.status(404).json({
 
             success: false,
@@ -315,45 +310,27 @@ const getSellCarRequestById = async (
 };
 
 
-
 // ======================================================
-
 // UPDATE SELL CAR REQUEST STATUS
-
 // Admin
-
 // ======================================================
-
 // PATCH
-
 // /api/admin/sell-car-requests/:sellId/status
 
-const updateSellCarRequestStatus = async (
-    req,
-    res
-) => {
+const updateSellCarRequestStatus = async (req, res) => {
 
     try {
 
-        const {
-            sellId
-        } = req.params;
+        const { sellId } = req.params;
 
-
-
-        const {
-            status
-        } = req.body;
-
+        const { status } = req.body;
 
 
         const data =
-            await sellCarService
-                .updateSellCarRequestStatus(
-                    sellId,
-                    status
-                );
-
+            await sellCarService.updateSellCarRequestStatus(
+                sellId,
+                status
+            );
 
 
         return res.status(200).json({
@@ -375,7 +352,6 @@ const updateSellCarRequestStatus = async (
         );
 
 
-
         return res.status(400).json({
 
             success: false,
@@ -391,11 +367,8 @@ const updateSellCarRequestStatus = async (
 };
 
 
-
 // ======================================================
-
 // EXPORT
-
 // ======================================================
 
 module.exports = {

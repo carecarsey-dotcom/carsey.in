@@ -163,6 +163,20 @@
 
           <div class="form-grid">
 
+            <!-- OWNER NAME -->
+            <div class="form-group full">
+              <label>Owner Name *</label>
+              <input
+                type="text"
+                name="ownerName"
+                [(ngModel)]="ownerName"
+                placeholder="Enter car owner's name"
+                autocomplete="off"
+                required
+              />
+              <small>Enter the name of the car owner.</small>
+            </div>
+
 
             <!-- BRAND -->
 
@@ -398,7 +412,7 @@
           </h2>
 
           <p class="section-description">
-            Upload front, back, left and right side images.
+            Upload all 10 required car images. Each image must be 5 MB or smaller.
           </p>
 
 
@@ -412,7 +426,7 @@
             <div class="image-upload-card">
 
               <h3>
-                Front Image
+                Front Image *
               </h3>
 
 
@@ -471,7 +485,7 @@
             <div class="image-upload-card">
 
               <h3>
-                Back Image
+                Back Image *
               </h3>
 
 
@@ -530,7 +544,7 @@
             <div class="image-upload-card">
 
               <h3>
-                Left Side Image
+                Left Side Image *
               </h3>
 
 
@@ -589,7 +603,7 @@
             <div class="image-upload-card">
 
               <h3>
-                Right Side Image
+                Right Side Image *
               </h3>
 
 
@@ -638,6 +652,174 @@
 
               }
 
+            </div>
+
+            <!-- ================================================= -->
+            <!-- INTERIOR - FRONT IMAGE -->
+            <!-- ================================================= -->
+            <div class="image-upload-card">
+              <h3>Interior - Front Image *</h3>
+              @if (interiorFrontPreview) {
+                <div class="image-preview">
+                  <img [src]="interiorFrontPreview" alt="Interior front of vehicle" />
+                  <button
+                    type="button"
+                    class="remove-button"
+                    (click)="removeImage('interiorFront')"
+                  >Remove</button>
+                </div>
+              } @else {
+                <label class="upload-box">
+                  <input
+                    type="file"
+                    accept="image/jpeg,image/jpg,image/png,image/webp"
+                    (change)="onFileSelected($event, 'interiorFront')"
+                  />
+                  <div class="camera-icon">📷</div>
+                  <div class="upload-title">Click to upload image</div>
+                  <div class="upload-info">JPG, JPEG, PNG, WEBP — Maximum 5 MB</div>
+                </label>
+              }
+            </div>
+
+            <!-- ================================================= -->
+            <!-- INTERIOR - REAR IMAGE -->
+            <!-- ================================================= -->
+            <div class="image-upload-card">
+              <h3>Interior - Rear Image *</h3>
+              @if (interiorRearPreview) {
+                <div class="image-preview">
+                  <img [src]="interiorRearPreview" alt="Interior rear of vehicle" />
+                  <button
+                    type="button"
+                    class="remove-button"
+                    (click)="removeImage('interiorRear')"
+                  >Remove</button>
+                </div>
+              } @else {
+                <label class="upload-box">
+                  <input
+                    type="file"
+                    accept="image/jpeg,image/jpg,image/png,image/webp"
+                    (change)="onFileSelected($event, 'interiorRear')"
+                  />
+                  <div class="camera-icon">📷</div>
+                  <div class="upload-title">Click to upload image</div>
+                  <div class="upload-info">JPG, JPEG, PNG, WEBP — Maximum 5 MB</div>
+                </label>
+              }
+            </div>
+
+            <!-- ================================================= -->
+            <!-- OPEN DICKY IMAGE -->
+            <!-- ================================================= -->
+            <div class="image-upload-card">
+              <h3>Open Dicky Image *</h3>
+              @if (openDickyPreview) {
+                <div class="image-preview">
+                  <img [src]="openDickyPreview" alt="Open dicky of vehicle" />
+                  <button
+                    type="button"
+                    class="remove-button"
+                    (click)="removeImage('openDicky')"
+                  >Remove</button>
+                </div>
+              } @else {
+                <label class="upload-box">
+                  <input
+                    type="file"
+                    accept="image/jpeg,image/jpg,image/png,image/webp"
+                    (change)="onFileSelected($event, 'openDicky')"
+                  />
+                  <div class="camera-icon">📷</div>
+                  <div class="upload-title">Click to upload image</div>
+                  <div class="upload-info">JPG, JPEG, PNG, WEBP — Maximum 5 MB</div>
+                </label>
+              }
+            </div>
+
+            <!-- ================================================= -->
+            <!-- OPEN BONNET IMAGE -->
+            <!-- ================================================= -->
+            <div class="image-upload-card">
+              <h3>Open Bonnet Image *</h3>
+              @if (openBonnetPreview) {
+                <div class="image-preview">
+                  <img [src]="openBonnetPreview" alt="Open bonnet of vehicle" />
+                  <button
+                    type="button"
+                    class="remove-button"
+                    (click)="removeImage('openBonnet')"
+                  >Remove</button>
+                </div>
+              } @else {
+                <label class="upload-box">
+                  <input
+                    type="file"
+                    accept="image/jpeg,image/jpg,image/png,image/webp"
+                    (change)="onFileSelected($event, 'openBonnet')"
+                  />
+                  <div class="camera-icon">📷</div>
+                  <div class="upload-title">Click to upload image</div>
+                  <div class="upload-info">JPG, JPEG, PNG, WEBP — Maximum 5 MB</div>
+                </label>
+              }
+            </div>
+
+            <!-- ================================================= -->
+            <!-- ODOMETER IMAGE -->
+            <!-- ================================================= -->
+            <div class="image-upload-card">
+              <h3>Odometer Image *</h3>
+              @if (odometerPreview) {
+                <div class="image-preview">
+                  <img [src]="odometerPreview" alt="Vehicle odometer" />
+                  <button
+                    type="button"
+                    class="remove-button"
+                    (click)="removeImage('odometer')"
+                  >Remove</button>
+                </div>
+              } @else {
+                <label class="upload-box">
+                  <input
+                    type="file"
+                    accept="image/jpeg,image/jpg,image/png,image/webp"
+                    (change)="onFileSelected($event, 'odometer')"
+                  />
+                  <div class="camera-icon">📷</div>
+                  <div class="upload-title">Click to upload image</div>
+                  <div class="upload-info">JPG, JPEG, PNG, WEBP — Maximum 5 MB</div>
+                </label>
+              }
+            </div>
+
+            <!-- ================================================= -->
+            <!-- DASHBOARD IMAGE -->
+            <!-- ================================================= -->
+            <div class="image-upload-card">
+              <h3>Dashboard Image *</h3>
+              @if (dashboardPreview) {
+                <div class="image-preview">
+                  <img [src]="dashboardPreview" alt="Vehicle dashboard" />
+                  <button
+                    type="button"
+                    class="remove-button"
+                    (click)="removeImage('dashboard')"
+                  >Remove</button>
+                </div>
+              } @else {
+                <label class="upload-box">
+                  <input
+                    type="file"
+                    accept="image/jpeg,image/jpg,image/png,image/webp"
+                    (change)="onFileSelected($event, 'dashboard')"
+                  />
+                  <div class="camera-icon">📷</div>
+                  <div class="upload-title">Click to upload image</div>
+                  <div class="upload-info">JPG, JPEG, PNG, WEBP — Maximum 5 MB</div>
+                </label>
+              }
             </div>
 
           </div>

@@ -28,6 +28,7 @@ export class SellCarComponent {
   // =====================================================
 
   sellerName = '';
+  ownerName = '';
   mobile = '';
   email = '';
   city = '';
@@ -54,6 +55,12 @@ export class SellCarComponent {
   backImage: File | null = null;
   leftImage: File | null = null;
   rightImage: File | null = null;
+  interiorFrontImage: File | null = null;
+  interiorRearImage: File | null = null;
+  openDickyImage: File | null = null;
+  openBonnetImage: File | null = null;
+  odometerImage: File | null = null;
+  dashboardImage: File | null = null;
 
 
   // =====================================================
@@ -64,6 +71,12 @@ export class SellCarComponent {
   backPreview = '';
   leftPreview = '';
   rightPreview = '';
+  interiorFrontPreview = '';
+  interiorRearPreview = '';
+  openDickyPreview = '';
+  openBonnetPreview = '';
+  odometerPreview = '';
+  dashboardPreview = '';
 
 
   // =====================================================
@@ -130,7 +143,7 @@ export class SellCarComponent {
 
   onFileSelected(
     event: Event,
-    type: 'front' | 'back' | 'left' | 'right'
+    type: 'front' | 'back' | 'left' | 'right' | 'interiorFront' | 'interiorRear' | 'openDicky' | 'openBonnet' | 'odometer' | 'dashboard'
   ): void {
 
     const input =
@@ -222,6 +235,36 @@ export class SellCarComponent {
 
       }
 
+      if (type === 'interiorFront') {
+        this.interiorFrontImage = file;
+        this.interiorFrontPreview = preview;
+      }
+
+      if (type === 'interiorRear') {
+        this.interiorRearImage = file;
+        this.interiorRearPreview = preview;
+      }
+
+      if (type === 'openDicky') {
+        this.openDickyImage = file;
+        this.openDickyPreview = preview;
+      }
+
+      if (type === 'openBonnet') {
+        this.openBonnetImage = file;
+        this.openBonnetPreview = preview;
+      }
+
+      if (type === 'odometer') {
+        this.odometerImage = file;
+        this.odometerPreview = preview;
+      }
+
+      if (type === 'dashboard') {
+        this.dashboardImage = file;
+        this.dashboardPreview = preview;
+      }
+
     };
 
 
@@ -235,7 +278,7 @@ export class SellCarComponent {
   // =====================================================
 
   removeImage(
-    type: 'front' | 'back' | 'left' | 'right'
+    type: 'front' | 'back' | 'left' | 'right' | 'interiorFront' | 'interiorRear' | 'openDicky' | 'openBonnet' | 'odometer' | 'dashboard'
   ): void {
 
     if (type === 'front') {
@@ -267,6 +310,36 @@ export class SellCarComponent {
       this.rightImage = null;
       this.rightPreview = '';
 
+    }
+
+    if (type === 'interiorFront') {
+      this.interiorFrontImage = null;
+      this.interiorFrontPreview = '';
+    }
+
+    if (type === 'interiorRear') {
+      this.interiorRearImage = null;
+      this.interiorRearPreview = '';
+    }
+
+    if (type === 'openDicky') {
+      this.openDickyImage = null;
+      this.openDickyPreview = '';
+    }
+
+    if (type === 'openBonnet') {
+      this.openBonnetImage = null;
+      this.openBonnetPreview = '';
+    }
+
+    if (type === 'odometer') {
+      this.odometerImage = null;
+      this.odometerPreview = '';
+    }
+
+    if (type === 'dashboard') {
+      this.dashboardImage = null;
+      this.dashboardPreview = '';
     }
 
   }
@@ -319,6 +392,20 @@ export class SellCarComponent {
 
     }
 
+
+    // ===================================================
+    // OWNER NAME
+    // ===================================================
+
+    if (!this.ownerName.trim()) {
+      alert('Owner name is required.');
+      return;
+    }
+
+    if (!/^[a-zA-Z ]+$/.test(this.ownerName.trim())) {
+      alert('Owner name can contain only letters and spaces.');
+      return;
+    }
 
     // ===================================================
     // MOBILE
@@ -469,6 +556,29 @@ export class SellCarComponent {
 
 
     // ===================================================
+    // REQUIRED CAR IMAGES
+    // ===================================================
+
+    const requiredImages = [
+      ['Front Image', this.frontImage],
+      ['Back Image', this.backImage],
+      ['Left Side Image', this.leftImage],
+      ['Right Side Image', this.rightImage],
+      ['Interior - Front Image', this.interiorFrontImage],
+      ['Interior - Rear Image', this.interiorRearImage],
+      ['Open Dicky Image', this.openDickyImage],
+      ['Open Bonnet Image', this.openBonnetImage],
+      ['Odometer Image', this.odometerImage],
+      ['Dashboard Image', this.dashboardImage]
+    ] as const;
+
+    const missingImage = requiredImages.find(([, image]) => !image);
+    if (missingImage) {
+      alert(`${missingImage[0]} is required.`);
+      return;
+    }
+
+    // ===================================================
     // FORM DATA
     // ===================================================
 
@@ -479,6 +589,12 @@ export class SellCarComponent {
     formData.append(
       'sellerName',
       this.sellerName.trim()
+    );
+
+
+    formData.append(
+      'ownerName',
+      this.ownerName.trim()
     );
 
 
@@ -601,6 +717,30 @@ export class SellCarComponent {
 
     }
 
+    if (this.interiorFrontImage) {
+      formData.append('interiorFrontImage', this.interiorFrontImage, this.interiorFrontImage.name);
+    }
+
+    if (this.interiorRearImage) {
+      formData.append('interiorRearImage', this.interiorRearImage, this.interiorRearImage.name);
+    }
+
+    if (this.openDickyImage) {
+      formData.append('openDickyImage', this.openDickyImage, this.openDickyImage.name);
+    }
+
+    if (this.openBonnetImage) {
+      formData.append('openBonnetImage', this.openBonnetImage, this.openBonnetImage.name);
+    }
+
+    if (this.odometerImage) {
+      formData.append('odometerImage', this.odometerImage, this.odometerImage.name);
+    }
+
+    if (this.dashboardImage) {
+      formData.append('dashboardImage', this.dashboardImage, this.dashboardImage.name);
+    }
+
 // ===================================================
 // SUBMIT
 // ===================================================
@@ -674,6 +814,7 @@ this.http.post<any>(
   resetForm(): void {
 
     this.sellerName = '';
+    this.ownerName = '';
     this.mobile = '';
     this.email = '';
     this.city = '';
@@ -700,11 +841,23 @@ this.http.post<any>(
     this.backImage = null;
     this.leftImage = null;
     this.rightImage = null;
+    this.interiorFrontImage = null;
+    this.interiorRearImage = null;
+    this.openDickyImage = null;
+    this.openBonnetImage = null;
+    this.odometerImage = null;
+    this.dashboardImage = null;
 
     this.frontPreview = '';
     this.backPreview = '';
     this.leftPreview = '';
     this.rightPreview = '';
+    this.interiorFrontPreview = '';
+    this.interiorRearPreview = '';
+    this.openDickyPreview = '';
+    this.openBonnetPreview = '';
+    this.odometerPreview = '';
+    this.dashboardPreview = '';
 
   }
 

@@ -8,9 +8,7 @@ const sellCarRepository = require(
 // Customer
 // ======================================================
 
-const createSellCarRequest = async (
-    requestData
-) => {
+const createSellCarRequest = async (requestData) => {
 
     // ==================================================
     // SELLER NAME
@@ -26,6 +24,26 @@ const createSellCarRequest = async (
         );
 
     }
+
+
+    // ==================================================
+    // OWNER NAME — NEW FIELD
+    // ==================================================
+
+    if (
+        typeof requestData.ownerName !== "string" ||
+        !requestData.ownerName.trim()
+    ) {
+
+        throw new Error(
+            "Owner name is required."
+        );
+
+    }
+
+
+    const ownerName =
+        requestData.ownerName.trim();
 
 
     // ==================================================
@@ -76,8 +94,7 @@ const createSellCarRequest = async (
 
 
     const email =
-        requestData.email.trim()
-            .toLowerCase();
+        requestData.email.trim().toLowerCase();
 
 
     if (
@@ -106,8 +123,10 @@ const createSellCarRequest = async (
 
     }
 
+
     const city =
         requestData.city.trim();
+
 
     // ==================================================
     // BRAND
@@ -200,9 +219,7 @@ const createSellCarRequest = async (
     // ==================================================
 
     const manufacturingYear =
-        Number(
-            requestData.manufacturingYear
-        );
+        Number(requestData.manufacturingYear);
 
 
     const currentYear =
@@ -210,9 +227,7 @@ const createSellCarRequest = async (
 
 
     if (
-        !Number.isInteger(
-            manufacturingYear
-        ) ||
+        !Number.isInteger(manufacturingYear) ||
         manufacturingYear < 1900 ||
         manufacturingYear > currentYear
     ) {
@@ -261,9 +276,7 @@ const createSellCarRequest = async (
     // ==================================================
 
     const kmDriven =
-        Number(
-            requestData.kmDriven
-        );
+        Number(requestData.kmDriven);
 
 
     if (
@@ -283,9 +296,7 @@ const createSellCarRequest = async (
     // ==================================================
 
     const expectedPrice =
-        Number(
-            requestData.expectedPrice
-        );
+        Number(requestData.expectedPrice);
 
 
     if (
@@ -301,6 +312,86 @@ const createSellCarRequest = async (
 
 
     // ==================================================
+    // REQUIRED IMAGE VALIDATION
+    // EXISTING + NEW IMAGES
+    // ==================================================
+
+    const requiredImages = [
+
+        {
+            field: "frontImage",
+            label: "Front image"
+        },
+
+        {
+            field: "backImage",
+            label: "Back image"
+        },
+
+        {
+            field: "leftImage",
+            label: "Left side image"
+        },
+
+        {
+            field: "rightImage",
+            label: "Right side image"
+        },
+
+        {
+            field: "interiorFrontImage",
+            label: "Interior front image"
+        },
+
+        {
+            field: "interiorRearImage",
+            label: "Interior rear image"
+        },
+
+        {
+            field: "openDickyImage",
+            label: "Open dicky image"
+        },
+
+        {
+            field: "openBonnetImage",
+            label: "Open bonnet image"
+        },
+
+        {
+            field: "odometerImage",
+            label: "Odometer image"
+        },
+
+        {
+            field: "dashboardImage",
+            label: "Dashboard image"
+        }
+
+    ];
+
+
+    for (const image of requiredImages) {
+
+        const imagePath =
+            requestData[image.field];
+
+
+        if (
+            typeof imagePath !== "string" ||
+            !imagePath.trim()
+        ) {
+
+            throw new Error(
+                `${image.label} is required.`
+            );
+
+        }
+
+    }
+
+
+    // ==================================================
     // PREPARE DATA
     // ==================================================
 
@@ -308,6 +399,8 @@ const createSellCarRequest = async (
 
         sellerName:
             requestData.sellerName.trim(),
+
+        ownerName,
 
         mobile,
 
@@ -338,17 +431,42 @@ const createSellCarRequest = async (
 
         expectedPrice,
 
+
+        // EXISTING IMAGES
+
         frontImage:
-            requestData.frontImage || null,
+            requestData.frontImage,
 
         backImage:
-            requestData.backImage || null,
+            requestData.backImage,
 
         leftImage:
-            requestData.leftImage || null,
+            requestData.leftImage,
 
         rightImage:
-            requestData.rightImage || null,
+            requestData.rightImage,
+
+
+        // NEW IMAGES
+
+        interiorFrontImage:
+            requestData.interiorFrontImage,
+
+        interiorRearImage:
+            requestData.interiorRearImage,
+
+        openDickyImage:
+            requestData.openDickyImage,
+
+        openBonnetImage:
+            requestData.openBonnetImage,
+
+        odometerImage:
+            requestData.odometerImage,
+
+        dashboardImage:
+            requestData.dashboardImage,
+
 
         status:
             "Pending"
@@ -361,10 +479,9 @@ const createSellCarRequest = async (
     // ==================================================
 
     const result =
-        await sellCarRepository
-            .createSellCarRequest(
-                data
-            );
+        await sellCarRepository.createSellCarRequest(
+            data
+        );
 
 
     // ==================================================
@@ -392,8 +509,7 @@ const createSellCarRequest = async (
 const getAllSellCarRequests = async () => {
 
     const requests =
-        await sellCarRepository
-            .getAllSellCarRequests();
+        await sellCarRepository.getAllSellCarRequests();
 
 
     return {
@@ -410,9 +526,7 @@ const getAllSellCarRequests = async () => {
 // Admin
 // ======================================================
 
-const getSellCarRequestById = async (
-    sellId
-) => {
+const getSellCarRequestById = async (sellId) => {
 
     const numericSellId =
         Number(sellId);
@@ -439,10 +553,9 @@ const getSellCarRequestById = async (
     // ==================================================
 
     const request =
-        await sellCarRepository
-            .getSellCarRequestById(
-                numericSellId
-            );
+        await sellCarRepository.getSellCarRequestById(
+            numericSellId
+        );
 
 
     if (!request) {
@@ -465,6 +578,9 @@ const getSellCarRequestById = async (
 
         sellerName:
             request.seller_name,
+
+        ownerName:
+            request.owner_name,
 
         mobile:
             request.mobile,
@@ -502,6 +618,9 @@ const getSellCarRequestById = async (
         expectedPrice:
             request.expected_price,
 
+
+        // EXISTING IMAGES
+
         frontImage:
             request.front_image,
 
@@ -513,6 +632,28 @@ const getSellCarRequestById = async (
 
         rightImage:
             request.right_image,
+
+
+        // NEW IMAGES
+
+        interiorFrontImage:
+            request.interior_front_image,
+
+        interiorRearImage:
+            request.interior_rear_image,
+
+        openDickyImage:
+            request.open_dicky_image,
+
+        openBonnetImage:
+            request.open_bonnet_image,
+
+        odometerImage:
+            request.odometer_image,
+
+        dashboardImage:
+            request.dashboard_image,
+
 
         status:
             request.status,
@@ -576,10 +717,9 @@ const updateSellCarRequestStatus = async (
     // ==================================================
 
     const existingRequest =
-        await sellCarRepository
-            .getSellCarRequestById(
-                numericSellId
-            );
+        await sellCarRepository.getSellCarRequestById(
+            numericSellId
+        );
 
 
     if (!existingRequest) {
@@ -595,11 +735,10 @@ const updateSellCarRequestStatus = async (
     // UPDATE STATUS
     // ==================================================
 
-    await sellCarRepository
-        .updateSellCarRequestStatus(
-            numericSellId,
-            status
-        );
+    await sellCarRepository.updateSellCarRequestStatus(
+        numericSellId,
+        status
+    );
 
 
     // ==================================================

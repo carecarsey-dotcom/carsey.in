@@ -1,7 +1,12 @@
+/*
+  ORIGINAL CSS DESIGN PRESERVED:
+  Existing layout, colors, image previews, and responsive styling are retained.
+  The new Owner Name field and six additional image cards use the same styles.
+*/
+
 /* =====================================================
    MAIN PAGE
    ===================================================== */
-
 .sell-page {
   min-height: 100vh;
   background: #f5f7fb;
@@ -12,7 +17,6 @@
 /* =====================================================
    CONTAINER
    ===================================================== */
-
 .sell-container {
   width: 100%;
   max-width: 1050px;
@@ -22,7 +26,6 @@
 /* =====================================================
    HEADER
    ===================================================== */
-
 .page-header {
   text-align: center;
   margin-bottom: 30px;
@@ -44,19 +47,16 @@
 /* =====================================================
    FORM CARD
    ===================================================== */
-
 .form-card {
   background: #ffffff;
   border-radius: 18px;
   padding: 32px;
-  box-shadow:
-    0 10px 30px rgba(15, 23, 42, 0.10);
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.10);
 }
 
 /* =====================================================
    SECTION
    ===================================================== */
-
 .section {
   padding: 10px 0 30px;
 }
@@ -83,7 +83,6 @@
 /* =====================================================
    FORM GRID
    ===================================================== */
-
 .form-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -97,7 +96,6 @@
 /* =====================================================
    LABEL
    ===================================================== */
-
 .form-group label {
   display: block;
   margin-bottom: 8px;
@@ -109,7 +107,6 @@
 /* =====================================================
    INPUT / SELECT
    ===================================================== */
-
 .form-group input,
 .form-group select {
   width: 100%;
@@ -122,9 +119,7 @@
   color: #0f172a;
   font-size: 15px;
   outline: none;
-  transition:
-    border-color 0.2s ease,
-    box-shadow 0.2s ease;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .form-group input::placeholder {
@@ -134,36 +129,12 @@
 .form-group input:focus,
 .form-group select:focus {
   border-color: #ec008c;
-  box-shadow:
-    0 0 0 3px rgba(236, 0, 140, 0.10);
+  box-shadow: 0 0 0 3px rgba(236, 0, 140, 0.10);
 }
-
-/* =====================================================
-   VEHICLE NUMBER
-   ===================================================== */
-
-/*
-  Vehicle Number uses the same .form-group styling
-  as the other vehicle fields.
-
-  HTML:
-  <div class="form-group">
-    <label>Vehicle Number *</label>
-    <input
-      type="text"
-      name="vehicleNumber"
-      [(ngModel)]="vehicleNumber"
-      ...
-    />
-  </div>
-
-  No separate visual styling is required.
-*/
 
 /* =====================================================
    SMALL TEXT
    ===================================================== */
-
 .form-group small {
   display: block;
   margin-top: 6px;
@@ -174,7 +145,6 @@
 /* =====================================================
    IMAGE GRID
    ===================================================== */
-
 .image-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -184,9 +154,9 @@
 /* =====================================================
    IMAGE CARD
    ===================================================== */
-
 .image-upload-card {
   width: 100%;
+  min-width: 0;
 }
 
 .image-upload-card h3 {
@@ -199,7 +169,6 @@
 /* =====================================================
    UPLOAD BOX
    ===================================================== */
-
 .upload-box {
   position: relative;
   width: 100%;
@@ -214,10 +183,7 @@
   justify-content: center;
   text-align: center;
   cursor: pointer;
-  transition:
-    border-color 0.2s ease,
-    background-color 0.2s ease,
-    transform 0.2s ease;
+  transition: border-color 0.2s ease, background-color 0.2s ease, transform 0.2s ease;
 }
 
 .upload-box:hover {
@@ -229,9 +195,9 @@
 /* =====================================================
    HIDE FILE INPUT
    ===================================================== */
-
 .upload-box input[type="file"] {
   position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
   opacity: 0;
@@ -241,7 +207,6 @@
 /* =====================================================
    CAMERA ICON
    ===================================================== */
-
 .camera-icon {
   font-size: 42px;
   margin-bottom: 12px;
@@ -250,7 +215,6 @@
 /* =====================================================
    UPLOAD TITLE
    ===================================================== */
-
 .upload-title {
   color: #0f172a;
   font-size: 16px;
@@ -260,7 +224,6 @@
 /* =====================================================
    UPLOAD INFO
    ===================================================== */
-
 .upload-info {
   margin-top: 7px;
   color: #64748b;
@@ -270,7 +233,6 @@
 /* =====================================================
    IMAGE PREVIEW
    ===================================================== */
-
 .image-preview {
   position: relative;
   width: 100%;
@@ -290,7 +252,6 @@
 /* =====================================================
    REMOVE BUTTON
    ===================================================== */
-
 .remove-button {
   position: absolute;
   top: 12px;
@@ -303,8 +264,7 @@
   font-size: 13px;
   font-weight: 700;
   cursor: pointer;
-  box-shadow:
-    0 4px 10px rgba(0, 0, 0, 0.20);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.20);
 }
 
 .remove-button:hover {
@@ -314,7 +274,6 @@
 /* =====================================================
    SUBMIT SECTION
    ===================================================== */
-
 .submit-section {
   border-top: 1px solid #e5e7eb;
   margin-top: 10px;
@@ -325,35 +284,23 @@
 /* =====================================================
    SUBMIT BUTTON
    ===================================================== */
-
 .submit-button {
   width: 100%;
   min-height: 52px;
   border: none;
   border-radius: 12px;
-  background:
-    linear-gradient(
-      90deg,
-      #ec008c 0%,
-      #b000d4 50%,
-      #8b00e8 100%
-    );
+  background: linear-gradient(90deg, #ec008c 0%, #b000d4 50%, #8b00e8 100%);
   color: #ffffff;
   font-size: 17px;
   font-weight: 800;
   cursor: pointer;
-  box-shadow:
-    0 8px 18px rgba(139, 0, 232, 0.18);
-  transition:
-    transform 0.2s ease,
-    box-shadow 0.2s ease,
-    opacity 0.2s ease;
+  box-shadow: 0 8px 18px rgba(139, 0, 232, 0.18);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
 }
 
 .submit-button:hover:not(:disabled) {
   transform: translateY(-1px);
-  box-shadow:
-    0 10px 24px rgba(139, 0, 232, 0.28);
+  box-shadow: 0 10px 24px rgba(139, 0, 232, 0.28);
 }
 
 .submit-button:disabled {
@@ -364,7 +311,6 @@
 /* =====================================================
    SUBMIT NOTE
    ===================================================== */
-
 .submit-note {
   margin: 14px 0 0;
   color: #64748b;
@@ -374,7 +320,6 @@
 /* =====================================================
    INPUT TEXT VISIBILITY
    ===================================================== */
-
 input,
 select,
 textarea {
@@ -404,21 +349,17 @@ textarea:focus {
 /* =====================================================
    AUTOFILL FIX
    ===================================================== */
-
 input:-webkit-autofill,
 input:-webkit-autofill:hover,
 input:-webkit-autofill:focus {
   -webkit-text-fill-color: #0f172a !important;
-  box-shadow:
-    0 0 0 1000px #ffffff inset !important;
-  transition:
-    background-color 5000s ease-in-out 0s;
+  box-shadow: 0 0 0 1000px #ffffff inset !important;
+  transition: background-color 5000s ease-in-out 0s;
 }
 
 /* =====================================================
    RESPONSIVE
    ===================================================== */
-
 @media (max-width: 768px) {
   .sell-page {
     padding: 25px 14px;

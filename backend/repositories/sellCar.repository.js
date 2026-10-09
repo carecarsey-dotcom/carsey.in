@@ -5,13 +5,9 @@ const {
 } = require("../services/googleSheetsSync.service");
 
 
-
 // ======================================================
-
 // CREATE SELL CAR REQUEST
-
 // Customer
-
 // ======================================================
 
 const createSellCarRequest = (requestData) => {
@@ -25,58 +21,64 @@ const createSellCarRequest = (requestData) => {
             (
 
                 seller_name,
+                owner_name,
 
                 mobile,
-
                 email,
-
                 city,
 
                 brand,
-
                 model,
-
                 variant,
-
                 vehicle_number,
-
                 manufacturing_year,
-
                 fuel_type,
-
                 transmission,
-
                 km_driven,
-
                 expected_price,
 
                 front_image,
-
                 back_image,
-
                 left_image,
-
                 right_image,
+
+                interior_front_image,
+                interior_rear_image,
+                open_dicky_image,
+                open_bonnet_image,
+                odometer_image,
+                dashboard_image,
 
                 status
 
             )
 
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (
+
+                ?, ?, ?, ?, ?,
+                ?, ?, ?, ?, ?,
+                ?, ?, ?, ?,
+                ?, ?, ?, ?,
+                ?, ?, ?, ?, ?, ?,
+                ?
+
+            )
 
         `;
-
 
 
         const values = [
 
             requestData.sellerName,
 
+            requestData.ownerName,
+
             requestData.mobile,
 
             requestData.email,
 
             requestData.city,
+
 
             requestData.brand,
 
@@ -96,26 +98,41 @@ const createSellCarRequest = (requestData) => {
 
             requestData.expectedPrice,
 
-            requestData.frontImage || null,
 
-            requestData.backImage || null,
+            // EXISTING IMAGES
 
-            requestData.leftImage || null,
+            requestData.frontImage,
 
-            requestData.rightImage || null,
+            requestData.backImage,
+
+            requestData.leftImage,
+
+            requestData.rightImage,
+
+
+            // NEW IMAGES
+
+            requestData.interiorFrontImage,
+
+            requestData.interiorRearImage,
+
+            requestData.openDickyImage,
+
+            requestData.openBonnetImage,
+
+            requestData.odometerImage,
+
+            requestData.dashboardImage,
+
 
             requestData.status || "Pending"
 
         ];
 
 
-
         db.query(
-
             sql,
-
             values,
-
             (err, result) => {
 
                 if (err) {
@@ -125,13 +142,9 @@ const createSellCarRequest = (requestData) => {
                 }
 
 
-
                 triggerGoogleSheetsSync(
-
                     `Sell car request created: sell_id ${result.insertId}`
-
                 );
-
 
 
                 resolve({
@@ -141,7 +154,6 @@ const createSellCarRequest = (requestData) => {
                 });
 
             }
-
         );
 
     });
@@ -149,13 +161,9 @@ const createSellCarRequest = (requestData) => {
 };
 
 
-
 // ======================================================
-
 // GET ALL SELL CAR REQUESTS
-
 // Admin
-
 // ======================================================
 
 const getAllSellCarRequests = () => {
@@ -169,41 +177,35 @@ const getAllSellCarRequests = () => {
                 sell_id,
 
                 seller_name,
+                owner_name,
 
                 mobile,
-
                 email,
-
                 city,
 
                 brand,
-
                 model,
-
                 variant,
-
                 vehicle_number,
-
                 manufacturing_year,
-
                 fuel_type,
-
                 transmission,
-
                 km_driven,
-
                 expected_price,
 
                 front_image,
-
                 back_image,
-
                 left_image,
-
                 right_image,
 
-                status,
+                interior_front_image,
+                interior_rear_image,
+                open_dicky_image,
+                open_bonnet_image,
+                odometer_image,
+                dashboard_image,
 
+                status,
                 created_at
 
             FROM sell_car_requests
@@ -213,11 +215,8 @@ const getAllSellCarRequests = () => {
         `;
 
 
-
         db.query(
-
             sql,
-
             (err, result) => {
 
                 if (err) {
@@ -227,11 +226,9 @@ const getAllSellCarRequests = () => {
                 }
 
 
-
                 resolve(result);
 
             }
-
         );
 
     });
@@ -239,20 +236,12 @@ const getAllSellCarRequests = () => {
 };
 
 
-
 // ======================================================
-
 // GET SELL CAR REQUEST BY ID
-
 // Admin
-
 // ======================================================
 
-const getSellCarRequestById = (
-
-    sellId
-
-) => {
+const getSellCarRequestById = (sellId) => {
 
     return new Promise((resolve, reject) => {
 
@@ -263,41 +252,35 @@ const getSellCarRequestById = (
                 sell_id,
 
                 seller_name,
+                owner_name,
 
                 mobile,
-
                 email,
-
                 city,
 
                 brand,
-
                 model,
-
                 variant,
-
                 vehicle_number,
-
                 manufacturing_year,
-
                 fuel_type,
-
                 transmission,
-
                 km_driven,
-
                 expected_price,
 
                 front_image,
-
                 back_image,
-
                 left_image,
-
                 right_image,
 
-                status,
+                interior_front_image,
+                interior_rear_image,
+                open_dicky_image,
+                open_bonnet_image,
+                odometer_image,
+                dashboard_image,
 
+                status,
                 created_at
 
             FROM sell_car_requests
@@ -309,13 +292,9 @@ const getSellCarRequestById = (
         `;
 
 
-
         db.query(
-
             sql,
-
             [sellId],
-
             (err, result) => {
 
                 if (err) {
@@ -325,15 +304,11 @@ const getSellCarRequestById = (
                 }
 
 
-
                 resolve(
-
                     result[0] || null
-
                 );
 
             }
-
         );
 
     });
@@ -341,21 +316,14 @@ const getSellCarRequestById = (
 };
 
 
-
 // ======================================================
-
 // UPDATE SELL CAR REQUEST STATUS
-
 // Admin
-
 // ======================================================
 
 const updateSellCarRequestStatus = (
-
     sellId,
-
     status
-
 ) => {
 
     return new Promise((resolve, reject) => {
@@ -373,19 +341,12 @@ const updateSellCarRequestStatus = (
         `;
 
 
-
         db.query(
-
             sql,
-
             [
-
                 status,
-
                 sellId
-
             ],
-
             (err, result) => {
 
                 if (err) {
@@ -395,19 +356,14 @@ const updateSellCarRequestStatus = (
                 }
 
 
-
                 triggerGoogleSheetsSync(
-
                     `Sell car request status updated: sell_id ${sellId}`
-
                 );
-
 
 
                 resolve(result);
 
             }
-
         );
 
     });
@@ -415,11 +371,8 @@ const updateSellCarRequestStatus = (
 };
 
 
-
 // ======================================================
-
 // EXPORT
-
 // ======================================================
 
 module.exports = {

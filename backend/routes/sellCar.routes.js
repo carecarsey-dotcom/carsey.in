@@ -38,18 +38,26 @@ const {
 // CUSTOMER
 // CREATE SELL CAR REQUEST
 // ======================================================
+
 // POST
 // /api/vehicles/sell-car
 //
 // Content-Type:
 // multipart/form-data
 //
-// Image fields:
-//
+// EXISTING IMAGE FIELDS:
 // frontImage
 // backImage
 // leftImage
 // rightImage
+//
+// NEW IMAGE FIELDS:
+// interiorFrontImage
+// interiorRearImage
+// openDickyImage
+// openBonnetImage
+// odometerImage
+// dashboardImage
 
 router.post(
 
@@ -57,36 +65,59 @@ router.post(
 
     uploadSellCarImages.fields([
 
-        {
+        // EXISTING IMAGES
 
+        {
             name: "frontImage",
-
             maxCount: 1
-
         },
 
         {
-
             name: "backImage",
-
             maxCount: 1
-
         },
 
         {
-
             name: "leftImage",
-
             maxCount: 1
-
         },
 
         {
-
             name: "rightImage",
-
             maxCount: 1
+        },
 
+
+        // NEW IMAGE FIELDS
+
+        {
+            name: "interiorFrontImage",
+            maxCount: 1
+        },
+
+        {
+            name: "interiorRearImage",
+            maxCount: 1
+        },
+
+        {
+            name: "openDickyImage",
+            maxCount: 1
+        },
+
+        {
+            name: "openBonnetImage",
+            maxCount: 1
+        },
+
+        {
+            name: "odometerImage",
+            maxCount: 1
+        },
+
+        {
+            name: "dashboardImage",
+            maxCount: 1
         }
 
     ]),
@@ -100,6 +131,7 @@ router.post(
 // ADMIN
 // GET ALL SELL CAR REQUESTS
 // ======================================================
+
 // GET
 // /api/admin/sell-car-requests
 
@@ -118,6 +150,7 @@ router.get(
 // ADMIN
 // GET SELL CAR REQUEST BY ID
 // ======================================================
+
 // GET
 // /api/admin/sell-car-requests/:sellId
 
@@ -136,6 +169,7 @@ router.get(
 // ADMIN
 // UPDATE SELL CAR REQUEST STATUS
 // ======================================================
+
 // PATCH
 // /api/admin/sell-car-requests/:sellId/status
 
