@@ -30,12 +30,24 @@ export const routes: Routes = [
 
 
       // =================================================
-      // ABOUT SERVICE
-      // /
+      // LANDING PAGE DEFAULT
+      // / redirects to /home
       // =================================================
 
       {
         path: '',
+        redirectTo: 'home',
+        pathMatch: 'full'
+      },
+
+
+      // =================================================
+      // ABOUT SERVICE
+      // /about-service
+      // =================================================
+
+      {
+        path: 'about-service',
         title: 'Carsey.in - Car Inspection & PDI Services',
 
         loadComponent: () =>
@@ -48,7 +60,7 @@ export const routes: Routes = [
 
 
       // =================================================
-      // CUSTOMER HOME
+      // CUSTOMER HOME / MAIN LANDING PAGE
       // /home
       // =================================================
 
@@ -66,8 +78,20 @@ export const routes: Routes = [
 
 
       // =================================================
+      // BUY CAR URL ALIAS
+      // /buy-car redirects to the Home landing page
+      // =================================================
+
+      {
+        path: 'buy-car',
+        redirectTo: 'home',
+        pathMatch: 'full'
+      },
+
+
+      // =================================================
       // BUY CAR
-      // /buy-car
+      // /buy-car (separate component not currently used)
       // =================================================
 
       // Agar BuyCarComponent available hai to ise uncomment

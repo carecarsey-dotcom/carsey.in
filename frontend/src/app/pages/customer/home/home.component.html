@@ -4,18 +4,95 @@
 
 
   <!-- ================================================= -->
-  <!-- HERO -->
+  <!-- MAIN LANDING PAGE HERO -->
   <!-- ================================================= -->
 
+  <section
+    class="relative isolate flex min-h-[520px] w-full items-center overflow-hidden bg-slate-950 sm:min-h-[600px] lg:min-h-[660px]"
+  >
+    <!-- Auto-changing hero image -->
+    <img
+      [src]="carImages[currentImageIndex()]"
+      alt="Explore certified used cars with Carsey.in"
+      class="absolute inset-0 -z-20 h-full w-full object-cover object-center"
+      fetchpriority="high"
+    />
 
+    <!-- Dark overlay keeps text readable -->
+    <div class="absolute inset-0 -z-10 bg-gradient-to-r from-slate-950/95 via-slate-950/75 to-slate-950/25"></div>
+    <div class="absolute inset-0 -z-10 bg-gradient-to-t from-slate-950/55 via-transparent to-slate-950/10"></div>
 
+    <div class="mx-auto w-full max-w-[1600px] px-5 py-16 sm:px-8 sm:py-20 lg:px-12 lg:py-24 2xl:px-16">
+      <div class="max-w-3xl">
+        <div class="mb-5 inline-flex items-center gap-2 rounded-full border border-pink-300/30 bg-white/10 px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] text-pink-200 backdrop-blur-sm sm:text-sm">
+          <span class="h-2 w-2 rounded-full bg-pink-400"></span>
+          Certified used cars. More confidence.
+        </div>
 
+        <h1 class="max-w-3xl text-4xl font-black leading-[1.08] tracking-tight text-white sm:text-5xl lg:text-7xl">
+          Find Your
+          <span class="text-pink-400">Perfect Car.</span>
+          <br />
+          Drive With Confidence.
+        </h1>
+
+        <p class="mt-6 max-w-2xl text-base leading-7 text-slate-200 sm:text-lg sm:leading-8">
+          Explore quality pre-owned cars with transparent details, professional inspection,
+          and the information you need to make a smarter choice.
+        </p>
+
+        <div class="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
+          <a
+            href="#car-listing"
+            class="inline-flex min-h-14 items-center justify-center gap-3 rounded-xl bg-pink-500 px-7 py-4 text-sm font-extrabold text-white shadow-lg shadow-pink-500/30 transition hover:-translate-y-0.5 hover:bg-pink-400 sm:text-base"
+          >
+            Explore Cars
+            <span class="text-xl" aria-hidden="true">→</span>
+          </a>
+
+          <a
+            routerLink="/book-inspection"
+            class="inline-flex min-h-14 items-center justify-center rounded-xl border border-white/30 bg-white/10 px-7 py-4 text-sm font-bold text-white backdrop-blur-sm transition hover:border-pink-300 hover:bg-white/15 sm:text-base"
+          >
+            Book an Inspection
+          </a>
+        </div>
+
+        <div class="mt-10 grid max-w-xl grid-cols-3 gap-4 border-t border-white/20 pt-6">
+          <div>
+            <p class="text-xl font-black text-white sm:text-2xl">Certified</p>
+            <p class="mt-1 text-xs text-slate-300 sm:text-sm">Vehicle listings</p>
+          </div>
+          <div>
+            <p class="text-xl font-black text-white sm:text-2xl">Clear</p>
+            <p class="mt-1 text-xs text-slate-300 sm:text-sm">Car information</p>
+          </div>
+          <div>
+            <p class="text-xl font-black text-white sm:text-2xl">Trusted</p>
+            <p class="mt-1 text-xs text-slate-300 sm:text-sm">Inspection support</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Hero slider indicators -->
+      <div class="mt-8 flex items-center gap-2" aria-label="Hero image slides">
+        @for (image of carImages; track image; let i = $index) {
+          <span
+            [class]="currentImageIndex() === i
+              ? 'h-1.5 w-8 rounded-full bg-pink-400 transition-all duration-300'
+              : 'h-1.5 w-2 rounded-full bg-white/50 transition-all duration-300'"
+          ></span>
+        }
+      </div>
+    </div>
+  </section>
 
   <!-- ================================================= -->
   <!-- FILTER SECTION -->
   <!-- ================================================= -->
 
   <section
+    id="car-listing"
     class="w-full border-b border-slate-200 bg-white py-8 sm:py-10"
   >
 

@@ -46,7 +46,7 @@
           <span
             class="mt-1 hidden text-[10px] font-semibold tracking-[0.18em] text-slate-400 sm:block"
           >
-            •SELL • INSPECTION • PDI
+            • CAR •SELL • INSPECTION • PDI
           </span>
 
         </div>
@@ -63,15 +63,15 @@
       >
 
         <!-- ================================================= -->
-        <!-- BUY CAR — HIDDEN -->
+        <!-- BUY CAR -->
         <!-- CODE PRESERVED -->
         <!-- ================================================= -->
 
         <a
-          routerLink="/buy-car"
+          routerLink="/home"
           routerLinkActive="!bg-pink-500 !text-white !shadow-[0_8px_24px_rgba(236,72,153,0.35)]"
           [routerLinkActiveOptions]="{ exact: true }"
-          class="!hidden group flex min-h-[56px] items-center gap-3 rounded-full
+          class="group flex min-h-[56px] items-center gap-3 rounded-full
                  bg-pink-500 px-7 py-3 text-[17px] font-extrabold text-white
                  shadow-[0_8px_24px_rgba(236,72,153,0.25)]
                  transition-all duration-200
@@ -450,6 +450,21 @@
 
         </a>
 
+
+
+        <!-- ABOUT SERVICE -->
+        <a
+          routerLink="/about-service"
+          routerLinkActive="!border-pink-400 !bg-pink-500 !text-white !shadow-[0_0_30px_rgba(236,72,153,0.45)]"
+          class="group flex min-h-[58px] items-center gap-2 rounded-2xl
+                 border border-pink-500/50 bg-pink-500/10 px-4 py-2.5
+                 text-white transition-all duration-300
+                 hover:-translate-y-0.5 hover:border-pink-400 hover:bg-pink-500
+                 hover:shadow-[0_0_30px_rgba(236,72,153,0.45)]"
+        >
+          <span class="text-[15px] font-extrabold tracking-tight">About Service</span>
+          <span class="text-xl font-black text-pink-400 transition-transform duration-300 group-hover:translate-x-1 group-hover:text-white">›</span>
+        </a>
       </nav>
 
 
@@ -509,12 +524,12 @@
           </a>
 
 
-          <!-- BUY CAR — HIDDEN -->
+          <!-- BUY CAR -->
 
           <a
-            routerLink="/buy-car"
+            routerLink="/home"
             (click)="closeMobileMenu()"
-            class="!hidden flex items-center justify-between rounded-xl bg-pink-500
+            class="flex items-center justify-between rounded-xl bg-pink-500
                    px-4 py-3 font-extrabold text-white shadow-lg shadow-pink-500/20
                    transition hover:bg-pink-400"
           >
@@ -648,7 +663,7 @@
           <!-- ABOUT — HIDDEN -->
 
           <a
-            routerLink="/about"
+            routerLink="/about-service"
             (click)="closeMobileMenu()"
             class="!hidden rounded-xl border border-slate-700
                    bg-white/5 px-4 py-4
@@ -670,6 +685,20 @@
 
           </a>
 
+
+
+          <!-- ABOUT SERVICE -->
+          <a
+            routerLink="/about-service"
+            (click)="closeMobileMenu()"
+            class="rounded-xl border border-pink-500/50 bg-pink-500/10
+                   px-4 py-4 font-extrabold text-white transition hover:bg-pink-500"
+          >
+            <div class="flex items-center justify-between">
+              <span class="text-[16px]">About Service</span>
+              <span class="text-xl text-pink-400">→</span>
+            </div>
+          </a>
         </nav>
 
       </div>
@@ -772,35 +801,35 @@
           <div class="flex flex-col gap-3">
 
             <a
-              routerLink="/buy-car"
+              routerLink="/home"
               class="transition-colors hover:text-pink-500"
             >
               Browse Cars
             </a>
 
             <a
-              routerLink="/buy-car"
+              routerLink="/home"
               class="transition-colors hover:text-pink-500"
             >
               Petrol Cars
             </a>
 
             <a
-              routerLink="/buy-car"
+              routerLink="/home"
               class="transition-colors hover:text-pink-500"
             >
               Diesel Cars
             </a>
 
             <a
-              routerLink="/buy-car"
+              routerLink="/home"
               class="transition-colors hover:text-pink-500"
             >
               Electric Cars
             </a>
 
             <a
-              routerLink="/buy-car"
+              routerLink="/home"
               class="transition-colors hover:text-pink-500"
             >
               Budget under ₹5L
