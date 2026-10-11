@@ -863,11 +863,11 @@
               itemprop="name"
             >
 
-              {{ vehicle()!.manufacturing_year || '' }}
-
               {{ vehicle()!.brand }}
 
               {{ vehicle()!.model }}
+
+              {{ vehicle()!.manufacturing_year || '' }}
 
             </h1>
 
@@ -930,6 +930,13 @@
                 } @else {
                   <p class="mt-2 text-sm text-slate-500">Price not available</p>
                 }
+                <button
+                  type="button"
+                  (click)="openPriceRequest()"
+                  class="mt-4 w-full rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-500 py-3 text-sm font-bold text-white transition hover:opacity-95"
+                >
+                  Enquire About This Car
+                </button>
               </div>
             }
 
@@ -1440,7 +1447,7 @@
         @if (!priceRequestSubmitted()) {
           <div class="flex items-center justify-between">
             <div>
-              <h2 class="text-xl font-black">Get Car Price</h2>
+              <h2 class="text-xl font-black">Enquire About This Car</h2>
               <p class="mt-1 text-sm text-slate-500">
                 Enter your details and our team will contact you.
               </p>
