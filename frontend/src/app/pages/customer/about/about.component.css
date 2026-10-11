@@ -793,3 +793,259 @@
   }
 
 }
+
+/* =====================================================
+   OUR SERVICE AREAS
+   ===================================================== */
+
+.service-areas-section {
+  padding: 90px 0;
+  background: #f7f8fb;
+  position: relative;
+  overflow: hidden;
+}
+
+.service-areas-section .section-heading {
+  text-align: center;
+  max-width: 760px;
+  margin: 0 auto 48px;
+}
+
+.service-areas-section .section-heading h2 {
+  font-size: clamp(32px, 4vw, 48px);
+  font-weight: 800;
+  line-height: 1.15;
+  color: #101827;
+  margin: 0 0 20px;
+}
+
+.service-areas-section .section-heading h2 span {
+  display: block;
+  background: linear-gradient(90deg, #ec008c, #9b00ff);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.service-areas-section .section-heading p {
+  color: #64748b;
+  line-height: 1.8;
+  font-size: 16px;
+}
+
+.service-areas-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 22px;
+}
+
+.service-area-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 20px;
+  padding: 30px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  transition: 0.3s ease;
+}
+
+.service-area-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 35px rgba(15, 23, 42, 0.08);
+  border-color: #ec008c;
+}
+
+.service-area-card.featured-area {
+  border-color: rgba(236, 0, 140, 0.35);
+  background: linear-gradient(145deg, #ffffff, #fff7fc);
+}
+
+.area-icon {
+  flex: 0 0 58px;
+  width: 58px;
+  height: 58px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 14px;
+  background: #fff0f8;
+  font-size: 26px;
+}
+
+.area-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.area-tag {
+  display: inline-block;
+  margin-bottom: 9px;
+  color: #ec008c;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+}
+
+.area-content h3 {
+  margin: 0 0 10px;
+  color: #111827;
+  font-size: 22px;
+  font-weight: 800;
+}
+
+.area-content p {
+  margin: 0 0 18px;
+  color: #64748b;
+  font-size: 14px;
+  line-height: 1.8;
+}
+
+.city-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+}
+
+.city-list span {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 12px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  color: #334155;
+  font-size: 12px;
+  font-weight: 600;
+  transition: 0.3s ease;
+}
+
+.city-list span:hover {
+  background: #fff0f8;
+  border-color: #f5b4dd;
+  color: #a00062;
+}
+
+.service-areas-note {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 35px;
+  padding: 24px 28px;
+  background: linear-gradient(135deg, #101321, #171b2c);
+  border-radius: 16px;
+  color: #ffffff;
+}
+
+.note-icon {
+  font-size: 30px;
+  flex-shrink: 0;
+}
+
+.service-areas-note p {
+  flex: 1;
+  margin: 0;
+  color: #aeb7ca;
+  font-size: 14px;
+  line-height: 1.8;
+}
+
+.service-areas-note p strong {
+  display: block;
+  margin-bottom: 3px;
+  color: #ffffff;
+  font-size: 15px;
+}
+
+.area-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  flex-shrink: 0;
+  padding: 13px 20px;
+  background: linear-gradient(90deg, #ec008c, #9b00ff);
+  border-radius: 9px;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 700;
+  text-decoration: none;
+  transition: 0.3s ease;
+}
+
+.area-cta:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 30px rgba(236, 0, 140, 0.25);
+}
+
+.area-cta span {
+  font-size: 18px;
+  transition: transform 0.3s ease;
+}
+
+.area-cta:hover span {
+  transform: translateX(3px);
+}
+
+/* Service areas responsive layout */
+@media (max-width: 800px) {
+  .service-areas-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .service-area-card {
+    padding: 24px;
+  }
+
+  .service-areas-note {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .service-areas-note p {
+    flex-basis: calc(100% - 50px);
+  }
+
+  .area-cta {
+    margin-left: 46px;
+  }
+}
+
+@media (max-width: 650px) {
+  .service-areas-section {
+    padding: 65px 0;
+  }
+
+  .service-area-card {
+    gap: 14px;
+    padding: 20px;
+  }
+
+  .area-icon {
+    flex-basis: 44px;
+    width: 44px;
+    height: 44px;
+    font-size: 22px;
+  }
+
+  .area-content h3 {
+    font-size: 20px;
+  }
+
+  .city-list {
+    gap: 7px;
+  }
+
+  .city-list span {
+    padding: 7px 9px;
+    font-size: 11px;
+  }
+
+  .service-areas-note {
+    padding: 20px;
+  }
+
+  .area-cta {
+    margin-left: 0;
+  }
+}

@@ -1,112 +1,91 @@
-import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Component } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-about',
   standalone: true,
-  imports: [
-    CommonModule,
-    RouterLink
-  ],
+  imports: [CommonModule, RouterLink],
   templateUrl: './about.component.html',
   styleUrl: './about.component.css'
 })
 export class AboutComponent {
-
-  // =====================================================
-  // WHY CARSEY
-  // =====================================================
-
   features = [
     {
       icon: '🔍',
-      title: 'Professional Inspection',
-      description:
-        'Every vehicle goes through a detailed inspection process before it is listed on Carsey.in.'
-    },
-    {
-      icon: '📋',
-      title: 'Transparent Reports',
-      description:
-        'We provide clear vehicle information and inspection details so customers can make confident decisions.'
-    },
-    {
-      icon: '💰',
-      title: 'Fair Pricing',
-      description:
-        'Our platform focuses on transparent and competitive pricing for buyers and sellers.'
+      title: 'Clear Information',
+      description: 'Explore vehicle information to help you make more informed car decisions.'
     },
     {
       icon: '🤝',
-      title: 'Customer First',
-      description:
-        'From buying and selling to exchange and inspection booking, we keep the customer experience simple.'
+      title: 'Customer Focused',
+      description: 'A simple, customer-focused experience for buying, selling and exchanging cars.'
+    },
+    {
+      icon: '🛡️',
+      title: 'Transparency',
+      description: 'We aim to make each step easier to understand with a transparent process.'
+    },
+    {
+      icon: '🚘',
+      title: 'Convenience',
+      description: 'Access multiple vehicle-related services through one digital platform.'
     }
   ];
-
-
-  // =====================================================
-  // SERVICES
-  // =====================================================
 
   services = [
     {
       icon: '🚗',
       title: 'Buy a Car',
-      description:
-        'Explore professionally inspected used cars and find a vehicle that fits your requirements and budget.'
+      description: 'Explore available cars and review vehicle details before making your next move.'
     },
     {
-      icon: '💸',
+      icon: '💰',
       title: 'Sell Your Car',
-      description:
-        'Submit your vehicle details and get connected with our team for the selling process.'
+      description: 'Submit your car details and start the process of selling your existing vehicle.'
     },
     {
       icon: '🔄',
       title: 'Upgrade / Exchange',
-      description:
-        'Exchange your existing vehicle and move towards your preferred car with a simple request process.'
+      description: 'Explore exchange options when you are ready to move to another vehicle.'
     },
     {
-      icon: '🔧',
-      title: 'Book Inspection',
-      description:
-        'Schedule a vehicle inspection at a convenient date and time.'
+      icon: '🔎',
+      title: 'Vehicle Inspection',
+      description: 'Request vehicle inspection services to get more information about a car.'
+    },
+    {
+      icon: '📋',
+      title: 'Inspection Reports',
+      description: 'Access available inspection report information to support your decision-making.'
+    },
+    {
+      icon: '💳',
+      title: 'Finance Enquiry',
+      description: 'Submit a finance enquiry to explore vehicle financing options.'
     }
   ];
-
-
-  // =====================================================
-  // PROCESS
-  // =====================================================
 
   steps = [
     {
       number: '01',
-      title: 'Choose Your Service',
-      description:
-        'Buy, sell, exchange your vehicle or book an inspection according to your requirement.'
+      title: 'Explore Your Options',
+      description: 'Browse available vehicles or choose the service you need.'
     },
     {
       number: '02',
-      title: 'Submit Your Details',
-      description:
-        'Provide the required vehicle and customer information through our simple forms.'
+      title: 'Share Your Details',
+      description: 'Submit the relevant vehicle information or service request.'
     },
     {
       number: '03',
-      title: 'Our Team Reviews',
-      description:
-        'Our team reviews the submitted information and gets in touch with you.'
+      title: 'Review the Information',
+      description: 'Review the available details and understand the next steps.'
     },
     {
       number: '04',
-      title: 'Complete Your Journey',
-      description:
-        'Move forward with the next step of your vehicle buying, selling, exchange or inspection journey.'
+      title: 'Move Forward',
+      description: 'Continue with buying, selling, exchanging or inspecting a vehicle.'
     }
   ];
-
 }
