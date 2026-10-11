@@ -28,9 +28,27 @@ const addVehicle = async (vehicle) => {
     // SAVE VEHICLE + OWNER + INSPECTION + CHECKLIST
     // ==================================================
 
+    // SOURCE TYPE:
+    // Normal Add Vehicle / booking-PDI vehicles are marked as "booking-car".
+    // Never overwrite an explicitly supplied source_type (for example "sell-car").
+    // Sell Car publishing uses its separate publish service and is not changed here.
+    const vehicleToSave = {
+        ...vehicle
+    };
+
+    const existingSourceType = String(
+        vehicleToSave.source_type ??
+        vehicleToSave.sourceType ??
+        ""
+    ).trim().toLowerCase();
+
+    if (!existingSourceType) {
+        vehicleToSave.source_type = "booking-car";
+    }
+
     const result =
         await vehicleRepository.addVehicle(
-            vehicle
+            vehicleToSave
         );
 
 

@@ -203,9 +203,11 @@
             Brand
           </th>
 
+          <!-- Original Booking ID column preserved but hidden:
           <th class="px-6 py-4 text-left text-sm font-semibold text-slate-600">
             Booking ID
           </th>
+          -->
 
           <th class="px-6 py-4 text-left text-sm font-semibold text-slate-600">
             Model
@@ -267,9 +269,11 @@
                 {{ vehicle.brand || '-' }}
               </td>
 
+              <!-- Original Booking ID cell preserved but hidden:
               <td class="px-6 py-4 font-medium text-slate-700">
                 #{{ vehicle.booking_id ?? '-' }}
               </td>
+              -->
 
               <td class="px-6 py-4 text-slate-700">
                 {{ vehicle.model || '-' }}
@@ -380,7 +384,7 @@
             <tr>
 
               <td
-                colspan="11"
+                colspan="10"
                 class="px-6 py-12 text-center text-slate-500"
               >
 
@@ -430,9 +434,11 @@
                 {{ vehicle.brand || '-' }}
               </td>
 
+              <!-- Original Booking ID cell preserved but hidden:
               <td class="px-6 py-4 font-medium text-slate-700">
                 #{{ vehicle.booking_id ?? '-' }}
               </td>
+              -->
 
               <td class="px-6 py-4 text-slate-700">
                 {{ vehicle.model || '-' }}
@@ -513,7 +519,7 @@
             <tr>
 
               <td
-                colspan="11"
+                colspan="10"
                 class="px-6 py-12 text-center text-slate-500"
               >
 
