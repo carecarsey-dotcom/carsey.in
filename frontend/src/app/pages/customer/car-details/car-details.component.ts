@@ -120,6 +120,11 @@ interface Vehicle {
 
   vin?: string;
 
+  // Registration number fields supported by different API responses.
+  registration_number?: string;
+  registration_no?: string;
+  reg_no?: string;
+
   body_style?: string;
 
   drive_type?: string;
