@@ -171,10 +171,18 @@ const dashboardRoutes = require(
 /*
  * GET CAR PRICE REQUEST ROUTES
  * Separate feature: does not modify vehicle.repository.js
- * or vehicle.service.js.
+ * or vehicle.service.js
  */
 const carPriceRequestRoutes = require(
     "./routes/carPriceRequest.routes"
+);
+
+// ======================================================
+// ADMIN CAR PRICE REQUEST ROUTES
+// ======================================================
+
+const adminCarPriceRequestRoutes = require(
+    "./routes/adminCarPriceRequest.routes"
 );
 
 
@@ -393,6 +401,16 @@ app.use(
 app.use(
     "/api/car-price-requests",
     carPriceRequestRoutes
+);
+
+// ======================================================
+// ADMIN CAR PRICE REQUESTS
+// PROTECTED ROUTES
+// ======================================================
+
+app.use(
+    "/api/admin/car-price-requests",
+    adminCarPriceRequestRoutes
 );
 
 

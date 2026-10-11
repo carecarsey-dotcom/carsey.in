@@ -556,20 +556,17 @@ export class SellCarComponent {
 
 
     // ===================================================
-    // REQUIRED CAR IMAGES
+    // OPTIONAL IMAGES
+    // Only these image groups are optional:
+    // Interior Front/Rear, Open Dicky/Bonnet, Odometer/Dashboard.
+    // Front, Back, Left Side, and Right Side images remain required.
     // ===================================================
 
     const requiredImages = [
       ['Front Image', this.frontImage],
       ['Back Image', this.backImage],
       ['Left Side Image', this.leftImage],
-      ['Right Side Image', this.rightImage],
-      ['Interior - Front Image', this.interiorFrontImage],
-      ['Interior - Rear Image', this.interiorRearImage],
-      ['Open Dicky Image', this.openDickyImage],
-      ['Open Bonnet Image', this.openBonnetImage],
-      ['Odometer Image', this.odometerImage],
-      ['Dashboard Image', this.dashboardImage]
+      ['Right Side Image', this.rightImage]
     ] as const;
 
     const missingImage = requiredImages.find(([, image]) => !image);
