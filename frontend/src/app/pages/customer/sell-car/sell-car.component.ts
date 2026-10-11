@@ -426,25 +426,6 @@ export class SellCarComponent {
     }
 
 
-    // ===================================================
-    // EMAIL
-    // ===================================================
-
-    if (
-      this.email.trim() &&
-      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(
-        this.email.trim()
-      )
-    ) {
-
-      alert(
-        'Please enter a valid email address.'
-      );
-
-      return;
-
-    }
-
 
     // ===================================================
     // CITY
