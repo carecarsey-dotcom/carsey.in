@@ -168,6 +168,16 @@ const dashboardRoutes = require(
 );
 
 
+/*
+ * GET CAR PRICE REQUEST ROUTES
+ * Separate feature: does not modify vehicle.repository.js
+ * or vehicle.service.js.
+ */
+const carPriceRequestRoutes = require(
+    "./routes/carPriceRequest.routes"
+);
+
+
 // ======================================================
 // EXPRESS APP
 // ======================================================
@@ -373,6 +383,16 @@ app.use(
 app.use(
     "/api/vehicles",
     vehicleRoutes
+);
+
+
+/*
+ * GET CAR PRICE REQUEST
+ * POST /api/car-price-requests/:carId
+ */
+app.use(
+    "/api/car-price-requests",
+    carPriceRequestRoutes
 );
 
 

@@ -376,6 +376,26 @@ router.get(
 
 
 // ======================================================
+// CUSTOMER - REQUEST VEHICLE PRICE
+// POST /api/vehicles/:carId/price-request
+// ======================================================
+
+router.post(
+    "/:carId/price-request",
+    (req, res, next) => {
+        if (!checkController("createCarPriceRequest")) {
+            return res.status(500).json({
+                success: false,
+                message: "createCarPriceRequest controller function is missing."
+            });
+        }
+
+        return vehicleController.createCarPriceRequest(req, res, next);
+    }
+);
+
+
+// ======================================================
 // CUSTOMER - GET COMPLETE VEHICLE DATA
 // ======================================================
 //

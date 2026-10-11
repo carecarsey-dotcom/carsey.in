@@ -239,7 +239,9 @@ export class CarDetailsComponent
   // ===================================================
 
   private apiUrl =
-  'https://api.carsey.in/api';
+    window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+      ? 'http://localhost:5000/api'
+      : 'https://api.carsey.in/api';
   // ===================================================
   // VEHICLE
   // ===================================================
@@ -522,6 +524,19 @@ export class CarDetailsComponent
 
   showInspectionForm =
     signal(false);
+
+  // Price request form: the actual vehicle price remains hidden on the public page.
+  showPriceRequestForm =
+    signal(false);
+
+  priceRequestSubmitted =
+    signal(false);
+
+  priceRequestForm = {
+    name: '',
+    mobile: '',
+    email: ''
+  };
 
 
   // ===================================================
@@ -1771,6 +1786,94 @@ export class CarDetailsComponent
 
 
   // ===================================================
+  // PRICE REQUEST FORM
+  // ===================================================
+
+  // ===================================================
+  // PRICE REQUEST INPUT VALIDATION
+  // Keep regular expressions in TypeScript methods because
+  // Angular template expressions do not support regex literals.
+  // ===================================================
+
+  onPriceRequestNameInput(): void {
+    this.priceRequestForm.name =
+      String(this.priceRequestForm.name || '').replace(/[^A-Za-z ]/g, '');
+  }
+
+  onPriceRequestMobileInput(): void {
+    this.priceRequestForm.mobile =
+      String(this.priceRequestForm.mobile || '')
+        .replace(/[^0-9]/g, '')
+        .slice(0, 10);
+  }
+
+
+  openPriceRequest(): void {
+    this.priceRequestSubmitted.set(false);
+    this.submitError.set('');
+    this.priceRequestForm = { name: '', mobile: '', email: '' };
+    this.showPriceRequestForm.set(true);
+  }
+
+  closePriceRequest(): void {
+    this.showPriceRequestForm.set(false);
+    this.priceRequestSubmitted.set(false);
+    this.submitError.set('');
+  }
+
+  submitPriceRequest(): void {
+    const vehicle = this.vehicle();
+    const carId = Number(vehicle?.car_id);
+    const name = String(this.priceRequestForm.name || '').trim();
+    const mobile = String(this.priceRequestForm.mobile || '').replace(/\D/g, '').slice(0, 10);
+    const email = String(this.priceRequestForm.email || '').trim().toLowerCase();
+
+    if (!Number.isInteger(carId) || carId <= 0) {
+      this.submitError.set('Car details are not available. Please refresh and try again.');
+      return;
+    }
+    if (!/^[A-Za-z ]{2,100}$/.test(name)) {
+      this.submitError.set('Please enter a valid name (letters and spaces only).');
+      return;
+    }
+    if (!/^[0-9]{10}$/.test(mobile)) {
+      this.submitError.set('Please enter a valid 10-digit mobile number.');
+      return;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      this.submitError.set('Please enter a valid email address.');
+      return;
+    }
+
+    const payload = {
+      carId,
+      name,
+      mobile,
+      email
+    };
+
+    this.submitting.set(true);
+    this.submitError.set('');
+
+    this.http.post<any>(`${this.apiUrl}/car-price-requests/${carId}`, payload)
+      .subscribe({
+        next: (response) => {
+          this.submitting.set(false);
+          this.priceRequestSubmitted.set(true);
+          this.submitSuccess.set(response?.message || 'Our team will contact you soon to share the car price.');
+        },
+        error: (error) => {
+          this.submitting.set(false);
+          this.submitError.set(
+            error?.error?.message ||
+            'Unable to submit your request right now. Please try again.'
+          );
+        }
+      });
+  }
+
+
+  // ===================================================
 // FINANCE SUBMIT
 // ===================================================
 
@@ -2224,6 +2327,7 @@ submitInspection(): void {
     this.showTestDriveForm.set(false);
 
     this.showInspectionForm.set(false);
+    this.showPriceRequestForm.set(false);
 
   }
 

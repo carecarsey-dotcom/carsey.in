@@ -1,3 +1,5 @@
+const db = require("../config/db");
+
 const vehicleService =
     require("../services/vehicle.service");
 
@@ -1038,6 +1040,77 @@ const restoreVehicle = async (
 
 
 // ======================================================
+// CREATE CUSTOMER PRICE REQUEST
+// POST /api/vehicles/:carId/price-request
+// ======================================================
+
+const createCarPriceRequest = async (req, res) => {
+    try {
+        const carId = Number(req.params.carId);
+        const customerName = String(req.body?.customer_name ?? req.body?.name ?? "").trim();
+        const mobile = String(req.body?.mobile ?? req.body?.phone ?? "").trim();
+        const email = String(req.body?.email ?? "").trim().toLowerCase();
+
+        if (!Number.isInteger(carId) || carId <= 0) {
+            return res.status(400).json({ success: false, message: "Valid vehicle ID is required." });
+        }
+        if (!customerName || customerName.length > 100) {
+            return res.status(400).json({ success: false, message: "Please enter a valid name (maximum 100 characters)." });
+        }
+        if (!/^\\d{10}$/.test(mobile)) {
+            return res.status(400).json({ success: false, message: "Please enter a valid 10-digit mobile number." });
+        }
+        if (email.length > 150 || !/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email)) {
+            return res.status(400).json({ success: false, message: "Please enter a valid email address." });
+        }
+
+        const selectSql = "SELECT car_id FROM cars WHERE car_id = ? AND status = 'Published' AND (is_deleted = 0 OR is_deleted IS NULL) LIMIT 1";
+        const insertSql = "INSERT INTO car_price_requests (car_id, customer_name, mobile, email) VALUES (?, ?, ?, ?)";
+        let vehicleRows;
+        let insertResult;
+
+        if (db && typeof db.promise === "function") {
+            const runner = db.promise();
+            [vehicleRows] = await runner.execute(selectSql, [carId]);
+            if (!Array.isArray(vehicleRows) || vehicleRows.length === 0) {
+                return res.status(404).json({ success: false, message: "Published vehicle not found." });
+            }
+            [insertResult] = await runner.execute(insertSql, [carId, customerName, mobile, email]);
+        } else {
+            vehicleRows = await new Promise((resolve, reject) => {
+                db.query(selectSql, [carId], (err, rows) => err ? reject(err) : resolve(rows));
+            });
+            if (!Array.isArray(vehicleRows) || vehicleRows.length === 0) {
+                return res.status(404).json({ success: false, message: "Published vehicle not found." });
+            }
+            insertResult = await new Promise((resolve, reject) => {
+                db.query(insertSql, [carId, customerName, mobile, email], (err, result) => err ? reject(err) : resolve(result));
+            });
+        }
+
+        return res.status(201).json({
+            success: true,
+            message: "Thank you! Our team will contact you soon to share the car price.",
+            data: { requestId: insertResult.insertId, carId, status: "Pending" }
+        });
+    } catch (error) {
+        console.error("Create Car Price Request Error:", error);
+        if (error?.code === "ER_NO_SUCH_TABLE") {
+            return res.status(500).json({
+                success: false,
+                message: "Price request table is missing. Run car-price-request-table.sql in the production database."
+            });
+        }
+        return res.status(500).json({
+            success: false,
+            message: "Unable to submit your price request.",
+            error: process.env.NODE_ENV === "development" ? error.message : undefined
+        });
+    }
+};
+
+
+// ======================================================
 // EXPORT
 // ======================================================
 
@@ -1057,6 +1130,8 @@ module.exports = {
 
     getDeletedVehicles,
 
-    restoreVehicle
+    restoreVehicle,
+
+    createCarPriceRequest
 
 };

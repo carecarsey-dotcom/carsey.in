@@ -536,6 +536,24 @@ export const routes: Routes = [
 
 
       // ================================================
+      // CAR PRICE REQUESTS
+      // /admin/car-price-requests
+      // ================================================
+
+      {
+        path: 'car-price-requests',
+
+        loadComponent: () =>
+          import(
+            './pages/car-price-requests/car-price-requests.component'
+          ).then(
+            m => m.CarPriceRequestsComponent
+          )
+
+      },
+
+
+      // ================================================
       // INSPECTION BOOKINGS
       // ================================================
 
