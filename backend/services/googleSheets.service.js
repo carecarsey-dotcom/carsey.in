@@ -22,9 +22,11 @@ const SCOPES = [
 const TABLES = [
     "admins",
     "car_images",
+    "car_price_requests",
     "cars",
     "exchange_requests",
     "finance_requests",
+    "google_sheets_sync_state",
     "inspection_bookings",
     "inspection_checklist",
     "inspection_reports",
@@ -33,9 +35,9 @@ const TABLES = [
     "owners",
     "report_unlock_requests",
     "sell_car_requests",
+    "share_you_exp",
     "test_drive_requests"
 ];
-
 // ======================================================
 // SYNC CONFIGURATION
 // ======================================================
