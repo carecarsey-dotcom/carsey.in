@@ -1480,13 +1480,13 @@ const getPublishedVehicles =
                 )
 
             WHERE
-                c.is_deleted = 0
+                -- Treat legacy NULL soft-delete values as active.
+                -- This keeps older/published cars visible without changing
+                -- their database rows or affecting the admin delete workflow.
+                COALESCE(c.is_deleted, 0) = 0
                 AND (
                     LOWER(
-                        COALESCE(
-                            c.status,
-                            ''
-                        )
+                        TRIM(COALESCE(c.status, ''))
                     ) IN (
                         'yes',
                         'published',

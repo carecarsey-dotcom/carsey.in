@@ -149,8 +149,22 @@ export class HomeComponent
 // API URL
 // ===================================================
 
+ // ORIGINAL PRODUCTION-ONLY CONFIGURATION PRESERVED:
+ // private apiUrl =
+ //   'https://api.carsey.in/api';
+
+ // Use the local backend while running Angular on localhost.
+ // Production continues using the live API automatically.
  private apiUrl =
-  'https://api.carsey.in/api';
+   (typeof window !== 'undefined' &&
+     (window.location.hostname === 'localhost' ||
+      window.location.hostname === '127.0.0.1'))
+       ? 'http://localhost:5000/api'
+       : 'https://api.carsey.in/api';
+
+ private get apiOrigin(): string {
+   return this.apiUrl.replace(/\/api$/, '');
+ }
 
 
 // ===================================================
@@ -1045,9 +1059,13 @@ else if (
     // BACKEND IMAGE URL
     // ================================================
 
+ // ORIGINAL PRODUCTION-ONLY IMAGE URL PRESERVED:
+ // return (`https://api.carsey.in${imagePath}`);
+
+ // Resolve relative image paths against the same backend selected above.
  return (
-  `https://api.carsey.in${imagePath}`
-);
+   `${this.apiOrigin}${imagePath.startsWith('/') ? '' : '/'}${imagePath}`
+ );
 
   }
 

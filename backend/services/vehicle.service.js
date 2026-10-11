@@ -192,6 +192,36 @@ const generateFinalVehicleInspectionReport = async (
         vehicleData ||
         {};
 
+    // SELL CAR GUARD:
+    // Sell Car vehicles do not go through employee PDI inspection,
+    // inspection PDF generation, or inspection email delivery.
+    // Keep this guard here as well so image-upload hooks cannot
+    // accidentally generate an inspection PDF for a Sell Car vehicle.
+    const savedSourceType = String(
+        savedVehicleObject.source_type ??
+        savedVehicleObject.sourceType ??
+        vehicleData.source_type ??
+        vehicleData.sourceType ??
+        ""
+    ).trim().toLowerCase();
+
+    if (savedSourceType === "sell-car") {
+        console.log(
+            `Skipping inspection PDF/email for Sell Car vehicle ${numericVehicleId}.`
+        );
+
+        return {
+            vehicleId: numericVehicleId,
+            carId: numericVehicleId,
+            bookingId: Number(savedVehicleObject.booking_id ?? vehicleData.booking_id) || null,
+            pdfGenerated: false,
+            pdfPending: false,
+            adminEmailSent: false,
+            customerEmailSent: false,
+            inspectionRequired: false,
+            message: "Sell Car vehicle does not require PDI inspection, inspection PDF, or inspection email."
+        };
+    }
 
     const savedPublishStatus =
         String(
@@ -1083,6 +1113,38 @@ const publishVehicle = async (
         publishedVehicleData ||
         {};
 
+    // SELL CAR GUARD:
+    // A Sell Car vehicle is published through the Sell Car workflow,
+    // not the employee PDI workflow. Do not attempt inspection PDF/email
+    // generation, regardless of whether images are present.
+    const publishedSourceType = String(
+        publishedVehicleObject.source_type ??
+        publishedVehicleObject.sourceType ??
+        publishedVehicleData.source_type ??
+        publishedVehicleData.sourceType ??
+        ""
+    ).trim().toLowerCase();
+
+    if (publishedSourceType === "sell-car") {
+        console.log(
+            `Sell Car vehicle ${numericVehicleId} published without PDI/PDF/email.`
+        );
+
+        return {
+            ...publishResult,
+            vehicleId: numericVehicleId,
+            carId: numericVehicleId,
+            bookingId: Number(publishedVehicleObject.booking_id) || null,
+            published: true,
+            pdfGenerated: false,
+            pdfPending: false,
+            imageCount: 0,
+            adminEmailSent: false,
+            customerEmailSent: false,
+            inspectionRequired: false,
+            message: "Sell Car vehicle published successfully. PDI inspection, inspection PDF, and inspection email are not required."
+        };
+    }
 
     const verifiedStatus =
         String(

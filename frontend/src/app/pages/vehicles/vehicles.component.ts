@@ -2,6 +2,7 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
+
 import { Vehicle, VehicleService } from '../../services/vehicle.service';
 
 @Component({
@@ -18,10 +19,8 @@ export class VehiclesComponent implements OnInit {
   deletedVehicles: Vehicle[] = [];
 
   searchText = '';
-
   loading = false;
   loadingDeleted = false;
-
   errorMessage = '';
 
   deletingVehicleId: number | null = null;
@@ -95,27 +94,67 @@ export class VehiclesComponent implements OnInit {
     this.loadDeletedVehicles();
   }
 
+  /**
+   * Display ID rules:
+   * - Sell Car: source_type = 'sell-car', source_sell_id = 1 -> SCR-100001
+   * - Normal vehicle: booking_id = 64 -> CAR-000064
+   *
+   * car_id is deliberately not used to generate an SCR ID because it is
+   * different from the Sell Car request ID.
+   */
   getBookingCode(vehicle: Vehicle): string {
-    const rawBookingId =
-      vehicle?.booking_id !== undefined && vehicle?.booking_id !== null
-        ? String(vehicle.booking_id)
-        : '';
+    const item = vehicle as any;
 
-    if (!rawBookingId) {
+    // The actual vehicles API returns source_type and source_sell_id
+    // for Sell Car vehicles.
+    const sourceType = String(item?.source_type ?? '').trim().toLowerCase();
+
+    if (sourceType === 'sell-car') {
+      const sellId = Number(item?.source_sell_id);
+
+      if (Number.isInteger(sellId) && sellId > 0) {
+        return `SCR-${String(100000 + sellId).padStart(6, '0')}`;
+      }
+
+      // It is a Sell Car vehicle, but its request ID is missing/invalid.
       return '-';
     }
 
-    if (rawBookingId.startsWith('CAR-')) {
-      return rawBookingId;
+    // Use a display ID if another backend endpoint provides one.
+    const displayId = item?.display_id ?? item?.displayId;
+
+    if (
+      displayId !== undefined &&
+      displayId !== null &&
+      String(displayId).trim() !== ''
+    ) {
+      return String(displayId).trim();
     }
 
-    const numericPart = Number(rawBookingId);
+    // Preserve the existing normal vehicle booking ID behavior.
+    const rawBookingId = item?.booking_id;
+
+    if (
+      rawBookingId === undefined ||
+      rawBookingId === null ||
+      String(rawBookingId).trim() === ''
+    ) {
+      return '-';
+    }
+
+    const bookingId = String(rawBookingId).trim();
+
+    if (bookingId.startsWith('CAR-')) {
+      return bookingId;
+    }
+
+    const numericPart = Number(bookingId);
 
     if (Number.isFinite(numericPart)) {
       return `CAR-${String(numericPart).padStart(6, '0')}`;
     }
 
-    return rawBookingId;
+    return bookingId;
   }
 
   get filteredVehicles(): Vehicle[] {
@@ -126,9 +165,14 @@ export class VehiclesComponent implements OnInit {
     }
 
     return this.vehicles.filter((vehicle: Vehicle) => {
+      const item = vehicle as any;
       const values = [
         vehicle.car_id,
         vehicle.booking_id,
+        item?.source_type,
+        item?.source_sell_id,
+        item?.display_id,
+        item?.displayId,
         vehicle.brand,
         vehicle.model,
         vehicle.variant,
@@ -153,9 +197,14 @@ export class VehiclesComponent implements OnInit {
     }
 
     return this.deletedVehicles.filter((vehicle: Vehicle) => {
+      const item = vehicle as any;
       const values = [
         vehicle.car_id,
         vehicle.booking_id,
+        item?.source_type,
+        item?.source_sell_id,
+        item?.display_id,
+        item?.displayId,
         vehicle.brand,
         vehicle.model,
         vehicle.variant,
@@ -181,9 +230,9 @@ export class VehiclesComponent implements OnInit {
     }
 
     const confirmed = window.confirm(
-      'This will move the vehicle to Deleted Cars.\\n\\n' +
+      'This will move the vehicle to Deleted Cars.\n\n' +
       'The vehicle data, images and inspection records will be kept and ' +
-      'the vehicle can be restored later.\\n\\n' +
+      'the vehicle can be restored later.\n\n' +
       'Do you want to continue?'
     );
 
@@ -224,7 +273,7 @@ export class VehiclesComponent implements OnInit {
     }
 
     const confirmed = window.confirm(
-      'Restore this vehicle to Active Cars?\\n\\n' +
+      'Restore this vehicle to Active Cars?\n\n' +
       'The vehicle will be restored with its existing data, images and ' +
       'previous status/publish state.'
     );

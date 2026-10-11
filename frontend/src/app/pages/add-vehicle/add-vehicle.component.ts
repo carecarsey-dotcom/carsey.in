@@ -16,7 +16,8 @@ import {
 } from '@angular/forms';
 
 import {
-  Router
+  Router,
+  ActivatedRoute
 } from '@angular/router';
 
 import {
@@ -66,8 +67,127 @@ export class AddVehicleComponent {
     inject(HttpClient);
 
 
+
   private router =
     inject(Router);
+
+  private route = inject(ActivatedRoute);
+
+  // Sell Car mode is separate from the existing PDI workflow.
+  isSellCarMode = false;
+  sellCarId: number | null = null;
+  sellCarLoading = false;
+  sellCarSaving = false;
+  sellCarImages: Array<{ key: string; label: string; url: string; file: File | null; preview: string; removeExisting: boolean }> = [];
+  sellCarForm: any = {
+    sellerName: '', ownerName: '', mobile: '', email: '', city: '',
+    brand: '', model: '', variant: '', manufacturingYear: null,
+    fuelType: '', transmission: '', kmDriven: null, vehicleNumber: '', expectedPrice: null
+  };
+  private sellCarApiUrl = 'http://localhost:5000/api';
+
+  private initSellCarMode(): void {
+    this.route.queryParamMap.subscribe(params => {
+      const source = params.get('source');
+      const id = Number(params.get('sellId'));
+      if (source !== 'sell-car' || !Number.isInteger(id) || id <= 0) return;
+      this.isSellCarMode = true;
+      this.sellCarId = id;
+      this.loadSellCarRequest(id);
+    });
+  }
+
+  private loadSellCarRequest(id: number): void {
+    this.sellCarLoading = true;
+    this.http.get<any>(`${this.sellCarApiUrl}/admin/sell-car-requests/${id}`).subscribe({
+      next: response => {
+        const r = response?.data?.request ?? response?.data ?? response?.request ?? response;
+        this.sellCarForm = {
+          sellerName: r.sellerName ?? r.seller_name ?? '',
+          ownerName: r.ownerName ?? r.owner_name ?? '',
+          mobile: r.mobile ?? '', email: r.email ?? '', city: r.city ?? '',
+          brand: r.brand ?? '', model: r.model ?? '', variant: r.variant ?? '',
+          manufacturingYear: r.manufacturingYear ?? r.manufacturing_year ?? null,
+          fuelType: r.fuelType ?? r.fuel_type ?? '', transmission: r.transmission ?? '',
+          kmDriven: r.kmDriven ?? r.km_driven ?? null,
+          vehicleNumber: r.vehicleNumber ?? r.vehicle_number ?? '',
+          expectedPrice: r.expectedPrice ?? r.expected_price ?? null
+        };
+        const sourceImages = [
+          ['frontImage','Front View'], ['backImage','Back View'], ['leftImage','Left View'], ['rightImage','Right View'],
+          ['interiorFrontImage','Interior Front'], ['interiorRearImage','Interior Rear'], ['openDickyImage','Open Dicky'],
+          ['openBonnetImage','Open Bonnet'], ['odometerImage','Odometer'], ['dashboardImage','Dashboard']
+        ];
+        this.sellCarImages = sourceImages.map(([key,label]) => {
+          const raw = r[key] ?? r[key.replace(/[A-Z]/g, m => '_' + m.toLowerCase())] ?? '';
+          return { key, label, url: this.resolveSellCarImage(raw), file: null, preview: '', removeExisting: false };
+        });
+        this.sellCarLoading = false;
+      },
+      error: err => {
+        this.errorMessage = err?.error?.message || 'Sell Car request load nahi hui. API response check karein.';
+        this.sellCarLoading = false;
+      }
+    });
+  }
+
+  private resolveSellCarImage(path: string): string {
+    if (!path) return '';
+    if (/^https?:\/\//i.test(path)) return path;
+    const clean = path.replace(/\\/g, '/').replace(/^\//, '');
+    return `${this.sellCarApiUrl.replace(/\/api$/, '')}/${clean}`;
+  }
+
+  onSellCarImageSelected(event: Event, index: number): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) { this.errorMessage = 'Valid image select karein.'; return; }
+    if (file.size > 10 * 1024 * 1024) { this.errorMessage = 'Image 10 MB se chhoti honi chahiye.'; return; }
+    const item = this.sellCarImages[index];
+    if (item.preview) URL.revokeObjectURL(item.preview);
+    item.file = file; item.preview = URL.createObjectURL(file); item.removeExisting = false;
+    this.errorMessage = '';
+  }
+
+  removeSellCarImage(index: number): void {
+    const item = this.sellCarImages[index];
+    if (item.preview) URL.revokeObjectURL(item.preview);
+    item.file = null; item.preview = ''; item.removeExisting = true;
+  }
+
+  saveAndPublishSellCar(): void {
+    if (!this.sellCarId || this.sellCarSaving) return;
+    if (!this.sellCarForm.brand?.trim() || !this.sellCarForm.model?.trim() || !this.sellCarForm.vehicleNumber?.trim()) {
+      this.errorMessage = 'Brand, Model aur Vehicle Number bharna zaroori hai.'; return;
+    }
+    this.sellCarSaving = true; this.errorMessage = ''; this.successMessage = '';
+    const form = new FormData();
+    Object.entries(this.sellCarForm).forEach(([key,value]) => form.append(key, value == null ? '' : String(value)));
+    form.append('source', 'sell-car');
+    form.append('sellId', String(this.sellCarId));
+    this.sellCarImages.forEach(item => {
+      if (item.file) form.append(item.key, item.file, item.file.name);
+      else if (item.removeExisting) form.append(`remove_${item.key}`, 'true');
+    });
+    // Dedicated endpoint deliberately avoids the normal PDI/PDF/email publishing path.
+    this.http.post<any>(`${this.sellCarApiUrl}/admin/vehicles/from-sell-car/${this.sellCarId}`, form).subscribe({
+      next: response => {
+        if (!response?.success) {
+          this.errorMessage = response?.message || 'Sell Car vehicle publish nahi hui.';
+          this.sellCarSaving = false; return;
+        }
+        this.successMessage = 'Sell Car vehicle successfully publish ho gayi.';
+        this.sellCarSaving = false;
+        this.router.navigate(['/admin/vehicles']);
+      },
+      error: err => {
+        this.errorMessage = err?.error?.message || 'Sell Car publish API available nahi hai ya request fail hui.';
+        this.sellCarSaving = false;
+      }
+    });
+  }
+
 
 
   // ==========================================
@@ -465,6 +585,7 @@ export class AddVehicleComponent {
 
   constructor() {
     this.initializeDetailedInspection();
+    this.initSellCarMode();
   }
 
   private initializeDetailedInspection(): void {

@@ -257,7 +257,7 @@
               <td
                 class="px-6 py-4 text-sm font-medium text-slate-700"
               >
-                #{{ request.sell_id }}
+                {{ getDisplayId(request.sell_id) }}
               </td>
 
 
@@ -503,7 +503,7 @@
                       "
                       class="rounded-lg bg-green-600 px-3 py-2 text-xs font-semibold text-white transition hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-50"
                     >
-                      Approve
+                      Approve &amp; Publish
                     </button>
 
 

@@ -1,5 +1,6 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 import { SellCarRequest, SellCarService } from '../../services/sell-car.service';
 
 @Component({
@@ -11,11 +12,25 @@ import { SellCarRequest, SellCarService } from '../../services/sell-car.service'
 })
 export class SellCarRequestsComponent implements OnInit {
   private sellCarService = inject(SellCarService);
+  private router = inject(Router);
 
   requests: SellCarRequest[] = [];
   loading = false;
   errorMessage = '';
   updatingSellId: number | null = null;
+
+  /**
+   * Display-only Sell Car ID.
+   * Database sell_id remains unchanged:
+   * sell_id 1 => SCR-100001, sell_id 2 => SCR-100002.
+   */
+  getDisplayId(sellId: number | string | null | undefined): string {
+    const numericId = Number(sellId);
+    if (!Number.isInteger(numericId) || numericId < 1) {
+      return 'SCR-—';
+    }
+    return `SCR-${String(100000 + numericId).padStart(6, '0')}`;
+  }
 
   ngOnInit(): void {
     this.loadRequests();
@@ -31,28 +46,46 @@ export class SellCarRequestsComponent implements OnInit {
         if (response.success) {
           this.requests = response.data?.requests ?? [];
         } else {
-          this.errorMessage = response.message || 'Unable to load sell car requests.';
+          this.errorMessage =
+            response.message || 'Unable to load sell car requests.';
         }
         this.loading = false;
       },
       error: (error) => {
         console.error('Sell Car API Error:', error);
-        this.errorMessage = error?.error?.message || 'Unable to load sell car requests.';
+        this.errorMessage =
+          error?.error?.message || 'Unable to load sell car requests.';
         this.loading = false;
       }
     });
   }
 
+  // Open Add Vehicle with the selected Sell Car request.
+  // Do not mark the request Approved yet; publishing happens after admin review.
   approve(request: SellCarRequest): void {
-    this.updateStatus(request, 'Approved');
+    if (!request?.sell_id) {
+      this.errorMessage = 'Invalid Sell Car request ID.';
+      return;
+    }
+
+    this.router.navigate(['/admin/vehicles/add'], {
+      queryParams: {
+        source: 'sell-car',
+        sellId: request.sell_id
+      }
+    });
   }
 
   reject(request: SellCarRequest): void {
     this.updateStatus(request, 'Rejected');
   }
 
-  private updateStatus(request: SellCarRequest, status: 'Approved' | 'Rejected'): void {
+  private updateStatus(
+    request: SellCarRequest,
+    status: 'Approved' | 'Rejected'
+  ): void {
     this.updatingSellId = request.sell_id;
+
     this.sellCarService.updateStatus(request.sell_id, status).subscribe({
       next: (response) => {
         if (response.success) {
@@ -81,13 +114,18 @@ export class SellCarRequestsComponent implements OnInit {
     if (/^https?:\/\//i.test(image)) return image;
 
     const cleanPath = image.startsWith('/') ? image : `/${image}`;
-    const baseUrl = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-      ? 'http://localhost:5000'
-      : 'https://api.carsey.in';
+    const baseUrl =
+      window.location.hostname === 'localhost' ||
+      window.location.hostname === '127.0.0.1'
+        ? 'http://localhost:5000'
+        : 'https://api.carsey.in';
+
     return `${baseUrl}${cleanPath}`;
   }
 
-  getRequestImages(request: SellCarRequest): { label: string; path?: string }[] {
+  getRequestImages(
+    request: SellCarRequest
+  ): { label: string; path?: string }[] {
     return [
       { label: 'Front', path: request.front_image },
       { label: 'Back', path: request.back_image },

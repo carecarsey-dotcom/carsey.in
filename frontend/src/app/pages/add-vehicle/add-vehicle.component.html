@@ -1,3 +1,63 @@
+@if (isSellCarMode) {
+  <div class="min-h-screen bg-slate-100 p-4 md:p-6">
+    <div class="mx-auto max-w-6xl space-y-6">
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <div><h1 class="text-2xl font-bold text-slate-800">Approve & Publish Sell Car</h1><p class="mt-1 text-sm text-slate-500">Request ID: SCR-{{ (100000 + (sellCarId || 0)).toString().padStart(6, '0') }} · PDI checklist is not required.</p></div>
+        <button type="button" (click)="cancel()" class="rounded-lg border bg-white px-4 py-2">Back to Requests</button>
+      </div>
+      @if (sellCarLoading) { <div class="rounded-xl bg-white p-6">Request details load ho rahi hain...</div> }
+      @if (successMessage) { <div class="rounded-xl border border-green-200 bg-green-50 p-4 text-green-700">{{ successMessage }}</div> }
+      @if (errorMessage) { <div class="rounded-xl border border-red-200 bg-red-50 p-4 text-red-700">{{ errorMessage }}</div> }
+      @if (!sellCarLoading) {
+        <form (ngSubmit)="saveAndPublishSellCar()" class="space-y-6">
+          <section class="rounded-2xl bg-white p-5 shadow-sm md:p-7">
+            <h2 class="mb-4 border-b pb-3 text-xl font-bold text-blue-600">Seller Details</h2>
+            <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              @for (field of [{key:'sellerName',label:'Seller Name'},{key:'ownerName',label:'Owner Name'},{key:'mobile',label:'Mobile'},{key:'email',label:'Email'},{key:'city',label:'City'}]; track field.key) {
+                <label class="block text-sm font-medium text-slate-700">{{field.label}}<input class="mt-1 w-full rounded-lg border border-slate-300 p-3" [(ngModel)]="sellCarForm[field.key]" [name]="field.key" /></label>
+              }
+            </div>
+          </section>
+          <section class="rounded-2xl bg-white p-5 shadow-sm md:p-7">
+            <h2 class="mb-4 border-b pb-3 text-xl font-bold text-blue-600">Vehicle Details</h2>
+            <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              @for (field of [{key:'brand',label:'Brand',type:'text'},{key:'model',label:'Model',type:'text'},{key:'variant',label:'Variant',type:'text'},{key:'manufacturingYear',label:'Manufacturing Year',type:'number'},{key:'fuelType',label:'Fuel Type',type:'text'},{key:'transmission',label:'Transmission',type:'text'},{key:'kmDriven',label:'KM Driven',type:'number'},{key:'vehicleNumber',label:'Vehicle Number',type:'text'},{key:'expectedPrice',label:'Price (Optional)',type:'number'}]; track field.key) {
+                <label class="block text-sm font-medium text-slate-700">{{field.label}}<input class="mt-1 w-full rounded-lg border border-slate-300 p-3" [type]="field.type" [(ngModel)]="sellCarForm[field.key]" [name]="field.key" [required]="['brand','model','vehicleNumber'].includes(field.key)" /></label>
+              }
+            </div>
+            <p class="mt-3 text-xs text-slate-500">Price optional hai. Sell Car vehicle ko PDI inspection, PDF aur inspection email ke bina publish kiya jayega.</p>
+          </section>
+          <section class="rounded-2xl bg-white p-5 shadow-sm md:p-7">
+            <h2 class="mb-4 border-b pb-3 text-xl font-bold text-blue-600">Vehicle Images</h2>
+            <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              @for (item of sellCarImages; track item.key; let i = $index) {
+                <div class="rounded-xl border border-slate-200 p-3">
+                  <h3 class="mb-2 font-semibold text-slate-700">{{item.label}}</h3>
+                  @if (item.preview || (item.url && !item.removeExisting)) {
+                    <img [src]="item.preview || item.url" [alt]="item.label" class="mb-3 h-40 w-full rounded-lg object-cover" />
+                    <label class="flex cursor-pointer items-center justify-center gap-2 rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-sm font-semibold text-blue-700 transition hover:bg-blue-100">
+                      <span>↻ Change Image</span>
+                      <input type="file" accept="image/*" hidden (change)="onSellCarImageSelected($event,i)" />
+                    </label>
+                  } @else {
+                    <label class="mb-3 flex h-40 cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-slate-300 bg-slate-50 text-slate-500 transition hover:border-blue-400 hover:bg-blue-50 hover:text-blue-700">
+                      <input type="file" accept="image/*" hidden (change)="onSellCarImageSelected($event,i)" />
+                      <span class="mb-2 text-3xl leading-none">+</span>
+                      <span class="text-sm font-semibold">Add Image</span>
+                      <span class="mt-1 text-xs">Click to upload</span>
+                    </label>
+                  }
+                  @if (item.url || item.preview) { <button type="button" (click)="removeSellCarImage(i)" class="mt-2 text-sm font-semibold text-red-600">Remove image</button> }
+                </div>
+              }
+            </div>
+          </section>
+          <div class="flex flex-wrap justify-end gap-3"><button type="button" (click)="cancel()" class="rounded-lg border border-slate-300 bg-white px-5 py-3">Cancel</button><button type="submit" [disabled]="sellCarSaving" class="rounded-lg bg-blue-600 px-6 py-3 font-semibold text-white disabled:opacity-50">{{sellCarSaving ? 'Publishing...' : 'Save & Publish Vehicle'}}</button></div>
+        </form>
+      }
+    </div>
+  </div>
+} @else {
 <div class="min-h-screen bg-slate-100 p-4 md:p-6">
 
   <!-- ========================================= -->
@@ -1492,3 +1552,4 @@
 
 
 </div>
+}

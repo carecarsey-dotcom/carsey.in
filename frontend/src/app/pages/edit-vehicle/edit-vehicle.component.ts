@@ -8,6 +8,8 @@ import {
   CommonModule
 } from '@angular/common';
 
+import { HttpClient } from '@angular/common/http';
+
 import {
   FormsModule
 } from '@angular/forms';
@@ -38,6 +40,7 @@ import {
 export class EditVehicleComponent implements OnInit {
 
   private vehicleService = inject(VehicleService);
+  private http = inject(HttpClient);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
 
@@ -46,6 +49,12 @@ export class EditVehicleComponent implements OnInit {
   // =====================================================
 
   carId = 0;
+  isSellCarVehicle = false;
+  sellCarSellerLoading = false;
+  private sellCarApiUrl =
+    window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+      ? 'http://localhost:5000/api'
+      : 'https://api.carsey.in/api';
   loading = false;
   saving = false;
 
@@ -297,6 +306,15 @@ export class EditVehicleComponent implements OnInit {
 
           this.mapOwner(ownerData, vehicleData);
 
+          // Sell Car vehicles keep seller information in the original Sell Car request.
+          // Load it separately without changing the normal Add Vehicle / PDI workflow.
+          const sourceType = String(vehicleData?.source_type ?? vehicleData?.sourceType ?? '').toLowerCase();
+          const sellId = Number(vehicleData?.source_sell_id ?? vehicleData?.sourceSellId ?? 0);
+          this.isSellCarVehicle = sourceType === 'sell-car' || sourceType === 'sell_car';
+          if (this.isSellCarVehicle && Number.isInteger(sellId) && sellId > 0) {
+            this.loadSellCarSellerDetails(sellId);
+          }
+
           // =================================================
           // INSPECTION REPORT
           // Backend versions use either inspection or
@@ -471,6 +489,56 @@ export class EditVehicleComponent implements OnInit {
             'Unable to load vehicle.';
 
           this.loading = false;
+        }
+      });
+  }
+
+  // =====================================================
+  // SELL CAR SELLER DETAILS
+  // =====================================================
+
+  private loadSellCarSellerDetails(sellId: number): void {
+    this.sellCarSellerLoading = true;
+    this.http.get<any>(`${this.sellCarApiUrl}/admin/sell-car-requests/${sellId}`)
+      .subscribe({
+        next: (response: any) => {
+          const request =
+            response?.data?.request ??
+            response?.data?.sellCarRequest ??
+            response?.data ??
+            response?.request ??
+            response ?? {};
+
+          const pickValue = (...values: any[]): string => {
+            const value = values.find(v => v !== undefined && v !== null && String(v).trim() !== '');
+            return value === undefined ? '' : String(value);
+          };
+
+          // Fill the existing editable Customer & Inspection fields with seller details.
+          this.customer_name = pickValue(
+            request.seller_name, request.sellerName,
+            request.owner_name, request.ownerName,
+            request.name, this.customer_name
+          );
+          this.owner_mobile = pickValue(
+            request.mobile, request.seller_mobile, request.sellerMobile,
+            request.owner_mobile, request.ownerMobile, this.owner_mobile
+          );
+          this.owner_email = pickValue(
+            request.email, request.seller_email, request.sellerEmail,
+            request.owner_email, request.ownerEmail, this.owner_email
+          );
+          this.owner_city = pickValue(request.city, request.owner_city, request.ownerCity, this.owner_city);
+          this.vehicle.city = pickValue(request.city, this.vehicle.city);
+          this.owner_address = pickValue(
+            request.address, request.seller_address, request.sellerAddress,
+            request.owner_address, request.ownerAddress, this.owner_address
+          );
+          this.sellCarSellerLoading = false;
+        },
+        error: (error: any) => {
+          console.warn('Sell Car seller details could not be loaded:', error);
+          this.sellCarSellerLoading = false;
         }
       });
   }
