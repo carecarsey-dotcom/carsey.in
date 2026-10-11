@@ -84,7 +84,12 @@ export class AddVehicleComponent {
     brand: '', model: '', variant: '', manufacturingYear: null,
     fuelType: '', transmission: '', kmDriven: null, vehicleNumber: '', expectedPrice: null
   };
-  private sellCarApiUrl = 'http://localhost:5000/api';
+  // Use the local API during development and the Railway production API on carsey.in.
+  private sellCarApiUrl =
+    window.location.hostname === 'localhost' ||
+    window.location.hostname === '127.0.0.1'
+      ? 'http://localhost:5000/api'
+      : 'https://api.carsey.in/api';
 
   private initSellCarMode(): void {
     this.route.queryParamMap.subscribe(params => {
