@@ -82,7 +82,8 @@ export class AddVehicleComponent {
   sellCarForm: any = {
     sellerName: '', ownerName: '', mobile: '', email: '', city: '',
     brand: '', model: '', variant: '', manufacturingYear: null,
-    fuelType: '', transmission: '', kmDriven: null, vehicleNumber: '', expectedPrice: null
+    fuelType: '', transmission: '', kmDriven: null, vehicleNumber: '', expectedPrice: null,
+    ownerClassification: ''
   };
   // Use the local API during development and the Railway production API on carsey.in.
   private sellCarApiUrl =
@@ -116,7 +117,10 @@ export class AddVehicleComponent {
           fuelType: r.fuelType ?? r.fuel_type ?? '', transmission: r.transmission ?? '',
           kmDriven: r.kmDriven ?? r.km_driven ?? null,
           vehicleNumber: r.vehicleNumber ?? r.vehicle_number ?? '',
-          expectedPrice: r.expectedPrice ?? r.expected_price ?? null
+          expectedPrice: r.expectedPrice ?? r.expected_price ?? null,
+          ownerClassification: this.normalizeOwnerClassification(
+            r.ownerClassification ?? r.owner_classification ?? ''
+          )
         };
         const sourceImages = [
           ['frontImage','Front View'], ['backImage','Back View'], ['leftImage','Left View'], ['rightImage','Right View'],
@@ -134,6 +138,15 @@ export class AddVehicleComponent {
         this.sellCarLoading = false;
       }
     });
+  }
+
+  // Convert request values such as 'First Owner' to the cars-table enum values.
+  private normalizeOwnerClassification(value: unknown): string {
+    const normalized = String(value ?? '').trim().toLowerCase();
+    if (normalized === 'first' || normalized === 'first owner') return 'First';
+    if (normalized === 'second' || normalized === 'second owner') return 'Second';
+    if (normalized === 'third' || normalized === 'third owner') return 'Third';
+    return '';
   }
 
   private resolveSellCarImage(path: string): string {

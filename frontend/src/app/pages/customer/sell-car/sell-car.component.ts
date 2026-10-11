@@ -29,6 +29,7 @@ export class SellCarComponent {
 
   sellerName = '';
   ownerName = '';
+  ownerClassification = '';
   mobile = '';
   email = '';
   city = '';
@@ -408,6 +409,15 @@ export class SellCarComponent {
     }
 
     // ===================================================
+    // OWNER CLASSIFICATION
+    // ===================================================
+
+    if (!['First Owner', 'Second Owner', 'Third Owner'].includes(this.ownerClassification)) {
+      alert('Please select owner classification.');
+      return;
+    }
+
+    // ===================================================
     // MOBILE
     // ===================================================
 
@@ -573,6 +583,11 @@ export class SellCarComponent {
     formData.append(
       'ownerName',
       this.ownerName.trim()
+    );
+
+    formData.append(
+      'ownerClassification',
+      this.ownerClassification
     );
 
 
@@ -793,6 +808,7 @@ this.http.post<any>(
 
     this.sellerName = '';
     this.ownerName = '';
+    this.ownerClassification = '';
     this.mobile = '';
     this.email = '';
     this.city = '';

@@ -48,6 +48,28 @@ function uploadedPath(file) {
   return relative.replace(/\\/g, "/").replace(/^\.\//, "");
 }
 
+
+// Normalize Sell Car form values ("First Owner") to the cars table enum
+// values ("First", "Second", "Third", "Fourth").
+function normalizeOwnerClassification(value) {
+  if (value === undefined || value === null || String(value).trim() === "") {
+    return null;
+  }
+
+  const normalized = String(value).trim();
+  const map = {
+    "First Owner": "First",
+    "Second Owner": "Second",
+    "Third Owner": "Third",
+    "First": "First",
+    "Second": "Second",
+    "Third": "Third",
+    "Fourth": "Fourth",
+  };
+
+  return map[normalized] || null;
+}
+
 function getFirstValue(object, keys) {
   for (const key of keys) {
     const value = clean(object?.[key]);
@@ -248,6 +270,14 @@ async function publishFromSellCar(sellId, body = {}, files = {}) {
     brand,
     model,
     variant: clean(body.variant ?? request.variant),
+
+    // Owner Classification: map "First Owner" to cars enum value "First".
+    owner_classification: normalizeOwnerClassification(
+      body.ownerClassification ??
+      body.owner_classification ??
+      request.owner_classification
+    ),
+  
     manufacturing_year: clean(
       body.manufacturingYear ?? body.manufacturing_year ?? request.manufacturing_year
     ),

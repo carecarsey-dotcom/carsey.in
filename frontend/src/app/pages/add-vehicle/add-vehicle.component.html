@@ -24,6 +24,21 @@
               @for (field of [{key:'brand',label:'Brand',type:'text'},{key:'model',label:'Model',type:'text'},{key:'variant',label:'Variant',type:'text'},{key:'manufacturingYear',label:'Manufacturing Year',type:'number'},{key:'fuelType',label:'Fuel Type',type:'text'},{key:'transmission',label:'Transmission',type:'text'},{key:'kmDriven',label:'KM Driven',type:'number'},{key:'vehicleNumber',label:'Vehicle Number',type:'text'},{key:'expectedPrice',label:'Price (Optional)',type:'number'}]; track field.key) {
                 <label class="block text-sm font-medium text-slate-700">{{field.label}}<input class="mt-1 w-full rounded-lg border border-slate-300 p-3" [type]="field.type" [(ngModel)]="sellCarForm[field.key]" [name]="field.key" [required]="['brand','model','vehicleNumber'].includes(field.key)" /></label>
               }
+              <!-- OWNER CLASSIFICATION: values match the cars table enum -->
+              <label class="block text-sm font-medium text-slate-700">
+                Owner Classification *
+                <select
+                  name="ownerClassification"
+                  [(ngModel)]="sellCarForm.ownerClassification"
+                  required
+                  class="mt-1 w-full rounded-lg border border-slate-300 bg-white p-3"
+                >
+                  <option value="">Select Owner Classification</option>
+                  <option value="First">First Owner</option>
+                  <option value="Second">Second Owner</option>
+                  <option value="Third">Third Owner</option>
+                </select>
+              </label>
             </div>
             <p class="mt-3 text-xs text-slate-500">Price optional hai. Sell Car vehicle ko PDI inspection, PDF aur inspection email ke bina publish kiya jayega.</p>
           </section>

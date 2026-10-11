@@ -47,6 +47,28 @@ const createSellCarRequest = async (requestData) => {
 
 
     // ==================================================
+    // OWNER CLASSIFICATION
+    // ==================================================
+
+    const allowedOwnerClassifications = [
+        "First Owner",
+        "Second Owner",
+        "Third Owner"
+    ];
+
+    const ownerClassification =
+        typeof requestData.ownerClassification === "string"
+            ? requestData.ownerClassification.trim()
+            : "";
+
+    if (!allowedOwnerClassifications.includes(ownerClassification)) {
+        throw new Error(
+            "Owner classification must be First Owner, Second Owner, or Third Owner."
+        );
+    }
+
+
+    // ==================================================
     // MOBILE
     // ==================================================
 
@@ -402,6 +424,8 @@ const createSellCarRequest = async (requestData) => {
 
         ownerName,
 
+        ownerClassification,
+
         mobile,
 
         email,
@@ -581,6 +605,9 @@ const getSellCarRequestById = async (sellId) => {
 
         ownerName:
             request.owner_name,
+
+        ownerClassification:
+            request.owner_classification,
 
         mobile:
             request.mobile,

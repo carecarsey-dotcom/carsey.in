@@ -3,7 +3,8 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 const API_BASE_URL =
-  window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+  window.location.hostname === 'localhost' ||
+  window.location.hostname === '127.0.0.1'
     ? 'http://localhost:5000/api'
     : 'https://api.carsey.in/api';
 
@@ -11,6 +12,7 @@ export interface SellCarRequest {
   sell_id: number;
   seller_name: string;
   owner_name?: string;
+  owner_classification?: 'First Owner' | 'Second Owner' | 'Third Owner' | string;
   mobile: string;
   email?: string;
   city?: string;
@@ -54,14 +56,21 @@ export class SellCarService {
   private apiUrl = API_BASE_URL;
 
   getRequests(): Observable<SellCarResponse> {
-    return this.http.get<SellCarResponse>(`${this.apiUrl}/admin/sell-car-requests`);
+    return this.http.get<SellCarResponse>(
+      `${this.apiUrl}/admin/sell-car-requests`
+    );
   }
 
   getRequestById(sellId: number): Observable<SellCarResponse> {
-    return this.http.get<SellCarResponse>(`${this.apiUrl}/admin/sell-car-requests/${sellId}`);
+    return this.http.get<SellCarResponse>(
+      `${this.apiUrl}/admin/sell-car-requests/${sellId}`
+    );
   }
 
-  updateStatus(sellId: number, status: 'Approved' | 'Rejected'): Observable<SellCarResponse> {
+  updateStatus(
+    sellId: number,
+    status: 'Approved' | 'Rejected'
+  ): Observable<SellCarResponse> {
     return this.http.patch<SellCarResponse>(
       `${this.apiUrl}/admin/sell-car-requests/${sellId}/status`,
       { status }

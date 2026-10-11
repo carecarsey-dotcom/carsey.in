@@ -4,29 +4,22 @@ const {
     triggerGoogleSheetsSync
 } = require("../services/googleSheetsSync.service");
 
-
 // ======================================================
 // CREATE SELL CAR REQUEST
 // Customer
 // ======================================================
 
 const createSellCarRequest = (requestData) => {
-
     return new Promise((resolve, reject) => {
-
         const sql = `
-
             INSERT INTO sell_car_requests
-
             (
-
                 seller_name,
                 owner_name,
-
+                owner_classification,
                 mobile,
                 email,
                 city,
-
                 brand,
                 model,
                 variant,
@@ -36,130 +29,69 @@ const createSellCarRequest = (requestData) => {
                 transmission,
                 km_driven,
                 expected_price,
-
                 front_image,
                 back_image,
                 left_image,
                 right_image,
-
                 interior_front_image,
                 interior_rear_image,
                 open_dicky_image,
                 open_bonnet_image,
                 odometer_image,
                 dashboard_image,
-
                 status
-
             )
-
             VALUES (
-
-                ?, ?, ?, ?, ?,
-                ?, ?, ?, ?, ?,
-                ?, ?, ?, ?,
-                ?, ?, ?, ?,
                 ?, ?, ?, ?, ?, ?,
-                ?
-
+                ?, ?, ?, ?, ?, ?, ?, ?, ?,
+                ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
             )
-
         `;
 
-
         const values = [
-
             requestData.sellerName,
-
             requestData.ownerName,
-
+            requestData.ownerClassification,
             requestData.mobile,
-
             requestData.email,
-
             requestData.city,
-
-
             requestData.brand,
-
             requestData.model,
-
             requestData.variant,
-
             requestData.vehicleNumber,
-
             requestData.manufacturingYear,
-
             requestData.fuelType,
-
             requestData.transmission,
-
             requestData.kmDriven,
-
             requestData.expectedPrice,
-
-
-            // EXISTING IMAGES
-
             requestData.frontImage,
-
             requestData.backImage,
-
             requestData.leftImage,
-
             requestData.rightImage,
-
-
-            // NEW IMAGES
-
             requestData.interiorFrontImage,
-
             requestData.interiorRearImage,
-
             requestData.openDickyImage,
-
             requestData.openBonnetImage,
-
             requestData.odometerImage,
-
             requestData.dashboardImage,
-
-
             requestData.status || "Pending"
-
         ];
 
-
-        db.query(
-            sql,
-            values,
-            (err, result) => {
-
-                if (err) {
-
-                    return reject(err);
-
-                }
-
-
-                triggerGoogleSheetsSync(
-                    `Sell car request created: sell_id ${result.insertId}`
-                );
-
-
-                resolve({
-
-                    sellId: result.insertId
-
-                });
-
+        db.query(sql, values, (err, result) => {
+            if (err) {
+                return reject(err);
             }
-        );
 
+            triggerGoogleSheetsSync(
+                `Sell car request created: sell_id ${result.insertId}`
+            );
+
+            resolve({
+                sellId: result.insertId
+            });
+        });
     });
-
 };
-
 
 // ======================================================
 // GET ALL SELL CAR REQUESTS
@@ -167,22 +99,16 @@ const createSellCarRequest = (requestData) => {
 // ======================================================
 
 const getAllSellCarRequests = () => {
-
     return new Promise((resolve, reject) => {
-
         const sql = `
-
             SELECT
-
                 sell_id,
-
                 seller_name,
                 owner_name,
-
+                owner_classification,
                 mobile,
                 email,
                 city,
-
                 brand,
                 model,
                 variant,
@@ -192,49 +118,31 @@ const getAllSellCarRequests = () => {
                 transmission,
                 km_driven,
                 expected_price,
-
                 front_image,
                 back_image,
                 left_image,
                 right_image,
-
                 interior_front_image,
                 interior_rear_image,
                 open_dicky_image,
                 open_bonnet_image,
                 odometer_image,
                 dashboard_image,
-
                 status,
                 created_at
-
             FROM sell_car_requests
-
             ORDER BY sell_id DESC
-
         `;
 
-
-        db.query(
-            sql,
-            (err, result) => {
-
-                if (err) {
-
-                    return reject(err);
-
-                }
-
-
-                resolve(result);
-
+        db.query(sql, (err, result) => {
+            if (err) {
+                return reject(err);
             }
-        );
 
+            resolve(result);
+        });
     });
-
 };
-
 
 // ======================================================
 // GET SELL CAR REQUEST BY ID
@@ -242,22 +150,16 @@ const getAllSellCarRequests = () => {
 // ======================================================
 
 const getSellCarRequestById = (sellId) => {
-
     return new Promise((resolve, reject) => {
-
         const sql = `
-
             SELECT
-
                 sell_id,
-
                 seller_name,
                 owner_name,
-
+                owner_classification,
                 mobile,
                 email,
                 city,
-
                 brand,
                 model,
                 variant,
@@ -267,122 +169,67 @@ const getSellCarRequestById = (sellId) => {
                 transmission,
                 km_driven,
                 expected_price,
-
                 front_image,
                 back_image,
                 left_image,
                 right_image,
-
                 interior_front_image,
                 interior_rear_image,
                 open_dicky_image,
                 open_bonnet_image,
                 odometer_image,
                 dashboard_image,
-
                 status,
                 created_at
-
             FROM sell_car_requests
-
             WHERE sell_id = ?
-
             LIMIT 1
-
         `;
 
-
-        db.query(
-            sql,
-            [sellId],
-            (err, result) => {
-
-                if (err) {
-
-                    return reject(err);
-
-                }
-
-
-                resolve(
-                    result[0] || null
-                );
-
+        db.query(sql, [sellId], (err, result) => {
+            if (err) {
+                return reject(err);
             }
-        );
 
+            resolve(result[0] || null);
+        });
     });
-
 };
-
 
 // ======================================================
 // UPDATE SELL CAR REQUEST STATUS
 // Admin
 // ======================================================
 
-const updateSellCarRequestStatus = (
-    sellId,
-    status
-) => {
-
+const updateSellCarRequestStatus = (sellId, status) => {
     return new Promise((resolve, reject) => {
-
         const sql = `
-
             UPDATE sell_car_requests
-
-            SET
-
-                status = ?
-
+            SET status = ?
             WHERE sell_id = ?
-
         `;
 
-
-        db.query(
-            sql,
-            [
-                status,
-                sellId
-            ],
-            (err, result) => {
-
-                if (err) {
-
-                    return reject(err);
-
-                }
-
-
-                triggerGoogleSheetsSync(
-                    `Sell car request status updated: sell_id ${sellId}`
-                );
-
-
-                resolve(result);
-
+        db.query(sql, [status, sellId], (err, result) => {
+            if (err) {
+                return reject(err);
             }
-        );
 
+            triggerGoogleSheetsSync(
+                `Sell car request status updated: sell_id ${sellId}`
+            );
+
+            resolve(result);
+        });
     });
-
 };
-
 
 // ======================================================
 // EXPORT
 // ======================================================
 
 module.exports = {
-
     createSellCarRequest,
-
     getAllSellCarRequests,
-
     getSellCarRequestById,
-
     updateSellCarRequestStatus
-
 };

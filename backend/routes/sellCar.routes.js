@@ -1,38 +1,24 @@
 const express = require("express");
-
 const router = express.Router();
 
 // ======================================================
 // CONTROLLERS
 // ======================================================
 
-const sellCarController = require(
-    "../controllers/sellCar.controller"
-);
-
-const sellCarPublishController = require(
-    "../controllers/sellCarPublish.controller"
-);
+const sellCarController = require("../controllers/sellCar.controller");
+const sellCarPublishController = require("../controllers/sellCarPublish.controller");
 
 // ======================================================
 // AUTH MIDDLEWARE
 // ======================================================
 
-const {
-    verifyToken
-} = require(
-    "../middlewares/auth.middleware"
-);
+const { verifyToken } = require("../middlewares/auth.middleware");
 
 // ======================================================
 // MULTER MIDDLEWARE
 // ======================================================
 
-const {
-    uploadSellCarImages
-} = require(
-    "../middlewares/sellCarUpload.middleware"
-);
+const { uploadSellCarImages } = require("../middlewares/sellCarUpload.middleware");
 
 // ======================================================
 // CUSTOMER - CREATE SELL CAR REQUEST
@@ -41,7 +27,6 @@ const {
 
 router.post(
     "/sell-car",
-
     uploadSellCarImages.fields([
         { name: "frontImage", maxCount: 1 },
         { name: "backImage", maxCount: 1 },
@@ -54,7 +39,6 @@ router.post(
         { name: "odometerImage", maxCount: 1 },
         { name: "dashboardImage", maxCount: 1 }
     ]),
-
     sellCarController.createSellCarRequest
 );
 
@@ -99,7 +83,6 @@ router.patch(
 router.post(
     "/vehicles/from-sell-car/:sellId",
     verifyToken,
-
     uploadSellCarImages.fields([
         { name: "frontImage", maxCount: 1 },
         { name: "backImage", maxCount: 1 },
@@ -112,7 +95,6 @@ router.post(
         { name: "odometerImage", maxCount: 1 },
         { name: "dashboardImage", maxCount: 1 }
     ]),
-
     sellCarPublishController.publishFromSellCar
 );
 
