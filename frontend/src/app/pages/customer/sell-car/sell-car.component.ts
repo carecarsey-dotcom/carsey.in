@@ -394,19 +394,7 @@ export class SellCarComponent {
     }
 
 
-    // ===================================================
-    // OWNER NAME
-    // ===================================================
-
-    if (!this.ownerName.trim()) {
-      alert('Owner name is required.');
-      return;
-    }
-
-    if (!/^[a-zA-Z ]+$/.test(this.ownerName.trim())) {
-      alert('Owner name can contain only letters and spaces.');
-      return;
-    }
+    // Owner Name is hidden and is no longer required.
 
     // ===================================================
     // OWNER CLASSIFICATION
@@ -547,10 +535,8 @@ export class SellCarComponent {
 
 
     // ===================================================
-    // OPTIONAL IMAGES
-    // Only these image groups are optional:
-    // Interior Front/Rear, Open Dicky/Bonnet, Odometer/Dashboard.
-    // Front, Back, Left Side, and Right Side images remain required.
+    // Only Front, Back, Left Side and Right Side images are shown.
+    // All other image fields are hidden and are not required.
     // ===================================================
 
     const requiredImages = [
@@ -582,7 +568,7 @@ export class SellCarComponent {
 
     formData.append(
       'ownerName',
-      this.ownerName.trim()
+      ''
     );
 
     formData.append(
