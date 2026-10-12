@@ -33,18 +33,27 @@ const {
 // ======================================================
 
 const sellCarImageFields = [
+    // Exterior Images
     { name: "frontImage", maxCount: 1 },
     { name: "backImage", maxCount: 1 },
     { name: "leftImage", maxCount: 1 },
     { name: "rightImage", maxCount: 1 },
 
-    // Existing image fields retained for compatibility.
+    // Interior Images
     { name: "interiorFrontImage", maxCount: 1 },
     { name: "interiorRearImage", maxCount: 1 },
+
+    // Existing Legacy Image Fields
+    // Retained for backward compatibility.
     { name: "openDickyImage", maxCount: 1 },
     { name: "openBonnetImage", maxCount: 1 },
+    { name: "dashboardImage", maxCount: 1 },
+
+    // Vehicle Information Image
     { name: "odometerImage", maxCount: 1 },
-    { name: "dashboardImage", maxCount: 1 }
+
+    // Additional Image
+    { name: "extraImage", maxCount: 1 }
 ];
 
 // ======================================================

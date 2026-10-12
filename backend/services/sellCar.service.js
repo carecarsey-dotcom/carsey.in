@@ -418,6 +418,10 @@ const createSellCarRequest = async (requestData) => {
         dashboardImage:
             requestData.dashboardImage || null,
 
+        // Additional image (requires extra_image DB column).
+        extraImage:
+            requestData.extraImage || null,
+
 
         status:
             "Pending"
@@ -608,6 +612,9 @@ const getSellCarRequestById = async (sellId) => {
         dashboardImage:
             request.dashboard_image,
 
+        extraImage:
+            request.extra_image,
+
 
         status:
             request.status,
@@ -785,7 +792,18 @@ const updateAssignedSellCarRequest = async (sellId, employeeId, requestData) => 
         frontImage: requestData.frontImage || current.front_image,
         backImage: requestData.backImage || current.back_image,
         leftImage: requestData.leftImage || current.left_image,
-        rightImage: requestData.rightImage || current.right_image
+        rightImage: requestData.rightImage || current.right_image,
+
+        // Optional images: preserve the existing DB paths when no new file is uploaded.
+        interiorFrontImage: requestData.interiorFrontImage || current.interior_front_image || null,
+        interiorRearImage: requestData.interiorRearImage || current.interior_rear_image || null,
+        odometerImage: requestData.odometerImage || current.odometer_image || null,
+        extraImage: requestData.extraImage || current.extra_image || null,
+
+        // Legacy images are preserved and are not repurposed for the new image slots.
+        openDickyImage: current.open_dicky_image || null,
+        openBonnetImage: current.open_bonnet_image || null,
+        dashboardImage: current.dashboard_image || null
     };
 
     for (const field of ["sellerName", "mobile", "email", "city", "brand", "model", "variant", "vehicleNumber", "fuelType", "transmission"]) {

@@ -39,12 +39,13 @@ const createSellCarRequest = (requestData) => {
                 open_bonnet_image,
                 odometer_image,
                 dashboard_image,
+                extra_image,
                 status
             )
             VALUES (
                 ?, ?, ?, ?, ?, ?,
                 ?, ?, ?, ?, ?, ?, ?, ?, ?,
-                ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+                ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
             )
         `;
 
@@ -74,6 +75,7 @@ const createSellCarRequest = (requestData) => {
             requestData.openBonnetImage ?? null,
             requestData.odometerImage ?? null,
             requestData.dashboardImage ?? null,
+            requestData.extraImage ?? null,
             requestData.status || "Pending"
         ];
 
@@ -130,6 +132,7 @@ const getAllSellCarRequests = () => {
                 open_bonnet_image,
                 odometer_image,
                 dashboard_image,
+                extra_image,
 
                 status,
                 assigned_employee_id,
@@ -189,6 +192,7 @@ const getSellCarRequestById = (sellId) => {
                 open_bonnet_image,
                 odometer_image,
                 dashboard_image,
+                extra_image,
 
                 status,
                 assigned_employee_id,
@@ -286,6 +290,7 @@ const getAssignedSellCarRequests = (employeeId) => {
                 open_bonnet_image,
                 odometer_image,
                 dashboard_image,
+                extra_image,
 
                 status,
                 assigned_employee_id,
@@ -342,6 +347,11 @@ const updateAssignedSellCarRequest = (
                 left_image = ?,
                 right_image = ?,
 
+                interior_front_image = ?,
+                interior_rear_image = ?,
+                odometer_image = ?,
+                extra_image = ?,
+
                 workflow_status = 'Assigned',
                 correction_note = NULL,
                 submitted_for_approval_at = NULL
@@ -373,6 +383,11 @@ const updateAssignedSellCarRequest = (
             requestData.backImage,
             requestData.leftImage,
             requestData.rightImage,
+
+            requestData.interiorFrontImage ?? null,
+            requestData.interiorRearImage ?? null,
+            requestData.odometerImage ?? null,
+            requestData.extraImage ?? null,
 
             sellId,
             employeeId
@@ -492,7 +507,10 @@ const getEmployeeById = (employeeId) => {
         `;
 
         db.query(sql, [employeeId], (err, result) => {
-            if (err) return reject(err);
+            if (err) {
+                return reject(err);
+            }
+
             resolve(result[0] || null);
         });
     });
@@ -506,7 +524,8 @@ const approveSellCarRequest = (sellId) => {
     return new Promise((resolve, reject) => {
         const sql = `
             UPDATE sell_car_requests
-            SET status = 'Approved',
+            SET
+                status = 'Approved',
                 workflow_status = 'Approved',
                 correction_note = NULL
             WHERE sell_id = ?
@@ -514,10 +533,16 @@ const approveSellCarRequest = (sellId) => {
         `;
 
         db.query(sql, [sellId], (err, result) => {
-            if (err) return reject(err);
-            if (result.affectedRows > 0) {
-                triggerGoogleSheetsSync(`Sell car request approved: sell_id ${sellId}`);
+            if (err) {
+                return reject(err);
             }
+
+            if (result.affectedRows > 0) {
+                triggerGoogleSheetsSync(
+                    `Sell car request approved: sell_id ${sellId}`
+                );
+            }
+
             resolve(result);
         });
     });
@@ -531,7 +556,8 @@ const rejectSellCarRequest = (sellId) => {
     return new Promise((resolve, reject) => {
         const sql = `
             UPDATE sell_car_requests
-            SET status = 'Rejected',
+            SET
+                status = 'Rejected',
                 workflow_status = 'Rejected',
                 correction_note = NULL
             WHERE sell_id = ?
@@ -539,10 +565,16 @@ const rejectSellCarRequest = (sellId) => {
         `;
 
         db.query(sql, [sellId], (err, result) => {
-            if (err) return reject(err);
-            if (result.affectedRows > 0) {
-                triggerGoogleSheetsSync(`Sell car request rejected: sell_id ${sellId}`);
+            if (err) {
+                return reject(err);
             }
+
+            if (result.affectedRows > 0) {
+                triggerGoogleSheetsSync(
+                    `Sell car request rejected: sell_id ${sellId}`
+                );
+            }
+
             resolve(result);
         });
     });
@@ -591,6 +623,7 @@ module.exports = {
     updateAssignedSellCarRequest,
     submitSellCarRequestForApproval,
     sendSellCarRequestForCorrection,
+
     getEmployeeById,
     approveSellCarRequest,
     rejectSellCarRequest,
