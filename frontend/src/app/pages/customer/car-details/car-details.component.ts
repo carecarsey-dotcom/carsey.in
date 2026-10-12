@@ -1502,6 +1502,26 @@ export class CarDetailsComponent
 
 
   // ===================================================
+  // REGISTRATION NUMBER - SHOW FIRST FOUR CHARACTERS ONLY
+  // ===================================================
+
+  getRegistrationNumber(vehicle?: Vehicle | null): string {
+    if (!vehicle) {
+      return '—';
+    }
+
+    const registrationNumber = String(
+      vehicle.registration_number ??
+      vehicle.registration_no ??
+      vehicle.reg_no ??
+      ''
+    ).trim();
+
+    return registrationNumber ? registrationNumber.slice(0, 4).toUpperCase() : '—';
+  }
+
+
+  // ===================================================
   // PRICE
   // ===================================================
 
