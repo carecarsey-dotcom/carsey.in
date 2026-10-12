@@ -99,9 +99,11 @@
               Seller
             </th>
 
+            <!-- Owner Name column hidden as requested
             <th class="px-6 py-4 text-left text-sm font-semibold text-slate-600">
               Owner Name
             </th>
+            -->
 
             <th class="px-6 py-4 text-left text-sm font-semibold text-slate-600">
               Ownership
@@ -180,11 +182,11 @@
                 </p>
               </td>
 
-              <!-- OWNER NAME -->
-
+              <!-- Owner Name cell hidden as requested
               <td class="px-6 py-4 text-sm font-medium text-slate-700">
                 {{ request.owner_name || '-' }}
               </td>
+              -->
 
               <!-- OWNER CLASSIFICATION -->
 
@@ -474,7 +476,7 @@
           @if (requests.length === 0) {
             <tr>
               <td
-                colspan="17"
+                colspan="16"
                 class="px-6 py-12 text-center"
               >
                 <div class="text-4xl">

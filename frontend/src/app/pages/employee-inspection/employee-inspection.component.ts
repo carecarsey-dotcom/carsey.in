@@ -326,7 +326,7 @@ manufacturing_year:
       key: 'documents_title',
       title: 'DOCUMENTS + TITLE',
       rows: [
-        ['Documents / Title', ['Ok/No imperfection','RC Available','PUC Available','Insurance Available','Chassis Number Mismatch']],
+        ['Documents / Title', ['Ok/No imperfection','RC Available','PUC Available','Insurance Available','Chassis Number Mismatch','Repair','Repaint','Damage']],
       ]
     },
     {
@@ -344,9 +344,7 @@ manufacturing_year:
       'Dented',
       'Rusted',
       'Scratch',
-      'Paint Mismatch',
-      'Repair + Repaint'
-    ]],
+      'Paint Mismatch','Repair','Repaint','Damage']],
 
     ['Bonnet / Hood', [
       'Ok/No imperfection',
@@ -354,8 +352,7 @@ manufacturing_year:
       'Scratch',
       'Rusting',
       'Scooper Not Working',
-      'Crack / Hole'
-    ]],
+      'Crack / Hole','Repair','Repaint','Damage']],
 
     ['Front Windshield', [
       'Ok/No imperfection',
@@ -363,8 +360,7 @@ manufacturing_year:
       'Glass Chip',
       'Scratch',
       'Rubber Damage',
-      'Water Leakage'
-    ]],
+      'Water Leakage','Repair','Repaint','Damage']],
 
     ['Roof', [
       'Ok/No imperfection',
@@ -373,8 +369,7 @@ manufacturing_year:
       'Crack / Hole',
       'Scratches',
       'Roof Rail Broken',
-      'Sun Roof Not Working'
-    ]],
+      'Sun Roof Not Working','Repair','Repaint','Damage']],
 
     // ==================== RIGHT SIDE ====================
 
@@ -383,16 +378,14 @@ manufacturing_year:
       'Dent',
       'Scratch',
       'Rusting',
-      'Lug Missing'
-    ]],
+      'Lug Missing','Repair','Repaint','Damage']],
 
     ['Tyre Front RHS', [
       'Ok/No imperfection',
       'Tyre Crack',
       'Rim Rusting',
       'Wheel Cap Missing',
-      'Lug Nut Missing'
-    ]],
+      'Lug Nut Missing','Repair','Repaint','Damage']],
 
     ['Door Front RHS', [
       'Ok/No imperfection',
@@ -400,17 +393,14 @@ manufacturing_year:
       'Dented',
       'Rusted',
       'Scratch',
-      'Paint Mismatch',
-      'Repair + Repaint'
-    ]],
+      'Paint Mismatch','Repair','Repaint','Damage']],
 
     ['ORVM RHS', [
       'Ok/No imperfection',
       'Scratch + Faded',
       'Mirror Crack',
       'Folding Motor Not Working',
-      'Light Not Working'
-    ]],
+      'Light Not Working','Repair','Repaint','Damage']],
 
     ['Pillar A - RHS', [
       'Ok/No imperfection',
@@ -418,8 +408,7 @@ manufacturing_year:
       'Scratches',
       'Dent',
       'Rusting',
-      'Repaired + Welded'
-    ]],
+      'Repaired + Welded','Repair','Repaint','Damage']],
 
     ['Pillar B - RHS', [
       'Ok/No imperfection',
@@ -427,8 +416,7 @@ manufacturing_year:
       'Scratches',
       'Dent',
       'Rusting',
-      'Repaired + Welded'
-    ]],
+      'Repaired + Welded','Repair','Repaint','Damage']],
 
     ['Pillar C - RHS', [
       'Ok/No imperfection',
@@ -436,8 +424,7 @@ manufacturing_year:
       'Scratches',
       'Dent',
       'Rusting',
-      'Repaired + Welded'
-    ]],
+      'Repaired + Welded','Repair','Repaint','Damage']],
 
     ['Door Rear RHS', [
       'Ok/No imperfection',
@@ -445,9 +432,7 @@ manufacturing_year:
       'Dented',
       'Rusted',
       'Scratch',
-      'Paint Mismatch',
-      'Repair + Repaint'
-    ]],
+      'Paint Mismatch','Repair','Repaint','Damage']],
 
     ['Running Board RHS', [
       'Ok/No imperfection',
@@ -455,16 +440,14 @@ manufacturing_year:
       'Dent',
       'Rusted',
       'Cladding Broken / Not Fixed Properly',
-      'Paint Mismatch / Hole / Crack'
-    ]],
+      'Paint Mismatch / Hole / Crack','Repair','Repaint','Damage']],
 
     ['Tyre Rear RHS', [
       'Ok/No imperfection',
       'Tyre Crack',
       'Rim Rusting',
       'Wheel Cap Missing',
-      'Lug Nut Missing'
-    ]],
+      'Lug Nut Missing','Repair','Repaint','Damage']],
 
     ['Quarter Panel RHS', [
       'Ok/No imperfection',
@@ -472,9 +455,7 @@ manufacturing_year:
       'Paint Issue + Mismatch + Faded',
       'Dent',
       'Rusting',
-      'Scratches',
-      'Repair + Repaint + Welded'
-    ]],
+      'Scratches','Repair','Repaint','Damage']],
 
 
     // ==================== REAR SIDE ====================
@@ -488,8 +469,7 @@ manufacturing_year:
       'Jack & Tools Missing',
       'Shocker Not Working',
       'Dicky Lock Not Working',
-      'Spoiler Broken / Damage'
-    ]],
+      'Spoiler Broken / Damage','Repair','Repaint','Damage']],
 
     ['Rear Windshield', [
       'Ok/No imperfection',
@@ -497,16 +477,14 @@ manufacturing_year:
       'Glass Chip',
       'Scratch',
       'Rubber Damage',
-      'Water Leakage'
-    ]],
+      'Water Leakage','Repair','Repaint','Damage']],
 
     ['Spare Tyre', [
       'Ok/No imperfection',
       'Tyre Crack',
       'Rim Rusting',
       'Wheel Cap Missing',
-      'Lug Nut Missing'
-    ]],
+      'Lug Nut Missing','Repair','Repaint','Damage']],
 
     ['Boot Floor', [
       'Ok/No imperfection',
@@ -514,8 +492,7 @@ manufacturing_year:
       'Welded / Repaired',
       'Rusting',
       'Dent',
-      'Hole & Crack'
-    ]],
+      'Hole & Crack','Repair','Repaint','Damage']],
 
     ['Rear Bumper', [
       'Ok/No imperfection',
@@ -523,9 +500,7 @@ manufacturing_year:
       'Dented',
       'Rusted',
       'Scratch',
-      'Paint Mismatch',
-      'Repair + Repaint'
-    ]],
+      'Paint Mismatch','Repair','Repaint','Damage']],
 
 
     // ==================== LEFT SIDE ====================
@@ -536,17 +511,14 @@ manufacturing_year:
       'Paint Issue + Mismatch + Faded',
       'Dent',
       'Rusting',
-      'Scratches',
-      'Repair + Repaint + Welded'
-    ]],
+      'Scratches','Repair','Repaint','Damage']],
 
     ['Tyre Rear LHS', [
       'Ok/No imperfection',
       'Tyre Crack',
       'Rim Rusting',
       'Wheel Cap Missing',
-      'Lug Nut Missing'
-    ]],
+      'Lug Nut Missing','Repair','Repaint','Damage']],
 
     ['Running Board LHS', [
       'Ok/No imperfection',
@@ -554,8 +526,7 @@ manufacturing_year:
       'Dent',
       'Rusted',
       'Cladding Broken / Not Fixed Properly',
-      'Paint Mismatch / Hole / Crack'
-    ]],
+      'Paint Mismatch / Hole / Crack','Repair','Repaint','Damage']],
 
     ['Door Rear LHS', [
       'Ok/No imperfection',
@@ -563,9 +534,7 @@ manufacturing_year:
       'Dented',
       'Rusted',
       'Scratch',
-      'Paint Mismatch',
-      'Repair + Repaint'
-    ]],
+      'Paint Mismatch','Repair','Repaint','Damage']],
 
     ['Pillar C - LHS', [
       'Ok/No imperfection',
@@ -573,8 +542,7 @@ manufacturing_year:
       'Scratches',
       'Dent',
       'Rusting',
-      'Repaired + Welded'
-    ]],
+      'Repaired + Welded','Repair','Repaint','Damage']],
 
     ['Pillar B - LHS', [
       'Ok/No imperfection',
@@ -582,8 +550,7 @@ manufacturing_year:
       'Scratches',
       'Dent',
       'Rusting',
-      'Repaired + Welded'
-    ]],
+      'Repaired + Welded','Repair','Repaint','Damage']],
 
     ['Pillar A - LHS', [
       'Ok/No imperfection',
@@ -591,8 +558,7 @@ manufacturing_year:
       'Scratches',
       'Dent',
       'Rusting',
-      'Repaired + Welded'
-    ]],
+      'Repaired + Welded','Repair','Repaint','Damage']],
 
     ['Door Front LHS', [
       'Ok/No imperfection',
@@ -600,35 +566,30 @@ manufacturing_year:
       'Dented',
       'Rusted',
       'Scratch',
-      'Paint Mismatch',
-      'Repair + Repaint'
-    ]],
+      'Paint Mismatch','Repair','Repaint','Damage']],
 
     ['ORVM LHS', [
       'Ok/No imperfection',
       'Scratch + Faded',
       'Mirror Crack',
       'Folding Motor Not Working',
-      'Light Not Working'
-    ]],
+      'Light Not Working','Repair','Repaint','Damage']],
 
     ['Tyre Front LHS', [
       'Ok/No imperfection',
       'Tyre Crack',
       'Rim Rusting',
       'Wheel Cap Missing',
-      'Lug Nut Missing'
-    ]],
+      'Lug Nut Missing','Repair','Repaint','Damage']],
 
     ['Fender LHS', [
       'Ok/No imperfection',
       'Dent',
       'Scratch',
       'Rusting',
-      'Lug Missing'
-    ]],
+      'Lug Missing','Repair','Repaint','Damage']],
 
-    ['Tyres / Wheels Overall', ['Ok/No imperfection','Tyre Crack','Rim Rusting','Wheel Cap Missing','Lug Nut Missing']],
+    ['Tyres / Wheels Overall', ['Ok/No imperfection','Tyre Crack','Rim Rusting','Wheel Cap Missing','Lug Nut Missing','Repair','Repaint','Damage']],
 
   ]
 },
@@ -640,114 +601,110 @@ manufacturing_year:
           'Ok/No imperfection',
           'Rusting',
           'Damage',
-          'Repaired / Welded'
-        ]],
+          'Repaired / Welded','Repair','Repaint']],
         ['Apron RHS', [
           'Ok/No imperfection',
           'Repaired / Welded',
           'Repainted',
           'Rusting',
           'Dent',
-          'Crack / Hole'
-        ]],
+          'Crack / Hole','Repair','Repaint','Damage']],
         ['Apron LHS', [
           'Ok/No imperfection',
           'Repaired / Welded',
           'Repainted',
           'Rusting',
           'Dent',
-          'Crack / Hole'
-        ]],
+          'Crack / Hole','Repair','Repaint','Damage']],
         ['Firewall', [
           'Ok/No imperfection',
           'Rusted',
           'Cover Damage',
           'Carpet Damage',
           'Crack & Hole',
-          'Repaired / Welded'
-        ]],
-        ['Engine Oil', ['Ok/No imperfection','Level Low','Dirty','Replace Oil']],
-        ['Cooling System', ['Ok/No imperfection','Mixed With Oil','Bottle Broken + Leakage','Coolant Dirty']],
-        ['Engine', ['Ok/No imperfection','Leakage From Seal','Tappet Cover Loose','Engine Misfiring','Dipstick Missing / Broken','Exhaust Smoke','Air Filter Box Damage','RPM Fluctuate','Fuse Box Cover Missing']],
-        ['UnderBody', ['Ok/No imperfection','Rusted','Repaired + Welded']],
-        ['Engine Blow By', ['Ok/No imperfection','Engine Permissible Low Blow By','Engine Blow By / Back Compressor']],
-        ['Transmission', ['Ok/No imperfection','Low Pickup','Clutch Noise','Bearing Damage','Spongy Clutch']],
-        ['Gear Shifting / Gear Box Mount', ['Ok/No imperfection','Hard','Bearing Damage','Broken','Gear Box Mount Damage']],
-        ['Turbocharger', ['Ok/No imperfection','Not Applicable','Housing Worn Out','Not Working','Oil Leakage','Bearing Damage']],
-        ['Battery', ['Ok/No imperfection','Battery Terminal Broken','Acid Leakage','Dead / Not Restart']],
-        ['Alternator', ['Ok/No imperfection','Not Charging','Bearing Damage','Belt Damage']],
-        ['Engine Assembly', ['Ok/No imperfection','Engine Mount Broken','Leakage From Exhaust Pipe','Starter Motor Noise']],
-        ['Radiator Support', ['Ok/No imperfection','Leakage','Support Broken','Radiator Cap Missing','Support Welding','Support Rusted','Damage / Breakage']],
-        ['Axle', ['Ok/No imperfection','Boot Damage','Boot Leakage','Broken']],
-        ['4WD / AWD', ['Ok/No imperfection','Not Applicable','Leakage','Switch Not Working']],
+          'Repaired / Welded','Repair','Repaint','Damage']],
+        ['Engine Oil', ['Ok/No imperfection','Level Low','Dirty','Replace Oil','Repair','Repaint','Damage']],
+        ['Cooling System', ['Ok/No imperfection','Mixed With Oil','Bottle Broken + Leakage','Coolant Dirty','Repair','Repaint','Damage']],
+        ['Engine', ['Ok/No imperfection','Leakage From Seal','Tappet Cover Loose','Engine Misfiring','Dipstick Missing / Broken','Exhaust Smoke','Air Filter Box Damage','RPM Fluctuate','Fuse Box Cover Missing','Repair','Repaint','Damage']],
+        ['UnderBody', ['Ok/No imperfection','Rusted','Repaired + Welded','Repair','Repaint','Damage']],
+        ['Engine Blow By', ['Ok/No imperfection','Engine Permissible Low Blow By','Engine Blow By / Back Compressor','Repair','Repaint','Damage']],
+        ['Transmission', ['Ok/No imperfection','Low Pickup','Clutch Noise','Bearing Damage','Spongy Clutch','Repair','Repaint','Damage']],
+        ['Gear Shifting / Gear Box Mount', ['Ok/No imperfection','Hard','Bearing Damage','Broken','Gear Box Mount Damage','Repair','Repaint','Damage']],
+        ['Turbocharger', ['Ok/No imperfection','Not Applicable','Housing Worn Out','Not Working','Oil Leakage','Bearing Damage','Repair','Repaint','Damage']],
+        ['Battery', ['Ok/No imperfection','Battery Terminal Broken','Acid Leakage','Dead / Not Restart','Repair','Repaint','Damage']],
+        ['Alternator', ['Ok/No imperfection','Not Charging','Bearing Damage','Belt Damage','Repair','Repaint','Damage']],
+        ['Engine Assembly', ['Ok/No imperfection','Engine Mount Broken','Leakage From Exhaust Pipe','Starter Motor Noise','Repair','Repaint','Damage']],
+        ['Radiator Support', ['Ok/No imperfection','Leakage','Support Broken','Radiator Cap Missing','Support Welding','Support Rusted','Damage / Breakage','Repair','Repaint','Damage']],
+        ['Axle', ['Ok/No imperfection','Boot Damage','Boot Leakage','Broken','Repair','Repaint','Damage']],
+        ['4WD / AWD', ['Ok/No imperfection','Not Applicable','Leakage','Switch Not Working','Repair','Repaint','Damage']],
       ]
     },
     {
       key: 'suspension_steering',
       title: 'STEERING + SUSPENSION + BRAKE',
       rows: [
-        ['Suspension', ['Ok/No imperfection','Lower + Upper Arm Noise','Major Leakage Noise','Boot Damage','Strut Noise','Shocker Mount Noise']],
-        ['Steering', ['Ok/No imperfection','Rack Boot Damage','Steering Pump Hard','Power Steering Oil Dirty','Steering Rack Noise']],
-        ['Brake Master Cylinder', ['Ok/No imperfection','Leakage','Hard Brake','Spongy Brake']],
+        ['Suspension', ['Ok/No imperfection','Lower + Upper Arm Noise','Major Leakage Noise','Boot Damage','Strut Noise','Shocker Mount Noise','Repair','Repaint','Damage']],
+        ['Steering', ['Ok/No imperfection','Rack Boot Damage','Steering Pump Hard','Power Steering Oil Dirty','Steering Rack Noise','Repair','Repaint','Damage']],
+        ['Brake Master Cylinder', ['Ok/No imperfection','Leakage','Hard Brake','Spongy Brake','Repair','Repaint','Damage']],
       ]
     },
     {
       key: 'interior_electricals',
       title: 'ELECTRICAL + INTERIOR + FEATURES',
       rows: [
-        ['Cabinette Switch', ['Ok/No imperfection','Switch Broken','Not Working']],
-        ['Dashboard', ['Ok/No imperfection','Faded','Glove Box Cover Damage','Broken','Bonnet Lever Not Working','Scratches']],
-        ['Flooring', ['Ok/No imperfection','Water On Floor','Floor Rusting','Mat Missing','Crack & Hole']],
-        ['Ceiling', ['Ok/No imperfection','Sun Visor Missing + Damage','Roof Handle Missing + Broken','Rear View Mirror Broken']],
-        ['Lock System', ['Ok/No imperfection','Remote Key Not Working + Broken','Door Lock Knob Broken / Missing','Keyless Sensor Not Working','Mechanical Key Damage','Push Start Not Working']],
-        ['Steering Handle', ['Ok/No imperfection','Horn Not Working','Steering Handle Faded','Steering System Control Not Working']],
-        ['Gear Lever', ['Ok/No imperfection','Boot Cover Torn','Knob Torn','Knob Broken']],
-        ['Infotainment System', ['Ok/No imperfection','Not Applicable','Music System Crack','Speaker Not Working / Broken']],
-        ['Instrument Cluster', ['Ok/No imperfection','Odometer Not Working','Glass Scratch / Minor / Major Deep','Speedometer Not Working','Tachometer Not Working','Air Bag Deployed','Air Bag Warning Light Glowing','Fuel Low','EPS','Air Suspension','Alternator + Battery','Air Bag','ABS','Transmission Warning','Oil Pressure Low','Engine Warning','Cruise Control','Non-Critical Warning Light','Trip Meter','Idle Start / Stop Not Working']],
-        ['Brake Overall', ['Ok/No imperfection','Brake Oil Cap Missing','Brake Oil Level Low','Brake Pad Worn Out','Brake Disk Worn Out','Hard Brake','Spongy Brake']],
+        ['Cabinette Switch', ['Ok/No imperfection','Switch Broken','Not Working','Repair','Repaint','Damage']],
+        ['Dashboard', ['Ok/No imperfection','Faded','Glove Box Cover Damage','Broken','Bonnet Lever Not Working','Scratches','Repair','Repaint','Damage']],
+        ['Flooring', ['Ok/No imperfection','Water On Floor','Floor Rusting','Mat Missing','Crack & Hole','Repair','Repaint','Damage']],
+        ['Ceiling', ['Ok/No imperfection','Sun Visor Missing + Damage','Roof Handle Missing + Broken','Rear View Mirror Broken','Repair','Repaint','Damage']],
+        ['Lock System', ['Ok/No imperfection','Remote Key Not Working + Broken','Door Lock Knob Broken / Missing','Keyless Sensor Not Working','Mechanical Key Damage','Push Start Not Working','Repair','Repaint','Damage']],
+        ['Steering Handle', ['Ok/No imperfection','Horn Not Working','Steering Handle Faded','Steering System Control Not Working','Repair','Repaint','Damage']],
+        ['Gear Lever', ['Ok/No imperfection','Boot Cover Torn','Knob Torn','Knob Broken','Repair','Repaint','Damage']],
+        ['Infotainment System', ['Ok/No imperfection','Not Applicable','Music System Crack','Speaker Not Working / Broken','Repair','Repaint','Damage']],
+        ['Instrument Cluster', ['Ok/No imperfection','Odometer Not Working','Glass Scratch / Minor / Major Deep','Speedometer Not Working','Tachometer Not Working','Air Bag Deployed','Air Bag Warning Light Glowing','Fuel Low','EPS','Air Suspension','Alternator + Battery','Air Bag','ABS','Transmission Warning','Oil Pressure Low','Engine Warning','Cruise Control','Non-Critical Warning Light','Trip Meter','Idle Start / Stop Not Working','Repair','Repaint','Damage']],
+        ['Brake Overall', ['Ok/No imperfection','Brake Oil Cap Missing','Brake Oil Level Low','Brake Pad Worn Out','Brake Disk Worn Out','Hard Brake','Spongy Brake','Repair','Repaint','Damage']],
       ]
     },
     {
       key: 'all_side_window',
       title: 'ALL SIDE WINDOW',
       rows: [
-        ['All Window Switch', ['Ok/No imperfection','Not Working','Power Window Noise','Switch Damage','Broken']],
-        ['Front RHS', ['Ok/No imperfection','Glass Crack','Glass Scratch','Window Not Working','Window Noise']],
-        ['Front LHS', ['Ok/No imperfection','Glass Crack','Glass Scratch','Window Not Working','Window Noise']],
-        ['Rear RHS', ['Ok/No imperfection','Glass Crack','Glass Scratch','Window Not Working','Window Noise']],
-        ['Rear LHS', ['Ok/No imperfection','Glass Crack','Glass Scratch','Window Not Working','Window Noise']],
+        ['All Window Switch', ['Ok/No imperfection','Not Working','Power Window Noise','Switch Damage','Broken','Repair','Repaint','Damage']],
+        ['Front RHS', ['Ok/No imperfection','Glass Crack','Glass Scratch','Window Not Working','Window Noise','Repair','Repaint','Damage']],
+        ['Front LHS', ['Ok/No imperfection','Glass Crack','Glass Scratch','Window Not Working','Window Noise','Repair','Repaint','Damage']],
+        ['Rear RHS', ['Ok/No imperfection','Glass Crack','Glass Scratch','Window Not Working','Window Noise','Repair','Repaint','Damage']],
+        ['Rear LHS', ['Ok/No imperfection','Glass Crack','Glass Scratch','Window Not Working','Window Noise','Repair','Repaint','Damage']],
       ]
     },
     {
       key: 'all_seats',
       title: 'ALL SEATS',
       rows: [
-        ['Seat 1st Row RHS', ['Ok/No imperfection','Seat Belt Damage','Dirty','Cover Torn','Seat Adjuster Not Working']],
-        ['Seat 1st Row LHS', ['Ok/No imperfection','Seat Belt Damage','Dirty','Cover Torn','Seat Adjuster Not Working']],
-        ['Seat 2nd Row RHS', ['Ok/No imperfection','Seat Belt Damage','Dirty','Cover Torn','Seat Adjuster Not Working']],
-        ['Seat 2nd Row LHS', ['Ok/No imperfection','Seat Belt Damage','Dirty','Cover Torn','Seat Adjuster Not Working']],
-        ['Seat 3rd Row RHS', ['Ok/No imperfection','Not Applicable','Seat Belt Damage','Dirty','Cover Torn','Seat Adjuster Not Working']],
-        ['Seat 3rd Row LHS', ['Ok/No imperfection','Not Applicable','Seat Belt Damage','Dirty','Cover Torn','Seat Adjuster Not Working']],
+        ['Seat 1st Row RHS', ['Ok/No imperfection','Seat Belt Damage','Dirty','Cover Torn','Seat Adjuster Not Working','Repair','Repaint','Damage']],
+        ['Seat 1st Row LHS', ['Ok/No imperfection','Seat Belt Damage','Dirty','Cover Torn','Seat Adjuster Not Working','Repair','Repaint','Damage']],
+        ['Seat 2nd Row RHS', ['Ok/No imperfection','Seat Belt Damage','Dirty','Cover Torn','Seat Adjuster Not Working','Repair','Repaint','Damage']],
+        ['Seat 2nd Row LHS', ['Ok/No imperfection','Seat Belt Damage','Dirty','Cover Torn','Seat Adjuster Not Working','Repair','Repaint','Damage']],
+        ['Seat 3rd Row RHS', ['Ok/No imperfection','Not Applicable','Seat Belt Damage','Dirty','Cover Torn','Seat Adjuster Not Working','Repair','Repaint','Damage']],
+        ['Seat 3rd Row LHS', ['Ok/No imperfection','Not Applicable','Seat Belt Damage','Dirty','Cover Torn','Seat Adjuster Not Working','Repair','Repaint','Damage']],
       ]
     },
     {
       key: 'electricals_ac',
       title: 'AC + LIGHT',
       rows: [
-        ['Head Light RHS', ['Ok/No imperfection','Fading','Broken','Crack','Moisture','Scratch','Light Not Working']],
-        ['Head Light LHS', ['Ok/No imperfection','Fading','Broken','Crack','Moisture','Scratch','Light Not Working']],
-        ['Fog Light RHS', ['Ok/No imperfection','Not Applicable','Fading','Broken','Crack','Moisture','Scratch','Light Not Working']],
-        ['Fog Light LHS', ['Ok/No imperfection','Not Applicable','Fading','Broken','Crack','Moisture','Scratch','Light Not Working']],
-        ['Tail Light RHS', ['Ok/No imperfection','Fading','Broken','Crack','Moisture','Scratch','Light Not Working']],
-        ['Tail Light LHS', ['Ok/No imperfection','Fading','Broken','Crack','Moisture','Scratch','Light Not Working']],
-        ['AC Unit', ['Ok/No imperfection','AC Cooling Not Working','AC Vent Not Fixed / Broken','Blower Motor Not Working','Noise','Heater Ineffective','AC Not Cooling','Cooling Fan Noise']],
+        ['Head Light RHS', ['Ok/No imperfection','Fading','Broken','Crack','Moisture','Scratch','Light Not Working','Repair','Repaint','Damage']],
+        ['Head Light LHS', ['Ok/No imperfection','Fading','Broken','Crack','Moisture','Scratch','Light Not Working','Repair','Repaint','Damage']],
+        ['Fog Light RHS', ['Ok/No imperfection','Not Applicable','Fading','Broken','Crack','Moisture','Scratch','Light Not Working','Repair','Repaint','Damage']],
+        ['Fog Light LHS', ['Ok/No imperfection','Not Applicable','Fading','Broken','Crack','Moisture','Scratch','Light Not Working','Repair','Repaint','Damage']],
+        ['Tail Light RHS', ['Ok/No imperfection','Fading','Broken','Crack','Moisture','Scratch','Light Not Working','Repair','Repaint','Damage']],
+        ['Tail Light LHS', ['Ok/No imperfection','Fading','Broken','Crack','Moisture','Scratch','Light Not Working','Repair','Repaint','Damage']],
+        ['AC Unit', ['Ok/No imperfection','AC Cooling Not Working','AC Vent Not Fixed / Broken','Blower Motor Not Working','Noise','Heater Ineffective','AC Not Cooling','Cooling Fan Noise','Repair','Repaint','Damage']],
       ]
     },
     {
       key: 'transmission_system',
       title: 'TRANSMISSION',
       rows: [
-        ['Transmission Overall', ['Ok/No imperfection','Low Pickup','Clutch Noise','Bearing Damage','Spongy Clutch','Gear Shifting Hard']],
+        ['Transmission Overall', ['Ok/No imperfection','Low Pickup','Clutch Noise','Bearing Damage','Spongy Clutch','Gear Shifting Hard','Repair','Repaint','Damage']],
       ]
     },
   ];
