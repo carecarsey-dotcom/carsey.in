@@ -16,7 +16,7 @@ select,
 textarea {
   color: #0f172a !important;
   background-color: #ffffff !important;
-  caret-color: #0866FF;
+  caret-color: #064A9B;
 }
 
 
@@ -126,7 +126,7 @@ input[type="file"] {
 
 input[type="file"]::file-selector-button {
   color: #ffffff;
-  background-color: #0866FF;
+  background-color: #064A9B;
   border: none;
   padding: 8px 14px;
   margin-right: 10px;
@@ -162,7 +162,7 @@ textarea.ng-valid.ng-touched {
 .exchange-page {
   min-height: 100vh;
   padding: 45px 20px 70px;
-  background: #f5f6f8;
+  background: #EFF6FC;
   box-sizing: border-box;
 }
 
@@ -180,7 +180,7 @@ textarea.ng-valid.ng-touched {
   margin: 0 0 10px;
   font-size: 36px;
   font-weight: 800;
-  color: #101828;
+  color: #064A9B;
 }
 
 .exchange-header p {
@@ -283,8 +283,8 @@ textarea.ng-valid.ng-touched {
 }
 
 .form-group input:focus {
-  border-color: #0866FF;
-  box-shadow: 0 0 0 3px rgba(8, 102, 255, 0.10);
+  border-color: #064A9B;
+  box-shadow: 0 0 0 3px rgba(6, 74, 155, 0.10);
 }
 
 
@@ -305,7 +305,7 @@ textarea.ng-valid.ng-touched {
 
 .exchange-card hr {
   border: 0;
-  border-top: 1px solid #eaecf0;
+  border-top: 1px solid #FF6500;
   margin: 32px 0;
 }
 
@@ -328,7 +328,7 @@ textarea.ng-valid.ng-touched {
 .upload-box {
   width: 100%;
   min-height: 155px;
-  border: 2px dashed #cbd5e1;
+  border: 2px dashed #FF6500;
   border-radius: 12px;
   background: #ffffff;
   display: flex;
@@ -341,8 +341,8 @@ textarea.ng-valid.ng-touched {
 }
 
 .upload-box:hover {
-  border-color: #0866FF;
-  background: #EAF4FF;
+  border-color: #064A9B;
+  background: #EFF6FC;
 }
 
 
@@ -447,8 +447,8 @@ textarea.ng-valid.ng-touched {
 
   background: linear-gradient(
     90deg,
-    #0866FF,
-    #009DFF
+    #064A9B,
+    #064A9B
   );
 
   color: #ffffff;
@@ -465,7 +465,7 @@ textarea.ng-valid.ng-touched {
   transform: translateY(-1px);
 
   box-shadow:
-    0 8px 20px rgba(0, 157, 255, 0.25);
+    0 8px 20px rgba(6, 74, 155, 0.20);
 }
 
 .submit-button:disabled {

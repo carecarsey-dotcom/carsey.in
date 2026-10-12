@@ -24,16 +24,16 @@
 
     <div class="mx-auto w-full max-w-[1600px] px-5 py-16 sm:px-8 sm:py-20 lg:px-12 lg:py-24 2xl:px-16">
       <div class="max-w-3xl">
-        <div class="mb-5 inline-flex items-center gap-2 rounded-full border border-blue-300/30 bg-white/10 px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] text-blue-200 backdrop-blur-sm sm:text-sm">
-          <span class="h-2 w-2 rounded-full bg-blue-400"></span>
+        <div class="mb-5 inline-flex items-center gap-2 rounded-full border border-[#064A9B]/30 bg-white/10 px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] text-[#D9E9FA] backdrop-blur-sm sm:text-sm">
+          <span class="h-2 w-2 rounded-full bg-[#FF6500]"></span>
           Certified used cars. More confidence.
         </div>
 
         <h1 class="max-w-3xl text-4xl font-black leading-[1.08] tracking-tight text-white sm:text-5xl lg:text-7xl">
           Find Your
-          <span class="text-blue-400">Perfect Car.</span>
+          <span class="text-[#064A9B]">Perfect Car.</span>
           <br />
-          Drive With Confidence.
+          Drive With <span class="text-[#FF6500]">Confidence.</span>
         </h1>
 
         <p class="mt-6 max-w-2xl text-base leading-7 text-slate-200 sm:text-lg sm:leading-8">
@@ -44,7 +44,7 @@
         <div class="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
           <a
             href="#car-listing"
-            class="inline-flex min-h-14 items-center justify-center gap-3 rounded-xl bg-blue-500 px-7 py-4 text-sm font-extrabold text-white shadow-lg shadow-blue-500/30 transition hover:-translate-y-0.5 hover:bg-blue-400 sm:text-base"
+            class="inline-flex min-h-14 items-center justify-center gap-3 rounded-xl bg-[#064A9B] px-7 py-4 text-sm font-extrabold text-white shadow-lg shadow-[#064A9B]/30 transition hover:-translate-y-0.5 hover:bg-[#043B7A] sm:text-base"
           >
             Explore Cars
             <span class="text-xl" aria-hidden="true">→</span>
@@ -52,7 +52,7 @@
 
           <a
             routerLink="/book-inspection"
-            class="inline-flex min-h-14 items-center justify-center rounded-xl border border-white/30 bg-white/10 px-7 py-4 text-sm font-bold text-white backdrop-blur-sm transition hover:border-blue-300 hover:bg-white/15 sm:text-base"
+            class="inline-flex min-h-14 items-center justify-center rounded-xl border border-white/30 bg-white/10 px-7 py-4 text-sm font-bold text-white backdrop-blur-sm transition hover:border-[#064A9B] hover:bg-white/15 sm:text-base"
           >
             Book an Inspection
           </a>
@@ -79,7 +79,7 @@
         @for (image of carImages; track image; let i = $index) {
           <span
             [class]="currentImageIndex() === i
-              ? 'h-1.5 w-8 rounded-full bg-blue-400 transition-all duration-300'
+              ? 'h-1.5 w-8 rounded-full bg-[#064A9B] transition-all duration-300'
               : 'h-1.5 w-2 rounded-full bg-white/50 transition-all duration-300'"
           ></span>
         }
@@ -110,17 +110,15 @@
         <div>
 
           <p
-            class="text-xs font-bold uppercase tracking-wider text-blue-500"
+            class="text-xs font-bold uppercase tracking-wider text-[#F0F6FC]0"
           >
             Find Your Car
           </p>
 
 
           <h2
-            class="mt-1 text-2xl font-black text-slate-900 sm:text-3xl"
-          >
-            Filter Cars
-          </h2>
+            class="border-l-4 border-[#FF6500] pl-3 mt-1 text-2xl font-black text-slate-900 sm:text-3xl"
+          ><span class="text-[#064A9B]">Filter Cars</span></h2>
 
         </div>
 
@@ -130,7 +128,7 @@
 
           (click)="resetFilters()"
 
-          class="w-fit rounded-lg border border-slate-300 bg-white px-4 py-2 text-xs font-semibold text-slate-700 transition hover:border-blue-500 hover:text-blue-500"
+          class="w-fit rounded-lg border border-slate-300 bg-white px-4 py-2 text-xs font-semibold text-slate-700 transition hover:border-[#F0F6FC]0 hover:text-[#F0F6FC]0"
         >
           Reset Filters
         </button>
@@ -163,7 +161,7 @@
       (input)="searchQuery.set($any($event.target).value); carsToShow.set(10)"
       placeholder="Search by brand, model, variant, city, fuel or transmission..."
       autocomplete="off"
-      class="w-full rounded-lg border border-slate-300 bg-white py-2 pl-9 pr-9 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10"
+      class="w-full rounded-lg border border-slate-300 bg-white py-2 pl-9 pr-9 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-[#F0F6FC]0 focus:ring-2 focus:ring-[#F0F6FC]0/10"
     />
 
     @if (searchQuery()) {
@@ -171,7 +169,7 @@
         type="button"
         (click)="searchQuery.set(''); carsToShow.set(10)"
         aria-label="Clear search"
-        class="absolute right-2.5 top-1/2 -translate-y-1/2 rounded-full px-1.5 py-0.5 text-xs font-bold text-slate-400 transition hover:bg-blue-50 hover:text-blue-500"
+        class="absolute right-2.5 top-1/2 -translate-y-1/2 rounded-full px-1.5 py-0.5 text-xs font-bold text-slate-400 transition hover:bg-[#F0F6FC] hover:text-[#F0F6FC]0"
       >
         ✕
       </button>
@@ -208,7 +206,7 @@
               carsToShow.set(10)
             "
 
-            class="w-full cursor-pointer rounded-xl border border-slate-300 bg-white px-3 py-3 text-sm text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10"
+            class="w-full cursor-pointer rounded-xl border border-slate-300 bg-white px-3 py-3 text-sm text-slate-900 outline-none transition focus:border-[#F0F6FC]0 focus:ring-2 focus:ring-[#F0F6FC]0/10"
           >
 
             <option value="all">
@@ -256,7 +254,7 @@
               carsToShow.set(10)
             "
 
-            class="w-full cursor-pointer rounded-xl border border-slate-300 bg-white px-3 py-3 text-sm text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10"
+            class="w-full cursor-pointer rounded-xl border border-slate-300 bg-white px-3 py-3 text-sm text-slate-900 outline-none transition focus:border-[#F0F6FC]0 focus:ring-2 focus:ring-[#F0F6FC]0/10"
           >
 
             <option value="all">
@@ -310,7 +308,7 @@
               carsToShow.set(10)
             "
 
-            class="w-full cursor-pointer rounded-xl border border-slate-300 bg-white px-3 py-3 text-sm text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10"
+            class="w-full cursor-pointer rounded-xl border border-slate-300 bg-white px-3 py-3 text-sm text-slate-900 outline-none transition focus:border-[#F0F6FC]0 focus:ring-2 focus:ring-[#F0F6FC]0/10"
           >
 
             <option value="all">
@@ -352,7 +350,7 @@
               carsToShow.set(10)
             "
 
-            class="w-full cursor-pointer rounded-xl border border-slate-300 bg-white px-3 py-3 text-sm text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10"
+            class="w-full cursor-pointer rounded-xl border border-slate-300 bg-white px-3 py-3 text-sm text-slate-900 outline-none transition focus:border-[#F0F6FC]0 focus:ring-2 focus:ring-[#F0F6FC]0/10"
           >
 
             <option value="all">
@@ -409,17 +407,15 @@
         <div>
 
           <p
-            class="text-xs font-bold uppercase tracking-wider text-blue-500"
+            class="text-xs font-bold uppercase tracking-wider text-[#F0F6FC]0"
           >
             Carsey.in Collection
           </p>
 
 
           <h2
-            class="mt-1 text-2xl font-black text-slate-900 sm:text-3xl lg:text-4xl"
-          >
-            Latest Certified Cars
-          </h2>
+            class="border-l-4 border-[#FF6500] pl-3 mt-1 text-2xl font-black text-slate-900 sm:text-3xl lg:text-4xl"
+          ><span class="text-[#064A9B]">Latest Certified Cars</span></h2>
 
         </div>
 
@@ -497,7 +493,7 @@
       ) {
 
         <div
-          class="w-full rounded-2xl border border-slate-200 bg-slate-50 p-10 text-center"
+          class="w-full rounded-2xl border border-[#FF6500]/20 bg-[#EFF6FC] p-10 text-center"
         >
 
           <div
@@ -557,7 +553,7 @@
                 car.car_id
               ]"
 
-              class="group w-full cursor-pointer overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:border-blue-200 hover:shadow-xl hover:shadow-blue-100"
+              class="group w-full cursor-pointer overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:border-[#D9E9FA] hover:shadow-xl hover:shadow-[#DCEBFA]"
             >
 
 
@@ -584,7 +580,7 @@
                 <!-- CERTIFIED -->
 
                 <div
-                  class="absolute left-3 top-3 rounded-full bg-white/95 px-2.5 py-1 text-[10px] font-bold text-blue-600 shadow-sm backdrop-blur-md"
+                  class="absolute left-3 top-3 rounded-full bg-white/95 px-2.5 py-1 text-[10px] font-bold text-[#043B7A] shadow-sm backdrop-blur-md"
                 >
                   ✓ Certified
                 </div>
@@ -607,7 +603,7 @@
                 >
 
                   <span
-                    class="rounded-full bg-blue-50 px-3 py-1.5 text-xs font-extrabold tracking-wide text-blue-600"
+                    class="rounded-full bg-[#F0F6FC] px-3 py-1.5 text-xs font-extrabold tracking-wide text-[#043B7A]"
                     [title]="'Registration Number: ' + (car.vehicle_number || car.registration_number || car.vehicleNumber || 'Not available')"
                   >
                     {{ (car.vehicle_number || car.registration_number || car.vehicleNumber || 'N/A').toString().substring(0, 4) }}
@@ -679,7 +675,7 @@
                 <!-- INFO -->
 
                 <div
-                  class="mt-4 grid grid-cols-3 rounded-xl border border-slate-200 bg-slate-50"
+                  class="mt-4 grid grid-cols-3 rounded-xl border border-[#FF6500]/20 bg-[#EFF6FC]"
                 >
 
 
@@ -772,7 +768,7 @@
 
 
                   <span
-                    class="rounded-lg bg-gradient-to-r from-blue-500 to-blue-500 px-4 py-2.5 text-xs font-bold text-white shadow-md shadow-blue-500/20 transition group-hover:scale-105 group-hover:from-blue-600 group-hover:to-blue-600"
+                    class="rounded-lg bg-[#064A9B] px-4 py-2.5 text-xs font-bold text-white shadow-md shadow-[#064A9B]/20 transition hover:bg-[#043B7A] group-hover:scale-105"
                   >
 
                     View Details
@@ -807,7 +803,7 @@
 
               (click)="viewMoreCars()"
 
-              class="rounded-xl bg-gradient-to-r from-blue-500 to-blue-500 px-10 py-3.5 text-sm font-bold text-white shadow-lg shadow-blue-500/25 transition duration-300 hover:-translate-y-1 hover:from-blue-600 hover:to-blue-600 hover:shadow-xl"
+              class="rounded-xl bg-[#064A9B] px-10 py-3.5 text-sm font-bold text-white shadow-lg shadow-[#064A9B]/25 transition duration-300 hover:-translate-y-1 hover:bg-[#043B7A] hover:shadow-xl"
             >
 
               View More Cars

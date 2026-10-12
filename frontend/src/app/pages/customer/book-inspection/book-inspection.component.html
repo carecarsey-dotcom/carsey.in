@@ -6,8 +6,7 @@
 
   <div class="max-w-5xl mx-auto text-center mb-8">
 
-    <h1 class="text-3xl md:text-4xl font-bold text-gray-900">
-      Book Inspection
+    <h1 class="text-3xl md:text-4xl font-bold text-gray-900">   <span class="text-[#064A9B]">Book</span> <span class="text-[#FF6500]">Inspection</span>
     </h1>
 
     <p class="mt-2 text-gray-600">
@@ -56,7 +55,7 @@
       <div class="mb-8">
 
         <h2
-          class="text-xl font-bold text-gray-900 mb-5"
+          class="text-xl font-bold text-gray-900 mb-5 border-l-4 border-[#FF6500] pl-3"
         >
           Customer Details
         </h2>
@@ -85,7 +84,7 @@
               placeholder="Enter your name"
               autocomplete="name"
               required
-              class="w-full rounded-lg border border-gray-300 px-4 py-3 text-gray-900 outline-none transition focus:border-blue-600 focus:ring-2 focus:ring-blue-100"
+              class="w-full rounded-lg border border-gray-300 px-4 py-3 text-gray-900 outline-none transition focus:border-[#064A9B] focus:ring-2 focus:ring-[#064A9B]/10"
             />
 
             <p class="mt-1 text-xs text-gray-500">
@@ -115,7 +114,7 @@
               inputmode="numeric"
               autocomplete="tel"
               required
-              class="w-full rounded-lg border border-gray-300 px-4 py-3 text-gray-900 outline-none transition focus:border-blue-600 focus:ring-2 focus:ring-blue-100"
+              class="w-full rounded-lg border border-gray-300 px-4 py-3 text-gray-900 outline-none transition focus:border-[#064A9B] focus:ring-2 focus:ring-[#064A9B]/10"
             />
 
             <p class="mt-1 text-xs text-gray-500">
@@ -142,7 +141,7 @@
               placeholder="Enter your email address"
               autocomplete="email"
               required
-              class="w-full rounded-lg border border-gray-300 px-4 py-3 text-gray-900 outline-none transition focus:border-blue-600 focus:ring-2 focus:ring-blue-100"
+              class="w-full rounded-lg border border-gray-300 px-4 py-3 text-gray-900 outline-none transition focus:border-[#064A9B] focus:ring-2 focus:ring-[#064A9B]/10"
             />
 
           </div>
@@ -164,7 +163,7 @@
               [(ngModel)]="form.city"
               placeholder="Enter your city"
               required
-              class="w-full rounded-lg border border-gray-300 px-4 py-3 text-gray-900 outline-none transition focus:border-blue-600 focus:ring-2 focus:ring-blue-100"
+              class="w-full rounded-lg border border-gray-300 px-4 py-3 text-gray-900 outline-none transition focus:border-[#064A9B] focus:ring-2 focus:ring-[#064A9B]/10"
             />
 
           </div>
@@ -187,7 +186,7 @@
               placeholder="Enter your address"
               autocomplete="street-address"
               required
-              class="w-full rounded-lg border border-gray-300 px-4 py-3 text-gray-900 outline-none transition focus:border-blue-600 focus:ring-2 focus:ring-blue-100"
+              class="w-full rounded-lg border border-gray-300 px-4 py-3 text-gray-900 outline-none transition focus:border-[#064A9B] focus:ring-2 focus:ring-[#064A9B]/10"
             />
 
           </div>
@@ -213,7 +212,7 @@
       <div class="mb-8">
 
         <h2
-          class="text-xl font-bold text-gray-900 mb-5"
+          class="text-xl font-bold text-gray-900 mb-5 border-l-4 border-[#FF6500] pl-3"
         >
           Vehicle Details
         </h2>
@@ -240,7 +239,7 @@
               [(ngModel)]="form.vehicleNumber"
               (input)="onVehicleNumberInput($event)"
               placeholder="Example: DL01AB1234"
-                          class="w-full rounded-lg border border-gray-300 px-4 py-3 uppercase text-gray-900 outline-none transition focus:border-blue-600 focus:ring-2 focus:ring-blue-100"
+                          class="w-full rounded-lg border border-gray-300 px-4 py-3 uppercase text-gray-900 outline-none transition focus:border-[#064A9B] focus:ring-2 focus:ring-[#064A9B]/10"
             />
 
             <p class="mt-1 text-xs text-gray-500">
@@ -265,7 +264,7 @@
               name="brand"
               [(ngModel)]="form.brand"
               placeholder="Example: Maruti Suzuki"
-                          class="w-full rounded-lg border border-gray-300 px-4 py-3 text-gray-900 outline-none transition focus:border-blue-600 focus:ring-2 focus:ring-blue-100"
+                          class="w-full rounded-lg border border-gray-300 px-4 py-3 text-gray-900 outline-none transition focus:border-[#064A9B] focus:ring-2 focus:ring-[#064A9B]/10"
             />
 
           </div>
@@ -286,7 +285,7 @@
               name="model"
               [(ngModel)]="form.model"
               placeholder="Example: Swift"
-                          class="w-full rounded-lg border border-gray-300 px-4 py-3 text-gray-900 outline-none transition focus:border-blue-600 focus:ring-2 focus:ring-blue-100"
+                          class="w-full rounded-lg border border-gray-300 px-4 py-3 text-gray-900 outline-none transition focus:border-[#064A9B] focus:ring-2 focus:ring-[#064A9B]/10"
             />
 
           </div>
@@ -309,7 +308,7 @@
               name="bookingDate"
               [(ngModel)]="form.bookingDate"
               [min]="today"
-                          class="w-full rounded-lg border border-gray-300 px-4 py-3 text-gray-900 outline-none transition focus:border-blue-600 focus:ring-2 focus:ring-blue-100"
+                          class="w-full rounded-lg border border-gray-300 px-4 py-3 text-gray-900 outline-none transition focus:border-[#064A9B] focus:ring-2 focus:ring-[#064A9B]/10"
             />
 
           </div>
@@ -330,7 +329,7 @@
             <select
               name="timeSlot"
               [(ngModel)]="form.timeSlot"
-                          class="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 outline-none transition focus:border-blue-600 focus:ring-2 focus:ring-blue-100"
+                          class="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 outline-none transition focus:border-[#064A9B] focus:ring-2 focus:ring-[#064A9B]/10"
             >
 
               <option
@@ -394,7 +393,7 @@
         <button
           type="submit"
           [disabled]="submitting"
-          class="w-full sm:flex-1 rounded-lg bg-blue-600 px-7 py-3 font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+          class="w-full sm:flex-1 rounded-lg bg-[#064A9B] px-7 py-3 font-semibold text-white transition hover:bg-[#043B7A] disabled:cursor-not-allowed disabled:opacity-60"
         >
 
           <span *ngIf="!submitting">

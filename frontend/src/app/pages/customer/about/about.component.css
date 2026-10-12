@@ -40,7 +40,7 @@
   background:
     radial-gradient(
       circle at 80% 20%,
-      rgba(8, 102, 255, 0.18),
+      rgba(255, 101, 0, 0.16),
       transparent 35%
     ),
     linear-gradient(
@@ -65,7 +65,7 @@
 .section-label {
   display: inline-block;
 
-  color: #0866ff;
+  color: #FF6500;
 
   font-size: 13px;
   font-weight: 800;
@@ -100,8 +100,9 @@
 
   background: linear-gradient(
     90deg,
-    #0866ff,
-    #009dff
+    #064A9B 0%,
+    #0B5DBB 72%,
+    #FF6500 100%
   );
 
   -webkit-background-clip: text;
@@ -166,8 +167,9 @@
 
   background: linear-gradient(
     90deg,
-    #0866ff,
-    #009dff
+    #064A9B 0%,
+    #0B5DBB 72%,
+    #FF6500 100%
   );
 }
 
@@ -187,7 +189,7 @@
   transform: translateY(-3px);
 
   box-shadow:
-    0 12px 30px rgba(8, 102, 255, 0.28);
+    0 12px 30px rgba(255, 101, 0, 0.22);
 }
 
 
@@ -282,8 +284,8 @@
 
   background: linear-gradient(
     135deg,
-    #0866ff,
-    #009dff
+    #064A9B,
+    #0B5DBB
   );
 
   font-size: 30px;
@@ -312,7 +314,7 @@
 
   margin: 25px 0;
 
-  background: #0866ff;
+  background: #FF6500;
 }
 
 
@@ -376,7 +378,7 @@
 .feature-card:hover {
   transform: translateY(-6px);
 
-  border-color: #0866ff;
+  border-color: #FF6500;
 
   box-shadow:
     0 15px 35px rgba(15, 23, 42, 0.08);
@@ -394,7 +396,7 @@
 
   border-radius: 14px;
 
-  background: #eaf4ff;
+  background: #FFF1E8;
 
   font-size: 27px;
 
@@ -464,7 +466,7 @@
   box-shadow:
     0 15px 35px rgba(15, 23, 42, 0.08);
 
-  border-color: #0866ff;
+  border-color: #FF6500;
 }
 
 
@@ -481,7 +483,7 @@
 
   border-radius: 14px;
 
-  background: #eaf4ff;
+  background: #FFF1E8;
 
   font-size: 26px;
 }
@@ -548,7 +550,7 @@
 
   font-weight: 900;
 
-  color: #0866ff;
+  color: #FF6500;
 
   margin-bottom: 20px;
 }
@@ -648,7 +650,7 @@
 
 
 .stat strong {
-  color: #0866ff;
+  color: #FF6500;
 
   font-size: 24px;
 }
@@ -673,7 +675,7 @@
   background:
     radial-gradient(
       circle at center,
-      rgba(8, 102, 255, 0.20),
+      rgba(6, 74, 155, 0.20),
       transparent 45%
     ),
     #0d101b;
@@ -821,7 +823,7 @@
 
 .service-areas-section .section-heading h2 span {
   display: block;
-  background: linear-gradient(90deg, #0866ff, #009dff);
+  background: linear-gradient(90deg, #064A9B 0%, #0B5DBB 72%, #FF6500 100%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -853,11 +855,11 @@
 .service-area-card:hover {
   transform: translateY(-5px);
   box-shadow: 0 15px 35px rgba(15, 23, 42, 0.08);
-  border-color: #0866ff;
+  border-color: #FF6500;
 }
 
 .service-area-card.featured-area {
-  border-color: rgba(8, 102, 255, 0.35);
+  border-color: rgba(255, 101, 0, 0.35);
   background: linear-gradient(145deg, #ffffff, #f4f9ff);
 }
 
@@ -869,7 +871,7 @@
   align-items: center;
   justify-content: center;
   border-radius: 14px;
-  background: #eaf4ff;
+  background: #FFF1E8;
   font-size: 26px;
 }
 
@@ -881,7 +883,7 @@
 .area-tag {
   display: inline-block;
   margin-bottom: 9px;
-  color: #0866ff;
+  color: #FF6500;
   font-size: 11px;
   font-weight: 800;
   letter-spacing: 1.5px;
@@ -921,9 +923,9 @@
 }
 
 .city-list span:hover {
-  background: #eaf4ff;
-  border-color: #a8d0ff;
-  color: #0752c7;
+  background: #FFF1E8;
+  border-color: #FFB27D;
+  color: #FF6500;
 }
 
 .service-areas-note {
@@ -964,7 +966,7 @@
   gap: 10px;
   flex-shrink: 0;
   padding: 13px 20px;
-  background: linear-gradient(90deg, #0866ff, #009dff);
+  background: linear-gradient(90deg, #064A9B 0%, #0B5DBB 72%, #FF6500 100%);
   border-radius: 9px;
   color: #ffffff;
   font-size: 14px;
@@ -975,7 +977,7 @@
 
 .area-cta:hover {
   transform: translateY(-2px);
-  box-shadow: 0 12px 30px rgba(8, 102, 255, 0.28);
+  box-shadow: 0 12px 30px rgba(255, 101, 0, 0.22);
 }
 
 .area-cta span {

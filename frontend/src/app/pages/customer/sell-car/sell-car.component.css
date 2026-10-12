@@ -9,70 +9,58 @@
    ===================================================== */
 .sell-page {
   min-height: 100vh;
-  background: #f5f7fb;
+  background: #EFF6FC;
   padding: 40px 20px;
   box-sizing: border-box;
 }
 
-/* =====================================================
-   CONTAINER
-   ===================================================== */
+/* CONTAINER */
 .sell-container {
   width: 100%;
   max-width: 1050px;
   margin: 0 auto;
 }
 
-/* =====================================================
-   HEADER
-   ===================================================== */
+/* HEADER */
 .page-header {
   text-align: center;
   margin-bottom: 30px;
 }
-
 .page-header h1 {
   margin: 0;
   font-size: 36px;
   font-weight: 800;
-  color: #0f172a;
+  color: #064A9B;
 }
-
 .page-header p {
   margin-top: 10px;
   color: #64748b;
   font-size: 16px;
 }
 
-/* =====================================================
-   FORM CARD
-   ===================================================== */
+/* FORM CARD */
 .form-card {
   background: #ffffff;
   border-radius: 18px;
   padding: 32px;
   box-shadow: 0 10px 30px rgba(15, 23, 42, 0.10);
+  border-top: 4px solid #FF6500;
 }
 
-/* =====================================================
-   SECTION
-   ===================================================== */
-.section {
-  padding: 10px 0 30px;
-}
-
+/* SECTION */
+.section { padding: 10px 0 30px; }
 .section + .section {
-  border-top: 1px solid #e5e7eb;
+  border-top: 1px solid rgba(255, 101, 0, 0.28);
   padding-top: 30px;
 }
-
 .section h2 {
   margin: 0 0 20px;
-  color: #0f172a;
+  padding-left: 12px;
+  border-left: 4px solid #FF6500;
+  color: #064A9B;
   font-size: 22px;
   font-weight: 800;
 }
-
 .section-description {
   margin-top: -10px;
   margin-bottom: 22px;
@@ -80,22 +68,15 @@
   font-size: 14px;
 }
 
-/* =====================================================
-   FORM GRID
-   ===================================================== */
+/* FORM GRID */
 .form-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 20px;
 }
+.form-group.full { grid-column: 1 / -1; }
 
-.form-group.full {
-  grid-column: 1 / -1;
-}
-
-/* =====================================================
-   LABEL
-   ===================================================== */
+/* LABEL */
 .form-group label {
   display: block;
   margin-bottom: 8px;
@@ -104,9 +85,7 @@
   font-weight: 700;
 }
 
-/* =====================================================
-   INPUT / SELECT
-   ===================================================== */
+/* INPUT / SELECT */
 .form-group input,
 .form-group select {
   width: 100%;
@@ -121,20 +100,14 @@
   outline: none;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
-
-.form-group input::placeholder {
-  color: #94a3b8;
-}
-
+.form-group input::placeholder { color: #94a3b8; }
 .form-group input:focus,
 .form-group select:focus {
-  border-color: #0866FF;
-  box-shadow: 0 0 0 3px rgba(8, 102, 255, 0.10);
+  border-color: #064A9B;
+  box-shadow: 0 0 0 3px rgba(6, 74, 155, 0.10);
 }
 
-/* =====================================================
-   SMALL TEXT
-   ===================================================== */
+/* SMALL TEXT */
 .form-group small {
   display: block;
   margin-top: 6px;
@@ -142,39 +115,29 @@
   font-size: 12px;
 }
 
-/* =====================================================
-   IMAGE GRID
-   ===================================================== */
+/* IMAGE GRID */
 .image-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 22px;
 }
 
-/* =====================================================
-   IMAGE CARD
-   ===================================================== */
-.image-upload-card {
-  width: 100%;
-  min-width: 0;
-}
-
+/* IMAGE CARD */
+.image-upload-card { width: 100%; min-width: 0; }
 .image-upload-card h3 {
   margin: 0 0 10px;
-  color: #0f172a;
+  color: #064A9B;
   font-size: 15px;
   font-weight: 700;
 }
 
-/* =====================================================
-   UPLOAD BOX
-   ===================================================== */
+/* UPLOAD BOX */
 .upload-box {
   position: relative;
   width: 100%;
   min-height: 230px;
   box-sizing: border-box;
-  border: 2px dashed #cbd5e1;
+  border: 2px dashed #FF6500;
   border-radius: 14px;
   background: #ffffff;
   display: flex;
@@ -185,16 +148,11 @@
   cursor: pointer;
   transition: border-color 0.2s ease, background-color 0.2s ease, transform 0.2s ease;
 }
-
 .upload-box:hover {
-  border-color: #0866FF;
-  background: #EAF4FF;
+  border-color: #064A9B;
+  background: #EFF6FC;
   transform: translateY(-1px);
 }
-
-/* =====================================================
-   HIDE FILE INPUT
-   ===================================================== */
 .upload-box input[type="file"] {
   position: absolute;
   inset: 0;
@@ -204,35 +162,16 @@
   cursor: pointer;
 }
 
-/* =====================================================
-   CAMERA ICON
-   ===================================================== */
-.camera-icon {
-  font-size: 42px;
-  margin-bottom: 12px;
-}
+/* CAMERA ICON */
+.camera-icon { font-size: 42px; margin-bottom: 12px; }
 
-/* =====================================================
-   UPLOAD TITLE
-   ===================================================== */
-.upload-title {
-  color: #0f172a;
-  font-size: 16px;
-  font-weight: 700;
-}
+/* UPLOAD TITLE */
+.upload-title { color: #064A9B; font-size: 16px; font-weight: 700; }
 
-/* =====================================================
-   UPLOAD INFO
-   ===================================================== */
-.upload-info {
-  margin-top: 7px;
-  color: #64748b;
-  font-size: 13px;
-}
+/* UPLOAD INFO */
+.upload-info { margin-top: 7px; color: #64748b; font-size: 13px; }
 
-/* =====================================================
-   IMAGE PREVIEW
-   ===================================================== */
+/* IMAGE PREVIEW */
 .image-preview {
   position: relative;
   width: 100%;
@@ -240,8 +179,8 @@
   overflow: hidden;
   border-radius: 14px;
   background: #f1f5f9;
+  border: 1px solid rgba(6, 74, 155, 0.18);
 }
-
 .image-preview img {
   width: 100%;
   height: 100%;
@@ -249,9 +188,7 @@
   display: block;
 }
 
-/* =====================================================
-   REMOVE BUTTON
-   ===================================================== */
+/* REMOVE BUTTON */
 .remove-button {
   position: absolute;
   top: 12px;
@@ -266,89 +203,55 @@
   cursor: pointer;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.20);
 }
+.remove-button:hover { background: #b91c1c; }
 
-.remove-button:hover {
-  background: #b91c1c;
-}
-
-/* =====================================================
-   SUBMIT SECTION
-   ===================================================== */
+/* SUBMIT SECTION */
 .submit-section {
-  border-top: 1px solid #e5e7eb;
+  border-top: 1px solid rgba(255, 101, 0, 0.30);
   margin-top: 10px;
   padding-top: 30px;
   text-align: center;
 }
 
-/* =====================================================
-   SUBMIT BUTTON
-   ===================================================== */
+/* SUBMIT BUTTON: BLUE ONLY */
 .submit-button {
   width: 100%;
   min-height: 52px;
   border: none;
   border-radius: 12px;
-  background: linear-gradient(90deg, #0866FF 0%, #009DFF 50%, #0052CC 100%);
+  background: #064A9B;
   color: #ffffff;
   font-size: 17px;
   font-weight: 800;
   cursor: pointer;
-  box-shadow: 0 8px 18px rgba(8, 102, 255, 0.18);
+  box-shadow: 0 8px 18px rgba(6, 74, 155, 0.18);
   transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
 }
-
 .submit-button:hover:not(:disabled) {
+  background: #043B7A;
   transform: translateY(-1px);
-  box-shadow: 0 10px 24px rgba(8, 102, 255, 0.28);
+  box-shadow: 0 10px 24px rgba(6, 74, 155, 0.28);
 }
+.submit-button:disabled { opacity: 0.65; cursor: not-allowed; }
 
-.submit-button:disabled {
-  opacity: 0.65;
-  cursor: not-allowed;
-}
+/* SUBMIT NOTE */
+.submit-note { margin: 14px 0 0; color: #64748b; font-size: 14px; }
 
-/* =====================================================
-   SUBMIT NOTE
-   ===================================================== */
-.submit-note {
-  margin: 14px 0 0;
-  color: #64748b;
-  font-size: 14px;
-}
-
-/* =====================================================
-   INPUT TEXT VISIBILITY
-   ===================================================== */
-input,
-select,
-textarea {
+/* INPUT TEXT VISIBILITY */
+input, select, textarea {
   color: #0f172a !important;
   background-color: #ffffff !important;
-  caret-color: #0866FF;
+  caret-color: #064A9B;
 }
-
-input::placeholder,
-textarea::placeholder {
-  color: #94a3b8 !important;
-  opacity: 1;
-}
-
-select {
-  color: #0f172a !important;
-}
-
-input:focus,
-select:focus,
-textarea:focus {
+input::placeholder, textarea::placeholder { color: #94a3b8 !important; opacity: 1; }
+select { color: #0f172a !important; }
+input:focus, select:focus, textarea:focus {
   color: #0f172a !important;
   background-color: #ffffff !important;
   outline: none;
 }
 
-/* =====================================================
-   AUTOFILL FIX
-   ===================================================== */
+/* AUTOFILL FIX */
 input:-webkit-autofill,
 input:-webkit-autofill:hover,
 input:-webkit-autofill:focus {
@@ -357,40 +260,14 @@ input:-webkit-autofill:focus {
   transition: background-color 5000s ease-in-out 0s;
 }
 
-/* =====================================================
-   RESPONSIVE
-   ===================================================== */
+/* RESPONSIVE */
 @media (max-width: 768px) {
-  .sell-page {
-    padding: 25px 14px;
-  }
-
-  .form-card {
-    padding: 20px;
-    border-radius: 14px;
-  }
-
-  .page-header h1 {
-    font-size: 28px;
-  }
-
-  .form-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .form-group.full {
-    grid-column: auto;
-  }
-
-  .image-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .upload-box {
-    min-height: 210px;
-  }
-
-  .image-preview {
-    height: 210px;
-  }
+  .sell-page { padding: 25px 14px; }
+  .form-card { padding: 20px; border-radius: 14px; }
+  .page-header h1 { font-size: 28px; }
+  .form-grid { grid-template-columns: 1fr; }
+  .form-group.full { grid-column: auto; }
+  .image-grid { grid-template-columns: 1fr; }
+  .upload-box { min-height: 210px; }
+  .image-preview { height: 210px; }
 }
