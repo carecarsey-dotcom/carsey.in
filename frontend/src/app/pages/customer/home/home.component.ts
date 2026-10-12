@@ -51,6 +51,11 @@ interface Vehicle {
 
   model: string;
 
+  // Vehicle registration number shown on the home-page car card.
+  vehicle_number?: string;
+  registration_number?: string;
+  vehicleNumber?: string;
+
   variant?: string;
 
   manufacturing_year?: number;

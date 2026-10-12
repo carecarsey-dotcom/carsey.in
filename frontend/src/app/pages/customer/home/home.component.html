@@ -607,11 +607,10 @@
                 >
 
                   <span
-                    class="rounded-full bg-pink-50 px-2.5 py-1 text-[10px] font-bold capitalize text-pink-600"
+                    class="rounded-full bg-pink-50 px-3 py-1.5 text-xs font-extrabold tracking-wide text-pink-600"
+                    [title]="'Registration Number: ' + (car.vehicle_number || car.registration_number || car.vehicleNumber || 'Not available')"
                   >
-
-                    {{ car.fuel_type || 'Petrol' }}
-
+                    {{ car.vehicle_number || car.registration_number || car.vehicleNumber || 'Reg. No. N/A' }}
                   </span>
 
 
