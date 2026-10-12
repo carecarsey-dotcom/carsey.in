@@ -8,6 +8,10 @@ import {
 } from '@angular/common';
 
 import {
+  FormsModule
+} from '@angular/forms';
+
+import {
   Router
 } from '@angular/router';
 
@@ -19,7 +23,8 @@ import {
   selector: 'app-employee-dashboard',
   standalone: true,
   imports: [
-    CommonModule
+    CommonModule,
+    FormsModule
   ],
   templateUrl:
     './employee-dashboard.component.html',

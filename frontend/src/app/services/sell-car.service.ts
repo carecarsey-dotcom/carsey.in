@@ -1,10 +1,9 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 const API_BASE_URL =
-  window.location.hostname === 'localhost' ||
-  window.location.hostname === '127.0.0.1'
+  window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
     ? 'http://localhost:5000/api'
     : 'https://api.carsey.in/api';
 
@@ -37,16 +36,22 @@ export interface SellCarRequest {
   dashboard_image?: string;
   status?: string;
   created_at?: string;
+  assigned_employee_id?: number | null;
+  workflow_status?: string;
+  correction_note?: string;
+  submitted_for_approval_at?: string | null;
 }
 
 export interface SellCarResponse {
   success: boolean;
   message: string;
-  data: {
+  data?: {
     requests?: SellCarRequest[];
     request?: SellCarRequest;
     sellId?: number;
     status?: string;
+    workflowStatus?: string;
+    assignedEmployeeId?: number;
   };
 }
 
@@ -55,25 +60,31 @@ export class SellCarService {
   private http = inject(HttpClient);
   private apiUrl = API_BASE_URL;
 
+  private getHeaders(): HttpHeaders {
+    const token = localStorage.getItem('token') || localStorage.getItem('adminToken') ||
+      localStorage.getItem('accessToken') || localStorage.getItem('authToken');
+    let headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    if (token) headers = headers.set('Authorization', `Bearer ${token}`);
+    return headers;
+  }
+
   getRequests(): Observable<SellCarResponse> {
-    return this.http.get<SellCarResponse>(
-      `${this.apiUrl}/admin/sell-car-requests`
-    );
+    return this.http.get<SellCarResponse>(`${this.apiUrl}/admin/sell-car-requests`, { headers: this.getHeaders() });
   }
 
   getRequestById(sellId: number): Observable<SellCarResponse> {
-    return this.http.get<SellCarResponse>(
-      `${this.apiUrl}/admin/sell-car-requests/${sellId}`
-    );
+    return this.http.get<SellCarResponse>(`${this.apiUrl}/admin/sell-car-requests/${sellId}`, { headers: this.getHeaders() });
   }
 
-  updateStatus(
-    sellId: number,
-    status: 'Approved' | 'Rejected'
-  ): Observable<SellCarResponse> {
-    return this.http.patch<SellCarResponse>(
-      `${this.apiUrl}/admin/sell-car-requests/${sellId}/status`,
-      { status }
-    );
+  updateStatus(sellId: number, status: 'Approved' | 'Rejected'): Observable<SellCarResponse> {
+    return this.http.patch<SellCarResponse>(`${this.apiUrl}/admin/sell-car-requests/${sellId}/status`, { status }, { headers: this.getHeaders() });
+  }
+
+  assignEmployee(sellId: number, employeeId: number): Observable<SellCarResponse> {
+    return this.http.patch<SellCarResponse>(`${this.apiUrl}/admin/sell-car-requests/${sellId}/assign`, { employeeId }, { headers: this.getHeaders() });
+  }
+
+  sendForCorrection(sellId: number, correctionNote: string): Observable<SellCarResponse> {
+    return this.http.patch<SellCarResponse>(`${this.apiUrl}/admin/sell-car-requests/${sellId}/correction`, { correctionNote }, { headers: this.getHeaders() });
   }
 }

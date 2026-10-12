@@ -1,11 +1,20 @@
 import { Injectable } from '@angular/core';
 
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import {
+  HttpClient,
+  HttpHeaders
+} from '@angular/common/http';
 
 import { Observable } from 'rxjs';
 
-@Injectable({ providedIn: 'root' })
+@Injectable({
+  providedIn: 'root'
+})
 export class EmployeeService {
+
+  // =========================================
+  // API URL
+  // =========================================
 
   private apiUrl =
     window.location.hostname === 'localhost' ||
@@ -13,7 +22,17 @@ export class EmployeeService {
       ? 'http://localhost:5000/api'
       : 'https://api.carsey.in/api';
 
-  constructor(private http: HttpClient) {}
+  // =========================================
+  // CONSTRUCTOR
+  // =========================================
+
+  constructor(
+    private http: HttpClient
+  ) {}
+
+  // =========================================
+  // GET TOKEN
+  // =========================================
 
   private getToken(): string | null {
     return (
@@ -24,61 +43,204 @@ export class EmployeeService {
     );
   }
 
+  // =========================================
+  // JSON HEADERS
+  // =========================================
+
   private getHeaders(): HttpHeaders {
     const token = this.getToken();
-    let headers = new HttpHeaders({ 'Content-Type': 'application/json' });
-    if (token) headers = headers.set('Authorization', `Bearer ${token}`);
+
+    let headers = new HttpHeaders({
+      'Content-Type': 'application/json'
+    });
+
+    if (token) {
+      headers = headers.set(
+        'Authorization',
+        `Bearer ${token}`
+      );
+    }
+
     return headers;
   }
 
+  // =========================================
+  // AUTH HEADERS
+  // For FormData / File Uploads
+  // =========================================
+
   private getAuthHeaders(): HttpHeaders {
     const token = this.getToken();
+
     let headers = new HttpHeaders();
-    if (token) headers = headers.set('Authorization', `Bearer ${token}`);
+
+    if (token) {
+      headers = headers.set(
+        'Authorization',
+        `Bearer ${token}`
+      );
+    }
+
     return headers;
   }
+
+  // =========================================
+  // GET ALL EMPLOYEES
+  // Used in Sell Car Request Assignment
+  // =========================================
+
+  getEmployees(): Observable<any> {
+    return this.http.get<any>(
+      `${this.apiUrl}/auth/employees`,
+      {
+        headers: this.getHeaders()
+      }
+    );
+  }
+
+  // =========================================
+  // GET MY INSPECTION REQUESTS
+  // =========================================
 
   getMyRequests(): Observable<any> {
     return this.http.get<any>(
       `${this.apiUrl}/inspection-requests/employee/my-requests`,
-      { headers: this.getHeaders() }
+      {
+        headers: this.getHeaders()
+      }
     );
   }
 
-  getRequest(requestId: number): Observable<any> {
+  // =========================================
+  // SELL CAR WORKFLOW
+  // =========================================
+
+  // GET MY ASSIGNED SELL CAR REQUESTS
+
+  getMySellCarRequests(): Observable<any> {
+    return this.http.get<any>(
+      `${this.apiUrl}/employee/sell-car-requests`,
+      {
+        headers: this.getHeaders()
+      }
+    );
+  }
+
+  // =========================================
+  // UPDATE ASSIGNED SELL CAR REQUEST
+  // Uses multipart/form-data for image uploads.
+  // Do not manually set Content-Type.
+  // =========================================
+
+  updateMySellCarRequest(
+    sellId: number,
+    data: FormData
+  ): Observable<any> {
+    return this.http.patch<any>(
+      `${this.apiUrl}/employee/sell-car-requests/${Number(sellId)}`,
+      data,
+      {
+        headers: this.getAuthHeaders()
+      }
+    );
+  }
+
+  // =========================================
+  // SUBMIT SELL CAR REQUEST FOR APPROVAL
+  // =========================================
+
+  submitMySellCarRequest(
+    sellId: number
+  ): Observable<any> {
+    return this.http.post<any>(
+      `${this.apiUrl}/employee/sell-car-requests/${Number(sellId)}/submit`,
+      {},
+      {
+        headers: this.getHeaders()
+      }
+    );
+  }
+
+  // =========================================
+  // GET REQUEST
+  // Existing Method
+  // =========================================
+
+  getRequest(
+    requestId: number
+  ): Observable<any> {
     return this.getRequestById(requestId);
   }
 
-  getRequestById(requestId: number): Observable<any> {
+  // =========================================
+  // GET REQUEST BY ID
+  // =========================================
+
+  getRequestById(
+    requestId: number
+  ): Observable<any> {
     return this.http.get<any>(
       `${this.apiUrl}/inspection-requests/request/${Number(requestId)}`,
-      { headers: this.getHeaders() }
+      {
+        headers: this.getHeaders()
+      }
     );
   }
 
-  acceptRequest(requestId: number): Observable<any> {
+  // =========================================
+  // ACCEPT INSPECTION REQUEST
+  // =========================================
+
+  acceptRequest(
+    requestId: number
+  ): Observable<any> {
     return this.http.patch<any>(
       `${this.apiUrl}/inspection-requests/request/${Number(requestId)}/accept`,
       {},
-      { headers: this.getHeaders() }
+      {
+        headers: this.getHeaders()
+      }
     );
   }
 
-  rejectRequest(requestId: number, remark = ''): Observable<any> {
+  // =========================================
+  // REJECT INSPECTION REQUEST
+  // =========================================
+
+  rejectRequest(
+    requestId: number,
+    remark = ''
+  ): Observable<any> {
     return this.http.patch<any>(
       `${this.apiUrl}/inspection-requests/request/${Number(requestId)}/reject`,
-      { employeeRemark: remark },
-      { headers: this.getHeaders() }
+      {
+        employeeRemark: remark
+      },
+      {
+        headers: this.getHeaders()
+      }
     );
   }
 
-  startInspection(requestId: number): Observable<any> {
+  // =========================================
+  // START INSPECTION
+  // =========================================
+
+  startInspection(
+    requestId: number
+  ): Observable<any> {
     return this.http.patch<any>(
       `${this.apiUrl}/inspection-requests/request/${Number(requestId)}/start`,
       {},
-      { headers: this.getHeaders() }
+      {
+        headers: this.getHeaders()
+      }
     );
   }
+
+  // =========================================
+  // SUBMIT INSPECTION
+  // =========================================
 
   submitInspection(
     requestId: number,
@@ -90,16 +252,23 @@ export class EmployeeService {
       file: File | null;
     }> = []
   ): Observable<any> {
+
     const formData = new FormData();
 
-    // Keep one multipart request. This is the fastest architecture;
-    // upload time is dominated by the total file bytes.
-    formData.append('inspectionData', JSON.stringify(data));
+    // Keep inspection data and images
+    // in one multipart request.
+
+    formData.append(
+      'inspectionData',
+      JSON.stringify(data)
+    );
 
     let index = 0;
 
     for (const image of vehicleImages) {
-      if (!image?.file) continue;
+      if (!image?.file) {
+        continue;
+      }
 
       formData.append(
         'vehicleImages',
@@ -129,17 +298,23 @@ export class EmployeeService {
       index++;
     }
 
-    // IMPORTANT:
-    // Do NOT manually set Content-Type for FormData.
-    // Browser must add the multipart boundary itself.
+    // Do not manually set Content-Type.
+    // Browser adds the multipart boundary.
+
     return this.http.patch<any>(
       `${this.apiUrl}/inspection-requests/request/${Number(requestId)}/submit`,
       formData,
-      { headers: this.getAuthHeaders() }
+      {
+        headers: this.getAuthHeaders()
+      }
     );
   }
 
-  // Kept for existing callers.
+  // =========================================
+  // UPLOAD VEHICLE IMAGES
+  // Existing Method
+  // =========================================
+
   uploadVehicleImages(
     carId: number,
     images: Array<{
@@ -149,11 +324,15 @@ export class EmployeeService {
       file: File | null;
     }>
   ): Observable<any> {
+
     const formData = new FormData();
+
     let fileIndex = 0;
 
     images.forEach(image => {
-      if (!image?.file) return;
+      if (!image?.file) {
+        return;
+      }
 
       formData.append(
         'images',
@@ -186,28 +365,55 @@ export class EmployeeService {
     return this.http.post<any>(
       `${this.apiUrl}/admin/vehicles/${Number(carId)}/images`,
       formData,
-      { headers: this.getAuthHeaders() }
+      {
+        headers: this.getAuthHeaders()
+      }
     );
   }
 
-  generateInspectionReportPdf(reportId: number): Observable<any> {
+  // =========================================
+  // GENERATE INSPECTION REPORT PDF
+  // =========================================
+
+  generateInspectionReportPdf(
+    reportId: number
+  ): Observable<any> {
     return this.http.get<any>(
       `${this.apiUrl}/admin/inspection-reports/${Number(reportId)}/pdf`,
-      { headers: this.getHeaders() }
+      {
+        headers: this.getHeaders()
+      }
     );
   }
 
-  getRequestReport(requestId: number): Observable<any> {
+  // =========================================
+  // GET REQUEST REPORT
+  // =========================================
+
+  getRequestReport(
+    requestId: number
+  ): Observable<any> {
     return this.http.get<any>(
       `${this.apiUrl}/inspection-requests/request/${Number(requestId)}/report`,
-      { headers: this.getHeaders() }
+      {
+        headers: this.getHeaders()
+      }
     );
   }
 
-  getRequestByReportId(reportId: number): Observable<any> {
+  // =========================================
+  // GET REQUEST BY REPORT ID
+  // =========================================
+
+  getRequestByReportId(
+    reportId: number
+  ): Observable<any> {
     return this.http.get<any>(
       `${this.apiUrl}/inspection-requests/report/${Number(reportId)}/request`,
-      { headers: this.getHeaders() }
+      {
+        headers: this.getHeaders()
+      }
     );
   }
+
 }

@@ -463,6 +463,21 @@ app.use(
     sellCarRoutes
 );
 
+// ======================================================
+// EMPLOYEE SELL CAR REQUESTS
+// GET    /api/employee/sell-car-requests
+// PATCH  /api/employee/sell-car-requests/:sellId
+// POST   /api/employee/sell-car-requests/:sellId/submit
+// ======================================================
+
+// Keep the existing customer and admin mounts above/below.
+// This mount exposes the employee-prefixed routes defined
+// inside sellCar.routes.js without changing their handlers.
+app.use(
+    "/api",
+    sellCarRoutes
+);
+
 
 // ======================================================
 // CUSTOMER EXCHANGE

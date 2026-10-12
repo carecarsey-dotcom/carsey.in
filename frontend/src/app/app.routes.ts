@@ -7,6 +7,7 @@ import { CarDetailsComponent } from './pages/customer/car-details/car-details.co
 import { EmployeeDashboardComponent } from './pages/employee-dashboard/employee-dashboard.component';
 
 import { EmployeeInspectionComponent } from './pages/employee-inspection/employee-inspection.component';
+import { EmployeeSellCarRequestsComponent } from './pages/employee-sell-car-requests/employee-sell-car-requests.component';
 
 
 export const routes: Routes = [
@@ -296,6 +297,12 @@ export const routes: Routes = [
         path: 'inspection/:requestId',
 
         component: EmployeeInspectionComponent
+      },
+
+      // Employee Sell Car Requests
+      {
+        path: 'sell-car-requests',
+        component: EmployeeSellCarRequestsComponent
       },
 
 

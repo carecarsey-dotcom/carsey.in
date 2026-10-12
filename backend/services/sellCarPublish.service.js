@@ -230,6 +230,13 @@ async function publishFromSellCar(sellId, body = {}, files = {}) {
   const request = await sellCarRepository.getSellCarRequestById(id);
   if (!request) throw new Error("Sell Car request not found.");
 
+  // Security/business rule: only an Admin-approved request may be published.
+  // The repository must return the workflow_status column for this check.
+  const workflowStatus = String(request.workflow_status || "").trim().toLowerCase();
+  if (workflowStatus !== "approved") {
+    throw new Error("Admin approval is required before publishing this Sell Car request.");
+  }
+
   // Prevent creating multiple vehicles for the same request.
   const existing = await query(
     "SELECT car_id FROM cars WHERE source_sell_id = ? LIMIT 1",
@@ -330,7 +337,8 @@ async function publishFromSellCar(sellId, body = {}, files = {}) {
       imageCount++;
     }
 
-    await sellCarRepository.updateSellCarRequestStatus(id, "Approved");
+    // The Sell Car request is already marked Approved by the Admin approval API.
+    // Do not change its workflow/status during publishing; keep approval and publishing separate.
   } catch (error) {
     // Do not leave a partially processed car published.
     try {

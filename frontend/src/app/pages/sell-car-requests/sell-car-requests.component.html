@@ -2,291 +2,197 @@
 <!-- HEADER -->
 <!-- ========================================= -->
 
-<div
-  class="mb-6 flex items-center justify-between"
->
-
+<div class="mb-6 flex items-center justify-between">
   <div>
-
-    <h1
-      class="text-2xl font-bold text-slate-800"
-    >
+    <h1 class="text-2xl font-bold text-slate-800">
       Sell Car Requests
     </h1>
 
-    <p
-      class="mt-1 text-sm text-slate-500"
-    >
+    <p class="mt-1 text-sm text-slate-500">
       Manage customer requests to sell their cars.
     </p>
-
   </div>
 
   <button
     type="button"
-    (click)="loadRequests()"
+    (click)="loadRequests(); loadEmployees()"
     class="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
   >
     Refresh
   </button>
-
 </div>
 
-
 <!-- ========================================= -->
-<!-- LOADING -->
+<!-- SUCCESS MESSAGE -->
 <!-- ========================================= -->
 
-@if (loading) {
-
+@if (successMessage) {
   <div
-    class="rounded-xl bg-white p-8 text-center shadow-sm"
+    class="mb-4 rounded-lg border border-green-200 bg-green-50 p-4 text-sm text-green-700"
   >
-
-    <p
-      class="text-slate-500"
-    >
-      Loading sell car requests...
-    </p>
-
+    {{ successMessage }}
   </div>
-
 }
-
 
 <!-- ========================================= -->
 <!-- ERROR -->
 <!-- ========================================= -->
 
-@if (
-  !loading &&
-  errorMessage
-) {
-
+@if (errorMessage) {
   <div
-    class="rounded-xl bg-white p-6 shadow-sm"
+    class="mb-4 rounded-lg border border-red-200 bg-red-50 p-4"
   >
-
-    <h3
-      class="font-semibold text-red-700"
-    >
+    <p class="font-semibold text-red-700">
       Error
-    </h3>
+    </p>
 
-    <p
-      class="mt-1 text-red-600"
-    >
+    <p class="mt-1 text-sm text-red-600">
       {{ errorMessage }}
     </p>
 
     <button
       type="button"
       (click)="loadRequests()"
-      class="mt-4 rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700"
+      class="mt-3 rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700"
     >
       Retry
     </button>
-
   </div>
-
 }
 
+<!-- ========================================= -->
+<!-- LOADING -->
+<!-- ========================================= -->
+
+@if (loading) {
+  <div class="rounded-xl bg-white p-8 text-center shadow-sm">
+    <p class="text-slate-500">
+      Loading sell car requests...
+    </p>
+  </div>
+}
 
 <!-- ========================================= -->
 <!-- CONTENT -->
 <!-- ========================================= -->
 
-@if (
-  !loading &&
-  !errorMessage
-) {
-
-  <div
-    class="overflow-hidden rounded-xl bg-white shadow-sm"
-  >
+@if (!loading) {
+  <div class="overflow-hidden rounded-xl bg-white shadow-sm">
 
     <!-- TABLE HEADER -->
 
-    <div
-      class="border-b px-6 py-5"
-    >
-
-      <h2
-        class="text-lg font-semibold text-slate-800"
-      >
+    <div class="border-b px-6 py-5">
+      <h2 class="text-lg font-semibold text-slate-800">
         All Sell Car Requests
       </h2>
 
-      <p
-        class="mt-1 text-sm text-slate-500"
-      >
+      <p class="mt-1 text-sm text-slate-500">
         {{ requests.length }} requests found
       </p>
-
     </div>
-
 
     <!-- ======================================= -->
     <!-- TABLE -->
     <!-- ======================================= -->
 
-    <div
-      class="overflow-x-auto"
-    >
+    <div class="overflow-x-auto">
+      <table class="min-w-full">
 
-      <table
-        class="min-w-full"
-      >
-
-        <thead
-          class="border-b bg-slate-50"
-        >
-
+        <thead class="border-b bg-slate-50">
           <tr>
-
-            <th
-              class="px-6 py-4 text-left text-sm font-semibold text-slate-600"
-            >
+            <th class="px-6 py-4 text-left text-sm font-semibold text-slate-600">
               ID
             </th>
 
-            <th
-              class="px-6 py-4 text-left text-sm font-semibold text-slate-600"
-            >
+            <th class="px-6 py-4 text-left text-sm font-semibold text-slate-600">
               Seller
             </th>
 
-            <th
-              class="px-6 py-4 text-left text-sm font-semibold text-slate-600"
-            >
+            <th class="px-6 py-4 text-left text-sm font-semibold text-slate-600">
               Owner Name
             </th>
 
-            <th
-              class="px-6 py-4 text-left text-sm font-semibold text-slate-600"
-            >
-              OwnerShip
+            <th class="px-6 py-4 text-left text-sm font-semibold text-slate-600">
+              Ownership
             </th>
 
-            <th
-              class="px-6 py-4 text-left text-sm font-semibold text-slate-600"
-            >
+            <th class="px-6 py-4 text-left text-sm font-semibold text-slate-600">
               Contact
             </th>
 
-            <th
-              class="px-6 py-4 text-left text-sm font-semibold text-slate-600"
-            >
+            <th class="px-6 py-4 text-left text-sm font-semibold text-slate-600">
               City
             </th>
 
-            <th
-              class="px-6 py-4 text-left text-sm font-semibold text-slate-600"
-            >
+            <th class="px-6 py-4 text-left text-sm font-semibold text-slate-600">
               Vehicle
             </th>
 
-            <th
-              class="px-6 py-4 text-left text-sm font-semibold text-slate-600"
-            >
+            <th class="px-6 py-4 text-left text-sm font-semibold text-slate-600">
               Vehicle Number
             </th>
 
-            <th
-              class="px-6 py-4 text-left text-sm font-semibold text-slate-600"
-            >
+            <th class="px-6 py-4 text-left text-sm font-semibold text-slate-600">
               Year
             </th>
 
-            <th
-              class="px-6 py-4 text-left text-sm font-semibold text-slate-600"
-            >
+            <th class="px-6 py-4 text-left text-sm font-semibold text-slate-600">
               Fuel
             </th>
 
-            <th
-              class="px-6 py-4 text-left text-sm font-semibold text-slate-600"
-            >
+            <th class="px-6 py-4 text-left text-sm font-semibold text-slate-600">
               Transmission
             </th>
 
-            <th
-              class="px-6 py-4 text-left text-sm font-semibold text-slate-600"
-            >
+            <th class="px-6 py-4 text-left text-sm font-semibold text-slate-600">
               KM Driven
             </th>
 
-            <th
-              class="px-6 py-4 text-left text-sm font-semibold text-slate-600"
-            >
+            <th class="px-6 py-4 text-left text-sm font-semibold text-slate-600">
               Expected Price
             </th>
 
-            <th
-              class="px-6 py-4 text-left text-sm font-semibold text-slate-600"
-            >
+            <th class="px-6 py-4 text-left text-sm font-semibold text-slate-600">
               Images
             </th>
 
-            <th
-              class="px-6 py-4 text-left text-sm font-semibold text-slate-600"
-            >
+            <th class="px-6 py-4 text-left text-sm font-semibold text-slate-600">
               Status
             </th>
 
-            <th
-              class="px-6 py-4 text-left text-sm font-semibold text-slate-600"
-            >
-              Action
+            <th class="px-6 py-4 text-left text-sm font-semibold text-slate-600">
+              Assign Employee / Action
             </th>
-
           </tr>
-
         </thead>
 
+        <tbody class="divide-y divide-slate-100">
 
-        <tbody
-          class="divide-y divide-slate-100"
-        >
-
-          @for (
-            request of requests;
-            track request.sell_id
-          ) {
-
-            <tr
-              class="transition hover:bg-slate-50"
-            >
+          @for (request of requests; track request.sell_id) {
+            <tr class="align-top transition hover:bg-slate-50">
 
               <!-- ID -->
 
-              <td
-                class="px-6 py-4 text-sm font-medium text-slate-700"
-              >
+              <td class="px-6 py-4 text-sm font-medium text-slate-700">
                 {{ getDisplayId(request.sell_id) }}
               </td>
 
-
               <!-- SELLER -->
 
-              <td
-                class="px-6 py-4"
-              >
-
-                <p
-                  class="font-semibold text-slate-800"
-                >
+              <td class="px-6 py-4">
+                <p class="font-semibold text-slate-800">
                   {{ request.seller_name || '-' }}
                 </p>
-
               </td>
 
               <!-- OWNER NAME -->
+
               <td class="px-6 py-4 text-sm font-medium text-slate-700">
                 {{ request.owner_name || '-' }}
               </td>
 
               <!-- OWNER CLASSIFICATION -->
+
               <td class="px-6 py-4">
                 <span
                   class="inline-flex rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700"
@@ -295,160 +201,102 @@
                 </span>
               </td>
 
-
               <!-- CONTACT -->
 
-              <td
-                class="px-6 py-4"
-              >
-
-                <p
-                  class="text-sm text-slate-700"
-                >
+              <td class="px-6 py-4">
+                <p class="text-sm text-slate-700">
                   {{ request.mobile || '-' }}
                 </p>
 
-                <p
-                  class="mt-1 text-xs text-slate-500"
-                >
+                <p class="mt-1 text-xs text-slate-500">
                   {{ request.email || '-' }}
                 </p>
-
               </td>
-
 
               <!-- CITY -->
 
-              <td
-                class="px-6 py-4"
-              >
-
-                <p
-                  class="text-sm font-medium text-slate-700"
-                >
+              <td class="px-6 py-4">
+                <p class="text-sm font-medium text-slate-700">
                   {{ request.city || '-' }}
                 </p>
-
               </td>
-
 
               <!-- VEHICLE -->
 
-              <td
-                class="px-6 py-4"
-              >
-
-                <p
-                  class="font-medium text-slate-800"
-                >
+              <td class="px-6 py-4">
+                <p class="font-medium text-slate-800">
                   {{ request.brand || '-' }}
                   {{ request.model || '' }}
                 </p>
 
-                <p
-                  class="mt-1 text-xs text-slate-500"
-                >
+                <p class="mt-1 text-xs text-slate-500">
                   {{ request.variant || '-' }}
                 </p>
-
               </td>
-
 
               <!-- VEHICLE NUMBER -->
 
-              <td
-                class="px-6 py-4"
-              >
-
-                <p
-                  class="font-semibold text-slate-800"
-                >
+              <td class="px-6 py-4">
+                <p class="font-semibold text-slate-800">
                   {{ request.vehicle_number || '-' }}
                 </p>
-
               </td>
-
 
               <!-- YEAR -->
 
-              <td
-                class="px-6 py-4 text-sm text-slate-600"
-              >
+              <td class="px-6 py-4 text-sm text-slate-600">
                 {{ request.manufacturing_year || '-' }}
               </td>
 
-
               <!-- FUEL -->
 
-              <td
-                class="px-6 py-4 text-sm text-slate-600"
-              >
+              <td class="px-6 py-4 text-sm text-slate-600">
                 {{ request.fuel_type || '-' }}
               </td>
 
-
               <!-- TRANSMISSION -->
 
-              <td
-                class="px-6 py-4 text-sm text-slate-600"
-              >
+              <td class="px-6 py-4 text-sm text-slate-600">
                 {{ request.transmission || '-' }}
               </td>
 
-
               <!-- KM -->
 
-              <td
-                class="px-6 py-4 text-sm text-slate-600"
-              >
-
+              <td class="px-6 py-4 text-sm text-slate-600">
                 @if (
-                  request.km_driven !==
-                  undefined &&
-                  request.km_driven !==
-                  null
+                  request.km_driven !== undefined &&
+                  request.km_driven !== null
                 ) {
-
                   {{ request.km_driven | number }} km
-
                 } @else {
-
                   -
-
                 }
-
               </td>
-
 
               <!-- PRICE -->
 
-              <td
-                class="px-6 py-4 font-medium text-slate-800"
-              >
-
+              <td class="px-6 py-4 font-medium text-slate-800">
                 @if (
-                  request.expected_price !==
-                  undefined &&
-                  request.expected_price !==
-                  null
+                  request.expected_price !== undefined &&
+                  request.expected_price !== null
                 ) {
-
                   ₹{{ request.expected_price | number }}
-
                 } @else {
-
                   -
-
                 }
-
               </td>
 
-
               <!-- IMAGES -->
+
               <td class="px-6 py-4">
                 <div class="grid min-w-[240px] grid-cols-2 gap-3">
-                  @for (image of getRequestImages(request); track image.label) {
+
+                  @for (
+                    image of getRequestImages(request);
+                    track image.label
+                  ) {
                     <div class="flex items-center gap-2">
+
                       @if (image.path) {
                         <a
                           [href]="getImageUrl(image.path)"
@@ -463,142 +311,98 @@
                           >
                         </a>
                       } @else {
-                        <div class="flex h-12 w-12 items-center justify-center rounded-lg border bg-slate-50 text-xs text-slate-300">
+                        <div
+                          class="flex h-12 w-12 items-center justify-center rounded-lg border bg-slate-50 text-xs text-slate-300"
+                        >
                           —
                         </div>
                       }
-                      <span class="max-w-[110px] text-xs text-slate-600">{{ image.label }}</span>
+
+                      <span class="max-w-[110px] text-xs text-slate-600">
+                        {{ image.label }}
+                      </span>
+
                     </div>
+                  }
+
+                </div>
+              </td>
+
+              <!-- STATUS -->
+
+              <td class="px-6 py-4">
+                <span
+                  class="whitespace-nowrap rounded-full px-3 py-1 text-xs font-semibold"
+                  [ngClass]="getStatusClass(getWorkflowStatus(request))"
+                >
+                  {{ getWorkflowStatus(request) }}
+                </span>
+              </td>
+
+              <!-- ASSIGN EMPLOYEE / ACTION -->
+              <td class="min-w-[260px] px-6 py-4">
+                <div class="space-y-3">
+                  @if (getWorkflowStatus(request) === 'Pending Assignment' || getWorkflowStatus(request) === 'Assigned' || getWorkflowStatus(request) === 'Correction Required') {
+                    <label [for]="'employee-' + request.sell_id" class="mb-1 block text-xs font-semibold text-slate-600">Select Employee</label>
+                    <select [id]="'employee-' + request.sell_id" [value]="selectedEmployees[request.sell_id] || request.assigned_employee_id || ''" (change)="onEmployeeChange(request.sell_id, $event)" [disabled]="loadingEmployees || assigningSellId === request.sell_id" class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500">
+                      <option value="">{{ loadingEmployees ? 'Loading employees...' : 'Choose employee' }}</option>
+                      @for (employee of employees; track employee.admin_id) {
+                        <option [value]="employee.admin_id">{{ employee.name }} @if (employee.email) { ({{ employee.email }}) }</option>
+                      }
+                    </select>
+                    <button type="button" (click)="assignEmployee(request)" [disabled]="!selectedEmployees[request.sell_id] || assigningSellId === request.sell_id || loadingEmployees" class="w-full rounded-lg bg-blue-600 px-3 py-2 text-xs font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50">
+                      {{ assigningSellId === request.sell_id ? 'Assigning...' : 'Assign Employee' }}
+                    </button>
+                  }
+                  @if (getWorkflowStatus(request) === 'Pending Approval') {
+                    <button type="button" (click)="approve(request)" [disabled]="updatingSellId === request.sell_id" class="w-full rounded-lg bg-green-600 px-3 py-2 text-xs font-semibold text-white transition hover:bg-green-700 disabled:opacity-50">Approve Request</button>
+                    <button type="button" (click)="sendForCorrection(request)" [disabled]="updatingSellId === request.sell_id" class="w-full rounded-lg bg-orange-500 px-3 py-2 text-xs font-semibold text-white transition hover:bg-orange-600 disabled:opacity-50">Send for Correction</button>
+                    <button type="button" (click)="reject(request)" [disabled]="updatingSellId === request.sell_id" class="w-full rounded-lg bg-red-600 px-3 py-2 text-xs font-semibold text-white transition hover:bg-red-700 disabled:opacity-50">Reject Request</button>
+                  }
+                  @if (getWorkflowStatus(request) === 'Approved') {
+                    <button type="button" (click)="publishVehicle(request)" class="w-full rounded-lg bg-indigo-600 px-3 py-2 text-xs font-semibold text-white transition hover:bg-indigo-700">Publish Vehicle</button>
+                  }
+                  @if (getWorkflowStatus(request) === 'Rejected') {
+                    <span class="text-sm font-medium text-red-500">Request Rejected</span>
+                  }
+                  @if (getWorkflowStatus(request) === 'Pending Assignment') {
+                    <p class="text-xs text-slate-500">Assign an employee to start processing.</p>
+                  }
+                  @if (getWorkflowStatus(request) === 'Correction Required') {
+                    <p class="rounded-lg bg-orange-50 p-2 text-xs text-orange-700">Correction note: {{ request.correction_note || 'Please review the request.' }}</p>
                   }
                 </div>
               </td>
 
-
-              <!-- STATUS -->
-
-              <td
-                class="px-6 py-4"
-              >
-
-                <span
-                  class="rounded-full px-3 py-1 text-xs font-semibold"
-                  [ngClass]="
-                    getStatusClass(
-                      request.status
-                    )
-                  "
-                >
-                  {{ request.status || 'Pending' }}
-                </span>
-
-              </td>
-
-
-              <!-- ACTION -->
-
-              <td
-                class="px-6 py-4"
-              >
-
-                @if (
-                  request.status !== 'Approved' &&
-                  request.status !== 'Rejected'
-                ) {
-
-                  <div
-                    class="flex gap-2"
-                  >
-
-                    <button
-                      type="button"
-                      (click)="approve(request)"
-                      [disabled]="
-                        updatingSellId ===
-                        request.sell_id
-                      "
-                      class="rounded-lg bg-green-600 px-3 py-2 text-xs font-semibold text-white transition hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-50"
-                    >
-                      Approve &amp; Publish
-                    </button>
-
-
-                    <button
-                      type="button"
-                      (click)="reject(request)"
-                      [disabled]="
-                        updatingSellId ===
-                        request.sell_id
-                      "
-                      class="rounded-lg bg-red-600 px-3 py-2 text-xs font-semibold text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50"
-                    >
-                      Reject
-                    </button>
-
-                  </div>
-
-                } @else {
-
-                  <span
-                    class="text-sm font-medium text-slate-400"
-                  >
-                    Completed
-                  </span>
-
-                }
-
-              </td>
-
             </tr>
-
           }
 
-
-          <!-- ================================= -->
           <!-- NO DATA -->
-          <!-- ================================= -->
 
-          @if (
-            requests.length === 0
-          ) {
-
+          @if (requests.length === 0) {
             <tr>
-
               <td
                 colspan="16"
                 class="px-6 py-12 text-center"
               >
-
-                <div
-                  class="text-4xl"
-                >
+                <div class="text-4xl">
                   🚙
                 </div>
 
-                <p
-                  class="mt-3 font-semibold text-slate-700"
-                >
+                <p class="mt-3 font-semibold text-slate-700">
                   No sell car requests found
                 </p>
 
-                <p
-                  class="mt-1 text-sm text-slate-500"
-                >
-                  Customer sell car requests
-                  will appear here.
+                <p class="mt-1 text-sm text-slate-500">
+                  Customer Sell Car requests will appear here.
                 </p>
-
               </td>
-
             </tr>
-
           }
 
         </tbody>
-
       </table>
-
     </div>
 
   </div>
-
 }
