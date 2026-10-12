@@ -165,24 +165,8 @@
 
             <!-- Owner Name field removed; it is not required. -->
 
-            <!-- OWNER CLASSIFICATION -->
-            <div class="form-group full">
-              <label>Ownership *</label>
-              <select
-                name="ownerClassification"
-                [(ngModel)]="ownerClassification"
-                required
-              >
-                <option value="">Select Ownership</option>
-                <option value="First Owner">First Owner</option>
-                <option value="Second Owner">Second Owner</option>
-                <option value="Third Owner">Third Owner</option>
-              </select>
-              <small>Select how many owners the car has had.</small>
-            </div>
-
-
-            <!-- BRAND -->
+            <!-- Ownership field moved below Manufacturing Year. -->
+<!-- BRAND -->
 
             <div class="form-group">
 
@@ -285,7 +269,26 @@
             </div>
 
 
-            <!-- FUEL -->
+
+
+            <!-- OWNER CLASSIFICATION: placed after Manufacturing Year -->
+            <div class="form-group full">
+              <label>Ownership *</label>
+              <select
+                name="ownerClassification"
+                [(ngModel)]="ownerClassification"
+                required
+              >
+                <option value="">Select Ownership</option>
+                <option value="First Owner">First Owner</option>
+                <option value="Second Owner">Second Owner</option>
+                <option value="Third Owner">Third Owner</option>
+              </select>
+              <small>Select how many owners the car has had.</small>
+            </div>
+
+
+                        <!-- FUEL -->
 
             <div class="form-group">
 
