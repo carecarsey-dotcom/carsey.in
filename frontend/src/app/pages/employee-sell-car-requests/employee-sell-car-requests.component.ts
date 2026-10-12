@@ -122,6 +122,12 @@ export class EmployeeSellCarRequestsComponent implements OnInit {
 
   };
 
+  // Image removals are applied when the employee saves the form.
+  sellCarImagesToRemove = new Set<string>();
+
+  // Temporary preview URLs for newly selected images.
+  selectedImagePreviewUrls: Record<string, string | null> = {};
+
   // =====================================================
   // LOAD EMPLOYEE SELL CAR REQUESTS
   // =====================================================
@@ -206,27 +212,55 @@ export class EmployeeSellCarRequestsComponent implements OnInit {
   // =====================================================
 
   private resetSellCarImages(): void {
+ Object.values(this.selectedImagePreviewUrls).forEach((url) => {
+  if (url) {
+    URL.revokeObjectURL(url);
+  }
+});
+    this.selectedImagePreviewUrls = {};
+    this.sellCarImagesToRemove.clear();
 
     this.sellCarImages = {
-
       frontImage: null,
-
       backImage: null,
-
       leftImage: null,
-
       rightImage: null,
-
       interiorFrontImage: null,
-
       interiorRearImage: null,
-
       odometerImage: null,
-
       extraImage: null
-
     };
+  }
 
+
+  removeSellCarImage(fieldKey: string): void {
+    this.clearSelectedSellCarImage(fieldKey);
+    this.sellCarImagesToRemove.add(fieldKey);
+    this.sellCarError = '';
+    this.sellCarSuccess = '';
+  }
+
+  undoSellCarImageRemoval(fieldKey: string): void {
+    this.sellCarImagesToRemove.delete(fieldKey);
+  }
+
+  isSellCarImageMarkedForRemoval(fieldKey: string): boolean {
+    return this.sellCarImagesToRemove.has(fieldKey);
+  }
+
+  clearSelectedSellCarImage(fieldKey: string): void {
+    const oldUrl = this.selectedImagePreviewUrls[fieldKey];
+
+    if (oldUrl) {
+      URL.revokeObjectURL(oldUrl);
+    }
+
+    delete this.selectedImagePreviewUrls[fieldKey];
+    this.sellCarImages[fieldKey] = null;
+  }
+
+  getSelectedSellCarImagePreview(fieldKey: string): string {
+    return this.selectedImagePreviewUrls[fieldKey] || '';
   }
 
   // =====================================================
@@ -386,7 +420,10 @@ export class EmployeeSellCarRequestsComponent implements OnInit {
 
     this.sellCarSuccess = '';
 
+    this.clearSelectedSellCarImage(fieldKey);
     this.sellCarImages[fieldKey] = file;
+    this.sellCarImagesToRemove.delete(fieldKey);
+    this.selectedImagePreviewUrls[fieldKey] = URL.createObjectURL(file);
 
   }
 
@@ -427,6 +464,16 @@ export class EmployeeSellCarRequestsComponent implements OnInit {
 
     return `${origin}${path.startsWith('/') ? path : '/' + path}`;
 
+  }
+
+  // Create a readable filename for downloading an existing vehicle image.
+  getSellCarDownloadName(field: SellCarImageField, path: string): string {
+    const cleanPath = (path || '').split('?')[0].split('#')[0];
+    const extension = cleanPath.includes('.')
+      ? cleanPath.substring(cleanPath.lastIndexOf('.'))
+      : '.jpg';
+    const safeLabel = field.label.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    return `sell-car-${safeLabel}${extension}`;
   }
 
   // =====================================================
@@ -480,19 +527,16 @@ export class EmployeeSellCarRequestsComponent implements OnInit {
 
     // Append only newly selected images.
     // Unchanged images are not re-uploaded.
-    this.sellCarImageFields.forEach(
-      (field: SellCarImageField) => {
-
-        const file = this.sellCarImages[field.key];
-
-        if (file) {
-
-          formData.append(field.key, file);
-
-        }
-
+    this.sellCarImageFields.forEach((field: SellCarImageField) => {
+      const file = this.sellCarImages[field.key];
+      if (file) {
+        formData.append(field.key, file);
       }
-    );
+      if (this.sellCarImagesToRemove.has(field.key)) {
+        // Backend must interpret this flag by setting the corresponding DB image column to NULL.
+        formData.append(`remove_${field.key}`, 'true');
+      }
+    });
 
     this.sellCarLoading = true;
 
