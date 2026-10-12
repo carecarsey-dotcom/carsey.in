@@ -157,6 +157,10 @@
             </th>
 
             <th class="px-6 py-4 text-left text-sm font-semibold text-slate-600">
+              Assigned Employee
+            </th>
+
+            <th class="px-6 py-4 text-left text-sm font-semibold text-slate-600">
               Status
             </th>
 
@@ -328,6 +332,14 @@
                 </div>
               </td>
 
+              <!-- ASSIGNED EMPLOYEE -->
+
+              <td class="px-6 py-4">
+                <p class="whitespace-nowrap text-sm font-semibold text-slate-800">
+                  {{ getAssignedEmployeeName(request) }}
+                </p>
+              </td>
+
               <!-- STATUS -->
 
               <td class="px-6 py-4">
@@ -382,7 +394,7 @@
           @if (requests.length === 0) {
             <tr>
               <td
-                colspan="16"
+                colspan="17"
                 class="px-6 py-12 text-center"
               >
                 <div class="text-4xl">

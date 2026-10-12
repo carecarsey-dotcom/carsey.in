@@ -37,6 +37,17 @@ export class SellCarRequestsComponent implements OnInit {
     return request.assigned_employee_id ? 'Assigned' : 'Pending Assignment';
   }
 
+  getAssignedEmployeeName(request: SellCarRequest): string {
+    const employeeId = Number(request.assigned_employee_id);
+    if (!employeeId) return 'Not Assigned';
+
+    const employee = this.employees.find(
+      item => Number(item.admin_id) === employeeId
+    );
+
+    return employee?.name || `Employee ID: ${employeeId}`;
+  }
+
   loadRequests(): void {
     this.loading = true; this.errorMessage = '';
     this.sellCarService.getRequests().subscribe({
