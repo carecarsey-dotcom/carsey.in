@@ -128,8 +128,8 @@
 
 .form-group input:focus,
 .form-group select:focus {
-  border-color: #ec008c;
-  box-shadow: 0 0 0 3px rgba(236, 0, 140, 0.10);
+  border-color: #0866FF;
+  box-shadow: 0 0 0 3px rgba(8, 102, 255, 0.10);
 }
 
 /* =====================================================
@@ -187,8 +187,8 @@
 }
 
 .upload-box:hover {
-  border-color: #ec008c;
-  background: #fff7fb;
+  border-color: #0866FF;
+  background: #EAF4FF;
   transform: translateY(-1px);
 }
 
@@ -289,18 +289,18 @@
   min-height: 52px;
   border: none;
   border-radius: 12px;
-  background: linear-gradient(90deg, #ec008c 0%, #b000d4 50%, #8b00e8 100%);
+  background: linear-gradient(90deg, #0866FF 0%, #009DFF 50%, #0052CC 100%);
   color: #ffffff;
   font-size: 17px;
   font-weight: 800;
   cursor: pointer;
-  box-shadow: 0 8px 18px rgba(139, 0, 232, 0.18);
+  box-shadow: 0 8px 18px rgba(8, 102, 255, 0.18);
   transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
 }
 
 .submit-button:hover:not(:disabled) {
   transform: translateY(-1px);
-  box-shadow: 0 10px 24px rgba(139, 0, 232, 0.28);
+  box-shadow: 0 10px 24px rgba(8, 102, 255, 0.28);
 }
 
 .submit-button:disabled {
@@ -325,7 +325,7 @@ select,
 textarea {
   color: #0f172a !important;
   background-color: #ffffff !important;
-  caret-color: #ec008c;
+  caret-color: #0866FF;
 }
 
 input::placeholder,

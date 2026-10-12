@@ -40,7 +40,7 @@
   background:
     radial-gradient(
       circle at 80% 20%,
-      rgba(236, 0, 140, 0.16),
+      rgba(8, 102, 255, 0.18),
       transparent 35%
     ),
     linear-gradient(
@@ -65,7 +65,7 @@
 .section-label {
   display: inline-block;
 
-  color: #ec008c;
+  color: #0866ff;
 
   font-size: 13px;
   font-weight: 800;
@@ -100,8 +100,8 @@
 
   background: linear-gradient(
     90deg,
-    #ec008c,
-    #9b00ff
+    #0866ff,
+    #009dff
   );
 
   -webkit-background-clip: text;
@@ -166,8 +166,8 @@
 
   background: linear-gradient(
     90deg,
-    #ec008c,
-    #9b00ff
+    #0866ff,
+    #009dff
   );
 }
 
@@ -187,7 +187,7 @@
   transform: translateY(-3px);
 
   box-shadow:
-    0 12px 30px rgba(236, 0, 140, 0.25);
+    0 12px 30px rgba(8, 102, 255, 0.28);
 }
 
 
@@ -282,8 +282,8 @@
 
   background: linear-gradient(
     135deg,
-    #ec008c,
-    #9b00ff
+    #0866ff,
+    #009dff
   );
 
   font-size: 30px;
@@ -312,7 +312,7 @@
 
   margin: 25px 0;
 
-  background: #ec008c;
+  background: #0866ff;
 }
 
 
@@ -376,7 +376,7 @@
 .feature-card:hover {
   transform: translateY(-6px);
 
-  border-color: #ec008c;
+  border-color: #0866ff;
 
   box-shadow:
     0 15px 35px rgba(15, 23, 42, 0.08);
@@ -394,7 +394,7 @@
 
   border-radius: 14px;
 
-  background: #fff0f8;
+  background: #eaf4ff;
 
   font-size: 27px;
 
@@ -464,7 +464,7 @@
   box-shadow:
     0 15px 35px rgba(15, 23, 42, 0.08);
 
-  border-color: #ec008c;
+  border-color: #0866ff;
 }
 
 
@@ -481,7 +481,7 @@
 
   border-radius: 14px;
 
-  background: #fff0f8;
+  background: #eaf4ff;
 
   font-size: 26px;
 }
@@ -548,7 +548,7 @@
 
   font-weight: 900;
 
-  color: #ec008c;
+  color: #0866ff;
 
   margin-bottom: 20px;
 }
@@ -648,7 +648,7 @@
 
 
 .stat strong {
-  color: #ec008c;
+  color: #0866ff;
 
   font-size: 24px;
 }
@@ -673,7 +673,7 @@
   background:
     radial-gradient(
       circle at center,
-      rgba(236, 0, 140, 0.18),
+      rgba(8, 102, 255, 0.20),
       transparent 45%
     ),
     #0d101b;
@@ -821,7 +821,7 @@
 
 .service-areas-section .section-heading h2 span {
   display: block;
-  background: linear-gradient(90deg, #ec008c, #9b00ff);
+  background: linear-gradient(90deg, #0866ff, #009dff);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -853,12 +853,12 @@
 .service-area-card:hover {
   transform: translateY(-5px);
   box-shadow: 0 15px 35px rgba(15, 23, 42, 0.08);
-  border-color: #ec008c;
+  border-color: #0866ff;
 }
 
 .service-area-card.featured-area {
-  border-color: rgba(236, 0, 140, 0.35);
-  background: linear-gradient(145deg, #ffffff, #fff7fc);
+  border-color: rgba(8, 102, 255, 0.35);
+  background: linear-gradient(145deg, #ffffff, #f4f9ff);
 }
 
 .area-icon {
@@ -869,7 +869,7 @@
   align-items: center;
   justify-content: center;
   border-radius: 14px;
-  background: #fff0f8;
+  background: #eaf4ff;
   font-size: 26px;
 }
 
@@ -881,7 +881,7 @@
 .area-tag {
   display: inline-block;
   margin-bottom: 9px;
-  color: #ec008c;
+  color: #0866ff;
   font-size: 11px;
   font-weight: 800;
   letter-spacing: 1.5px;
@@ -921,9 +921,9 @@
 }
 
 .city-list span:hover {
-  background: #fff0f8;
-  border-color: #f5b4dd;
-  color: #a00062;
+  background: #eaf4ff;
+  border-color: #a8d0ff;
+  color: #0752c7;
 }
 
 .service-areas-note {
@@ -964,7 +964,7 @@
   gap: 10px;
   flex-shrink: 0;
   padding: 13px 20px;
-  background: linear-gradient(90deg, #ec008c, #9b00ff);
+  background: linear-gradient(90deg, #0866ff, #009dff);
   border-radius: 9px;
   color: #ffffff;
   font-size: 14px;
@@ -975,7 +975,7 @@
 
 .area-cta:hover {
   transform: translateY(-2px);
-  box-shadow: 0 12px 30px rgba(236, 0, 140, 0.25);
+  box-shadow: 0 12px 30px rgba(8, 102, 255, 0.28);
 }
 
 .area-cta span {

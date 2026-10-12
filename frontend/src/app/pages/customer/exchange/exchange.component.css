@@ -16,7 +16,7 @@ select,
 textarea {
   color: #0f172a !important;
   background-color: #ffffff !important;
-  caret-color: #ec008c;
+  caret-color: #0866FF;
 }
 
 
@@ -126,7 +126,7 @@ input[type="file"] {
 
 input[type="file"]::file-selector-button {
   color: #ffffff;
-  background-color: #ec008c;
+  background-color: #0866FF;
   border: none;
   padding: 8px 14px;
   margin-right: 10px;
@@ -283,8 +283,8 @@ textarea.ng-valid.ng-touched {
 }
 
 .form-group input:focus {
-  border-color: #d60087;
-  box-shadow: 0 0 0 3px rgba(214, 0, 135, 0.10);
+  border-color: #0866FF;
+  box-shadow: 0 0 0 3px rgba(8, 102, 255, 0.10);
 }
 
 
@@ -341,8 +341,8 @@ textarea.ng-valid.ng-touched {
 }
 
 .upload-box:hover {
-  border-color: #d60087;
-  background: #fff7fc;
+  border-color: #0866FF;
+  background: #EAF4FF;
 }
 
 
@@ -447,8 +447,8 @@ textarea.ng-valid.ng-touched {
 
   background: linear-gradient(
     90deg,
-    #ec008c,
-    #8f00e8
+    #0866FF,
+    #009DFF
   );
 
   color: #ffffff;
@@ -465,7 +465,7 @@ textarea.ng-valid.ng-touched {
   transform: translateY(-1px);
 
   box-shadow:
-    0 8px 20px rgba(143, 0, 232, 0.25);
+    0 8px 20px rgba(0, 157, 255, 0.25);
 }
 
 .submit-button:disabled {
