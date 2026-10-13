@@ -297,7 +297,6 @@ export class HomeComponent
 
     this.loadPublishedVehicles();
 
-    this.startCardImageSlider();
 
   }
 
@@ -530,80 +529,87 @@ else if (
 // Every 5 seconds every car changes image.
 // ===================================================
 
+  // ORIGINAL CARD IMAGE SLIDER CODE PRESERVED:
+//   private startCardImageSlider(): void {
+//
+//     this.cardInterval =
+//       setInterval(() => {
+//
+//         const currentIndexes =
+//           this.cardImageIndexes();
+//
+//
+//         const updatedIndexes:
+//           Record<number, number> = {
+//
+//             ...currentIndexes
+//
+//           };
+//
+//
+//         this.vehicles().forEach(
+//           vehicle => {
+//
+//             const images =
+//               this.getVehicleImages(
+//                 vehicle
+//               );
+//
+//
+//             // ========================================
+//             // MULTIPLE IMAGES
+//             // ========================================
+//
+//             if (
+//               images.length > 1
+//             ) {
+//
+//               const currentIndex =
+//                 currentIndexes[
+//                   vehicle.car_id
+//                 ] ?? 0;
+//
+//
+//               updatedIndexes[
+//                 vehicle.car_id
+//               ] =
+//                 (
+//                   currentIndex + 1
+//                 ) %
+//                 images.length;
+//
+//             }
+//
+//
+//             // ========================================
+//             // SINGLE / NO IMAGE
+//             // ========================================
+//
+//             else {
+//
+//               updatedIndexes[
+//                 vehicle.car_id
+//               ] = 0;
+//
+//             }
+//
+//           }
+//         );
+//
+//
+//         this.cardImageIndexes.set(
+//           updatedIndexes
+//         );
+//
+//
+//       }, 5000);
+//
+//   }
+
+  // Card images remain fixed on their first image.
+  // The hero banner slider remains unchanged.
   private startCardImageSlider(): void {
-
-    this.cardInterval =
-      setInterval(() => {
-
-        const currentIndexes =
-          this.cardImageIndexes();
-
-
-        const updatedIndexes:
-          Record<number, number> = {
-
-            ...currentIndexes
-
-          };
-
-
-        this.vehicles().forEach(
-          vehicle => {
-
-            const images =
-              this.getVehicleImages(
-                vehicle
-              );
-
-
-            // ========================================
-            // MULTIPLE IMAGES
-            // ========================================
-
-            if (
-              images.length > 1
-            ) {
-
-              const currentIndex =
-                currentIndexes[
-                  vehicle.car_id
-                ] ?? 0;
-
-
-              updatedIndexes[
-                vehicle.car_id
-              ] =
-                (
-                  currentIndex + 1
-                ) %
-                images.length;
-
-            }
-
-
-            // ========================================
-            // SINGLE / NO IMAGE
-            // ========================================
-
-            else {
-
-              updatedIndexes[
-                vehicle.car_id
-              ] = 0;
-
-            }
-
-          }
-        );
-
-
-        this.cardImageIndexes.set(
-          updatedIndexes
-        );
-
-
-      }, 5000);
-
+    // Intentionally disabled: listing cards should not auto-rotate images.
   }
 
 
@@ -985,32 +991,14 @@ else if (
 
 
     // ================================================
-    // CURRENT INDEX
-    // ================================================
+    // ORIGINAL ROTATING-IMAGE SELECTION PRESERVED:
+    // const currentIndex = this.cardImageIndexes()[vehicle.car_id] ?? 0;
+    // const selectedImage = images[currentIndex % images.length];
 
-    const currentIndex =
-      this.cardImageIndexes()[
-
-        vehicle.car_id
-
-      ] ?? 0;
+    // Always show the first image on each car card.
+    const selectedImage = images[0];
 
 
-    // ================================================
-    // SELECT IMAGE
-    // ================================================
-
-    const selectedImage =
-      images[
-
-        currentIndex %
-
-        images.length
-
-      ];
-
-
-    // ================================================
     // IMAGE PATH
     // ================================================
 
