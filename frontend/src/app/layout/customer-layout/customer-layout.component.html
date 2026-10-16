@@ -479,7 +479,7 @@
         <button
           type="button"
           (click)="toggleMobileMenu()"
-          class="flex h-14 w-14 items-center justify-center rounded-2xl
+          class="!hidden flex h-14 w-14 items-center justify-center rounded-2xl
                  border border-white/15 bg-white/5 text-xl text-white
                  shadow-sm transition-all duration-200
                  hover:border-[#2B75C8] hover:bg-[#0866FF]/10 hover:text-[#2B75C8]
@@ -500,14 +500,29 @@
     </div>
 
 
+    <!-- MOBILE NAVIGATION: options are directly visible without hamburger -->
+    <nav
+      class="mobile-nav-scroll flex w-full items-center gap-2 overflow-x-auto border-t border-white/10
+             bg-[#052F61] px-3 py-2.5 lg:hidden"
+      aria-label="Mobile navigation"
+    >
+      <a routerLink="/" class="mobile-nav-link">Home</a>
+      <a routerLink="/home" routerLinkActive="mobile-nav-active" class="mobile-nav-link">Buy Car</a>
+      <a routerLink="/sell-car" routerLinkActive="mobile-nav-active" class="mobile-nav-link">Sell Car</a>
+      <a routerLink="/book-inspection" routerLinkActive="mobile-nav-active" class="mobile-nav-link">Book Inspection</a>
+      <a routerLink="/pdi" routerLinkActive="mobile-nav-active" class="mobile-nav-link">PDI</a>
+      <a routerLink="/share-your-experience" routerLinkActive="mobile-nav-active" class="mobile-nav-link">Share Your Experience</a>
+      <a routerLink="/about-service" routerLinkActive="mobile-nav-active" class="mobile-nav-link">About Service</a>
+    </nav>
+
     <!-- ================================================= -->
-    <!-- MOBILE MENU -->
+    <!-- PREVIOUS MOBILE MENU CODE PRESERVED BUT HIDDEN -->
     <!-- ================================================= -->
 
     @if (mobileMenuOpen()) {
 
       <div
-        class="border-t border-white/10 bg-[#052F61] px-4 py-4 shadow-2xl lg:hidden"
+        class="!hidden border-t border-white/10 bg-[#052F61] px-4 py-4 shadow-2xl lg:hidden"
       >
 
         <nav class="flex flex-col gap-2">

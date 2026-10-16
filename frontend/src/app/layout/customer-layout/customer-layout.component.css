@@ -1,38 +1,34 @@
-:host {
-  display: block;
-  width: 100%;
-}
-
-/* Navbar transitions */
-header {
-  transition:
-    background-color 0.3s ease,
-    box-shadow 0.3s ease,
-    border-color 0.3s ease,
-    backdrop-filter 0.3s ease;
-}
-
-/* White translucent navbar background after scrolling (when this class is applied) */
-.bg-white-95 {
-  background-color: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-}
-
-/* Smooth page scrolling */
-:host ::ng-deep html {
-  scroll-behavior: smooth;
-}
-
-/* Footer links */
-footer a {
-  cursor: pointer;
-}
-
-/* Mobile */
-@media (max-width: 1023px) {
-  header {
-    backdrop-filter: blur(0);
-    -webkit-backdrop-filter: blur(0);
+/* Mobile navigation: always visible and horizontally scrollable */
+  .mobile-nav-scroll {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    -webkit-overflow-scrolling: touch;
   }
-}
+
+  .mobile-nav-scroll::-webkit-scrollbar {
+    display: none;
+  }
+
+  .mobile-nav-link {
+    display: inline-flex;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: center;
+    min-height: 38px;
+    border: 1px solid rgba(8, 102, 255, 0.45);
+    border-radius: 9999px;
+    background: rgba(8, 102, 255, 0.12);
+    padding: 0.55rem 0.85rem;
+    color: #ffffff;
+    font-size: 12px;
+    font-weight: 700;
+    white-space: nowrap;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+  }
+
+  .mobile-nav-link:hover,
+  .mobile-nav-link.mobile-nav-active {
+    border-color: #0866ff;
+    background: #0866ff;
+    color: #ffffff;
+  }
