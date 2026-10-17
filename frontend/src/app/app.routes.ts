@@ -220,9 +220,37 @@ export const routes: Routes = [
 
 
       // =================================================
+      // PRIVACY POLICY
+      // /privacy-policy
+      // =================================================
+
+      {
+        path: 'privacy-policy',
+        title: 'Privacy Policy | Carsey.in',
+
+        loadComponent: () =>
+          import(
+            './pages/customer/privacy-policy/privacy-policy.component'
+          ).then(
+            m => m.PrivacyPolicyComponent
+          )
+      },
+
+
+      // =================================================
       // CAR DETAILS
       // /car/:id
       // =================================================
+      {
+  path: 'contact-us',
+  title: 'Contact Us | Carsey.in',
+  loadComponent: () =>
+    import('./pages/customer/contact-us/contact-us.component')
+      .then(m => m.ContactUsComponent)
+},
+
+
+      
 
       {
         path: 'car/:id',
