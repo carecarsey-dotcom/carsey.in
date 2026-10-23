@@ -397,6 +397,18 @@ export const routes: Routes = [
 
 
       // ================================================
+      // ADMIN INSPECTION DRAFT
+      // /admin/inspection/:requestId
+      // Reuses the existing inspection component for shared drafts.
+      // ================================================
+
+      {
+        path: 'inspection/:requestId',
+        component: EmployeeInspectionComponent
+      },
+
+
+      // ================================================
       // EMPLOYEE MANAGEMENT
       // /admin/employees
       // ================================================
