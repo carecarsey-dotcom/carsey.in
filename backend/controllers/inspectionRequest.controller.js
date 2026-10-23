@@ -811,6 +811,28 @@ const saveSharedDraft = async (req, res) => {
 };
 
 
+
+const uploadSharedDraftMedia = async (req, res) => {
+    try {
+        const result = await inspectionRequestService.saveSharedInspectionDraftMedia(
+            req.params.requestId,
+            req.admin.admin_id,
+            req.admin.role,
+            req.files || [],
+            req.body?.mediaMetadata
+        );
+        return res.status(200).json({
+            success: true,
+            message: "Inspection draft media uploaded and linked successfully",
+            data: result
+        });
+    } catch (error) {
+        // Do not expose internal stack traces to the client.
+        console.error("UPLOAD SHARED INSPECTION DRAFT MEDIA ERROR:", error);
+        return res.status(400).json({ success: false, message: error.message });
+    }
+};
+
 // ======================================================
 // EXPORTS
 // ======================================================
@@ -834,5 +856,6 @@ module.exports = {
     getRequestByReportId,
 
     getSharedDraft,
-    saveSharedDraft
+    saveSharedDraft,
+    uploadSharedDraftMedia
 };

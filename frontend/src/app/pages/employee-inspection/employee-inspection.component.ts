@@ -235,6 +235,7 @@ export class EmployeeInspectionComponent
   draftSavedAt = '';
   sharedDraftSaving = false;
   sharedDraftAvailable = false;
+  private sharedDraftMediaAssets: any[] = [];
   private inspectionSubmitted = false;
 
 
@@ -1351,8 +1352,7 @@ manufacturing_year:
    */
 
   private buildSharedDraftPayload(): Record<string, any> {
-    // Do not send File/Blob objects to JSON/MySQL. Media remains in IndexedDB
-    // on this device until server-side media upload is implemented separately.
+    // Do not send File/Blob objects to JSON/MySQL; shared media uploads separately.
     return {
       requestId: this.requestId,
       savedAt: Date.now(),
@@ -1468,6 +1468,11 @@ manufacturing_year:
             this.buildSharedDraftPayload()
           )
         );
+
+        // Upload media after saving JSON because the media endpoint merges
+        // mediaAssets into the existing shared draft record.
+        await this.uploadSharedDraftMedia();
+
         this.sharedDraftAvailable = true;
       } catch (sharedError) {
         // Keep local saving functional if network/shared saving fails.
@@ -1479,6 +1484,156 @@ manufacturing_year:
       console.error('Inspection draft save failed:', error);
     } finally {
       this.draftSaving = false;
+    }
+  }
+
+
+  private getSharedDraftMediaEntries(): Array<{
+    key: string;
+    title: string;
+    kind: 'image' | 'video';
+    file: File | null;
+    assign: (file: File, preview: string) => void;
+  }> {
+    const entries: Array<{
+      key: string;
+      title: string;
+      kind: 'image' | 'video';
+      file: File | null;
+      assign: (file: File, preview: string) => void;
+    }> = [];
+
+    for (const item of this.checklistItems) {
+      entries.push({
+        key: `checklist:${item.key}`, title: item.title, kind: 'image', file: item.file,
+        assign: (file, preview) => { item.file = file; item.preview = preview; }
+      });
+    }
+    for (const photo of this.vehiclePhotos) {
+      entries.push({
+        key: `vehicle:${photo.key}`, title: photo.title, kind: 'image', file: photo.file,
+        assign: (file, preview) => { photo.file = file; photo.preview = preview; }
+      });
+    }
+    for (const photo of this.additionalVehiclePhotos) {
+      entries.push({
+        key: `additional:${photo.key}`, title: photo.title, kind: 'image', file: photo.file,
+        assign: (file, preview) => { photo.file = file; photo.preview = preview; }
+      });
+    }
+    for (const photo of this.documentPhotos) {
+      entries.push({
+        key: `document:${photo.key}`, title: photo.title, kind: 'image', file: photo.file,
+        assign: (file, preview) => { photo.file = file; photo.preview = preview; }
+      });
+    }
+    for (const [key, image] of Object.entries(this.detailedRowImages)) {
+      entries.push({
+        key: `detail:${key}`, title: `Inspection detail ${key}`, kind: 'image', file: image?.file || null,
+        assign: (file, preview) => {
+          this.detailedRowImages[key] = { file, preview };
+        }
+      });
+    }
+    for (const video of this.inspectionVideos) {
+      entries.push({
+        key: `inspectionVideo:${video.key}`, title: video.title, kind: 'video', file: video.file,
+        assign: (file, preview) => { video.file = file; video.preview = preview; video.processing = false; }
+      });
+    }
+    for (const photo of this.testDrivePhotos) {
+      entries.push({
+        key: `testDrivePhoto:${photo.key}`, title: photo.title, kind: 'image', file: photo.file,
+        assign: (file, preview) => { photo.file = file; photo.preview = preview; }
+      });
+    }
+    entries.push({
+      key: 'testDriveVideo:test_drive_video', title: this.testDriveVideo.title, kind: 'video',
+      file: this.testDriveVideo.file,
+      assign: (file, preview) => {
+        this.testDriveVideo.file = file;
+        this.testDriveVideo.preview = preview;
+        this.testDriveVideo.processing = false;
+      }
+    });
+    return entries;
+  }
+
+  private async uploadSharedDraftMedia(): Promise<void> {
+    const entries = this.getSharedDraftMediaEntries().filter(entry => !!entry.file);
+    if (!entries.length) return;
+
+    const formData = new FormData();
+    const metadata = entries.map(entry => ({
+      key: entry.key,
+      title: entry.title,
+      kind: entry.kind
+    }));
+
+    for (const entry of entries) {
+      formData.append('media', entry.file as File, (entry.file as File).name);
+    }
+    formData.append('mediaMetadata', JSON.stringify(metadata));
+
+    await firstValueFrom(
+      this.employeeService.uploadSharedDraftMedia(this.requestId, formData)
+    );
+  }
+
+  private async restoreSharedDraftMedia(mediaAssets: any[]): Promise<void> {
+    if (!Array.isArray(mediaAssets) || mediaAssets.length === 0) return;
+
+    const entriesByKey = new Map(
+      this.getSharedDraftMediaEntries().map(entry => [entry.key, entry])
+    );
+
+    // Recreate dynamic media slots that do not exist yet on a different device.
+    for (const asset of mediaAssets) {
+      const key = String(asset?.key || '');
+      if (entriesByKey.has(key)) continue;
+
+      if (key.startsWith('additional:')) {
+        const photoKey = key.slice('additional:'.length);
+        const photo: VehiclePhoto = {
+          key: photoKey,
+          title: String(asset?.title || `Additional Photo ${this.additionalVehiclePhotos.length + 1}`),
+          file: null,
+          preview: ''
+        };
+        this.additionalVehiclePhotos.push(photo);
+        entriesByKey.set(key, {
+          key, title: photo.title, kind: 'image', file: null,
+          assign: (file, preview) => { photo.file = file; photo.preview = preview; }
+        });
+      } else if (key.startsWith('detail:')) {
+        const detailKey = key.slice('detail:'.length);
+        entriesByKey.set(key, {
+          key, title: String(asset?.title || `Inspection detail ${detailKey}`), kind: 'image', file: null,
+          assign: (file, preview) => { this.detailedRowImages[detailKey] = { file, preview }; }
+        });
+      }
+    }
+
+    for (const asset of mediaAssets) {
+      const entry = entriesByKey.get(String(asset?.key || ''));
+      if (!entry || !asset?.url) continue;
+
+      // Do not replace a file already restored from this browser's IndexedDB.
+      if (entry.file) continue;
+
+      try {
+        const response = await fetch(this.employeeService.getSharedDraftMediaUrl(asset.url));
+        if (!response.ok) continue;
+        const blob = await response.blob();
+        const file = new File(
+          [blob],
+          String(asset.originalName || asset.title || 'inspection-media'),
+          { type: asset.mimeType || blob.type || 'application/octet-stream' }
+        );
+        entry.assign(file, URL.createObjectURL(file));
+      } catch (error) {
+        console.error('Unable to restore shared inspection media:', asset?.key, error);
+      }
     }
   }
 
@@ -1556,6 +1711,9 @@ manufacturing_year:
       const responseData = response?.data ?? response;
       if (responseData?.draft) {
         this.applySharedDraftData(responseData.draft);
+        this.sharedDraftMediaAssets = Array.isArray(responseData.draft.mediaAssets)
+          ? responseData.draft.mediaAssets
+          : [];
       }
       if (responseData?.locked) {
         this.errorMessage = `This inspection draft is locked because its status is ${responseData.status || 'Submitted'}.`;
@@ -1579,6 +1737,7 @@ manufacturing_year:
 
       db.close();
       if (!draft) {
+        await this.restoreSharedDraftMedia(this.sharedDraftMediaAssets);
         this.draftRestored = true;
         return;
       }
@@ -1741,6 +1900,7 @@ manufacturing_year:
         : '';
       this.testDriveVideo.processing = false;
 
+      await this.restoreSharedDraftMedia(this.sharedDraftMediaAssets);
       this.draftRestored = true;
       this.draftSavedAt = new Date(draft.savedAt).toLocaleTimeString('en-IN', {
         hour: '2-digit',

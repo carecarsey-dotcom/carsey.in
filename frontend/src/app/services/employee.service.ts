@@ -261,6 +261,30 @@ export class EmployeeService {
   }
 
   // =========================================
+  // UPLOAD SHARED INSPECTION DRAFT MEDIA
+  // Admin + assigned Employee
+  // =========================================
+  uploadSharedDraftMedia(requestId: number, formData: FormData): Observable<any> {
+    const id = Number(requestId);
+    if (!Number.isInteger(id) || id <= 0) {
+      throw new Error('A valid inspection request ID is required.');
+    }
+
+    return this.http.post<any>(
+      `${this.apiUrl}/inspection-requests/request/${id}/draft/media`,
+      formData,
+      { headers: this.getAuthHeaders() }
+    );
+  }
+
+  // Convert backend /uploads/... paths to absolute URLs for restoring shared media.
+  getSharedDraftMediaUrl(path: string): string {
+    if (/^https?:\/\//i.test(path)) return path;
+    const apiRoot = this.apiUrl.replace(/\/api\/?$/, '');
+    return `${apiRoot}${path.startsWith('/') ? path : `/${path}`}`;
+  }
+
+  // =========================================
   // ACCEPT INSPECTION REQUEST
   // =========================================
 

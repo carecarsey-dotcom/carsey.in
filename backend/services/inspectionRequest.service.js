@@ -2314,6 +2314,77 @@ const saveSharedInspectionDraft = async (requestId, userId, role, draft) => {
 
 
 // ======================================================
+// SHARED DRAFT MEDIA - ADMIN + ASSIGNED EMPLOYEE
+// Uploaded files are stored by upload.middleware.js. Their
+// URLs and UI keys are saved in the existing shared draft JSON.
+// ======================================================
+
+const saveSharedInspectionDraftMedia = async (requestId, userId, role, files, metadata) => {
+    const requestIdValue = validateId(requestId, "Request ID");
+    const userIdValue = validateId(userId, "User ID");
+    const request = await inspectionRequestRepository.getRequestById(requestIdValue);
+
+    if (!request) throw new Error("Inspection request not found");
+    if (String(role) === "Employee" && Number(request.employee_id) !== userIdValue) {
+        throw new Error("Access denied. This inspection is not assigned to you.");
+    }
+    if (["Submitted", "Approved", "Published"].includes(request.status)) {
+        throw new Error("This inspection is locked and no longer accepts draft media.");
+    }
+    if (!Array.isArray(files) || files.length === 0) {
+        throw new Error("No media files were uploaded.");
+    }
+
+    let metadataList = [];
+    if (Array.isArray(metadata)) metadataList = metadata;
+    else if (typeof metadata === "string" && metadata.trim()) {
+        try { metadataList = JSON.parse(metadata); }
+        catch { throw new Error("Invalid mediaMetadata JSON."); }
+    }
+    if (!Array.isArray(metadataList)) throw new Error("mediaMetadata must be an array.");
+
+    const existingRecord = await inspectionRequestRepository.getInspectionDraft(requestIdValue);
+    const draft = existingRecord?.draft && typeof existingRecord.draft === "object"
+        ? { ...existingRecord.draft }
+        : {};
+    const existingMedia = Array.isArray(draft.mediaAssets) ? draft.mediaAssets : [];
+
+    const uploadedMedia = files.map((file, index) => {
+        if (!file || !file.filename) throw new Error("An uploaded media file is missing its filename.");
+        const meta = metadataList[index] && typeof metadataList[index] === "object"
+            ? metadataList[index] : {};
+        const key = String(meta.key || `media_${Date.now()}_${index}`).slice(0, 180);
+        return {
+            key,
+            kind: String(meta.kind || (String(file.mimetype || "").startsWith("video/") ? "video" : "image")).slice(0, 40),
+            title: String(meta.title || file.originalname || "Inspection media").slice(0, 200),
+            originalName: String(file.originalname || "").slice(0, 255),
+            mimeType: String(file.mimetype || "application/octet-stream").slice(0, 120),
+            size: Number(file.size || 0),
+            url: `/uploads/vehicles/${file.filename}`,
+            updatedAt: new Date().toISOString()
+        };
+    });
+
+    // Stable UI key means an updated file replaces the previous reference,
+    // rather than creating duplicate references on each autosave.
+    const mediaByKey = new Map(existingMedia.map(item => [String(item.key), item]));
+    for (const item of uploadedMedia) mediaByKey.set(item.key, item);
+    draft.mediaAssets = Array.from(mediaByKey.values());
+    draft.savedAt = new Date().toISOString();
+
+    await inspectionRequestRepository.saveInspectionDraft(
+        requestIdValue, draft, userIdValue, String(role)
+    );
+    return {
+        request_id: requestIdValue,
+        mediaAssets: draft.mediaAssets,
+        uploaded: uploadedMedia
+    };
+};
+
+
+// ======================================================
 // EXPORTS
 // ======================================================
 
@@ -2344,5 +2415,6 @@ module.exports = {
     getRequestByReportId,
 
     getSharedInspectionDraft,
-    saveSharedInspectionDraft
+    saveSharedInspectionDraft,
+    saveSharedInspectionDraftMedia
 };
