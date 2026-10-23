@@ -3,6 +3,7 @@ import {
   OnInit,
   inject
 } from '@angular/core';
+import { Router } from '@angular/router';
 
 import {
   CommonModule
@@ -124,6 +125,9 @@ export class InspectionBookingsComponent
     inject(
       InspectionBookingService
     );
+
+  // Opens the shared inspection form using inspection_request_id (not booking_id).
+  private readonly router = inject(Router);
 
 
   // ======================================================
@@ -1322,6 +1326,22 @@ Do you want to continue?`
       booking.inspection_request_id
     );
 
+  }
+
+
+  // ======================================================
+  // OPEN SHARED INSPECTION DRAFT
+  // ======================================================
+
+  openInspection(booking: InspectionBooking): void {
+    const requestId = Number(booking.inspection_request_id);
+
+    if (!Number.isInteger(requestId) || requestId <= 0) {
+      alert('Inspection Request ID nahi mila. Pehle booking ko employee ko assign karein aur list Refresh karein.');
+      return;
+    }
+
+    this.router.navigate(['/admin/inspection', requestId]);
   }
 
 

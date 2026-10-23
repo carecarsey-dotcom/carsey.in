@@ -596,6 +596,21 @@
 
 
                 <!-- ============================================ -->
+                <!-- OPEN INSPECTION DRAFT -->
+                <!-- Uses inspection_request_id, not booking_id -->
+                <!-- ============================================ -->
+
+                <button
+                  *ngIf="booking.inspection_request_id"
+                  type="button"
+                  (click)="openInspection(booking)"
+                  class="rounded-md bg-blue-600 px-3 py-1.5 text-xs font-medium text-white transition hover:bg-blue-700"
+                >
+                  Open Inspection
+                </button>
+
+
+                <!-- ============================================ -->
                 <!-- APPROVE -->
                 <!-- ============================================ -->
 
