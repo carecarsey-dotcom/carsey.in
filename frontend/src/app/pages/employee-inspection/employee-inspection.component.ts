@@ -3982,6 +3982,10 @@ manufacturing_year:
 
 
 
+    // DETAILED INSPECTION OPTIONS ARE OPTIONAL
+    // Rows may be left without a selected tick option.
+    // Engine videos remain governed by the existing video validation above.
+    /*
     // DETAILED INSPECTION
     // EVERY ROW NEEDS AT LEAST ONE TICK
     // ----------------------------------------------------
@@ -4030,6 +4034,8 @@ manufacturing_year:
       }
     }
 
+
+    */
 
     // ----------------------------------------------------
     // SCORE
