@@ -125,7 +125,7 @@
             [class.border-red-500]="hasValidationError('vehicle.brand')"
             [class.bg-red-50]="hasValidationError('vehicle.brand')"
             class="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-          />
+           (ngModelChange)="scheduleDraftSave()" />
 
           <p
             *ngIf="hasValidationError('vehicle.brand')"
@@ -150,7 +150,7 @@
             [class.border-red-500]="hasValidationError('vehicle.model')"
             [class.bg-red-50]="hasValidationError('vehicle.model')"
             class="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-          />
+           (ngModelChange)="scheduleDraftSave()" />
 
           <p
             *ngIf="hasValidationError('vehicle.model')"
@@ -172,7 +172,7 @@
             [(ngModel)]="vehicle.variant"
             placeholder="Variant"
             class="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-          />
+           (ngModelChange)="scheduleDraftSave()" />
         </div>
 
         <!-- MANUFACTURING MONTH / YEAR -->
@@ -191,7 +191,7 @@
     [class.border-red-500]="hasValidationError('vehicle.manufacturing_year')"
     [class.bg-red-50]="hasValidationError('vehicle.manufacturing_year')"
     class="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-  />
+   (ngModelChange)="scheduleDraftSave()" />
 
   <p
     *ngIf="hasValidationError('vehicle.manufacturing_year')"
@@ -219,7 +219,7 @@
             [class.border-red-500]="hasValidationError('vehicle.odometer')"
             [class.bg-red-50]="hasValidationError('vehicle.odometer')"
             class="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-          />
+           (ngModelChange)="scheduleDraftSave()" />
 
           <p
             *ngIf="hasValidationError('vehicle.odometer')"
@@ -239,7 +239,7 @@
           <select
             [(ngModel)]="vehicle.fuel_type"
             class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-          >
+           (ngModelChange)="scheduleDraftSave()">
             <option value="Petrol">Petrol</option>
 
             <option value="Diesel">Diesel</option>
@@ -264,7 +264,7 @@
           <select
             [(ngModel)]="vehicle.owner_classification"
             class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-          >
+           (ngModelChange)="scheduleDraftSave()">
             <option value="First">First Owner</option>
 
             <option value="Second">Second Owner</option>
@@ -290,7 +290,7 @@
             [class.border-red-500]="hasValidationError('vehicle.registration_number')"
             [class.bg-red-50]="hasValidationError('vehicle.registration_number')"
             class="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm uppercase outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-          />
+           (ngModelChange)="scheduleDraftSave()" />
 
           <p
             *ngIf="hasValidationError('vehicle.registration_number')"
@@ -312,7 +312,7 @@
             [(ngModel)]="vehicle.city"
             placeholder="City"
             class="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-          />
+           (ngModelChange)="scheduleDraftSave()" />
         </div>
 
         <!-- CHASSIS -->
@@ -327,7 +327,7 @@
             [(ngModel)]="vehicle.chassis_number"
             placeholder="Chassis number"
             class="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-          />
+           (ngModelChange)="scheduleDraftSave()" />
         </div>
 
         <!-- ENGINE NUMBER -->
@@ -342,7 +342,7 @@
             [(ngModel)]="vehicle.engine_number"
             placeholder="Engine number"
             class="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-          />
+           (ngModelChange)="scheduleDraftSave()" />
         </div>
 
         <!-- SPARE KEY -->
@@ -355,7 +355,7 @@
           <select
             [(ngModel)]="vehicle.spare_key"
             class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-          >
+           (ngModelChange)="scheduleDraftSave()">
             <option value="Yes">Yes</option>
 
             <option value="No">No</option>
@@ -372,7 +372,7 @@
           <select
             [(ngModel)]="vehicle.insurance_type"
             class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-          >
+           (ngModelChange)="scheduleDraftSave()">
             <option value="">Select Insurance Type</option>
 
             <option value="Comprehensive">Comprehensive</option>
@@ -400,7 +400,7 @@
             type="date"
             [(ngModel)]="vehicle.insurance_validity"
             class="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-          />
+           (ngModelChange)="scheduleDraftSave()" />
         </div>
       </div>
     </section>
@@ -973,7 +973,7 @@
             rows="5"
             placeholder="Enter engine inspection remark..."
             class="w-full resize-none rounded-lg border border-slate-300 px-3 py-3 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-          ></textarea>
+           (ngModelChange)="scheduleDraftSave()"></textarea>
         </div>
 
         <!-- OVERALL REMARK -->
@@ -988,7 +988,7 @@
             rows="5"
             placeholder="Enter overall inspection remark..."
             class="w-full resize-none rounded-lg border border-slate-300 px-3 py-3 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-          ></textarea>
+           (ngModelChange)="scheduleDraftSave()"></textarea>
         </div>
 
         <!-- SCORE -->

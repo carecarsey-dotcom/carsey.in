@@ -236,7 +236,6 @@ export class EmployeeInspectionComponent
   sharedDraftSaving = false;
   sharedDraftAvailable = false;
   private sharedDraftMediaAssets: any[] = [];
-  private readonly sharedDraftMediaChangedKeys = new Set<string>();
   private inspectionSubmitted = false;
 
 
@@ -1357,6 +1356,8 @@ manufacturing_year:
     return {
       requestId: this.requestId,
       savedAt: Date.now(),
+      // Keep server-uploaded media references when form fields autosave.
+      mediaAssets: Array.isArray(this.sharedDraftMediaAssets) ? this.sharedDraftMediaAssets : [],
       vehicle: { ...this.vehicle },
       customer_name: this.customer_name,
       owner_mobile: this.owner_mobile,
@@ -1374,11 +1375,7 @@ manufacturing_year:
         key: item.key,
         status: item.status,
         remark: item.remark || ''
-      })),
-      // Preserve server-side media references when the form JSON is autosaved.
-      mediaAssets: Array.isArray(this.sharedDraftMediaAssets)
-        ? this.sharedDraftMediaAssets
-        : []
+      }))
     };
   }
 
@@ -1565,29 +1562,7 @@ manufacturing_year:
   }
 
   private async uploadSharedDraftMedia(): Promise<void> {
-    const existingByKey = new Map(
-      (Array.isArray(this.sharedDraftMediaAssets) ? this.sharedDraftMediaAssets : [])
-        .map((asset: any) => [String(asset?.key || ''), asset])
-    );
-
-    const entries = this.getSharedDraftMediaEntries().filter(entry => {
-      if (!entry.file) return false;
-
-      const asset: any = existingByKey.get(entry.key);
-      const wasChanged = this.sharedDraftMediaChangedKeys.has(entry.key);
-
-      // A restored server asset is already stored remotely. Do not upload it on
-      // every autosave unless the user selected/replaced the file in this session.
-      if (asset && !wasChanged) {
-        const sameName = String(asset.originalName || '') === entry.file.name;
-        const sameSize = Number(asset.size || 0) === entry.file.size;
-        const sameType = String(asset.mimeType || '') === entry.file.type;
-        if (sameName && sameSize && sameType) return false;
-      }
-
-      return true;
-    });
-
+    const entries = this.getSharedDraftMediaEntries().filter(entry => !!entry.file);
     if (!entries.length) return;
 
     const formData = new FormData();
@@ -1602,28 +1577,25 @@ manufacturing_year:
     }
     formData.append('mediaMetadata', JSON.stringify(metadata));
 
-    const response: any = await firstValueFrom(
+    const uploadResponse: any = await firstValueFrom(
       this.employeeService.uploadSharedDraftMedia(this.requestId, formData)
     );
-    const responseData = response?.data ?? response;
-
-    if (Array.isArray(responseData?.mediaAssets)) {
-      this.sharedDraftMediaAssets = responseData.mediaAssets;
-    } else if (Array.isArray(responseData?.data?.mediaAssets)) {
-      this.sharedDraftMediaAssets = responseData.data.mediaAssets;
+    const uploadData = uploadResponse?.data ?? uploadResponse;
+    if (Array.isArray(uploadData?.mediaAssets)) {
+      this.sharedDraftMediaAssets = uploadData.mediaAssets;
     } else {
-      // Re-fetch after upload so the next autosave can identify existing assets.
-      const draftResponse: any = await firstValueFrom(
-        this.employeeService.getInspectionDraft(this.requestId)
-      );
-      const draftData = draftResponse?.data ?? draftResponse;
-      this.sharedDraftMediaAssets = Array.isArray(draftData?.draft?.mediaAssets)
-        ? draftData.draft.mediaAssets
-        : this.sharedDraftMediaAssets;
-    }
-
-    for (const entry of entries) {
-      this.sharedDraftMediaChangedKeys.delete(entry.key);
+      // Fetch the latest media references if the API wraps the response differently.
+      try {
+        const latest: any = await firstValueFrom(
+          this.employeeService.getInspectionDraft(this.requestId)
+        );
+        const latestData = latest?.data ?? latest;
+        if (Array.isArray(latestData?.draft?.mediaAssets)) {
+          this.sharedDraftMediaAssets = latestData.draft.mediaAssets;
+        }
+      } catch (error) {
+        console.error('Unable to refresh shared inspection media references:', error);
+      }
     }
   }
 
@@ -1682,6 +1654,23 @@ manufacturing_year:
         console.error('Unable to restore shared inspection media:', asset?.key, error);
       }
     }
+  }
+
+  // Safety net: save every text input, select, checkbox and textarea in this form,
+  // including fields whose individual template binding forgot to call scheduleDraftSave().
+  @HostListener('document:input', ['$event'])
+  onInspectionDocumentInput(event: Event): void {
+    const target = event.target as HTMLElement | null;
+    if (!target || !target.closest('app-employee-inspection, .employee-inspection-form, form')) return;
+    if (target instanceof HTMLInputElement && ['file', 'button', 'submit', 'reset'].includes(target.type)) return;
+    this.scheduleDraftSave();
+  }
+
+  @HostListener('document:change', ['$event'])
+  onInspectionDocumentChange(event: Event): void {
+    const target = event.target as HTMLElement | null;
+    if (!target || !target.closest('app-employee-inspection, .employee-inspection-form, form')) return;
+    this.scheduleDraftSave();
   }
 
   scheduleDraftSave(): void {
@@ -2562,7 +2551,6 @@ manufacturing_year:
         )
     };
 
-    this.sharedDraftMediaChangedKeys.add(`detail:${key}`);
     this.errorMessage = '';
   }
 
@@ -2794,7 +2782,6 @@ manufacturing_year:
 
     if (photo.preview) URL.revokeObjectURL(photo.preview);
     photo.file = optimizedFile;
-    this.sharedDraftMediaChangedKeys.add(`document:${photo.key}`);
     photo.preview = URL.createObjectURL(optimizedFile);
     this.errorMessage = '';
     this.scheduleDraftSave();
@@ -3118,7 +3105,6 @@ manufacturing_year:
 
     if (photo.preview) URL.revokeObjectURL(photo.preview);
     photo.file = optimizedFile;
-    this.sharedDraftMediaChangedKeys.add(`testDrivePhoto:${photo.key}`);
     photo.preview = URL.createObjectURL(optimizedFile);
     this.errorMessage = '';
     this.scheduleDraftSave();
@@ -3307,7 +3293,6 @@ manufacturing_year:
       if (video.preview) URL.revokeObjectURL(video.preview);
 
       video.file = compressed;
-      this.sharedDraftMediaChangedKeys.add(`inspectionVideo:${video.key}`);
       video.preview = URL.createObjectURL(compressed);
       this.scheduleDraftSave();
     } catch (error: any) {
@@ -3419,7 +3404,6 @@ manufacturing_year:
       }
       if (this.testDriveVideo.preview) URL.revokeObjectURL(this.testDriveVideo.preview);
       this.testDriveVideo.file = compressed;
-      this.sharedDraftMediaChangedKeys.add('testDriveVideo:test_drive_video');
       this.testDriveVideo.preview = URL.createObjectURL(compressed);
       this.scheduleDraftSave();
     } catch (error: any) {
@@ -3619,7 +3603,6 @@ manufacturing_year:
 
     item.file =
       optimizedFile;
-    this.sharedDraftMediaChangedKeys.add(`checklist:${item.key}`);
 
     if (
       item.preview
@@ -3744,7 +3727,6 @@ manufacturing_year:
 
     photo.file =
       optimizedFile;
-    this.sharedDraftMediaChangedKeys.add(`${this.vehiclePhotos.includes(photo) ? 'vehicle' : 'additional'}:${photo.key}`);
 
     if (
       photo.preview
