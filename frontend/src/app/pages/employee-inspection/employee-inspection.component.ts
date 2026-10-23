@@ -3716,16 +3716,6 @@ manufacturing_year:
     }
 
 
-    if (!this.vehicle.registration_number.trim()) {
-      this.invalidVehicleFields.add('registration_number');
-      return this.setValidationError(
-        'Vehicle registration number is required.',
-        'Registration Number',
-        'vehicle'
-      );
-    }
-
-
     if (!this.vehicle.manufacturing_year) {
       this.invalidVehicleFields.add('manufacturing_year');
       return this.setValidationError(
