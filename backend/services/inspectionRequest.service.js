@@ -582,7 +582,8 @@ const submitInspection = async (
     employeeId,
     inspectionData = {},
     uploadedFiles = [],
-    mediaMetadata = []
+    mediaMetadata = [],
+    actorRole = "Employee"
 ) => {
 
     const requestIdValue =
@@ -609,19 +610,22 @@ const submitInspection = async (
         );
     }
 
+    const normalizedRole = String(actorRole || "Employee");
+
     if (
-        Number(request.employee_id) !==
-        Number(employeeIdValue)
+        normalizedRole === "Employee" &&
+        Number(request.employee_id) !== Number(employeeIdValue)
     ) {
         throw new Error(
             "Access denied. This inspection is not assigned to you."
         );
     }
 
-    if (
-        request.status !==
-        "In Progress"
-    ) {
+    const allowedSubmitStatuses = normalizedRole === "Admin"
+        ? ["Assigned", "Accepted", "In Progress", "Admin Rejected"]
+        : ["In Progress"];
+
+    if (!allowedSubmitStatuses.includes(request.status)) {
         throw new Error(
             `Inspection cannot be submitted from "${request.status}" status`
         );
@@ -1556,7 +1560,8 @@ const submitInspection = async (
                 requestIdValue,
                 employeeIdValue,
                 reportId,
-                employeeRemark
+                employeeRemark,
+                normalizedRole
             );
 
 
@@ -1577,6 +1582,12 @@ const submitInspection = async (
                 requestIdValue
             );
 
+    // Best-effort cleanup: the submitted report is the source of truth now.
+    try {
+        await inspectionRequestRepository.deleteInspectionDraft(requestIdValue);
+    } catch (draftCleanupError) {
+        console.warn("SUBMITTED INSPECTION DRAFT CLEANUP WARNING:", draftCleanupError.message);
+    }
 
     triggerGoogleSheetsSync(
         `Inspection submitted: request_id ${requestIdValue}, car_id ${vehicleId}`
@@ -2248,6 +2259,60 @@ const getRequestByReportId = async (
 };
 
 
+
+
+// ======================================================
+// SHARED INSPECTION DRAFT (ADMIN + ASSIGNED EMPLOYEE)
+// ======================================================
+
+const getSharedInspectionDraft = async (requestId, userId, role) => {
+    const requestIdValue = validateId(requestId, "Request ID");
+    const userIdValue = validateId(userId, "User ID");
+    const request = await inspectionRequestRepository.getRequestById(requestIdValue);
+
+    if (!request) throw new Error("Inspection request not found");
+    if (String(role) === "Employee" && Number(request.employee_id) !== userIdValue) {
+        throw new Error("Access denied. This inspection is not assigned to you.");
+    }
+    if (["Submitted", "Approved", "Published"].includes(request.status)) {
+        return { request_id: requestIdValue, draft: null, locked: true, status: request.status };
+    }
+
+    const saved = await inspectionRequestRepository.getInspectionDraft(requestIdValue);
+    return saved
+        ? { ...saved, locked: false, status: request.status }
+        : { request_id: requestIdValue, draft: null, locked: false, status: request.status };
+};
+
+const saveSharedInspectionDraft = async (requestId, userId, role, draft) => {
+    const requestIdValue = validateId(requestId, "Request ID");
+    const userIdValue = validateId(userId, "User ID");
+    const request = await inspectionRequestRepository.getRequestById(requestIdValue);
+
+    if (!request) throw new Error("Inspection request not found");
+    if (String(role) === "Employee" && Number(request.employee_id) !== userIdValue) {
+        throw new Error("Access denied. This inspection is not assigned to you.");
+    }
+    if (["Submitted", "Approved", "Published"].includes(request.status)) {
+        throw new Error("This inspection has already been submitted and can no longer be edited as a draft.");
+    }
+    if (!draft || typeof draft !== "object" || Array.isArray(draft)) {
+        throw new Error("A valid inspection draft object is required.");
+    }
+
+    // Files/blobs must be uploaded separately; draft JSON should contain only serializable form data.
+    const serialized = JSON.stringify(draft);
+    if (Buffer.byteLength(serialized, "utf8") > 2 * 1024 * 1024) {
+        throw new Error("Inspection draft is too large. Upload media separately and save only form data here.");
+    }
+
+    await inspectionRequestRepository.saveInspectionDraft(
+        requestIdValue, draft, userIdValue, String(role)
+    );
+    return await inspectionRequestRepository.getInspectionDraft(requestIdValue);
+};
+
+
 // ======================================================
 // EXPORTS
 // ======================================================
@@ -2276,5 +2341,8 @@ module.exports = {
 
     getRequestReport,
 
-    getRequestByReportId
+    getRequestByReportId,
+
+    getSharedInspectionDraft,
+    saveSharedInspectionDraft
 };

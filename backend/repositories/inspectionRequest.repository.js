@@ -408,32 +408,31 @@ const submitInspection = async (
     requestId,
     employeeId,
     reportId,
-    employeeRemark = null
+    employeeRemark = null,
+    actorRole = "Employee"
 ) => {
 
-    const sql = `
-        UPDATE inspection_requests
+    const isAdmin = String(actorRole) === "Admin";
+    const sql = isAdmin
+        ? `
+            UPDATE inspection_requests
+            SET status = 'Submitted', report_id = ?, employee_remark = ?,
+                submitted_at = CURRENT_TIMESTAMP
+            WHERE request_id = ?
+              AND status IN ('Assigned', 'Accepted', 'In Progress', 'Admin Rejected')
+        `
+        : `
+            UPDATE inspection_requests
+            SET status = 'Submitted', report_id = ?, employee_remark = ?,
+                submitted_at = CURRENT_TIMESTAMP
+            WHERE request_id = ? AND employee_id = ? AND status = 'In Progress'
+        `;
 
-        SET
-            status = 'Submitted',
-            report_id = ?,
-            employee_remark = ?,
-            submitted_at = CURRENT_TIMESTAMP
+    const params = isAdmin
+        ? [reportId, employeeRemark, requestId]
+        : [reportId, employeeRemark, requestId, employeeId];
 
-        WHERE request_id = ?
-          AND employee_id = ?
-          AND status = 'In Progress'
-    `;
-
-    const result = await executeQuery(
-        sql,
-        [
-            reportId,
-            employeeRemark,
-            requestId,
-            employeeId
-        ]
-    );
+    const result = await executeQuery(sql, params);
 
     triggerGoogleSheetsSync(
         `Inspection submitted: request_id ${requestId}, report_id ${reportId}`
@@ -855,6 +854,60 @@ const getRequestByReportId = async (
 };
 
 
+
+
+// ======================================================
+// SHARED INSPECTION DRAFT
+// ======================================================
+
+const getInspectionDraft = async (requestId) => {
+    const rows = await executeQuery(
+        `SELECT request_id, draft_json, updated_by, updated_role, created_at, updated_at
+         FROM inspection_request_drafts WHERE request_id = ? LIMIT 1`,
+        [requestId]
+    );
+
+    if (!rows.length) return null;
+
+    let draft = {};
+    try {
+        draft = JSON.parse(rows[0].draft_json || '{}');
+    } catch (error) {
+        throw new Error('Saved inspection draft contains invalid JSON.');
+    }
+
+    return {
+        request_id: rows[0].request_id,
+        draft,
+        updated_by: rows[0].updated_by,
+        updated_role: rows[0].updated_role,
+        created_at: rows[0].created_at,
+        updated_at: rows[0].updated_at
+    };
+};
+
+const saveInspectionDraft = async (requestId, draft, userId, role) => {
+    const sql = `
+        INSERT INTO inspection_request_drafts
+            (request_id, draft_json, updated_by, updated_role)
+        VALUES (?, ?, ?, ?)
+        ON DUPLICATE KEY UPDATE
+            draft_json = VALUES(draft_json),
+            updated_by = VALUES(updated_by),
+            updated_role = VALUES(updated_role),
+            updated_at = CURRENT_TIMESTAMP
+    `;
+    return executeQuery(sql, [requestId, JSON.stringify(draft), userId, role]);
+};
+
+const deleteInspectionDraft = async (requestId) => {
+    return executeQuery(
+        'DELETE FROM inspection_request_drafts WHERE request_id = ?',
+        [requestId]
+    );
+};
+
+
 // ======================================================
 // EXPORTS
 // ======================================================
@@ -875,5 +928,9 @@ module.exports = {
     markRequestPublished,
 
     getRequestReport,
-    getRequestByReportId
+    getRequestByReportId,
+
+    getInspectionDraft,
+    saveInspectionDraft,
+    deleteInspectionDraft
 };

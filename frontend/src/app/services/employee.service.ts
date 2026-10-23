@@ -1,3 +1,4 @@
+
 import { Injectable } from '@angular/core';
 
 import {
@@ -188,6 +189,78 @@ export class EmployeeService {
   }
 
   // =========================================
+  // SHARED INSPECTION DRAFT
+  // ADMIN + ASSIGNED EMPLOYEE
+  // =========================================
+
+  /*
+   * Original shared-draft methods preserved as a commented reference:
+   *   // GET SHARED INSPECTION DRAFT
+   *   getInspectionDraft(
+   *     requestId: number
+   *   ): Observable<any> {
+   *     return this.http.get<any>(
+   *       `${this.apiUrl}/inspection-requests/request/${Number(requestId)}/draft`,
+   *       {
+   *         headers: this.getHeaders()
+   *       }
+   *     );
+   *   }
+   * 
+   *   // =========================================
+   *   // SAVE SHARED INSPECTION DRAFT
+   *   // ADMIN + ASSIGNED EMPLOYEE
+   *   // =========================================
+   * 
+   *   saveInspectionDraft(
+   *     requestId: number,
+   *     draft: any
+   *   ): Observable<any> {
+   *     return this.http.put<any>(
+   *       `${this.apiUrl}/inspection-requests/request/${Number(requestId)}/draft`,
+   *       {
+   *         draft
+   *       },
+   *       {
+   *         headers: this.getHeaders()
+   *       }
+   *     );
+   *   }
+   */
+
+  // GET SHARED INSPECTION DRAFT
+  // Admin + assigned Employee
+  getInspectionDraft(requestId: number): Observable<any> {
+    const id = Number(requestId);
+    if (!Number.isInteger(id) || id <= 0) {
+      throw new Error('A valid inspection request ID is required.');
+    }
+
+    return this.http.get<any>(
+      `${this.apiUrl}/inspection-requests/request/${id}/draft`,
+      { headers: this.getHeaders() }
+    );
+  }
+
+  // SAVE SHARED INSPECTION DRAFT
+  // Admin + assigned Employee
+  saveInspectionDraft(requestId: number, draft: any): Observable<any> {
+    const id = Number(requestId);
+    if (!Number.isInteger(id) || id <= 0) {
+      throw new Error('A valid inspection request ID is required.');
+    }
+    if (!draft || typeof draft !== 'object' || Array.isArray(draft)) {
+      throw new Error('A valid inspection draft is required.');
+    }
+
+    return this.http.put<any>(
+      `${this.apiUrl}/inspection-requests/request/${id}/draft`,
+      { draft },
+      { headers: this.getHeaders() }
+    );
+  }
+
+  // =========================================
   // ACCEPT INSPECTION REQUEST
   // =========================================
 
@@ -266,6 +339,7 @@ export class EmployeeService {
     let index = 0;
 
     for (const image of vehicleImages) {
+
       if (!image?.file) {
         continue;
       }
@@ -330,6 +404,7 @@ export class EmployeeService {
     let fileIndex = 0;
 
     images.forEach(image => {
+
       if (!image?.file) {
         return;
       }
@@ -417,3 +492,4 @@ export class EmployeeService {
   }
 
 }
+

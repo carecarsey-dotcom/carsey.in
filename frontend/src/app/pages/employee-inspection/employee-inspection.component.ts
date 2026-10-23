@@ -27,6 +27,9 @@ import {
   InspectionSection
 } from '../../services/vehicle.service';
 
+// Shared draft API responses are awaited before restoring the local media draft.
+import { firstValueFrom } from 'rxjs';
+
 
 // ======================================================
 // CHECKLIST ITEM
@@ -230,6 +233,8 @@ export class EmployeeInspectionComponent
   draftSaving = false;
   draftRestored = false;
   draftSavedAt = '';
+  sharedDraftSaving = false;
+  sharedDraftAvailable = false;
   private inspectionSubmitted = false;
 
 
@@ -1254,12 +1259,131 @@ manufacturing_year:
     );
   }
 
+  /*
+   * Original local-only saveInspectionDraft() preserved as a commented
+   * reference. The updated version below keeps IndexedDB media persistence
+   * and additionally saves serializable form data to the shared MySQL draft.
+   *
+   *   private async saveInspectionDraft(): Promise<void> {
+   *     if (!this.requestId || this.inspectionSubmitted) return;
+   * 
+   *     try {
+   *       this.draftSaving = true;
+   * 
+   *       const draft: InspectionDraft = {
+   *         requestId: this.requestId,
+   *         savedAt: Date.now(),
+   *         vehicle: { ...this.vehicle },
+   *         customer_name: this.customer_name,
+   *         owner_mobile: this.owner_mobile,
+   *         owner_email: this.owner_email,
+   *         owner_address: this.owner_address,
+   *         owner_city: this.owner_city,
+   *         engine_remark: this.engine_remark,
+   *         overall_remark: this.overall_remark,
+   *         employee_remark: this.employee_remark,
+   *         overall_score: this.overall_score,
+   *         transmission_rating: this.transmission_rating,
+   *         detailedInspection: JSON.parse(JSON.stringify(this.detailedInspection)),
+   *         detailedRowRemarks: JSON.parse(JSON.stringify(this.detailedRowRemarks)),
+   *         checklistItems: this.checklistItems.map(item => ({
+   *           key: item.key,
+   *           status: item.status,
+   *           remark: item.remark || '',
+   *           file: this.fileToStoredFile(item.file)
+   *         })),
+   *         vehiclePhotos: this.vehiclePhotos.map(photo => ({
+   *           key: photo.key,
+   *           file: this.fileToStoredFile(photo.file)
+   *         })),
+   *         additionalVehiclePhotos: this.additionalVehiclePhotos.map(photo => ({
+   *           key: photo.key,
+   *           title: photo.title,
+   *           file: this.fileToStoredFile(photo.file)
+   *         })),
+   *         documentPhotos: this.documentPhotos.map(photo => ({
+   *           key: photo.key,
+   *           file: this.fileToStoredFile(photo.file)
+   *         })),
+   *         detailedRowImages: Object.fromEntries(
+   *           Object.entries(this.detailedRowImages).map(([key, image]) => [
+   *             key,
+   *             this.fileToStoredFile(image?.file || null)
+   *           ])
+   *         ),
+   *         inspectionVideos: this.inspectionVideos.map(video => ({
+   *           key: video.key,
+   *           file: this.fileToStoredFile(video.file)
+   *         })),
+   *         testDrivePhotos: this.testDrivePhotos.map(photo => ({
+   *           key: photo.key,
+   *           file: this.fileToStoredFile(photo.file)
+   *         })),
+   *         testDriveVideo: this.fileToStoredFile(this.testDriveVideo.file)
+   *       };
+   * 
+   *       const db = await this.openDraftDB();
+   * 
+   *       await new Promise<void>((resolve, reject) => {
+   *         const transaction = db.transaction(this.DRAFT_STORE_NAME, 'readwrite');
+   *         transaction.objectStore(this.DRAFT_STORE_NAME).put(draft);
+   *         transaction.oncomplete = () => resolve();
+   *         transaction.onerror = () => reject(
+   *           transaction.error || new Error('Unable to save inspection draft.')
+   *         );
+   *         transaction.onabort = () => reject(
+   *           transaction.error || new Error('Inspection draft save aborted.')
+   *         );
+   *       });
+   * 
+   *       db.close();
+   * 
+   *       this.draftSavedAt = new Date().toLocaleTimeString('en-IN', {
+   *         hour: '2-digit',
+   *         minute: '2-digit'
+   *       });
+   *     } catch (error) {
+   *       console.error('Inspection draft save failed:', error);
+   *     } finally {
+   *       this.draftSaving = false;
+   *     }
+   *   }
+   */
+
+  private buildSharedDraftPayload(): Record<string, any> {
+    // Do not send File/Blob objects to JSON/MySQL. Media remains in IndexedDB
+    // on this device until server-side media upload is implemented separately.
+    return {
+      requestId: this.requestId,
+      savedAt: Date.now(),
+      vehicle: { ...this.vehicle },
+      customer_name: this.customer_name,
+      owner_mobile: this.owner_mobile,
+      owner_email: this.owner_email,
+      owner_address: this.owner_address,
+      owner_city: this.owner_city,
+      engine_remark: this.engine_remark,
+      overall_remark: this.overall_remark,
+      employee_remark: this.employee_remark,
+      overall_score: this.overall_score,
+      transmission_rating: this.transmission_rating,
+      detailedInspection: JSON.parse(JSON.stringify(this.detailedInspection)),
+      detailedRowRemarks: JSON.parse(JSON.stringify(this.detailedRowRemarks)),
+      checklistItems: this.checklistItems.map(item => ({
+        key: item.key,
+        status: item.status,
+        remark: item.remark || ''
+      }))
+    };
+  }
+
   private async saveInspectionDraft(): Promise<void> {
     if (!this.requestId || this.inspectionSubmitted) return;
 
     try {
       this.draftSaving = true;
 
+      // Keep the existing full local draft, including media blobs, in IndexedDB.
       const draft: InspectionDraft = {
         requestId: this.requestId,
         savedAt: Date.now(),
@@ -1332,6 +1456,25 @@ manufacturing_year:
         hour: '2-digit',
         minute: '2-digit'
       });
+
+      // Shared JSON draft: available to Admin and assigned Employee on any device.
+      // The EmployeeService methods must be present:
+      // getInspectionDraft(requestId) and saveInspectionDraft(requestId, draft).
+      try {
+        this.sharedDraftSaving = true;
+        await firstValueFrom(
+          this.employeeService.saveInspectionDraft(
+            this.requestId,
+            this.buildSharedDraftPayload()
+          )
+        );
+        this.sharedDraftAvailable = true;
+      } catch (sharedError) {
+        // Keep local saving functional if network/shared saving fails.
+        console.error('Shared inspection draft save failed:', sharedError);
+      } finally {
+        this.sharedDraftSaving = false;
+      }
     } catch (error) {
       console.error('Inspection draft save failed:', error);
     } finally {
@@ -1350,8 +1493,77 @@ manufacturing_year:
     }, 500);
   }
 
+  private applySharedDraftData(draft: any): void {
+    if (!draft || typeof draft !== 'object') return;
+
+    if (draft.vehicle && typeof draft.vehicle === 'object') {
+      this.vehicle = { ...this.vehicle, ...draft.vehicle };
+    }
+
+    this.customer_name = draft.customer_name ?? this.customer_name;
+    this.owner_mobile = draft.owner_mobile ?? this.owner_mobile;
+    this.owner_email = draft.owner_email ?? this.owner_email;
+    this.owner_address = draft.owner_address ?? this.owner_address;
+    this.owner_city = draft.owner_city ?? this.owner_city;
+    this.engine_remark = draft.engine_remark ?? this.engine_remark;
+    this.overall_remark = draft.overall_remark ?? this.overall_remark;
+    this.employee_remark = draft.employee_remark ?? this.employee_remark;
+
+    if (draft.overall_score !== undefined) {
+      this.overall_score = draft.overall_score;
+    }
+    if (draft.transmission_rating !== undefined) {
+      this.transmission_rating = Number(draft.transmission_rating) || 0;
+    }
+    if (draft.detailedInspection && typeof draft.detailedInspection === 'object') {
+      this.detailedInspection = {
+        ...this.detailedInspection,
+        ...JSON.parse(JSON.stringify(draft.detailedInspection))
+      };
+    }
+    if (draft.detailedRowRemarks && typeof draft.detailedRowRemarks === 'object') {
+      this.detailedRowRemarks = {
+        ...this.detailedRowRemarks,
+        ...JSON.parse(JSON.stringify(draft.detailedRowRemarks))
+      };
+    }
+
+    for (const savedItem of draft.checklistItems || []) {
+      const item = this.checklistItems.find(current => current.key === savedItem.key);
+      if (!item) continue;
+      if (savedItem.status) item.status = savedItem.status;
+      if (savedItem.remark !== undefined) item.remark = savedItem.remark || '';
+    }
+
+    this.sharedDraftAvailable = true;
+    if (draft.savedAt) {
+      this.draftSavedAt = new Date(draft.savedAt).toLocaleTimeString('en-IN', {
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    }
+  }
+
   private async restoreInspectionDraft(): Promise<void> {
     if (!this.requestId || this.draftRestored) return;
+
+    // Restore the shared server draft first. Local IndexedDB restore below then
+    // adds back this browser's File/Blob media and can preserve local-only media.
+    try {
+      const response: any = await firstValueFrom(
+        this.employeeService.getInspectionDraft(this.requestId)
+      );
+      const responseData = response?.data ?? response;
+      if (responseData?.draft) {
+        this.applySharedDraftData(responseData.draft);
+      }
+      if (responseData?.locked) {
+        this.errorMessage = `This inspection draft is locked because its status is ${responseData.status || 'Submitted'}.`;
+      }
+    } catch (sharedError) {
+      // The existing local draft remains available if the API is offline/unavailable.
+      console.error('Shared inspection draft restore failed:', sharedError);
+    }
 
     try {
       const db = await this.openDraftDB();
@@ -1366,7 +1578,10 @@ manufacturing_year:
       });
 
       db.close();
-      if (!draft) return;
+      if (!draft) {
+        this.draftRestored = true;
+        return;
+      }
 
       this.vehicle = { ...this.vehicle, ...draft.vehicle };
       this.customer_name = draft.customer_name || '';

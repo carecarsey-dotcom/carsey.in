@@ -393,7 +393,8 @@ const submitInspection = async (
                     employeeId,
                     inspectionData,
                     uploadedFiles,
-                    mediaMetadata
+                    mediaMetadata,
+                    req.admin.role
                 );
 
         return res.status(200).json({
@@ -781,6 +782,35 @@ const getRequestByReportId = async (
 };
 
 
+
+
+// ======================================================
+// SHARED DRAFT - ADMIN + ASSIGNED EMPLOYEE
+// ======================================================
+
+const getSharedDraft = async (req, res) => {
+    try {
+        const result = await inspectionRequestService.getSharedInspectionDraft(
+            req.params.requestId, req.admin.admin_id, req.admin.role
+        );
+        return res.status(200).json({ success: true, message: "Inspection draft fetched", data: result });
+    } catch (error) {
+        return res.status(400).json({ success: false, message: error.message });
+    }
+};
+
+const saveSharedDraft = async (req, res) => {
+    try {
+        const result = await inspectionRequestService.saveSharedInspectionDraft(
+            req.params.requestId, req.admin.admin_id, req.admin.role, req.body?.draft
+        );
+        return res.status(200).json({ success: true, message: "Inspection draft saved", data: result });
+    } catch (error) {
+        return res.status(400).json({ success: false, message: error.message });
+    }
+};
+
+
 // ======================================================
 // EXPORTS
 // ======================================================
@@ -801,5 +831,8 @@ module.exports = {
     markRequestPublished,
 
     getRequestReport,
-    getRequestByReportId
+    getRequestByReportId,
+
+    getSharedDraft,
+    saveSharedDraft
 };

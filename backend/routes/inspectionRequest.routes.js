@@ -1,4 +1,6 @@
+
 const express = require("express");
+
 const router = express.Router();
 
 const inspectionRequestController =
@@ -31,6 +33,29 @@ router.get(
     inspectionRequestController.getRequestById
 );
 
+// ======================================================
+// SHARED INSPECTION DRAFT
+// ADMIN + ASSIGNED EMPLOYEE
+// ======================================================
+
+router.get(
+    "/inspection-requests/request/:requestId/draft",
+    verifyToken,
+    requireAdminOrEmployee,
+    inspectionRequestController.getSharedDraft
+);
+
+router.put(
+    "/inspection-requests/request/:requestId/draft",
+    verifyToken,
+    requireAdminOrEmployee,
+    inspectionRequestController.saveSharedDraft
+);
+
+// ======================================================
+// EMPLOYEE ACTIONS
+// ======================================================
+
 router.patch(
     "/inspection-requests/request/:requestId/accept",
     verifyToken,
@@ -52,14 +77,19 @@ router.patch(
     inspectionRequestController.startInspection
 );
 
-// Employee submit contains:
-// - 10 vehicle photos
-// - optional detailed inspection row images
-// Therefore this endpoint allows more than 10 files.
+// ======================================================
+// SUBMIT INSPECTION
+// ADMIN + EMPLOYEE
+//
+// IMPORTANT:
+// Controller and service must also authorize Admin
+// and Employee correctly.
+// ======================================================
+
 router.patch(
     "/inspection-requests/request/:requestId/submit",
     verifyToken,
-    requireEmployee,
+    requireAdminOrEmployee,
     upload.array("vehicleImages", 100),
     inspectionRequestController.submitInspection
 );
@@ -114,4 +144,9 @@ router.get(
     inspectionRequestController.getRequestByReportId
 );
 
+// ======================================================
+// EXPORT
+// ======================================================
+
 module.exports = router;
+
