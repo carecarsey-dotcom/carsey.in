@@ -4039,62 +4039,92 @@ manufacturing_year:
   private focusFirstValidationError(): void {
     const validationKey = this.getValidationDomKey();
 
-    if (validationKey) {
-      const exactElement = document.querySelector(
-        `[data-validation-key=\"${CSS.escape(validationKey)}\"]`
-      ) as HTMLElement | null;
-
-      if (exactElement) {
-        exactElement.classList.add('inspection-invalid');
-        exactElement.scrollIntoView({
-          behavior: 'smooth',
-          block: 'center'
-        });
-
-        // Focus the actual input/button when possible.
-        const focusable = exactElement.querySelector(
-          'input:not([type=\"file\"]), select, textarea, button'
-        ) as HTMLElement | null;
-
-        if (focusable) {
-          window.setTimeout(() => focusable.focus(), 250);
-        }
-
-        window.setTimeout(() => {
-          exactElement.classList.remove('inspection-invalid');
-        }, 3500);
-
-        return;
+    // If the invalid field is inside a collapsed inspection section,
+    // open that section before trying to find/scroll to the field.
+    if (this.validationTargetType === 'detail' && validationKey.startsWith('detail:')) {
+      const rowKey = validationKey.slice('detail:'.length);
+      const sectionKey = rowKey.split('__')[0];
+      if (sectionKey && Object.prototype.hasOwnProperty.call(this.openInspectionSections, sectionKey)) {
+        this.openInspectionSections[sectionKey] = true;
       }
     }
 
-    // Fallback for any validation target that does not have a data key.
-    const target = this.validationTargetText.trim().toLowerCase();
-    if (!target) return;
+    if (this.validationTargetType === 'video') {
+      const video = this.inspectionVideos.find(item => item.title === this.validationTargetText);
+      if (video) {
+        for (const section of this.inspectionSections) {
+          if (section.rows.some(row => this.getInspectionVideoKeyForRow(row[0]) === video.key)) {
+            this.openInspectionSections[section.key] = true;
+            break;
+          }
+        }
+      }
+    }
 
-    const candidates = Array.from(
-      document.querySelectorAll('h1, h2, h3, h4, h5, label, p, span, div')
-    ) as HTMLElement[];
-
-    const match = candidates.find(element => {
-      const text = (element.textContent || '').trim().toLowerCase();
-      return text === target || text.includes(target);
-    });
-
-    if (!match) return;
-
-    const container =
-      match.closest('section') as HTMLElement | null ||
-      match.closest('.rounded-xl') as HTMLElement | null ||
-      match.parentElement;
-
-    const targetElement = container || match;
-    targetElement.classList.add('inspection-invalid');
-    targetElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-
+    // Angular needs a render cycle after opening a collapsed section.
     window.setTimeout(() => {
-      targetElement.classList.remove('inspection-invalid');
-    }, 3500);
+      let targetElement: HTMLElement | null = null;
+
+      if (validationKey) {
+        try {
+          targetElement = document.querySelector(
+            `[data-validation-key="${CSS.escape(validationKey)}"]`
+          ) as HTMLElement | null;
+        } catch {
+          targetElement = null;
+        }
+      }
+
+      // Fallback: find a visible element whose text matches the validation target.
+      if (!targetElement) {
+        const target = this.validationTargetText.trim().toLowerCase();
+        if (target) {
+          const candidates = Array.from(
+            document.querySelectorAll('h1, h2, h3, h4, h5, label, p, span, div')
+          ) as HTMLElement[];
+          const match = candidates.find(element => {
+            const value = (element.textContent || '').trim().toLowerCase();
+            return value === target || value.includes(target);
+          });
+          if (match) {
+            targetElement = (
+              match.closest('[data-validation-key]') as HTMLElement | null ||
+              match.closest('section') as HTMLElement | null ||
+              match.closest('.rounded-xl') as HTMLElement | null ||
+              match.parentElement
+            );
+          }
+        }
+      }
+
+      if (!targetElement) {
+        // At minimum, bring the validation message/header into view.
+        const message = document.querySelector('.text-red-600') as HTMLElement | null;
+        if (message) targetElement = message;
+      }
+
+      if (!targetElement) {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        return;
+      }
+
+      targetElement.classList.add('inspection-invalid');
+      targetElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+      const focusable = targetElement.matches('input, select, textarea, button')
+        ? targetElement
+        : targetElement.querySelector(
+            'input:not([type="file"]), select, textarea, button, [tabindex]:not([tabindex="-1"])'
+          ) as HTMLElement | null;
+
+      if (focusable) {
+        window.setTimeout(() => focusable.focus({ preventScroll: true }), 250);
+      }
+
+      window.setTimeout(() => {
+        targetElement?.classList.remove('inspection-invalid');
+      }, 3500);
+    }, 100);
   }
 
   validateForm(): boolean {
