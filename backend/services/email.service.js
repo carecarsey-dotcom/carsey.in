@@ -205,6 +205,9 @@ const sendInspectionReportEmail = async ({
     const emailData = {
         from: env.MAIL_FROM,
 
+        // Replies from customers will be directed to the support inbox.
+        replyTo: "support@carsey.in",
+
         to: [
             to
         ],
