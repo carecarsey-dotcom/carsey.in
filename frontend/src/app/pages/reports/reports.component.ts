@@ -1419,6 +1419,11 @@ export class ReportsComponent
           this.selectedReport!.request_status = 'Approved';
           this.adminRemark = '';
           this.adminPrice = null;
+
+          // After approval succeeds, send the report using the same
+          // existing service used by the manual "Send Email" button.
+          this.sendReportEmail(false);
+
           this.loadAdminRequests();
           this.loadReports();
         },
@@ -2662,7 +2667,7 @@ export class ReportsComponent
   // SEND REPORT TO CUSTOMER EMAIL
   // =====================================================
 
-  sendReportEmail(): void {
+  sendReportEmail(requireConfirmation: boolean = true): void {
 
     if (!this.selectedReport) {
 
@@ -2726,14 +2731,16 @@ export class ReportsComponent
     }
 
 
-    const confirmed =
-      window.confirm(
+    // Manual button asks for confirmation; approval-triggered sending
+    // skips confirmation so the email is sent automatically.
+    if (requireConfirmation) {
+      const confirmed = window.confirm(
         `Send inspection report #${reportId} to ${customerEmail}?`
       );
 
-
-    if (!confirmed) {
-      return;
+      if (!confirmed) {
+        return;
+      }
     }
 
 
