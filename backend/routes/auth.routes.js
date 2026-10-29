@@ -2,8 +2,9 @@ const express = require("express");
 
 const router = express.Router();
 
-const authController =
-    require("../controllers/auth.controller");
+const authController = require(
+    "../controllers/auth.controller"
+);
 
 const {
     verifyToken,
@@ -16,9 +17,6 @@ const {
 // PUBLIC
 // ======================================================
 
-// POST
-// /api/auth/login
-
 router.post(
     "/login",
     authController.login
@@ -30,9 +28,6 @@ router.post(
 // PROTECTED
 // ======================================================
 
-// GET
-// /api/auth/profile
-
 router.get(
     "/profile",
     verifyToken,
@@ -40,13 +35,10 @@ router.get(
 );
 
 // ======================================================
-// CHANGE PASSWORD
+// EXISTING CHANGE PASSWORD
 // ADMIN + EMPLOYEE
-// PROTECTED
+// CURRENT PASSWORD REQUIRED
 // ======================================================
-
-// PUT
-// /api/auth/change-password
 
 router.put(
     "/change-password",
@@ -55,16 +47,24 @@ router.put(
 );
 
 // ======================================================
+// SET OWN PASSWORD
+// ADMIN ONLY
+// OLD PASSWORD NOT REQUIRED
+// ======================================================
+
+router.put(
+    "/set-password",
+    verifyToken,
+    requireAdmin,
+    authController.setOwnPassword
+);
+
+// ======================================================
 // EMPLOYEE MANAGEMENT
 // ADMIN ONLY
 // ======================================================
 
-// ======================================================
 // CREATE EMPLOYEE
-// ======================================================
-
-// POST
-// /api/auth/employees
 
 router.post(
     "/employees",
@@ -73,13 +73,7 @@ router.post(
     authController.createEmployee
 );
 
-// ======================================================
 // GET ALL EMPLOYEES
-// ADMIN ONLY
-// ======================================================
-
-// GET
-// /api/auth/employees
 
 router.get(
     "/employees",
@@ -88,13 +82,7 @@ router.get(
     authController.getEmployees
 );
 
-// ======================================================
 // GET SINGLE EMPLOYEE
-// ADMIN ONLY
-// ======================================================
-
-// GET
-// /api/auth/employees/:employeeId
 
 router.get(
     "/employees/:employeeId",
@@ -103,19 +91,25 @@ router.get(
     authController.getEmployee
 );
 
-// ======================================================
 // UPDATE EMPLOYEE STATUS
-// ADMIN ONLY
-// ======================================================
-
-// PATCH
-// /api/auth/employees/:employeeId/status
 
 router.patch(
     "/employees/:employeeId/status",
     verifyToken,
     requireAdmin,
     authController.updateEmployeeStatus
+);
+
+// ======================================================
+// CHANGE EMPLOYEE PASSWORD
+// ADMIN ONLY
+// ======================================================
+
+router.put(
+    "/employees/:employeeId/password",
+    verifyToken,
+    requireAdmin,
+    authController.changeEmployeePassword
 );
 
 // ======================================================

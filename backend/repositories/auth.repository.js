@@ -28,11 +28,12 @@ const findAdminByEmail = (email) => {
                     return reject(err);
                 }
 
-                resolve(result[0]);
+                resolve(result[0] || null);
             }
         );
 
     });
+
 };
 
 // ======================================================
@@ -59,21 +60,20 @@ const findAdminById = (adminId) => {
                     return reject(err);
                 }
 
-                resolve(result[0]);
+                resolve(result[0] || null);
             }
         );
 
     });
+
 };
 
 // ======================================================
-// UPDATE ADMIN PASSWORD
+// UPDATE PASSWORD
+// ADMIN / EMPLOYEE
 // ======================================================
 
-const updatePassword = (
-    adminId,
-    password
-) => {
+const updatePassword = (adminId, password) => {
 
     return new Promise((resolve, reject) => {
 
@@ -95,22 +95,22 @@ const updatePassword = (
                     return reject(err);
                 }
 
-                // Password is intentionally not synced to Google Sheets.
+                // Password is intentionally not synced
+                // to Google Sheets.
 
                 resolve(result);
             }
         );
 
     });
+
 };
 
 // ======================================================
 // CHECK ADMIN / EMPLOYEE EMAIL
 // ======================================================
 
-const findAccountByEmail = (
-    email
-) => {
+const findAccountByEmail = (email) => {
 
     return new Promise((resolve, reject) => {
 
@@ -135,13 +135,12 @@ const findAccountByEmail = (
                     return reject(err);
                 }
 
-                resolve(
-                    result[0] || null
-                );
+                resolve(result[0] || null);
             }
         );
 
     });
+
 };
 
 // ======================================================
@@ -205,6 +204,7 @@ const createEmployee = (
         );
 
     });
+
 };
 
 // ======================================================
@@ -244,15 +244,14 @@ const getAllEmployees = () => {
         );
 
     });
+
 };
 
 // ======================================================
 // GET EMPLOYEE BY ID
 // ======================================================
 
-const getEmployeeById = (
-    employeeId
-) => {
+const getEmployeeById = (employeeId) => {
 
     return new Promise((resolve, reject) => {
 
@@ -281,13 +280,12 @@ const getEmployeeById = (
                     return reject(err);
                 }
 
-                resolve(
-                    result[0] || null
-                );
+                resolve(result[0] || null);
             }
         );
 
     });
+
 };
 
 // ======================================================
@@ -329,6 +327,7 @@ const updateEmployeeStatus = (
         );
 
     });
+
 };
 
 // ======================================================
@@ -337,12 +336,14 @@ const updateEmployeeStatus = (
 
 module.exports = {
 
-    // Existing
+    // Authentication
+
     findAdminByEmail,
     findAdminById,
     updatePassword,
 
     // Employee Management
+
     findAccountByEmail,
     createEmployee,
     getAllEmployees,

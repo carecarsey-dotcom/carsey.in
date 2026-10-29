@@ -4,10 +4,7 @@ const authService = require("../services/auth.service");
 // ADMIN / EMPLOYEE LOGIN
 // ======================================================
 
-const login = async (
-    req,
-    res
-) => {
+const login = async (req, res) => {
 
     try {
 
@@ -16,152 +13,173 @@ const login = async (
             password
         } = req.body;
 
-        // ==================================================
-        // VALIDATION
-        // ==================================================
-
-        if (
-            !email ||
-            !password
-        ) {
-
+        if (!email || !password) {
             return res.status(400).json({
-
                 success: false,
-
-                message:
-                    "Email and Password are required."
-
+                message: "Email and Password are required."
             });
-
         }
 
-        // ==================================================
-        // SERVICE CALL
-        // ==================================================
-
-        const data =
-            await authService.login(
-                email,
-                password
-            );
+        const data = await authService.login(
+            email,
+            password
+        );
 
         return res.status(200).json({
-
             success: true,
-
-            message:
-                "Login Successful",
-
+            message: "Login Successful",
             data
-
         });
 
     } catch (error) {
 
-        console.error(
-            "Login Error:",
-            error
-        );
+        console.error("Login Error:", error);
 
         return res.status(401).json({
-
             success: false,
-
-            message:
-                error.message
-
+            message: error.message
         });
 
     }
+
 };
 
 // ======================================================
 // ADMIN / EMPLOYEE PROFILE
 // ======================================================
 
-const profile = async (
-    req,
-    res
-) => {
+const profile = async (req, res) => {
 
     try {
 
         return res.status(200).json({
-
             success: true,
-
-            message:
-                "Admin Profile",
-
-            data:
-                req.admin
-
+            message: "Admin Profile",
+            data: req.admin
         });
 
     } catch (error) {
 
         return res.status(500).json({
-
             success: false,
-
-            message:
-                error.message
-
+            message: error.message
         });
 
     }
+
 };
 
 // ======================================================
-// CHANGE PASSWORD
+// EXISTING CHANGE PASSWORD
+// CURRENT PASSWORD REQUIRED
 // ======================================================
 
-const changePassword = async (
-    req,
-    res
-) => {
+const changePassword = async (req, res) => {
 
     try {
 
-        const adminId =
-            req.admin.admin_id;
+        const adminId = req.admin.admin_id;
 
         const {
             oldPassword,
             newPassword
         } = req.body;
 
-        const data =
-            await authService.changePassword(
-                adminId,
-                oldPassword,
-                newPassword
-            );
+        const data = await authService.changePassword(
+            adminId,
+            oldPassword,
+            newPassword
+        );
 
         return res.status(200).json({
-
             success: true,
-
-            message:
-                "Password Changed Successfully",
-
+            message: "Password Changed Successfully",
             data
-
         });
 
     } catch (error) {
 
         return res.status(400).json({
-
             success: false,
-
-            message:
-                error.message
-
+            message: error.message
         });
 
     }
+
+};
+
+// ======================================================
+// SET OWN PASSWORD
+// ADMIN ONLY
+// ======================================================
+
+const setOwnPassword = async (req, res) => {
+
+    try {
+
+        const adminId = req.admin.admin_id;
+
+        const {
+            newPassword
+        } = req.body;
+
+        const data = await authService.setOwnPassword(
+            adminId,
+            newPassword
+        );
+
+        return res.status(200).json({
+            success: true,
+            message: data.message
+        });
+
+    } catch (error) {
+
+        return res.status(400).json({
+            success: false,
+            message: error.message
+        });
+
+    }
+
+};
+
+// ======================================================
+// ADMIN CHANGES EMPLOYEE PASSWORD
+// ======================================================
+
+const changeEmployeePassword = async (req, res) => {
+
+    try {
+
+        const {
+            employeeId
+        } = req.params;
+
+        const {
+            newPassword
+        } = req.body;
+
+        const data =
+            await authService.changeEmployeePassword(
+                employeeId,
+                newPassword
+            );
+
+        return res.status(200).json({
+            success: true,
+            message: data.message
+        });
+
+    } catch (error) {
+
+        return res.status(400).json({
+            success: false,
+            message: error.message
+        });
+
+    }
+
 };
 
 // ======================================================
@@ -169,10 +187,7 @@ const changePassword = async (
 // ADMIN ONLY
 // ======================================================
 
-const createEmployee = async (
-    req,
-    res
-) => {
+const createEmployee = async (req, res) => {
 
     try {
 
@@ -184,10 +199,6 @@ const createEmployee = async (
             password
         } = req.body;
 
-        // ==================================================
-        // SERVICE CALL
-        // ==================================================
-
         const data =
             await authService.createEmployeeAccount(
                 name,
@@ -198,33 +209,22 @@ const createEmployee = async (
             );
 
         return res.status(201).json({
-
             success: true,
-
-            message:
-                "Employee Account Created Successfully",
-
+            message: "Employee Account Created Successfully",
             data
-
         });
 
     } catch (error) {
 
-        console.error(
-            "Create Employee Error:",
-            error
-        );
+        console.error("Create Employee Error:", error);
 
         return res.status(400).json({
-
             success: false,
-
-            message:
-                error.message
-
+            message: error.message
         });
 
     }
+
 };
 
 // ======================================================
@@ -232,48 +232,31 @@ const createEmployee = async (
 // ADMIN ONLY
 // ======================================================
 
-const getEmployees = async (
-    req,
-    res
-) => {
+const getEmployees = async (req, res) => {
 
     try {
 
-        const employees =
-            await authService.getEmployees();
+        const employees = await authService.getEmployees();
 
         return res.status(200).json({
-
             success: true,
-
-            message:
-                "Employees Retrieved Successfully",
-
+            message: "Employees Retrieved Successfully",
             data: {
-
                 employees
-
             }
-
         });
 
     } catch (error) {
 
-        console.error(
-            "Get Employees Error:",
-            error
-        );
+        console.error("Get Employees Error:", error);
 
         return res.status(500).json({
-
             success: false,
-
-            message:
-                error.message
-
+            message: error.message
         });
 
     }
+
 };
 
 // ======================================================
@@ -281,10 +264,7 @@ const getEmployees = async (
 // ADMIN ONLY
 // ======================================================
 
-const getEmployee = async (
-    req,
-    res
-) => {
+const getEmployee = async (req, res) => {
 
     try {
 
@@ -292,43 +272,29 @@ const getEmployee = async (
             employeeId
         } = req.params;
 
-        const employee =
-            await authService.getEmployee(
-                employeeId
-            );
+        const employee = await authService.getEmployee(
+            employeeId
+        );
 
         return res.status(200).json({
-
             success: true,
-
-            message:
-                "Employee Retrieved Successfully",
-
+            message: "Employee Retrieved Successfully",
             data: {
-
                 employee
-
             }
-
         });
 
     } catch (error) {
 
-        console.error(
-            "Get Employee Error:",
-            error
-        );
+        console.error("Get Employee Error:", error);
 
         return res.status(404).json({
-
             success: false,
-
-            message:
-                error.message
-
+            message: error.message
         });
 
     }
+
 };
 
 // ======================================================
@@ -336,10 +302,7 @@ const getEmployee = async (
 // ADMIN ONLY
 // ======================================================
 
-const updateEmployeeStatus = async (
-    req,
-    res
-) => {
+const updateEmployeeStatus = async (req, res) => {
 
     try {
 
@@ -358,14 +321,9 @@ const updateEmployeeStatus = async (
             );
 
         return res.status(200).json({
-
             success: true,
-
-            message:
-                "Employee Status Updated Successfully",
-
+            message: "Employee Status Updated Successfully",
             data
-
         });
 
     } catch (error) {
@@ -376,15 +334,12 @@ const updateEmployeeStatus = async (
         );
 
         return res.status(400).json({
-
             success: false,
-
-            message:
-                error.message
-
+            message: error.message
         });
 
     }
+
 };
 
 // ======================================================
@@ -394,17 +349,19 @@ const updateEmployeeStatus = async (
 module.exports = {
 
     login,
-
     profile,
 
+    // Password Management
+
     changePassword,
+    setOwnPassword,
+    changeEmployeePassword,
+
+    // Employee Management
 
     createEmployee,
-
     getEmployees,
-
     getEmployee,
-
     updateEmployeeStatus
 
 };

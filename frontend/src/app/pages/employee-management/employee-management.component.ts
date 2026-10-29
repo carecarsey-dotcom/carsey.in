@@ -119,6 +119,21 @@ export class EmployeeManagementComponent {
 
 
   // ======================================================
+  // CHANGE EMPLOYEE PASSWORD
+  // ======================================================
+
+  showChangeEmployeePasswordForm = false;
+  selectedEmployeeForPassword: any | null = null;
+  newEmployeePassword = '';
+  confirmEmployeePassword = '';
+  showNewEmployeePassword = false;
+  showConfirmEmployeePassword = false;
+  changingEmployeePassword = false;
+  passwordFormError = '';
+
+
+
+  // ======================================================
   // CONSTRUCTOR
   // ======================================================
 
@@ -764,6 +779,95 @@ export class EmployeeManagementComponent {
 
   }
 
+
+  // ======================================================
+  // OPEN CHANGE EMPLOYEE PASSWORD FORM
+  // ======================================================
+
+  openChangeEmployeePasswordForm(employee: any): void {
+    this.clearMessages();
+    this.selectedEmployeeForPassword = employee;
+    this.newEmployeePassword = '';
+    this.confirmEmployeePassword = '';
+    this.showNewEmployeePassword = false;
+    this.showConfirmEmployeePassword = false;
+    this.passwordFormError = '';
+    this.showChangeEmployeePasswordForm = true;
+  }
+
+  // ======================================================
+  // CLOSE CHANGE EMPLOYEE PASSWORD FORM
+  // ======================================================
+
+  closeChangeEmployeePasswordForm(): void {
+    if (this.changingEmployeePassword) return;
+    this.showChangeEmployeePasswordForm = false;
+    this.selectedEmployeeForPassword = null;
+    this.newEmployeePassword = '';
+    this.confirmEmployeePassword = '';
+    this.showNewEmployeePassword = false;
+    this.showConfirmEmployeePassword = false;
+    this.passwordFormError = '';
+  }
+
+  // ======================================================
+  // UPDATE EMPLOYEE PASSWORD
+  // ======================================================
+
+  changeEmployeePassword(): void {
+    this.passwordFormError = '';
+    this.errorMessage = '';
+    this.successMessage = '';
+
+    const employeeId = Number(
+      this.selectedEmployeeForPassword?.admin_id ??
+      this.selectedEmployeeForPassword?.employee_id ??
+      this.selectedEmployeeForPassword?.id
+    );
+
+    if (!Number.isInteger(employeeId) || employeeId <= 0) {
+      this.passwordFormError = 'Employee ID not found.';
+      return;
+    }
+
+    if (!this.newEmployeePassword) {
+      this.passwordFormError = 'New password is required.';
+      return;
+    }
+
+    if (this.newEmployeePassword.length < 6) {
+      this.passwordFormError = 'Password must be at least 6 characters.';
+      return;
+    }
+
+    if (this.newEmployeePassword !== this.confirmEmployeePassword) {
+      this.passwordFormError = 'Passwords do not match.';
+      return;
+    }
+
+    this.changingEmployeePassword = true;
+
+    this.http.put<any>(
+      `${this.apiUrl}/auth/employees/${employeeId}/password`,
+      { newPassword: this.newEmployeePassword },
+      { headers: this.getHeaders() }
+    ).subscribe({
+      next: (response) => {
+        this.changingEmployeePassword = false;
+
+        if (response?.success) {
+          this.successMessage = response.message || 'Employee password updated successfully.';
+          this.closeChangeEmployeePasswordForm();
+        } else {
+          this.passwordFormError = response?.message || 'Employee password could not be updated.';
+        }
+      },
+      error: (error) => {
+        this.changingEmployeePassword = false;
+        this.passwordFormError = error?.error?.message || 'Employee password could not be updated.';
+      }
+    });
+  }
 
   // ======================================================
   // GET EMPLOYEE NAME
