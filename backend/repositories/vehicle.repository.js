@@ -3394,6 +3394,108 @@ const publishVehicle = async (
 };
 
 
+
+// ======================================================
+// UPDATE VEHICLE IDENTIFICATION NUMBERS
+// Updates ONLY chassis_number / engine_number in cars.
+// It deliberately does not touch owners, reports, checklist,
+// images, booking IDs, or vehicle publication status.
+// ======================================================
+
+const updateVehicleIdentification = async (carId, payload = {}) => {
+    const numericId = Number(carId);
+
+    if (!Number.isInteger(numericId) || numericId <= 0) {
+        throw new Error("Valid vehicle ID is required.");
+    }
+
+    const columns = await getCarsColumns();
+    const updates = [];
+    const values = [];
+
+    const fields = [
+        {
+            column: "chassis_number",
+            aliases: ["chassis_number", "chassisNumber"]
+        },
+        {
+            column: "engine_number",
+            aliases: ["engine_number", "engineNumber"]
+        }
+    ];
+
+    for (const field of fields) {
+        if (!columns.includes(field.column)) continue;
+
+        const suppliedKey = field.aliases.find(
+            key => Object.prototype.hasOwnProperty.call(payload, key)
+        );
+
+        if (!suppliedKey) continue;
+
+        const rawValue = payload[suppliedKey];
+        const value = rawValue === null ? "" : String(rawValue).trim();
+
+        updates.push(`${field.column} = ?`);
+        values.push(value || null);
+    }
+
+    if (updates.length === 0) {
+        throw new Error(
+            "Provide chassis_number or engine_number. The required database columns may be missing."
+        );
+    }
+
+    values.push(numericId);
+
+    const result = await executeQuery(
+        `
+        UPDATE cars
+        SET ${updates.join(", ")}
+        WHERE car_id = ?
+        `,
+        values
+    );
+
+    if (!result || result.affectedRows === 0) {
+        const existing = await executeQuery(
+            "SELECT car_id FROM cars WHERE car_id = ? LIMIT 1",
+            [numericId]
+        );
+
+        if (!Array.isArray(existing) || existing.length === 0) {
+            return null;
+        }
+    }
+
+    // Keep the existing Google Sheets integration in sync.
+    try {
+        const syncResult = triggerGoogleSheetsSync(
+            `Vehicle identification updated: car_id ${numericId}`
+        );
+        if (syncResult && typeof syncResult.catch === "function") {
+            syncResult.catch(error =>
+                console.error("Google Sheets Sync Error:", error.message)
+            );
+        }
+    } catch (error) {
+        console.error("Google Sheets Sync Error:", error.message);
+    }
+
+    const rows = await executeQuery(
+        `
+        SELECT car_id, chassis_number, engine_number
+        FROM cars
+        WHERE car_id = ?
+        LIMIT 1
+        `,
+        [numericId]
+    );
+
+    return Array.isArray(rows) && rows.length ? rows[0] : null;
+};
+
+
 // ======================================================
 // MODULE EXPORTS
 // ======================================================
@@ -3413,6 +3515,8 @@ module.exports = {
     getDeletedVehicles,
 
     getVehicleById,
+
+    updateVehicleIdentification,
 
     getCompleteVehicleData,
 

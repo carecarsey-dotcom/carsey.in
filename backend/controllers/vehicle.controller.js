@@ -3,6 +3,9 @@ const db = require("../config/db");
 const vehicleService =
     require("../services/vehicle.service");
 
+const vehicleRepository =
+    require("../repositories/vehicle.repository");
+
 
 
 // ======================================================
@@ -1110,6 +1113,83 @@ const createCarPriceRequest = async (req, res) => {
 };
 
 
+
+// ======================================================
+// UPDATE VEHICLE IDENTIFICATION NUMBERS
+// ADMIN - SAFE PARTIAL UPDATE
+// ======================================================
+
+const updateVehicleIdentification = async (req, res) => {
+    try {
+        const carId = Number(req.params.carId);
+
+        if (!Number.isInteger(carId) || carId <= 0) {
+            return res.status(400).json({
+                success: false,
+                message: "Valid vehicle ID is required."
+            });
+        }
+
+        const payload = req.body || {};
+        const allowedKeys = [
+            "chassis_number",
+            "chassisNumber",
+            "engine_number",
+            "engineNumber"
+        ];
+
+        if (!allowedKeys.some(key =>
+            Object.prototype.hasOwnProperty.call(payload, key)
+        )) {
+            return res.status(400).json({
+                success: false,
+                message: "Chassis Number or Engine Number is required."
+            });
+        }
+
+        for (const key of allowedKeys) {
+            if (
+                Object.prototype.hasOwnProperty.call(payload, key) &&
+                payload[key] !== null &&
+                typeof payload[key] !== "string" &&
+                typeof payload[key] !== "number"
+            ) {
+                return res.status(400).json({
+                    success: false,
+                    message: `${key} must be a string or number.`
+                });
+            }
+        }
+
+        const updatedVehicle =
+            await vehicleRepository.updateVehicleIdentification(carId, payload);
+
+        if (!updatedVehicle) {
+            return res.status(404).json({
+                success: false,
+                message: "Vehicle not found."
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            message: "Vehicle identification numbers updated successfully.",
+            data: updatedVehicle
+        });
+    } catch (error) {
+        console.error("Update Vehicle Identification Error:", error);
+
+        return res.status(500).json({
+            success: false,
+            message: error.message || "Unable to update vehicle identification numbers.",
+            error: process.env.NODE_ENV === "development"
+                ? error.stack
+                : undefined
+        });
+    }
+};
+
+
 // ======================================================
 // EXPORT
 // ======================================================
@@ -1131,6 +1211,8 @@ module.exports = {
     getDeletedVehicles,
 
     restoreVehicle,
+
+    updateVehicleIdentification,
 
     createCarPriceRequest
 

@@ -625,6 +625,26 @@ router.patch(
 
 
 // ======================================================
+// ADMIN - UPDATE VEHICLE IDENTIFICATION NUMBERS
+// PATCH /api/admin/vehicles/:carId/identification
+// ======================================================
+
+router.patch(
+    "/:carId/identification",
+    (req, res, next) => {
+        if (!checkController("updateVehicleIdentification")) {
+            return res.status(500).json({
+                success: false,
+                message: "updateVehicleIdentification controller function is missing."
+            });
+        }
+
+        return vehicleController.updateVehicleIdentification(req, res, next);
+    }
+);
+
+
+// ======================================================
 // ADMIN - PUBLISH VEHICLE
 // ======================================================
 //

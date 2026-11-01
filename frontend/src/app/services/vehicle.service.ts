@@ -1722,6 +1722,36 @@ export class VehicleService {
 
 
   // =====================================================
+  // UPDATE VEHICLE IDENTIFICATION NUMBERS
+  // Safe partial update used by the Inspection Reports page.
+  // Does not send or overwrite owner/checklist/vehicle fields.
+  // =====================================================
+
+  updateVehicleIdentification(
+    carId: number,
+    payload: {
+      chassis_number: string;
+      engine_number: string;
+    }
+  ): Observable<any> {
+
+    const id = Number(carId);
+
+    if (!Number.isInteger(id) || id <= 0) {
+      throw new Error('Valid vehicle ID is required.');
+    }
+
+    return this.http.patch(
+      `${this.apiUrl}/admin/vehicles/${id}/identification`,
+      {
+        chassis_number: String(payload.chassis_number ?? '').trim(),
+        engine_number: String(payload.engine_number ?? '').trim()
+      }
+    );
+  }
+
+
+  // =====================================================
   // UPDATE VEHICLE
   //
   // EDIT VEHICLE

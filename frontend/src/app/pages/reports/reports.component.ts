@@ -400,6 +400,12 @@ export class ReportsComponent
 
   workflowLoading = false;
 
+  // Chassis / Engine Number editor for the selected report.
+  editingVehicleNumbers = false;
+  savingVehicleNumbers = false;
+  chassisNumberForm = '';
+  engineNumberForm = '';
+
   adminPrice: number | null = null;
 
   adminRemark = '';
@@ -1374,6 +1380,116 @@ export class ReportsComponent
 
 
   // =====================================================
+  // EDIT VEHICLE CHASSIS / ENGINE NUMBERS
+  // =====================================================
+
+  startVehicleNumberEditing(): void {
+    if (!this.selectedReport?.vehicle) return;
+
+    this.chassisNumberForm =
+      String(this.selectedReport.vehicle.chassis_number ?? '');
+
+    this.engineNumberForm =
+      String(this.selectedReport.vehicle.engine_number ?? '');
+
+    this.errorMessage = '';
+    this.editingVehicleNumbers = true;
+  }
+
+
+  cancelVehicleNumberEditing(): void {
+    this.editingVehicleNumbers = false;
+    this.savingVehicleNumbers = false;
+
+    this.chassisNumberForm =
+      String(this.selectedReport?.vehicle?.chassis_number ?? '');
+
+    this.engineNumberForm =
+      String(this.selectedReport?.vehicle?.engine_number ?? '');
+  }
+
+
+  saveVehicleNumbers(): void {
+    const report = this.selectedReport;
+
+    if (!report?.vehicle) {
+      this.errorMessage = 'Please open an inspection report first.';
+      return;
+    }
+
+    const carId = Number(report.vehicle.car_id ?? report.car_id ?? report.carId);
+    const reportId = Number(report.report_id ?? report.reportId);
+
+    if (!Number.isInteger(carId) || carId <= 0) {
+      this.errorMessage = 'Valid vehicle ID is required.';
+      return;
+    }
+
+    if (!Number.isInteger(reportId) || reportId <= 0) {
+      this.errorMessage = 'Valid inspection report ID is required.';
+      return;
+    }
+
+    const chassisNumber = String(this.chassisNumberForm ?? '').trim();
+    const engineNumber = String(this.engineNumberForm ?? '').trim();
+
+    if (!chassisNumber && !engineNumber) {
+      this.errorMessage = 'Enter at least a Chassis Number or Engine Number.';
+      return;
+    }
+
+    this.errorMessage = '';
+    this.savingVehicleNumbers = true;
+
+    this.vehicleService.updateVehicleIdentification(carId, {
+      chassis_number: chassisNumber,
+      engine_number: engineNumber
+    }).subscribe({
+      next: (response: any) => {
+        if (!response?.success) {
+          this.savingVehicleNumbers = false;
+          this.errorMessage =
+            response?.message || 'Unable to update vehicle identification numbers.';
+          return;
+        }
+
+        const updated = response?.data ?? {};
+
+        // Update the selected report in-place; keep its existing Report ID,
+        // Booking ID, checklist, owner, images and all other report data.
+        report.vehicle.chassis_number =
+          updated.chassis_number ?? chassisNumber;
+
+        report.vehicle.engine_number =
+          updated.engine_number ?? engineNumber;
+
+        this.chassisNumberForm = String(report.vehicle.chassis_number ?? '');
+        this.engineNumberForm = String(report.vehicle.engine_number ?? '');
+        this.editingVehicleNumbers = false;
+        this.savingVehicleNumbers = false;
+
+        // Regenerate the PDF against the SAME report ID after the DB update.
+        // Existing PDF viewer is replaced by generateMissingPdf().
+        this.pdfViewerUrl = null;
+        this.pdfUrl = '';
+        this.pdfDirectUrl = '';
+        this.pdfLoadError = false;
+        this.detailsLoading = true;
+        this.generateMissingPdf(reportId);
+      },
+      error: (error: any) => {
+        console.error('Update Vehicle Identification Error:', error);
+        this.savingVehicleNumbers = false;
+        this.errorMessage =
+          error?.error?.message ||
+          error?.message ||
+          'Unable to update Chassis Number and Engine Number.';
+      }
+    });
+  }
+
+
+  // =====================================================
   // ADMIN APPROVE
   // =====================================================
 
@@ -1538,7 +1654,7 @@ export class ReportsComponent
     }
 
     const confirmed = window.confirm(
-      `Publish vehicle with price ₹${price.toLocaleString('en-IN')}?`
+      `Publish vehicle with price â‚¹${price.toLocaleString('en-IN')}?`
     );
 
     if (!confirmed) return;
@@ -2840,6 +2956,11 @@ export class ReportsComponent
   // =====================================================
 
   closeReport(): void {
+
+    this.editingVehicleNumbers = false;
+    this.savingVehicleNumbers = false;
+    this.chassisNumberForm = '';
+    this.engineNumberForm = '';
 
     this.selectedReport =
       null;
@@ -4156,7 +4277,7 @@ body {
 <div class="section">
 
   <div class="section-title">
-    🚗 Vehicle Details
+    ðŸš— Vehicle Details
   </div>
 
 
@@ -4539,7 +4660,7 @@ body {
 <div class="section">
 
   <div class="section-title">
-    👤 Owner Details
+    ðŸ‘¤ Owner Details
   </div>
 
 
@@ -4628,7 +4749,7 @@ body {
 <div class="section">
 
   <div class="section-title">
-    🔍 Inspection Summary
+    ðŸ” Inspection Summary
   </div>
 
 
@@ -4712,7 +4833,7 @@ body {
 <div class="section">
 
   <div class="section-title">
-    ✅ Inspection Checklist
+    âœ… Inspection Checklist
   </div>
 
 
