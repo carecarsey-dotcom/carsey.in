@@ -443,6 +443,14 @@ export class BookInspectionComponent {
 
         if (response.success) {
 
+          // META PIXEL - BOOK INSPECTION
+          if (typeof window.fbq === 'function') {
+            window.fbq('track', 'Schedule', {
+              content_name: 'Book Inspection',
+              content_category: 'Inspection'
+            });
+          }
+
 
           // ===============================================
           // SUCCESS ALERT
