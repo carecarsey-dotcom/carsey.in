@@ -1,854 +1,1714 @@
+
 <div
+
   class="min-h-screen w-full overflow-x-hidden bg-white text-slate-900"
+
 >
 
 
-  <!-- ================================================= -->
-  <!-- MAIN LANDING PAGE HERO -->
+
+
+
   <!-- ================================================= -->
 
+  <!-- MAIN LANDING PAGE HERO -->
+
+  <!-- ================================================= -->
+
+
+
   <section
+
     class="relative isolate flex min-h-[520px] w-full items-center overflow-hidden bg-slate-950 sm:min-h-[600px] lg:min-h-[660px]"
+
   >
+
     <!-- Auto-changing hero image -->
+
     <img
+
       [src]="carImages[currentImageIndex()]"
+
       alt="Explore certified used cars with Carsey.in"
+
       class="absolute inset-0 -z-20 h-full w-full object-cover object-center"
+
       fetchpriority="high"
+
     />
 
+
+
     <!-- Dark overlay keeps text readable -->
+
     <div class="absolute inset-0 -z-10 bg-gradient-to-r from-slate-950/95 via-slate-950/75 to-slate-950/25"></div>
+
     <div class="absolute inset-0 -z-10 bg-gradient-to-t from-slate-950/55 via-transparent to-slate-950/10"></div>
 
+
+
     <div class="mx-auto w-full max-w-[1600px] px-5 py-16 sm:px-8 sm:py-20 lg:px-12 lg:py-24 2xl:px-16">
+
       <div class="max-w-3xl">
+
         <div class="mb-5 inline-flex items-center gap-2 rounded-full border border-[#064A9B]/30 bg-white/10 px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] text-[#D9E9FA] backdrop-blur-sm sm:text-sm">
+
           <span class="h-2 w-2 rounded-full bg-[#FF6500]"></span>
+
           Certified used cars. More confidence.
+
         </div>
+
+
 
         <h1 class="max-w-3xl text-4xl font-black leading-[1.08] tracking-tight text-white sm:text-5xl lg:text-7xl">
+
           Find Your
+
           <span class="text-[#064A9B]">Perfect Car.</span>
+
           <br />
+
           Drive With <span class="text-[#FF6500]">Confidence.</span>
+
         </h1>
 
+
+
         <p class="mt-6 max-w-2xl text-base leading-7 text-slate-200 sm:text-lg sm:leading-8">
+
           Explore quality pre-owned cars with transparent details, professional inspection,
+
           and the information you need to make a smarter choice.
+
         </p>
 
+
+
         <div class="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
-          <a
-            href="#car-listing"
-            class="inline-flex min-h-14 items-center justify-center gap-3 rounded-xl bg-[#064A9B] px-7 py-4 text-sm font-extrabold text-white shadow-lg shadow-[#064A9B]/30 transition hover:-translate-y-0.5 hover:bg-[#043B7A] sm:text-base"
-          >
-            Explore Cars
-            <span class="text-xl" aria-hidden="true">→</span>
-          </a>
 
           <a
-            routerLink="/book-inspection"
-            class="inline-flex min-h-14 items-center justify-center rounded-xl border border-white/30 bg-white/10 px-7 py-4 text-sm font-bold text-white backdrop-blur-sm transition hover:border-[#064A9B] hover:bg-white/15 sm:text-base"
+
+            href="#car-listing"
+
+            class="inline-flex min-h-14 items-center justify-center gap-3 rounded-xl bg-[#064A9B] px-7 py-4 text-sm font-extrabold text-white shadow-lg shadow-[#064A9B]/30 transition hover:-translate-y-0.5 hover:bg-[#043B7A] sm:text-base"
+
           >
-            Book an Inspection
+
+            Explore Cars
+
+            <span class="text-xl" aria-hidden="true">→</span>
+
           </a>
+
+
+
+          <a
+
+            routerLink="/book-inspection"
+
+            class="inline-flex min-h-14 items-center justify-center rounded-xl border border-white/30 bg-white/10 px-7 py-4 text-sm font-bold text-white backdrop-blur-sm transition hover:border-[#064A9B] hover:bg-white/15 sm:text-base"
+
+          >
+
+            Book an Inspection
+
+          </a>
+
         </div>
+
+
 
         <div class="mt-10 grid max-w-xl grid-cols-3 gap-4 border-t border-white/20 pt-6">
+
           <div>
+
             <p class="text-xl font-black text-white sm:text-2xl">Certified</p>
+
             <p class="mt-1 text-xs text-slate-300 sm:text-sm">Vehicle listings</p>
+
           </div>
+
           <div>
+
             <p class="text-xl font-black text-white sm:text-2xl">Clear</p>
+
             <p class="mt-1 text-xs text-slate-300 sm:text-sm">Car information</p>
+
           </div>
+
           <div>
+
             <p class="text-xl font-black text-white sm:text-2xl">Trusted</p>
+
             <p class="mt-1 text-xs text-slate-300 sm:text-sm">Inspection support</p>
+
           </div>
+
         </div>
+
       </div>
+
+
 
       <!-- Hero slider indicators -->
+
       <div class="mt-8 flex items-center gap-2" aria-label="Hero image slides">
+
         @for (image of carImages; track image; let i = $index) {
+
           <span
+
             [class]="currentImageIndex() === i
+
               ? 'h-1.5 w-8 rounded-full bg-[#064A9B] transition-all duration-300'
+
               : 'h-1.5 w-2 rounded-full bg-white/50 transition-all duration-300'"
+
           ></span>
+
         }
+
       </div>
+
     </div>
+
   </section>
 
+
+
   <!-- ================================================= -->
+
   <!-- FILTER SECTION -->
+
   <!-- ================================================= -->
+
+
 
   <section
+
     id="car-listing"
+
     class="w-full border-b border-slate-200 bg-white py-8 sm:py-10"
+
   >
 
+
+
     <div
+
       class="w-full px-4 sm:px-6 lg:px-10 2xl:px-16"
+
     >
+
+
+
 
 
       <!-- FILTER HEADER -->
 
+
+
       <div
+
         class="mb-5 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between"
+
       >
+
+
 
         <div>
 
+
+
           <p
+
             class="text-xs font-bold uppercase tracking-wider text-[#F0F6FC]0"
+
           >
+
             Find Your Car
+
           </p>
 
 
+
+
+
           <h2
+
             class="border-l-4 border-[#FF6500] pl-3 mt-1 text-2xl font-black text-slate-900 sm:text-3xl"
+
           ><span class="text-[#064A9B]">Filter Cars</span></h2>
+
+
 
         </div>
 
 
+
+
+
         <button
+
           type="button"
+
+
 
           (click)="resetFilters()"
 
+
+
           class="w-fit rounded-lg border border-slate-300 bg-white px-4 py-2 text-xs font-semibold text-slate-700 transition hover:border-[#F0F6FC]0 hover:text-[#F0F6FC]0"
+
         >
+
           Reset Filters
+
         </button>
 
+
+
       </div>
+
+
+
+
 
 
 
       <!-- SEARCH BAR -->
 
+
+
      <div class="mb-4 w-full">
 
+
+
   <label
+
     class="mb-1.5 block text-xs font-semibold text-slate-700"
+
   >
+
     Search Cars
+
   </label>
+
+
 
   <div class="relative w-full max-w-2xl">
 
+
+
     <span
+
       class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm text-slate-400"
+
     >
+
       🔍
+
     </span>
 
+
+
     <input
+
       type="text"
+
       [value]="searchQuery()"
-      (input)="searchQuery.set($any($event.target).value); carsToShow.set(10)"
+
+     (input)="searchQuery.set($any($event.target).value); carsToShow.set(10); trackMetaSearch()"
+
       placeholder="Search by brand, model, variant, city, fuel or transmission..."
+
       autocomplete="off"
+
       class="w-full rounded-lg border border-slate-300 bg-white py-2 pl-9 pr-9 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-[#F0F6FC]0 focus:ring-2 focus:ring-[#F0F6FC]0/10"
+
     />
 
+
+
     @if (searchQuery()) {
+
       <button
+
         type="button"
-        (click)="searchQuery.set(''); carsToShow.set(10)"
+
+        (click)="searchQuery.set(''); carsToShow.set(10); trackMetaSearch()"
+
         aria-label="Clear search"
+
         class="absolute right-2.5 top-1/2 -translate-y-1/2 rounded-full px-1.5 py-0.5 text-xs font-bold text-slate-400 transition hover:bg-[#F0F6FC] hover:text-[#F0F6FC]0"
+
       >
+
         ✕
+
       </button>
+
     }
+
+
 
   </div>
 
+
+
 </div>
+
       <!-- FILTER GRID -->
 
+
+
       <div
+
         class="grid w-full grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4"
+
       >
+
+
+
 
 
         <!-- BRAND -->
 
+
+
         <div>
 
+
+
           <label
+
             class="mb-1.5 block text-xs font-semibold text-slate-700"
+
           >
+
             Brand
+
           </label>
 
 
+
+
+
           <select
+
             [value]="selectedBrand()"
 
+
+
             (change)="
-              selectedBrand.set(
-                $any($event.target).value
-              );
-              carsToShow.set(10)
-            "
+
+  selectedBrand.set(
+
+    $any($event.target).value
+
+  );
+
+  carsToShow.set(10);
+
+  trackMetaSearch();
+
+"
+
+
 
             class="w-full cursor-pointer rounded-xl border border-slate-300 bg-white px-3 py-3 text-sm text-slate-900 outline-none transition focus:border-[#F0F6FC]0 focus:ring-2 focus:ring-[#F0F6FC]0/10"
+
           >
 
+
+
             <option value="all">
+
               All Brands
+
             </option>
 
 
+
+
+
             @for (
+
               vehicle of vehicles();
+
               track vehicle.car_id
+
             ) {
 
+
+
               <option
+
                 [value]="vehicle.brand"
+
               >
+
                 {{ vehicle.brand }}
+
               </option>
+
+
 
             }
 
+
+
           </select>
 
+
+
         </div>
+
+
+
+
 
 
 
         <!-- FUEL -->
 
+
+
         <div>
 
+
+
           <label
+
             class="mb-1.5 block text-xs font-semibold text-slate-700"
+
           >
+
             Fuel
+
           </label>
 
 
+
+
+
           <select
+
             [value]="selectedFuel()"
 
-            (change)="
-              selectedFuel.set(
-                $any($event.target).value
-              );
-              carsToShow.set(10)
-            "
+
+
+ (change)="
+
+  selectedFuel.set(
+
+    $any($event.target).value
+
+  );
+
+  carsToShow.set(10);
+
+  trackMetaSearch();
+
+"
+
+
 
             class="w-full cursor-pointer rounded-xl border border-slate-300 bg-white px-3 py-3 text-sm text-slate-900 outline-none transition focus:border-[#F0F6FC]0 focus:ring-2 focus:ring-[#F0F6FC]0/10"
+
           >
 
+
+
             <option value="all">
+
               All Fuel
+
             </option>
+
+
 
             <option value="petrol">
+
               Petrol
+
             </option>
+
+
 
             <option value="diesel">
+
               Diesel
+
             </option>
+
+
 
             <option value="electric">
+
               Electric(EV)
+
             </option>
+
+
 
             <option value="cng">
+
               CNG
+
             </option>
 
+
+
             <option value="hybrid">
+
               Hybrid
+
             </option>
+
+
 
           </select>
 
+
+
         </div>
+
+
+
+
 
 
 
         <!-- TRANSMISSION -->
 
+
+
         <div>
 
+
+
           <label
+
             class="mb-1.5 block text-xs font-semibold text-slate-700"
+
           >
+
             Transmission
+
           </label>
 
 
+
+
+
           <select
+
             [value]="selectedTransmission()"
 
+
+
             (change)="
+
               selectedTransmission.set(
+
                 $any($event.target).value
+
               );
+
               carsToShow.set(10)
-            "
+
+            ;
+              trackMetaSearch();"
+
+
 
             class="w-full cursor-pointer rounded-xl border border-slate-300 bg-white px-3 py-3 text-sm text-slate-900 outline-none transition focus:border-[#F0F6FC]0 focus:ring-2 focus:ring-[#F0F6FC]0/10"
+
           >
 
+
+
             <option value="all">
+
               All Transmission
+
             </option>
+
+
 
             <option value="manual">
+
               Manual
+
             </option>
 
+
+
             <option value="automatic">
+
               Automatic
+
             </option>
+
+
 
           </select>
 
+
+
         </div>
+
+
+
+
 
 
 
         <!-- PRICE -->
 
+
+
         <div>
 
+
+
           <label
+
             class="mb-1.5 block text-xs font-semibold text-slate-700"
+
           >
+
             Price
+
           </label>
 
 
+
+
+
           <select
+
             [value]="selectedPrice()"
 
+
+
             (change)="
+
               selectedPrice.set(
+
                 $any($event.target).value
+
               );
+
               carsToShow.set(10)
-            "
+
+            ;
+              trackMetaSearch();"
+
+
 
             class="w-full cursor-pointer rounded-xl border border-slate-300 bg-white px-3 py-3 text-sm text-slate-900 outline-none transition focus:border-[#F0F6FC]0 focus:ring-2 focus:ring-[#F0F6FC]0/10"
+
           >
 
+
+
             <option value="all">
+
               Any Price
+
             </option>
+
+
 
             <option value="under5">
+
               Under ₹5 Lakh
+
             </option>
+
+
 
             <option value="5to10">
+
               ₹5 - ₹10 Lakh
+
             </option>
+
+
 
             <option value="10to20">
+
               ₹10 - ₹20 Lakh
+
             </option>
 
+
+
             <option value="above20">
+
               Above ₹20 Lakh
+
             </option>
+
+
 
           </select>
 
+
+
         </div>
+
+
 
       </div>
 
+
+
     </div>
+
+
 
   </section>
 
 
 
+
+
+
+
   <!-- ================================================= -->
+
   <!-- CARS -->
+
   <!-- ================================================= -->
+
+
 
   <section
+
     class="w-full bg-white py-10 sm:py-14"
+
   >
 
+
+
     <div
+
       class="w-full px-4 sm:px-6 lg:px-10 2xl:px-16"
+
     >
+
+
+
 
 
       <!-- HEADER -->
 
+
+
       <div
+
         class="mb-7 flex items-end justify-between"
+
       >
+
+
 
         <div>
 
+
+
           <p
+
             class="text-xs font-bold uppercase tracking-wider text-[#F0F6FC]0"
+
           >
+
             Carsey.in Collection
+
           </p>
 
 
+
+
+
           <h2
+
             class="border-l-4 border-[#FF6500] pl-3 mt-1 text-2xl font-black text-slate-900 sm:text-3xl lg:text-4xl"
+
           ><span class="text-[#064A9B]">Latest Certified Cars</span></h2>
+
+
 
         </div>
 
 
+
+
+
         <p
+
           class="hidden text-xs text-slate-500 sm:block"
+
         >
+
+
 
           {{ filteredVehicles.length }}
 
+
+
           cars available
 
+
+
         </p>
+
+
 
       </div>
 
 
 
+
+
+
+
       <!-- ================================================= -->
+
       <!-- LOADING -->
+
       <!-- ================================================= -->
+
+
 
       @if (loading()) {
 
+
+
         <div
+
           class="grid w-full grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+
         >
 
+
+
           @for (
+
             item of [1,2,3,4,5,6,7,8];
+
             track item
+
           ) {
 
+
+
             <div
+
               class="h-[420px] animate-pulse rounded-2xl bg-slate-100"
+
             ></div>
+
+
 
           }
 
+
+
         </div>
+
+
 
       }
 
 
 
+
+
+
+
       <!-- ================================================= -->
+
       <!-- ERROR -->
+
       <!-- ================================================= -->
+
+
 
       @if (
+
         !loading() &&
+
         error()
+
       ) {
 
+
+
         <div
+
           class="w-full rounded-2xl border border-red-200 bg-red-50 p-8 text-center text-sm text-red-600"
+
         >
+
+
 
           {{ error() }}
 
+
+
         </div>
+
+
 
       }
 
 
 
+
+
+
+
       <!-- ================================================= -->
+
       <!-- NO CARS -->
+
       <!-- ================================================= -->
+
+
 
       @if (
+
         !loading() &&
+
         !error() &&
+
         filteredVehicles.length === 0
+
       ) {
 
+
+
         <div
+
           class="w-full rounded-2xl border border-[#FF6500]/20 bg-[#EFF6FC] p-10 text-center"
+
         >
 
+
+
           <div
+
             class="text-4xl"
+
           >
+
             🚗
+
           </div>
 
 
+
+
+
           <h3
+
             class="mt-3 text-lg font-bold text-slate-900"
+
           >
+
             No cars found
+
           </h3>
 
 
+
+
+
           <p
+
             class="mt-1 text-sm text-slate-500"
+
           >
+
             Try changing your filters.
+
           </p>
 
+
+
         </div>
+
+
 
       }
 
 
 
+
+
+
+
       <!-- ================================================= -->
+
       <!-- CAR GRID -->
+
       <!-- ================================================= -->
+
+
 
       @if (
+
         !loading() &&
+
         filteredVehicles.length > 0
+
       ) {
 
+
+
         <div
+
           class="grid w-full grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+
         >
 
 
+
+
+
           @for (
+
             car of visibleVehicles;
+
             track car.car_id
+
           ) {
 
 
+
+
+
             <!-- ================================================= -->
+
             <!-- CLICKABLE CARD -->
+
             <!-- ================================================= -->
+
+
 
             <article
 
+
+
               [routerLink]="[
+
                 '/car',
+
                 car.car_id
+
               ]"
 
+
+
               class="group w-full cursor-pointer overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:border-[#D9E9FA] hover:shadow-xl hover:shadow-[#DCEBFA]"
+
             >
+
+
+
 
 
               <!-- IMAGE -->
 
+
+
               <div
+
                 class="relative h-52 w-full overflow-hidden bg-slate-100 sm:h-56"
+
               >
+
+
 
                 <img
 
+
+
                   [src]="getCardImage(car)"
 
+
+
                   [alt]="
+
                     car.brand +
+
                     ' ' +
+
                     car.model
+
                   "
 
+
+
                   class="h-full w-full object-cover transition duration-700 group-hover:scale-105"
+
                 />
+
+
+
 
 
                 <!-- CERTIFIED -->
 
+
+
                 <div
+
                   class="absolute left-3 top-3 rounded-full bg-white/95 px-2.5 py-1 text-[10px] font-bold text-[#043B7A] shadow-sm backdrop-blur-md"
+
                 >
+
                   ✓ Certified
+
                 </div>
+
+
 
 </div>
 
 
 
+
+
+
+
               <!-- CONTENT -->
 
+
+
               <div
+
                 class="p-4"
+
               >
+
+
+
 
 
                 <!-- TAGS -->
 
+
+
                 <div
+
                   class="flex flex-wrap gap-2"
+
                 >
 
+
+
                   <span
+
                     class="rounded-full bg-[#F0F6FC] px-3 py-1.5 text-xs font-extrabold tracking-wide text-[#043B7A]"
+
                     [title]="'Registration Number: ' + (car.vehicle_number || car.registration_number || car.vehicleNumber || 'Not available')"
+
                   >
+
                     {{ (car.vehicle_number || car.registration_number || car.vehicleNumber || 'N/A').toString().substring(0, 4) }}
+
                   </span>
+
+
+
 
 
                   @if (car.city) {
 
+
+
                     <span
+
                       class="rounded-full bg-slate-100 px-2.5 py-1 text-[10px] font-semibold text-slate-600"
+
                     >
+
+
 
                       📍 {{ car.city }}
 
+
+
                     </span>
+
+
 
                   }
 
+
+
                 </div>
+
+
+
+
 
 
 
                 <!-- YEAR / TRANSMISSION -->
 
+
+
                 <p
+
                   class="mt-3 text-xs font-semibold text-slate-500"
+
                 >
+
+
 
                   {{ car.manufacturing_year || '—' }}
 
+
+
                   •
 
+
+
                   {{ car.transmission || '—' }}
+
+
 
                 </p>
 
 
 
+
+
+
+
                 <!-- CAR NAME -->
 
+
+
                 <h3
+
                   class="mt-1 text-xl font-black text-slate-900"
+
                 >
+
+
 
                   {{ car.brand }}
 
+
+
                   {{ car.model }}
+
+
 
                 </h3>
 
 
 
+
+
+
+
                 <!-- VARIANT -->
+
+
 
                 @if (car.variant) {
 
+
+
                   <p
+
                     class="mt-1 truncate text-xs text-slate-500"
+
                   >
+
+
 
                     {{ car.variant }}
 
+
+
                   </p>
+
+
 
                 }
 
 
 
+
+
+
+
                 <!-- INFO -->
 
+
+
                 <div
+
                   class="mt-4 grid grid-cols-3 rounded-xl border border-[#FF6500]/20 bg-[#EFF6FC]"
+
                 >
+
+
+
 
 
                   <!-- KM -->
 
+
+
                   <div
+
                     class="p-2.5 text-center"
+
                   >
 
+
+
                     <p
+
                       class="text-sm font-bold text-slate-900"
+
                     >
+
+
 
                       {{ car.odometer || 0 }}
 
+
+
                     </p>
+
+
+
 
 
                     <p
+
                       class="text-[9px] font-medium text-slate-500"
+
                     >
+
                       KM
+
                     </p>
 
+
+
                   </div>
+
+
+
+
 
 
 
                   <!-- TRANSMISSION -->
 
+
+
                   <div
+
                     class="border-x border-slate-200 p-2.5 text-center"
+
                   >
 
+
+
                     <p
+
                       class="truncate text-sm font-bold text-slate-900"
+
                     >
+
+
 
                       {{ car.transmission || '—' }}
 
+
+
                     </p>
+
+
+
 
 
                     <p
+
                       class="text-[9px] font-medium text-slate-500"
+
                     >
+
                       TRANS
+
                     </p>
 
+
+
                   </div>
+
+
+
+
 
 
 
                   <!-- FUEL -->
 
+
+
                   <div
+
                     class="p-2.5 text-center"
+
                   >
 
+
+
                     <p
+
                       class="truncate text-sm font-bold text-slate-900"
+
                     >
+
+
 
                       {{ car.fuel_type || '—' }}
 
+
+
                     </p>
+
+
+
 
 
                     <p
+
                       class="text-[9px] font-medium text-slate-500"
+
                     >
+
                       FUEL
+
                     </p>
+
+
 
                   </div>
 
+
+
                 </div>
+
+
+
+
 
 
 
                 <!-- PRICE + VIEW DETAILS -->
 
+
+
                 <div
+
                   class="mt-4 flex items-center justify-between gap-2"
+
                 >
 
+
+
                   <p class="text-xl font-black text-slate-900">
+
                     {{ formatPrice(car.price) }}
+
                   </p>
 
 
+
+
+
                   <span
+
                     class="rounded-lg bg-[#064A9B] px-4 py-2.5 text-xs font-bold text-white shadow-md shadow-[#064A9B]/20 transition hover:bg-[#043B7A] group-hover:scale-105"
+
                   >
+
+
 
                     View Details
 
+
+
                   </span>
+
+
 
                 </div>
 
+
+
               </div>
+
+
 
             </article>
 
+
+
           }
+
+
 
         </div>
 
 
 
+
+
+
+
         <!-- ================================================= -->
+
         <!-- VIEW MORE CARS -->
+
         <!-- ================================================= -->
+
+
 
         @if (canShowMoreCars) {
 
+
+
           <div
+
             class="mt-10 flex justify-center"
+
           >
+
+
 
             <button
 
+
+
               type="button"
+
+
 
               (click)="viewMoreCars()"
 
+
+
               class="rounded-xl bg-[#064A9B] px-10 py-3.5 text-sm font-bold text-white shadow-lg shadow-[#064A9B]/25 transition duration-300 hover:-translate-y-1 hover:bg-[#043B7A] hover:shadow-xl"
+
             >
+
+
 
               View More Cars
 
+
+
             </button>
 
+
+
           </div>
+
+
 
         }
 
 
+
+
+
         <!-- ================================================= -->
+
         <!-- ALL CARS MESSAGE -->
+
         <!-- ================================================= -->
+
+
 
         @if (
+
           !canShowMoreCars &&
+
           filteredVehicles.length > 10
+
         ) {
 
+
+
           <div
+
             class="mt-8 text-center"
+
           >
 
+
+
             <p
+
               class="text-sm font-medium text-slate-500"
+
             >
+
+
 
               🎉 You have reached the end.
 
+
+
               Showing all
+
               {{ filteredVehicles.length }}
+
               available cars.
+
+
 
             </p>
 
+
+
           </div>
+
+
 
         }
 
+
+
       }
+
+
 
     </div>
 
+
+
   </section>
+
+
+
 
 
 </div>

@@ -251,6 +251,27 @@ export class HomeComponent
     signal('');
 
 
+    // META PIXEL - SEARCH EVENT DEBOUNCE
+private searchEventTimer: ReturnType<typeof setTimeout> | null = null;
+
+trackMetaSearch(): void {
+  if (this.searchEventTimer) {
+    clearTimeout(this.searchEventTimer);
+  }
+
+  this.searchEventTimer = setTimeout(() => {
+    const fbq = (window as any).fbq;
+
+    if (typeof fbq === 'function') {
+      fbq('track', 'Search', {
+        search_string: this.searchQuery().trim() || 'Car Filters',
+        content_category: 'Vehicle Search'
+      });
+    }
+  }, 500);
+}
+
+
 // ===================================================
 // VIEW MORE
 //
@@ -1101,8 +1122,11 @@ else if (
 // COMPONENT DESTROY
 // ===================================================
 
-  ngOnDestroy(): void {
-
+  ngOnDestroy(): void { 
+    // META PIXEL - CLEAR SEARCH TIMER
+if (this.searchEventTimer) {
+  clearTimeout(this.searchEventTimer);
+}
 
     if (
       this.heroInterval
