@@ -1,3 +1,4 @@
+
 import {
   Component,
   inject
@@ -611,6 +612,15 @@ export class ExchangeComponent {
 
         if (response.success) {
 
+          // META PIXEL - EXCHANGE LEAD TRACKING
+          // Fire only after the backend confirms successful submission.
+          // Do not send customer name, mobile number, or email to Meta.
+          if (typeof window !== 'undefined' && typeof (window as any).fbq === 'function') {
+            (window as any).fbq('track', 'Lead', {
+              content_name: 'Exchange Request',
+              content_category: 'Exchange'
+            });
+          }
 
           // ============================================
           // SUCCESS ALERT
