@@ -1,3 +1,4 @@
+
 import {
   Component,
   OnInit,
@@ -29,6 +30,14 @@ import {
   Title,
   Meta
 } from '@angular/platform-browser';
+
+// Meta Pixel global declaration
+declare global {
+  interface Window {
+    fbq?: (...args: any[]) => void;
+  }
+}
+
 
 
 // =====================================================
@@ -212,6 +221,8 @@ export class CarDetailsComponent
   implements OnInit, OnDestroy {
 
 
+
+
   // ===================================================
   // HTTP
   // ===================================================
@@ -334,6 +345,43 @@ export class CarDetailsComponent
     if (!dialog.open) {
       dialog.showModal();
     }
+  }
+
+  // ===================================================
+  // META PIXEL - VIEW CONTENT TRACKING
+  // ===================================================
+
+  private trackedVehicleIds = new Set<number>();
+
+  private trackVehicleViewContent(vehicle: Vehicle): void {
+
+    if (!vehicle || !vehicle.car_id) {
+      return;
+    }
+
+    const carId = Number(vehicle.car_id);
+
+    // Prevent duplicate tracking for the same vehicle in this component instance.
+    if (this.trackedVehicleIds.has(carId)) {
+      return;
+    }
+
+    if (typeof window.fbq !== 'function') {
+      console.warn('Meta Pixel is not loaded.');
+      return;
+    }
+
+    window.fbq('track', 'ViewContent', {
+      content_ids: [String(carId)],
+      content_type: 'product',
+      content_name: `${vehicle.brand} ${vehicle.model}`.trim(),
+      currency: 'INR',
+      value: Number(vehicle.price || 0)
+    });
+
+    this.trackedVehicleIds.add(carId);
+
+    console.log('Meta Pixel ViewContent:', carId);
   }
 
   // ===================================================
@@ -670,6 +718,8 @@ export class CarDetailsComponent
             this.vehicle.set(
               selectedVehicle
             );
+            // Meta Pixel ViewContent Tracking
+            this.trackVehicleViewContent(selectedVehicle);
 
             // Update page SEO using the actual vehicle information.
             this.updateVehicleSeo(selectedVehicle);
@@ -773,6 +823,8 @@ export class CarDetailsComponent
             this.vehicle.set(
               selectedVehicle
             );
+            // Meta Pixel ViewContent Tracking
+            this.trackVehicleViewContent(selectedVehicle);
 
             // Update page SEO using the actual published vehicle information.
             this.updateVehicleSeo(selectedVehicle);
@@ -1974,6 +2026,11 @@ submitFinance(): void {
     .subscribe({
       next: (response: any) => {
         console.log('Finance Request Saved:', response);
+if (typeof window.fbq === 'function') {
+  window.fbq('track', 'SubmitApplication', {
+    content_name: 'Car Finance Application'
+  });
+}
         this.submitting.set(false);
         this.submitSuccess.set('Finance request submitted successfully.');
         alert(response?.message || 'Finance details submitted successfully.');
@@ -2071,6 +2128,11 @@ submitTestDrive(): void {
     .subscribe({
       next: (response: any) => {
         console.log('Test Drive Request Saved:', response);
+        if (typeof window.fbq === 'function') {
+  window.fbq('track', 'Schedule', {
+    content_name: 'Test Drive Booking'
+  });
+}
         this.submitting.set(false);
         this.submitSuccess.set('Test drive request submitted successfully.');
         alert(response?.message || 'Test drive request submitted successfully.');
