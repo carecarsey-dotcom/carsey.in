@@ -737,6 +737,12 @@ this.http.post<any>(
   // =================================================
 
   next: (response) => {
+    if (typeof window.fbq === 'function') {
+  window.fbq('track', 'Lead', {
+    content_name: 'Sell Car Request',
+    content_category: 'Sell Car'
+  });
+}
 
     console.log(
       'Sell Car Response:',
