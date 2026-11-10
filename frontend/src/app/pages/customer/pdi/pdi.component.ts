@@ -441,6 +441,13 @@ export class PdiComponent {
         // =================================================
 
         if (response.success) {
+          // META PIXEL - PDI BOOKING
+          if (typeof window.fbq === 'function') {
+            window.fbq('track', 'Schedule', {
+              content_name: 'PDI Booking',
+              content_category: 'PDI'
+            });
+          }
 
 
           // ===============================================
