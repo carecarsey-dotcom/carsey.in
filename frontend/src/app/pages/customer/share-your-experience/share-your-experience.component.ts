@@ -574,6 +574,17 @@ export class ShareYourExperienceComponent
             response
           );
 
+                     // META PIXEL - SHARE YOUR EXPERIENCE LEAD
+          if (
+            response?.success &&
+            typeof window.fbq === 'function'
+          ) {
+            window.fbq('track', 'Lead', {
+              content_name: 'Share Your Experience',
+              content_category: 'Customer Feedback'
+            });
+          }
+
 
           this.submitting = false;
 
