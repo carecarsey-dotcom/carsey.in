@@ -2332,8 +2332,15 @@ submitInspection(): void {
           response
         );
 
-        this.submitting.set(false);
+        // META PIXEL - INSPECTION REPORT UNLOCK LEAD
+        if (typeof window.fbq === 'function') {
+          window.fbq('track', 'Lead', {
+            content_name: 'Inspection Report Unlock',
+            content_category: 'Inspection'
+          });
+        }
 
+        this.submitting.set(false);
 
         this.submitSuccess.set(
           response?.message ||
