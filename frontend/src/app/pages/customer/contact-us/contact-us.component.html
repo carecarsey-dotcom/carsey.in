@@ -1,5 +1,6 @@
 <div class="contact-page">
   <div class="contact-container">
+
     <!-- Page Heading -->
     <div class="contact-header">
       <h1>Help &amp; Support</h1>
@@ -8,8 +9,13 @@
 
     <!-- Contact Cards -->
     <div class="contact-grid">
+
       <!-- Email -->
-      <a href="mailto:support@carsey.in" class="contact-card">
+      <a
+        href="mailto:support@carsey.in"
+        class="contact-card"
+        (click)="trackMetaContact()"
+      >
         <div class="contact-icon email-icon">✉</div>
 
         <div class="contact-details">
@@ -47,6 +53,7 @@
           <h3>Book an Inspection</h3>
         </div>
       </a>
+
     </div>
 
     <!-- FAQ Section -->
@@ -58,6 +65,7 @@
       </p>
 
       <div class="faq-list">
+
         <!-- FAQ 1 -->
         <details class="faq-item">
           <summary>How can I buy a car on Carsey.in?</summary>
@@ -99,7 +107,12 @@
           <summary>How can I contact Carsey.in support?</summary>
           <p>
             You can email us at
-            <a href="mailto:support&#64;carsey.in"> support&#64;carsey.in </a>
+            <a
+              href="mailto:support&#64;carsey.in"
+              (click)="trackMetaContact()"
+            >
+              support&#64;carsey.in
+            </a>
             for assistance.
           </p>
         </details>
@@ -112,6 +125,7 @@
             inspection report options.
           </p>
         </details>
+
       </div>
     </section>
 
@@ -124,10 +138,15 @@
         happy to assist.
       </p>
 
-      <a href="mailto:support@carsey.in" class="contact-button">
+      <a
+        href="mailto:support@carsey.in"
+        class="contact-button"
+        (click)="trackMetaContact()"
+      >
         Contact Support
         <span>→</span>
       </a>
     </div>
+
   </div>
 </div>

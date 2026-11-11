@@ -8,4 +8,18 @@ import { RouterLink } from '@angular/router';
   templateUrl: './contact-us.component.html',
   styleUrl: './contact-us.component.css'
 })
-export class ContactUsComponent {}
+export class ContactUsComponent {
+
+  // META PIXEL - CONTACT EVENT
+  trackMetaContact(): void {
+    const fbq = (window as any).fbq;
+
+    if (typeof fbq === 'function') {
+      fbq('track', 'Contact', {
+        content_name: 'Contact Support',
+        content_category: 'Customer Support'
+      });
+    }
+  }
+
+}
