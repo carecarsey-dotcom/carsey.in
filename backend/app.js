@@ -1,172 +1,103 @@
-// ======================================================
 // CARSEY.IN BACKEND APP
-// ======================================================
 
 const express = require("express");
 const cors = require("cors");
 const path = require("path");
 const fs = require("fs");
 
-
-// ======================================================
 // DOTENV
-// ======================================================
-
 require("dotenv").config();
 
-
-// ======================================================
 // DATABASE
-// ======================================================
-
 require("./config/db");
 
-
-// ======================================================
 // CONTROLLERS
-// ======================================================
-
 const vehicleController =
     require("./controllers/vehicle.controller");
 
-
-// ======================================================
 // VEHICLE REPOSITORY
-// ======================================================
 // Used by the dynamic sitemap to load currently published
 // vehicles directly from the database.
-// ======================================================
-
 const vehicleRepository =
     require("./repositories/vehicle.repository");
 
-
-// ======================================================
 // MIDDLEWARES
-// ======================================================
-
 const {
     verifyToken
 } = require("./middlewares/auth.middleware");
 
-
-// ======================================================
 // ROUTES
-// ======================================================
-
 const authRoutes = require(
     "./routes/auth.routes"
 );
-
 
 const vehicleRoutes = require(
     "./routes/vehicle.routes"
 );
 
-
 const vehicleImageRoutes = require(
     "./routes/vehicleImage.routes"
 );
-
 
 const reportUnlockRoutes = require(
     "./routes/reportUnlock.routes"
 );
 
-
 const inspectionReportRoutes = require(
     "./routes/inspectionReport.routes"
 );
-
 
 const testDriveRoutes = require(
     "./routes/testDrive.routes"
 );
 
-
-// ======================================================
 // EDIT VEHICLE ROUTES
-// ======================================================
-
 const editVehicleRoutes = require(
     "./routes/editVehicle.routes"
 );
 
-
-// ======================================================
 // FINANCE ROUTES
-// ======================================================
-
 const financeRoutes = require(
     "./routes/finance.routes"
 );
 
-
-// ======================================================
 // SELL CAR ROUTES
-// ======================================================
-
 const sellCarRoutes = require(
     "./routes/sellCar.routes"
 );
 
-
-// ======================================================
 // EXCHANGE ROUTES
-// ======================================================
-
 const exchangeRoutes = require(
     "./routes/exchange.routes"
 );
 
-
-// ======================================================
 // LOAN ROUTES
-// ======================================================
-
 const loanRoutes = require(
     "./routes/loan.routes"
 );
 
-
-// ======================================================
 // INSPECTION BOOKING ROUTES
-// ======================================================
-
 const inspectionBookingRoutes = require(
     "./routes/inspectionBooking.routes"
 );
 
-
-// ======================================================
 // SHARE YOUR EXPERIENCE ROUTES
 // CUSTOMER
 // PUBLIC
-// ======================================================
-
 const shareYourExperienceRoutes = require(
     "./routes/shareYourExperience.routes"
 );
 
-
-// ======================================================
 // INSPECTION REQUEST ROUTES
 // EMPLOYEE + ADMIN WORKFLOW
-// ======================================================
-
 const inspectionRequestRoutes = require(
     "./routes/inspectionRequest.routes"
 );
 
-
-// ======================================================
 // DASHBOARD ROUTES
-// ======================================================
-
 const dashboardRoutes = require(
     "./routes/dashboard.routes"
 );
-
 
 /*
  * GET CAR PRICE REQUEST ROUTES
@@ -177,46 +108,27 @@ const carPriceRequestRoutes = require(
     "./routes/carPriceRequest.routes"
 );
 
-// ======================================================
 // ADMIN CAR PRICE REQUEST ROUTES
-// ======================================================
-
 const adminCarPriceRequestRoutes = require(
     "./routes/adminCarPriceRequest.routes"
 );
 
-
-// ======================================================
 // EXPRESS APP
-// ======================================================
-
 const app = express();
 
-
-// ======================================================
 // GLOBAL MIDDLEWARES
-// ======================================================
-
 app.use(
     cors()
 );
 
-
-// ======================================================
 // JSON BODY PARSER
-// ======================================================
-
 app.use(
     express.json({
         limit: "50mb"
     })
 );
 
-
-// ======================================================
 // URL ENCODED BODY PARSER
-// ======================================================
-
 app.use(
     express.urlencoded({
         extended: true,
@@ -224,22 +136,15 @@ app.use(
     })
 );
 
-
-// ======================================================
 // RAILWAY / LOCAL UPLOAD DIRECTORY
-// ======================================================
-//
+
 // Railway Volume:
-//
 //     /app/uploads
-//
+
 // Local development:
-//
 //     backend/uploads
-//
+
 // Railway Volume ko automatically detect kiya jayega.
-//
-// ======================================================
 
 const railwayUploadDirectory =
     "/app/uploads";
@@ -250,10 +155,7 @@ const localUploadDirectory =
         "uploads"
     );
 
-
-// ======================================================
 // SELECT UPLOAD DIRECTORY
-// ======================================================
 
 const uploadDirectory =
     fs.existsSync(
@@ -262,30 +164,22 @@ const uploadDirectory =
         ? railwayUploadDirectory
         : localUploadDirectory;
 
-
-// ======================================================
 // CREATE UPLOAD DIRECTORY
-// ======================================================
 
 if (
     !fs.existsSync(
         uploadDirectory
     )
 ) {
-
     fs.mkdirSync(
         uploadDirectory,
         {
             recursive: true
         }
     );
-
 }
 
-
-// ======================================================
 // VEHICLE IMAGE DIRECTORY
-// ======================================================
 
 const vehicleUploadDirectory =
     path.join(
@@ -293,30 +187,22 @@ const vehicleUploadDirectory =
         "vehicles"
     );
 
-
-// ======================================================
 // CREATE VEHICLE IMAGE DIRECTORY
-// ======================================================
 
 if (
     !fs.existsSync(
         vehicleUploadDirectory
     )
 ) {
-
     fs.mkdirSync(
         vehicleUploadDirectory,
         {
             recursive: true
         }
     );
-
 }
 
-
-// ======================================================
 // DEBUG UPLOAD PATH
-// ======================================================
 
 console.log(
     "========================================"
@@ -342,24 +228,16 @@ console.log(
     "========================================"
 );
 
-
-// ======================================================
 // STATIC UPLOAD FOLDER
-// ======================================================
-//
+
 // Browser URL:
-//
 // /uploads/vehicles/filename.jpg
-//
+
 // Railway physical path:
-//
 // /app/uploads/vehicles/filename.jpg
-//
+
 // Local physical path:
-//
 // backend/uploads/vehicles/filename.jpg
-//
-// ======================================================
 
 app.use(
     "/uploads",
@@ -372,299 +250,223 @@ app.use(
     )
 );
 
-
-// ======================================================
 // AUTHENTICATION ROUTES
-// ======================================================
 
 app.use(
     "/api/auth",
     authRoutes
 );
 
-
-// ======================================================
 // CUSTOMER VEHICLE ROUTES
 // PUBLIC
-// ======================================================
 
 app.use(
     "/api/vehicles",
     vehicleRoutes
 );
 
-
 /*
  * GET CAR PRICE REQUEST
  * POST /api/car-price-requests/:carId
  */
+
 app.use(
     "/api/car-price-requests",
     carPriceRequestRoutes
 );
 
-// ======================================================
 // ADMIN CAR PRICE REQUESTS
 // PROTECTED ROUTES
-// ======================================================
 
 app.use(
     "/api/admin/car-price-requests",
     adminCarPriceRequestRoutes
 );
 
-
-// ======================================================
 // CUSTOMER REPORT UNLOCK
-// ======================================================
 
 app.use(
     "/api/vehicles",
     reportUnlockRoutes
 );
 
-
-// ======================================================
 // CUSTOMER INSPECTION REPORT
-// ======================================================
 
 app.use(
     "/api/vehicles",
     inspectionReportRoutes
 );
 
-
-// ======================================================
 // CUSTOMER TEST DRIVE
-// ======================================================
 
 app.use(
     "/api/vehicles",
     testDriveRoutes
 );
 
-
-// ======================================================
 // CUSTOMER FINANCE
-// ======================================================
 
 app.use(
     "/api/vehicles",
     financeRoutes
 );
 
-
-// ======================================================
 // CUSTOMER SELL CAR
-// ======================================================
 
 app.use(
     "/api/vehicles",
     sellCarRoutes
 );
 
-// ======================================================
 // EMPLOYEE SELL CAR REQUESTS
+
 // GET    /api/employee/sell-car-requests
 // PATCH  /api/employee/sell-car-requests/:sellId
 // POST   /api/employee/sell-car-requests/:sellId/submit
-// ======================================================
 
 // Keep the existing customer and admin mounts above/below.
+
 // This mount exposes the employee-prefixed routes defined
 // inside sellCar.routes.js without changing their handlers.
+
 app.use(
     "/api",
     sellCarRoutes
 );
 
-
-// ======================================================
 // CUSTOMER EXCHANGE
-// ======================================================
 
 app.use(
     "/api/vehicles",
     exchangeRoutes
 );
 
-
-// ======================================================
 // CUSTOMER LOAN
-// ======================================================
 
 app.use(
     "/api/vehicles",
     loanRoutes
 );
 
-
-// ======================================================
 // CUSTOMER BOOK INSPECTION
-// ======================================================
 
 app.use(
     "/api/vehicles",
     inspectionBookingRoutes
 );
 
-
-// ======================================================
 // SHARE YOUR EXPERIENCE
 // CUSTOMER
 // PUBLIC
-// ======================================================
 
 app.use(
     "/api",
     shareYourExperienceRoutes
 );
 
-
-// ======================================================
 // INSPECTION REQUEST WORKFLOW
 // EMPLOYEE + ADMIN
-// ======================================================
-//
+
 // Employee:
-//
+
 // GET    /api/inspection-requests/employee/my-requests
 // GET    /api/inspection-requests/request/:requestId
 // PATCH  /api/inspection-requests/request/:requestId/accept
 // PATCH  /api/inspection-requests/request/:requestId/reject
 // PATCH  /api/inspection-requests/request/:requestId/start
 // PATCH  /api/inspection-requests/request/:requestId/submit
-//
+
 // Admin:
-//
+
 // GET    /api/inspection-requests
 // PATCH  /api/inspection-requests/request/:requestId/approve
 // PATCH  /api/inspection-requests/request/:requestId/reject-admin
 // PATCH  /api/inspection-requests/request/:requestId/publish
-//
-// ======================================================
 
 app.use(
     "/api",
     inspectionRequestRoutes
 );
 
-
-// ======================================================
 // ADMIN REPORT UNLOCK
 // PROTECTED
-// ======================================================
 
 app.use(
     "/api/admin",
     reportUnlockRoutes
 );
 
-
-// ======================================================
 // ADMIN INSPECTION REPORT
 // PROTECTED
-// ======================================================
 
 app.use(
     "/api/admin",
     inspectionReportRoutes
 );
 
-
-// ======================================================
 // ADMIN TEST DRIVE
 // PROTECTED
-// ======================================================
 
 app.use(
     "/api/admin",
     testDriveRoutes
 );
 
-
-// ======================================================
 // ADMIN FINANCE
 // PROTECTED
-// ======================================================
 
 app.use(
     "/api/admin",
     financeRoutes
 );
 
-
-// ======================================================
 // ADMIN SELL CAR
 // PROTECTED
-// ======================================================
 
 app.use(
     "/api/admin",
     sellCarRoutes
 );
 
-
-// ======================================================
 // ADMIN EXCHANGE
 // PROTECTED
-// ======================================================
 
 app.use(
     "/api/admin",
     exchangeRoutes
 );
 
-
-// ======================================================
 // ADMIN LOAN
 // PROTECTED
-// ======================================================
 
 app.use(
     "/api/admin",
     loanRoutes
 );
 
-
-// ======================================================
 // ADMIN INSPECTION BOOKING
 // PROTECTED
-// ======================================================
 
 app.use(
     "/api/admin",
     inspectionBookingRoutes
 );
 
-
-// ======================================================
 // ADMIN DASHBOARD
 // PROTECTED
-// ======================================================
 
 app.use(
     "/api/admin",
     dashboardRoutes
 );
 
-
-// ======================================================
 // ADMIN VEHICLES
 // PROTECTED
-// ======================================================
 
-
-// ------------------------------------------------------
 // GET ALL VEHICLES
-// ------------------------------------------------------
-//
 // GET
 // /api/admin/vehicles
-//
 // Token required
-//
-// ------------------------------------------------------
 
 app.get(
     "/api/admin/vehicles",
@@ -673,36 +475,24 @@ app.get(
         .getAllAdminVehicles
 );
 
-
-// ------------------------------------------------------
 // ADD / OTHER VEHICLE APIs
-// ------------------------------------------------------
-//
 // POST
 // /api/admin/vehicles
-//
 // Existing vehicleRoutes handles this.
-//
-// ------------------------------------------------------
 
 app.use(
     "/api/admin/vehicles",
     vehicleRoutes
 );
 
-
-// ======================================================
 // EDIT VEHICLE
 // PROTECTED
-// ======================================================
-//
+
 // GET
 // /api/admin/vehicles/:carId
-//
+
 // PUT
 // /api/admin/vehicles/:carId
-//
-// ======================================================
 
 app.use(
     "/api/admin/vehicles",
@@ -710,28 +500,23 @@ app.use(
     editVehicleRoutes
 );
 
-
-// ======================================================
 // ADMIN VEHICLE IMAGES
 // PROTECTED
-// ======================================================
-//
+
 // POST
 // /api/admin/vehicles/:carId/images
-//
+
 // GET
 // /api/admin/vehicles/:carId/images
-//
+
 // PUT
 // /api/admin/vehicles/:carId/images/:imageId
-//
+
 // DELETE
 // /api/admin/vehicles/:carId/images/:imageId
-//
+
 // PUT
 // /api/admin/vehicles/:carId/images/:imageId/primary
-//
-// ======================================================
 
 app.use(
     "/api/admin/vehicles",
@@ -739,10 +524,7 @@ app.use(
     vehicleImageRoutes
 );
 
-
-// ======================================================
 // HEALTH CHECK
-// ======================================================
 
 app.get(
     "/health",
@@ -764,10 +546,7 @@ app.get(
     }
 );
 
-
-// ======================================================
 // HOME ROUTE
-// ======================================================
 
 app.get(
     "/",
@@ -785,20 +564,13 @@ app.get(
     }
 );
 
-
-// ======================================================
 // DYNAMIC XML SITEMAP
-// ======================================================
-//
+
 // Automatically includes all currently published vehicles.
-//
 // New published car IDs are added automatically.
-//
+
 // Browser URL:
-//
 // /sitemap.xml
-//
-// ======================================================
 
 app.get(
     "/sitemap.xml",
@@ -808,7 +580,6 @@ app.get(
 
             const publishedVehicles =
                 await vehicleRepository.getPublishedVehicles({});
-
 
             const staticUrls = [
 
@@ -824,16 +595,17 @@ app.get(
 
             ];
 
-
             const vehicleUrls =
                 Array.isArray(publishedVehicles)
 
                     ? publishedVehicles
+
                         .filter(
                             (vehicle) =>
                                 vehicle &&
                                 vehicle.car_id
                         )
+
                         .map(
                             (vehicle) =>
                                 `https://carsey.in/car/${encodeURIComponent(
@@ -843,7 +615,6 @@ app.get(
 
                     : [];
 
-
             const urls = [
 
                 ...staticUrls,
@@ -852,50 +623,62 @@ app.get(
 
             ];
 
-
             const uniqueUrls = [
 
                 ...new Set(urls)
 
             ];
 
-
             const xmlUrls =
                 uniqueUrls
+
                     .map(
                         (url) =>
                             `    <url>\n        <loc>${url}</loc>\n    </url>`
                     )
+
                     .join("\n");
 
-
             const sitemapXml =
+
                 `<?xml version="1.0" encoding="UTF-8"?>\n` +
+
                 `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n` +
+
                 `${xmlUrls}\n` +
+
                 `</urlset>`;
 
-
             res
-                .status(200)
-                .type("application/xml")
-                .send(sitemapXml);
 
+                .status(200)
+
+                .type("application/xml")
+
+                .send(sitemapXml);
 
         } catch (error) {
 
             console.error(
+
                 "Dynamic sitemap generation failed:",
+
                 error
+
             );
 
-
             return res
+
                 .status(500)
+
                 .type("application/xml")
+
                 .send(
+
                     `<?xml version="1.0" encoding="UTF-8"?>\n` +
+
                     `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"></urlset>`
+
                 );
 
         }
@@ -903,10 +686,7 @@ app.get(
     }
 );
 
-
-// ======================================================
 // 404 ROUTE
-// ======================================================
 
 app.use(
     (req, res) => {
@@ -923,10 +703,7 @@ app.use(
     }
 );
 
-
-// ======================================================
 // GLOBAL ERROR HANDLER
-// ======================================================
 
 app.use(
     (
@@ -941,13 +718,13 @@ app.use(
             err
         );
 
-
         return res.status(500).json({
 
             success: false,
 
             message:
                 err.message ||
+
                 "Internal Server Error"
 
         });
@@ -955,9 +732,6 @@ app.use(
     }
 );
 
-
-// ======================================================
 // EXPORT APP
-// ======================================================
 
 module.exports = app;

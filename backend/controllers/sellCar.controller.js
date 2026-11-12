@@ -61,7 +61,7 @@ const createSellCarRequest = async (req, res) => {
             interiorFrontImage: getImagePath("interiorFrontImage"),
             interiorRearImage: getImagePath("interiorRearImage"),
 
-            // Existing legacy image fields
+            // Additional Vehicle Images
             openDickyImage: getImagePath("openDickyImage"),
             openBonnetImage: getImagePath("openBonnetImage"),
             dashboardImage: getImagePath("dashboardImage"),
@@ -146,7 +146,6 @@ const getSellCarRequestById = async (req, res) => {
 // ======================================================
 // ASSIGN REQUEST TO EMPLOYEE (Admin)
 // PATCH /api/admin/sell-car-requests/:sellId/assign
-// Body: { "employeeId": 123 }
 // ======================================================
 
 const assignSellCarRequest = async (req, res) => {
@@ -241,7 +240,8 @@ const updateAssignedSellCarRequest = async (req, res) => {
         const files = req.files || {};
 
         // Returns undefined when no replacement image is uploaded.
-        // This allows the service to preserve the existing image.
+        // Existing image will be preserved by the service.
+
         const getImagePath = (fieldName) =>
             files[fieldName] && files[fieldName][0]
                 ? `/uploads/sell-cars/${files[fieldName][0].filename}`
@@ -259,6 +259,11 @@ const updateAssignedSellCarRequest = async (req, res) => {
             // Interior Images
             interiorFrontImage: getImagePath("interiorFrontImage"),
             interiorRearImage: getImagePath("interiorRearImage"),
+
+            // Additional Vehicle Images
+            openDickyImage: getImagePath("openDickyImage"),
+            openBonnetImage: getImagePath("openBonnetImage"),
+            dashboardImage: getImagePath("dashboardImage"),
 
             // Vehicle Information Image
             odometerImage: getImagePath("odometerImage"),
@@ -338,7 +343,6 @@ const submitSellCarRequestForApproval = async (req, res) => {
 // ======================================================
 // SEND REQUEST BACK FOR CORRECTIONS (Admin)
 // PATCH /api/admin/sell-car-requests/:sellId/correction
-// Body: { "correctionNote": "Update vehicle details." }
 // ======================================================
 
 const sendSellCarRequestForCorrection = async (req, res) => {

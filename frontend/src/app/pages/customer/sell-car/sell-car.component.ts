@@ -1,13 +1,25 @@
-/*
-  ORIGINAL CODE PRESERVED:
-  This file keeps the existing Sell Car TypeScript logic and adds only the
-  requested City field, validation, FormData value, and reset handling.
-*/
-
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
+
+declare global {
+  interface Window {
+    fbq?: (...args: any[]) => void;
+  }
+}
+
+type ImageType =
+  | 'front'
+  | 'back'
+  | 'left'
+  | 'right'
+  | 'interiorFront'
+  | 'interiorRear'
+  | 'openDicky'
+  | 'openBonnet'
+  | 'odometer'
+  | 'dashboard';
 
 @Component({
   selector: 'app-sell-car',
@@ -19,6 +31,7 @@ import { HttpClient } from '@angular/common/http';
   templateUrl: './sell-car.component.html',
   styleUrl: './sell-car.component.css'
 })
+
 export class SellCarComponent {
 
   private http = inject(HttpClient);
@@ -56,6 +69,7 @@ export class SellCarComponent {
   backImage: File | null = null;
   leftImage: File | null = null;
   rightImage: File | null = null;
+
   interiorFrontImage: File | null = null;
   interiorRearImage: File | null = null;
   openDickyImage: File | null = null;
@@ -72,6 +86,7 @@ export class SellCarComponent {
   backPreview = '';
   leftPreview = '';
   rightPreview = '';
+
   interiorFrontPreview = '';
   interiorRearPreview = '';
   openDickyPreview = '';
@@ -93,12 +108,9 @@ export class SellCarComponent {
 
   onNameInput(event: Event): void {
 
-    const input =
-      event.target as HTMLInputElement;
+    const input = event.target as HTMLInputElement;
 
-    this.sellerName =
-      input.value
-        .replace(/[^a-zA-Z ]/g, '');
+    this.sellerName = input.value.replace(/[^a-zA-Z ]/g, '');
 
   }
 
@@ -109,13 +121,11 @@ export class SellCarComponent {
 
   onMobileInput(event: Event): void {
 
-    const input =
-      event.target as HTMLInputElement;
+    const input = event.target as HTMLInputElement;
 
-    this.mobile =
-      input.value
-        .replace(/\D/g, '')
-        .slice(0, 10);
+    this.mobile = input.value
+      .replace(/\D/g, '')
+      .slice(0, 10);
 
   }
 
@@ -126,14 +136,12 @@ export class SellCarComponent {
 
   onVehicleNumberInput(event: Event): void {
 
-    const input =
-      event.target as HTMLInputElement;
+    const input = event.target as HTMLInputElement;
 
-    this.vehicleNumber =
-      input.value
-        .toUpperCase()
-        .replace(/[^A-Z0-9-]/g, '')
-        .slice(0, 20);
+    this.vehicleNumber = input.value
+      .toUpperCase()
+      .replace(/[^A-Z0-9-]/g, '')
+      .slice(0, 20);
 
   }
 
@@ -144,26 +152,18 @@ export class SellCarComponent {
 
   onFileSelected(
     event: Event,
-    type: 'front' | 'back' | 'left' | 'right' | 'interiorFront' | 'interiorRear' | 'openDicky' | 'openBonnet' | 'odometer' | 'dashboard'
+    type: ImageType
   ): void {
 
-    const input =
-      event.target as HTMLInputElement;
+    const input = event.target as HTMLInputElement;
 
-    if (
-      !input.files ||
-      input.files.length === 0
-    ) {
+    if (!input.files || input.files.length === 0) {
       return;
     }
 
-    const file =
-      input.files[0];
+    const file = input.files[0];
 
-
-    // =================================================
     // IMAGE TYPE CHECK
-    // =================================================
 
     if (!file.type.startsWith('image/')) {
 
@@ -172,14 +172,10 @@ export class SellCarComponent {
       input.value = '';
 
       return;
-
     }
 
 
-    // =================================================
-    // IMAGE SIZE CHECK
-    // MAX 5 MB
-    // =================================================
+    // IMAGE SIZE CHECK - MAX 5 MB
 
     if (file.size > 5 * 1024 * 1024) {
 
@@ -188,86 +184,72 @@ export class SellCarComponent {
       input.value = '';
 
       return;
-
     }
 
 
-    // =================================================
     // CREATE PREVIEW
-    // =================================================
 
-    const reader =
-      new FileReader();
+    const reader = new FileReader();
 
     reader.onload = () => {
 
-      const preview =
-        reader.result as string;
+      const preview = reader.result as string;
 
+      switch (type) {
 
-      if (type === 'front') {
+        case 'front':
+          this.frontImage = file;
+          this.frontPreview = preview;
+          break;
 
-        this.frontImage = file;
-        this.frontPreview = preview;
+        case 'back':
+          this.backImage = file;
+          this.backPreview = preview;
+          break;
 
-      }
+        case 'left':
+          this.leftImage = file;
+          this.leftPreview = preview;
+          break;
 
+        case 'right':
+          this.rightImage = file;
+          this.rightPreview = preview;
+          break;
 
-      if (type === 'back') {
+        case 'interiorFront':
+          this.interiorFrontImage = file;
+          this.interiorFrontPreview = preview;
+          break;
 
-        this.backImage = file;
-        this.backPreview = preview;
+        case 'interiorRear':
+          this.interiorRearImage = file;
+          this.interiorRearPreview = preview;
+          break;
 
-      }
+        case 'openDicky':
+          this.openDickyImage = file;
+          this.openDickyPreview = preview;
+          break;
 
+        case 'openBonnet':
+          this.openBonnetImage = file;
+          this.openBonnetPreview = preview;
+          break;
 
-      if (type === 'left') {
+        case 'odometer':
+          this.odometerImage = file;
+          this.odometerPreview = preview;
+          break;
 
-        this.leftImage = file;
-        this.leftPreview = preview;
+        case 'dashboard':
+          this.dashboardImage = file;
+          this.dashboardPreview = preview;
+          break;
 
-      }
-
-
-      if (type === 'right') {
-
-        this.rightImage = file;
-        this.rightPreview = preview;
-
-      }
-
-      if (type === 'interiorFront') {
-        this.interiorFrontImage = file;
-        this.interiorFrontPreview = preview;
-      }
-
-      if (type === 'interiorRear') {
-        this.interiorRearImage = file;
-        this.interiorRearPreview = preview;
-      }
-
-      if (type === 'openDicky') {
-        this.openDickyImage = file;
-        this.openDickyPreview = preview;
-      }
-
-      if (type === 'openBonnet') {
-        this.openBonnetImage = file;
-        this.openBonnetPreview = preview;
-      }
-
-      if (type === 'odometer') {
-        this.odometerImage = file;
-        this.odometerPreview = preview;
-      }
-
-      if (type === 'dashboard') {
-        this.dashboardImage = file;
-        this.dashboardPreview = preview;
       }
 
     };
-
 
     reader.readAsDataURL(file);
 
@@ -278,69 +260,60 @@ export class SellCarComponent {
   // REMOVE IMAGE
   // =====================================================
 
-  removeImage(
-    type: 'front' | 'back' | 'left' | 'right' | 'interiorFront' | 'interiorRear' | 'openDicky' | 'openBonnet' | 'odometer' | 'dashboard'
-  ): void {
+  removeImage(type: ImageType): void {
 
-    if (type === 'front') {
+    switch (type) {
 
-      this.frontImage = null;
-      this.frontPreview = '';
+      case 'front':
+        this.frontImage = null;
+        this.frontPreview = '';
+        break;
 
-    }
+      case 'back':
+        this.backImage = null;
+        this.backPreview = '';
+        break;
 
+      case 'left':
+        this.leftImage = null;
+        this.leftPreview = '';
+        break;
 
-    if (type === 'back') {
+      case 'right':
+        this.rightImage = null;
+        this.rightPreview = '';
+        break;
 
-      this.backImage = null;
-      this.backPreview = '';
+      case 'interiorFront':
+        this.interiorFrontImage = null;
+        this.interiorFrontPreview = '';
+        break;
 
-    }
+      case 'interiorRear':
+        this.interiorRearImage = null;
+        this.interiorRearPreview = '';
+        break;
 
+      case 'openDicky':
+        this.openDickyImage = null;
+        this.openDickyPreview = '';
+        break;
 
-    if (type === 'left') {
+      case 'openBonnet':
+        this.openBonnetImage = null;
+        this.openBonnetPreview = '';
+        break;
 
-      this.leftImage = null;
-      this.leftPreview = '';
+      case 'odometer':
+        this.odometerImage = null;
+        this.odometerPreview = '';
+        break;
 
-    }
+      case 'dashboard':
+        this.dashboardImage = null;
+        this.dashboardPreview = '';
+        break;
 
-
-    if (type === 'right') {
-
-      this.rightImage = null;
-      this.rightPreview = '';
-
-    }
-
-    if (type === 'interiorFront') {
-      this.interiorFrontImage = null;
-      this.interiorFrontPreview = '';
-    }
-
-    if (type === 'interiorRear') {
-      this.interiorRearImage = null;
-      this.interiorRearPreview = '';
-    }
-
-    if (type === 'openDicky') {
-      this.openDickyImage = null;
-      this.openDickyPreview = '';
-    }
-
-    if (type === 'openBonnet') {
-      this.openBonnetImage = null;
-      this.openBonnetPreview = '';
-    }
-
-    if (type === 'odometer') {
-      this.odometerImage = null;
-      this.odometerPreview = '';
-    }
-
-    if (type === 'dashboard') {
-      this.dashboardImage = null;
-      this.dashboardPreview = '';
     }
 
   }
@@ -352,191 +325,109 @@ export class SellCarComponent {
 
   submitForm(): void {
 
-
-    // ===================================================
     // NAME
-    // ===================================================
 
     if (!this.sellerName.trim()) {
-
       alert('Name is required.');
-
       return;
+    }
 
+    if (!/^[a-zA-Z ]+$/.test(this.sellerName.trim())) {
+      alert('Name can contain only letters and spaces.');
+      return;
+    }
+
+    if (this.sellerName.trim().length < 2) {
+      alert('Name must contain at least 2 characters.');
+      return;
     }
 
 
-    if (
-      !/^[a-zA-Z ]+$/.test(
-        this.sellerName.trim()
-      )
-    ) {
-
-      alert(
-        'Name can contain only letters and spaces.'
-      );
-
-      return;
-
-    }
-
-
-    if (
-      this.sellerName.trim().length < 2
-    ) {
-
-      alert(
-        'Name must contain at least 2 characters.'
-      );
-
-      return;
-
-    }
-
-
-    // Owner Name is hidden and is no longer required.
-
-    // ===================================================
     // OWNER CLASSIFICATION
-    // ===================================================
 
     if (!['First Owner', 'Second Owner', 'Third Owner'].includes(this.ownerClassification)) {
       alert('Please select owner classification.');
       return;
     }
 
-    // ===================================================
+
     // MOBILE
-    // ===================================================
 
-    if (
-      !/^[0-9]{10}$/.test(
-        this.mobile
-      )
-    ) {
-
-      alert(
-        'Mobile number must contain exactly 10 digits.'
-      );
-
+    if (!/^[0-9]{10}$/.test(this.mobile)) {
+      alert('Mobile number must contain exactly 10 digits.');
       return;
-
     }
 
 
-
-    // ===================================================
     // CITY
-    // ===================================================
 
     if (!this.city.trim()) {
-
       alert('City is required.');
-
       return;
-
     }
 
 
-    // ===================================================
     // BRAND
-    // ===================================================
 
     if (!this.brand.trim()) {
-
       alert('Brand is required.');
-
       return;
-
     }
 
 
-    // ===================================================
     // MODEL
-    // ===================================================
 
     if (!this.model.trim()) {
-
       alert('Model is required.');
-
       return;
-
     }
 
 
-    // ===================================================
     // VEHICLE NUMBER
-    // ===================================================
 
     if (!this.vehicleNumber.trim()) {
-
       alert('Vehicle number is required.');
-
       return;
-
     }
 
-    const normalizedVehicleNumber =
-      this.vehicleNumber
-        .trim()
-        .toUpperCase()
-        .replace(/\s+/g, '');
+    const normalizedVehicleNumber = this.vehicleNumber
+      .trim()
+      .toUpperCase()
+      .replace(/\s+/g, '');
 
     if (!/^[A-Z0-9-]{4,20}$/.test(normalizedVehicleNumber)) {
-
       alert('Please enter a valid vehicle number.');
-
       return;
-
     }
 
 
-    // ===================================================
     // MANUFACTURING YEAR
-    // ===================================================
 
     if (!this.manufacturingYear) {
-
-      alert(
-        'Manufacturing year is required.'
-      );
-
+      alert('Manufacturing year is required.');
       return;
-
     }
 
 
-    // ===================================================
     // FUEL
-    // ===================================================
 
     if (!this.fuelType) {
-
       alert('Please select fuel type.');
-
       return;
-
     }
 
 
-    // ===================================================
     // TRANSMISSION
-    // ===================================================
 
     if (!this.transmission) {
-
-      alert(
-        'Please select transmission.'
-      );
-
+      alert('Please select transmission.');
       return;
-
     }
 
 
     // ===================================================
-    // Only Front, Back, Left Side and Right Side images are shown.
-    // All other image fields are hidden and are not required.
+    // REQUIRED IMAGES
+    // ONLY 4 IMAGES ARE MANDATORY
     // ===================================================
 
     const requiredImages = [
@@ -546,248 +437,174 @@ export class SellCarComponent {
       ['Right Side Image', this.rightImage]
     ] as const;
 
-    const missingImage = requiredImages.find(([, image]) => !image);
+    const missingImage = requiredImages.find(
+      ([, image]) => !image
+    );
+
     if (missingImage) {
       alert(`${missingImage[0]} is required.`);
       return;
     }
 
+
     // ===================================================
     // FORM DATA
     // ===================================================
 
-    const formData =
-      new FormData();
+    const formData = new FormData();
 
+    formData.append('sellerName', this.sellerName.trim());
 
-    formData.append(
-      'sellerName',
-      this.sellerName.trim()
-    );
+    formData.append('ownerName', '');
 
+    formData.append('ownerClassification', this.ownerClassification);
 
-    formData.append(
-      'ownerName',
-      ''
-    );
+    formData.append('mobile', this.mobile);
 
-    formData.append(
-      'ownerClassification',
-      this.ownerClassification
-    );
+    formData.append('email', this.email.trim());
 
+    formData.append('city', this.city.trim());
 
-    formData.append(
-      'mobile',
-      this.mobile
-    );
+    formData.append('brand', this.brand.trim());
 
+    formData.append('model', this.model.trim());
 
-    formData.append(
-      'email',
-      this.email.trim()
-    );
+    formData.append('variant', this.variant.trim());
 
+    formData.append('vehicleNumber', normalizedVehicleNumber);
 
-    formData.append(
-      'city',
-      this.city.trim()
-    );
+    formData.append('manufacturingYear', String(this.manufacturingYear));
 
+    formData.append('fuelType', this.fuelType);
 
-    formData.append(
-      'brand',
-      this.brand.trim()
-    );
+    formData.append('transmission', this.transmission);
 
+    formData.append('kmDriven', String(this.kmDriven ?? ''));
 
-    formData.append(
-      'model',
-      this.model.trim()
-    );
-
-
-    formData.append(
-      'variant',
-      this.variant.trim()
-    );
-
-
-    formData.append(
-      'vehicleNumber',
-      normalizedVehicleNumber
-    );
-
-
-    formData.append(
-      'manufacturingYear',
-      String(this.manufacturingYear)
-    );
-
-
-    formData.append(
-      'fuelType',
-      this.fuelType
-    );
-
-
-    formData.append(
-      'transmission',
-      this.transmission
-    );
-
-
-    formData.append(
-      'kmDriven',
-      String(this.kmDriven ?? '')
-    );
-
-
-    formData.append(
-      'expectedPrice',
-      String(this.expectedPrice ?? '')
-    );
+    formData.append('expectedPrice', String(this.expectedPrice ?? ''));
 
 
     // ===================================================
-    // IMAGES
+    // IMAGE UPLOAD
     // ===================================================
 
     if (this.frontImage) {
-
-      formData.append(
-        'frontImage',
-        this.frontImage,
-        this.frontImage.name
-      );
-
+      formData.append('frontImage', this.frontImage, this.frontImage.name);
     }
-
 
     if (this.backImage) {
-
-      formData.append(
-        'backImage',
-        this.backImage,
-        this.backImage.name
-      );
-
+      formData.append('backImage', this.backImage, this.backImage.name);
     }
-
 
     if (this.leftImage) {
-
-      formData.append(
-        'leftImage',
-        this.leftImage,
-        this.leftImage.name
-      );
-
+      formData.append('leftImage', this.leftImage, this.leftImage.name);
     }
-
 
     if (this.rightImage) {
-
-      formData.append(
-        'rightImage',
-        this.rightImage,
-        this.rightImage.name
-      );
-
+      formData.append('rightImage', this.rightImage, this.rightImage.name);
     }
 
+
+    // OPTIONAL IMAGES
+
     if (this.interiorFrontImage) {
-      formData.append('interiorFrontImage', this.interiorFrontImage, this.interiorFrontImage.name);
+      formData.append(
+        'interiorFrontImage',
+        this.interiorFrontImage,
+        this.interiorFrontImage.name
+      );
     }
 
     if (this.interiorRearImage) {
-      formData.append('interiorRearImage', this.interiorRearImage, this.interiorRearImage.name);
+      formData.append(
+        'interiorRearImage',
+        this.interiorRearImage,
+        this.interiorRearImage.name
+      );
     }
 
     if (this.openDickyImage) {
-      formData.append('openDickyImage', this.openDickyImage, this.openDickyImage.name);
+      formData.append(
+        'openDickyImage',
+        this.openDickyImage,
+        this.openDickyImage.name
+      );
     }
 
     if (this.openBonnetImage) {
-      formData.append('openBonnetImage', this.openBonnetImage, this.openBonnetImage.name);
+      formData.append(
+        'openBonnetImage',
+        this.openBonnetImage,
+        this.openBonnetImage.name
+      );
     }
 
     if (this.odometerImage) {
-      formData.append('odometerImage', this.odometerImage, this.odometerImage.name);
+      formData.append(
+        'odometerImage',
+        this.odometerImage,
+        this.odometerImage.name
+      );
     }
 
     if (this.dashboardImage) {
-      formData.append('dashboardImage', this.dashboardImage, this.dashboardImage.name);
+      formData.append(
+        'dashboardImage',
+        this.dashboardImage,
+        this.dashboardImage.name
+      );
     }
 
-// ===================================================
-// SUBMIT
-// ===================================================
 
-this.submitting = true;
+    // ===================================================
+    // SUBMIT
+    // ===================================================
 
-this.http.post<any>(
-  'https://api.carsey.in/api/vehicles/sell-car',
-  formData
-)
-.subscribe({
+    this.submitting = true;
 
-  // =================================================
-  // SUCCESS
-  // =================================================
+    this.http.post<any>(
+      'https://api.carsey.in/api/vehicles/sell-car',
+      formData
+    ).subscribe({
 
-  next: (response) => {
-    if (typeof window.fbq === 'function') {
-  window.fbq('track', 'Lead', {
-    content_name: 'Sell Car Request',
-    content_category: 'Sell Car'
-  });
-}
+      // SUCCESS
 
-    console.log(
-      'Sell Car Response:',
-      response
-    );
+      next: (response) => {
 
-    this.submitting = false;
+        if (typeof window.fbq === 'function') {
+          window.fbq('track', 'Lead', {
+            content_name: 'Sell Car Request',
+            content_category: 'Sell Car'
+          });
+        }
 
-    // =================================================
-    // ALERT
-    // =================================================
+        console.log('Sell Car Response:', response);
 
-    alert(
-      'Sell Car Request Submitted Successfully'
-    );
+        this.submitting = false;
 
-    // =================================================
-    // RESET
-    // =================================================
+        alert('Sell Car Request Submitted Successfully');
 
-    this.resetForm();
+        this.resetForm();
 
-  },
+      },
 
-  // =================================================
-  // ERROR
-  // =================================================
 
-  error: (error) => {
+      // ERROR
 
-    console.error(
-      'Sell Car Error:',
-      error
-    );
+      error: (error) => {
 
-    this.submitting = false;
+        console.error('Sell Car Error:', error);
 
-    alert(
-      error?.error?.message ||
-      'Unable to submit sell car request. Please try again.'
-    );
+        this.submitting = false;
 
-  }
+        alert(
+          error?.error?.message ||
+          'Unable to submit sell car request. Please try again.'
+        );
 
-});
+      }
+
+    });
 
   }
 
@@ -819,14 +636,13 @@ this.http.post<any>(
     this.expectedPrice = null;
 
 
-    // ===================================================
     // RESET IMAGES
-    // ===================================================
 
     this.frontImage = null;
     this.backImage = null;
     this.leftImage = null;
     this.rightImage = null;
+
     this.interiorFrontImage = null;
     this.interiorRearImage = null;
     this.openDickyImage = null;
@@ -834,10 +650,14 @@ this.http.post<any>(
     this.odometerImage = null;
     this.dashboardImage = null;
 
+
+    // RESET PREVIEWS
+
     this.frontPreview = '';
     this.backPreview = '';
     this.leftPreview = '';
     this.rightPreview = '';
+
     this.interiorFrontPreview = '';
     this.interiorRearPreview = '';
     this.openDickyPreview = '';
