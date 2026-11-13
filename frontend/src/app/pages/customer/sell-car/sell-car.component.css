@@ -1,12 +1,7 @@
 /*
- ORIGINAL CSS DESIGN PRESERVED:
- Existing layout, colors, image previews, and responsive styling are retained.
- The main page and container wrappers center the form like the Book Inspection page.
+  SELL CAR FORM
+  Existing colors, fields, image previews, and responsive behavior retained.
 */
-
-/* =====================================================
-   MAIN PAGE
-   ===================================================== */
 
 .sell-page {
   min-height: 100vh;
@@ -15,14 +10,13 @@
   box-sizing: border-box;
 }
 
-/* CONTAINER */
 .sell-container {
   width: 100%;
   max-width: 1050px;
   margin: 0 auto;
+  box-sizing: border-box;
 }
 
-/* HEADER */
 .page-header {
   text-align: center;
   margin-bottom: 30px;
@@ -41,8 +35,9 @@
   font-size: 16px;
 }
 
-/* FORM CARD */
 .form-card {
+  width: 100%;
+  box-sizing: border-box;
   background: #ffffff;
   border-radius: 18px;
   padding: 32px;
@@ -50,7 +45,6 @@
   border-top: 4px solid #FF6500;
 }
 
-/* SECTION */
 .section {
   padding: 10px 0 30px;
 }
@@ -76,18 +70,20 @@
   font-size: 14px;
 }
 
-/* FORM GRID */
 .form-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 20px;
 }
 
+.form-group {
+  min-width: 0;
+}
+
 .form-group.full {
   grid-column: 1 / -1;
 }
 
-/* LABEL */
 .form-group label {
   display: block;
   margin-bottom: 8px;
@@ -96,10 +92,12 @@
   font-weight: 700;
 }
 
-/* INPUT / SELECT */
 .form-group input,
-.form-group select {
+.form-group select,
+.form-group textarea {
+  display: block;
   width: 100%;
+  min-width: 0;
   height: 48px;
   box-sizing: border-box;
   padding: 0 14px;
@@ -109,20 +107,24 @@
   color: #0f172a;
   font-size: 15px;
   outline: none;
+  visibility: visible;
+  opacity: 1;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
-.form-group input::placeholder {
+.form-group input::placeholder,
+.form-group textarea::placeholder {
   color: #94a3b8;
+  opacity: 1;
 }
 
 .form-group input:focus,
-.form-group select:focus {
+.form-group select:focus,
+.form-group textarea:focus {
   border-color: #064A9B;
   box-shadow: 0 0 0 3px rgba(6, 74, 155, 0.10);
 }
 
-/* SMALL TEXT */
 .form-group small {
   display: block;
   margin-top: 6px;
@@ -130,14 +132,12 @@
   font-size: 12px;
 }
 
-/* IMAGE GRID */
 .image-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 22px;
 }
 
-/* IMAGE CARD */
 .image-upload-card {
   width: 100%;
   min-width: 0;
@@ -150,7 +150,6 @@
   font-weight: 700;
 }
 
-/* UPLOAD BOX */
 .upload-box {
   position: relative;
   width: 100%;
@@ -183,27 +182,23 @@
   cursor: pointer;
 }
 
-/* CAMERA ICON */
 .camera-icon {
   font-size: 42px;
   margin-bottom: 12px;
 }
 
-/* UPLOAD TITLE */
 .upload-title {
   color: #064A9B;
   font-size: 16px;
   font-weight: 700;
 }
 
-/* UPLOAD INFO */
 .upload-info {
   margin-top: 7px;
   color: #64748b;
   font-size: 13px;
 }
 
-/* IMAGE PREVIEW */
 .image-preview {
   position: relative;
   width: 100%;
@@ -221,7 +216,6 @@
   display: block;
 }
 
-/* REMOVE BUTTON */
 .remove-button {
   position: absolute;
   top: 12px;
@@ -241,7 +235,6 @@
   background: #b91c1c;
 }
 
-/* SUBMIT SECTION */
 .submit-section {
   border-top: 1px solid rgba(255, 101, 0, 0.30);
   margin-top: 10px;
@@ -249,7 +242,6 @@
   text-align: center;
 }
 
-/* SUBMIT BUTTON: BLUE ONLY */
 .submit-button {
   width: 100%;
   min-height: 52px;
@@ -275,50 +267,44 @@
   cursor: not-allowed;
 }
 
-/* SUBMIT NOTE */
 .submit-note {
   margin: 14px 0 0;
   color: #64748b;
   font-size: 14px;
 }
 
-/* INPUT TEXT VISIBILITY */
+/* Global control text visibility */
 input,
 select,
 textarea {
-  color: #0f172a !important;
-  background-color: #ffffff !important;
+  color: #0f172a;
+  background-color: #ffffff;
   caret-color: #064A9B;
 }
 
 input::placeholder,
 textarea::placeholder {
-  color: #94a3b8 !important;
+  color: #94a3b8;
   opacity: 1;
-}
-
-select {
-  color: #0f172a !important;
 }
 
 input:focus,
 select:focus,
 textarea:focus {
-  color: #0f172a !important;
-  background-color: #ffffff !important;
+  color: #0f172a;
+  background-color: #ffffff;
   outline: none;
 }
 
-/* AUTOFILL FIX */
+/* Browser autofill */
 input:-webkit-autofill,
 input:-webkit-autofill:hover,
 input:-webkit-autofill:focus {
-  -webkit-text-fill-color: #0f172a !important;
-  box-shadow: 0 0 0 1000px #ffffff inset !important;
+  -webkit-text-fill-color: #0f172a;
+  box-shadow: 0 0 0 1000px #ffffff inset;
   transition: background-color 5000s ease-in-out 0s;
 }
 
-/* RESPONSIVE */
 @media (max-width: 768px) {
   .sell-page {
     padding: 25px 14px;
@@ -333,16 +319,13 @@ input:-webkit-autofill:focus {
     font-size: 28px;
   }
 
-  .form-grid {
+  .form-grid,
+  .image-grid {
     grid-template-columns: 1fr;
   }
 
   .form-group.full {
     grid-column: auto;
-  }
-
-  .image-grid {
-    grid-template-columns: 1fr;
   }
 
   .upload-box {
