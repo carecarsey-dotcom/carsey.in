@@ -2618,15 +2618,13 @@ function formatCellValue(
 
     // File / media path
 
-    if (
+    const normalizedColumnName = String(columnName).toLowerCase();
 
-        FILE_COLUMN_NAMES.has(
+    const isMediaColumn =
+        FILE_COLUMN_NAMES.has(normalizedColumnName) ||
+        /image|img|photo|picture/i.test(normalizedColumnName);
 
-            String(columnName).toLowerCase()
-
-        )
-
-    ) {
+    if (isMediaColumn) {
 
         return convertFilePathToUrl(value);
 
@@ -2938,6 +2936,56 @@ async function createMissingSheets(
 
 
 
+
+// ======================================================
+// SELL CAR SHEET COLUMN ORDER
+// ======================================================
+
+function arrangeSellCarRequestColumns(columns) {
+    const ordered = [...columns];
+
+    // Place ownership immediately before manufacturing year.
+    const ownerIndex = ordered.findIndex(column =>
+        /^(owner_classification|ownership|owner_type)$/i.test(column)
+    );
+    const yearIndex = ordered.findIndex(column =>
+        /^(manufacturing_year|manufacture_year|year_of_manufacture)$/i.test(column)
+    );
+
+    if (ownerIndex >= 0 && yearIndex >= 0) {
+        const [ownerColumn] = ordered.splice(ownerIndex, 1);
+        const newYearIndex = ordered.findIndex(column =>
+            /^(manufacturing_year|manufacture_year|year_of_manufacture)$/i.test(column)
+        );
+        ordered.splice(newYearIndex, 0, ownerColumn);
+    }
+
+    // Move image columns to the end, prioritizing Front, Rear/Back, Left, Right.
+    const isImageColumn = column => /image|img|photo|picture/i.test(String(column));
+    const imageColumns = ordered.filter(isImageColumn);
+    const normalColumns = ordered.filter(column => !isImageColumn(column));
+
+    const findImage = pattern =>
+        imageColumns.find(column => pattern.test(String(column)));
+
+    const preferred = [
+        findImage(/^(front|front_view).*?(image|img|photo|picture)/i),
+        findImage(/^(rear|back|rear_view|back_view).*?(image|img|photo|picture)/i),
+        findImage(/^left.*?(image|img|photo|picture)/i),
+        findImage(/^right.*?(image|img|photo|picture)/i)
+    ].filter(Boolean);
+
+    const preferredSet = new Set(preferred);
+    const remainingImages = imageColumns.filter(column => !preferredSet.has(column));
+
+    return [...normalColumns, ...preferred, ...remainingImages];
+}
+
+// ======================================================
+// END SELL CAR SHEET COLUMN ORDER
+// ======================================================
+
+
 async function buildTableSyncData(
 
     tableName
@@ -2968,13 +3016,12 @@ async function buildTableSyncData(
 
 
 
-    const columns =
+    let columns = await getTableColumns(sourceTableName);
 
-        await getTableColumns(
-
-            sourceTableName
-
-        );
+    // Apply the requested column layout only to the Sell Car tab.
+    if (tableName === "sell_car_requests") {
+        columns = arrangeSellCarRequestColumns(columns);
+    }
 
 
 
