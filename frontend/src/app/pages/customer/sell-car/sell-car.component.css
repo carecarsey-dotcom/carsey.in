@@ -1,7 +1,7 @@
 /*
-  ORIGINAL CSS DESIGN PRESERVED:
-  Existing layout, colors, image previews, and responsive styling are retained.
-  The new Owner Name field and six additional image cards use the same styles.
+ ORIGINAL CSS DESIGN PRESERVED:
+ Existing layout, colors, image previews, and responsive styling are retained.
+ The main page and container wrappers center the form like the Book Inspection page.
 */
 
 /* =====================================================
@@ -16,7 +16,6 @@
 }
 
 /* CONTAINER */
-
 .sell-container {
   width: 100%;
   max-width: 1050px;
@@ -24,7 +23,6 @@
 }
 
 /* HEADER */
-
 .page-header {
   text-align: center;
   margin-bottom: 30px;
@@ -44,7 +42,6 @@
 }
 
 /* FORM CARD */
-
 .form-card {
   background: #ffffff;
   border-radius: 18px;
@@ -54,7 +51,6 @@
 }
 
 /* SECTION */
-
 .section {
   padding: 10px 0 30px;
 }
@@ -81,7 +77,6 @@
 }
 
 /* FORM GRID */
-
 .form-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -93,7 +88,6 @@
 }
 
 /* LABEL */
-
 .form-group label {
   display: block;
   margin-bottom: 8px;
@@ -103,7 +97,6 @@
 }
 
 /* INPUT / SELECT */
-
 .form-group input,
 .form-group select {
   width: 100%;
@@ -130,7 +123,6 @@
 }
 
 /* SMALL TEXT */
-
 .form-group small {
   display: block;
   margin-top: 6px;
@@ -139,7 +131,6 @@
 }
 
 /* IMAGE GRID */
-
 .image-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -147,7 +138,6 @@
 }
 
 /* IMAGE CARD */
-
 .image-upload-card {
   width: 100%;
   min-width: 0;
@@ -161,7 +151,6 @@
 }
 
 /* UPLOAD BOX */
-
 .upload-box {
   position: relative;
   width: 100%;
@@ -195,14 +184,12 @@
 }
 
 /* CAMERA ICON */
-
 .camera-icon {
   font-size: 42px;
   margin-bottom: 12px;
 }
 
 /* UPLOAD TITLE */
-
 .upload-title {
   color: #064A9B;
   font-size: 16px;
@@ -210,7 +197,6 @@
 }
 
 /* UPLOAD INFO */
-
 .upload-info {
   margin-top: 7px;
   color: #64748b;
@@ -218,7 +204,6 @@
 }
 
 /* IMAGE PREVIEW */
-
 .image-preview {
   position: relative;
   width: 100%;
@@ -237,7 +222,6 @@
 }
 
 /* REMOVE BUTTON */
-
 .remove-button {
   position: absolute;
   top: 12px;
@@ -258,7 +242,6 @@
 }
 
 /* SUBMIT SECTION */
-
 .submit-section {
   border-top: 1px solid rgba(255, 101, 0, 0.30);
   margin-top: 10px;
@@ -267,7 +250,6 @@
 }
 
 /* SUBMIT BUTTON: BLUE ONLY */
-
 .submit-button {
   width: 100%;
   min-height: 52px;
@@ -294,7 +276,6 @@
 }
 
 /* SUBMIT NOTE */
-
 .submit-note {
   margin: 14px 0 0;
   color: #64748b;
@@ -302,7 +283,6 @@
 }
 
 /* INPUT TEXT VISIBILITY */
-
 input,
 select,
 textarea {
@@ -330,7 +310,6 @@ textarea:focus {
 }
 
 /* AUTOFILL FIX */
-
 input:-webkit-autofill,
 input:-webkit-autofill:hover,
 input:-webkit-autofill:focus {
@@ -340,9 +319,7 @@ input:-webkit-autofill:focus {
 }
 
 /* RESPONSIVE */
-
 @media (max-width: 768px) {
-
   .sell-page {
     padding: 25px 14px;
   }
